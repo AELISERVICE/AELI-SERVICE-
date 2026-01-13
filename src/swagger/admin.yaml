@@ -1,0 +1,251 @@
+paths:
+  /admin/stats:
+    get:
+      tags:
+        - Admin
+      summary: Statistiques de la plateforme
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques globales
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          clients:
+                            type: integer
+                          providers:
+                            type: integer
+                      providers:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          active:
+                            type: integer
+                          pending:
+                            type: integer
+                          featured:
+                            type: integer
+                      services:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                      reviews:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          averageRating:
+                            type: string
+                      contacts:
+                        type: object
+                        properties:
+                          total:
+                            type: integer
+                          pending:
+                            type: integer
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Liste des utilisateurs
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [client, provider, admin]
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des utilisateurs
+
+  /admin/users/{id}/status:
+    put:
+      tags:
+        - Admin
+      summary: Activer/désactiver un compte
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isActive
+              properties:
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Statut mis à jour
+
+  /admin/providers/pending:
+    get:
+      tags:
+        - Admin
+      summary: Prestataires en attente de validation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des prestataires en attente
+
+  /admin/providers/{id}/verify:
+    put:
+      tags:
+        - Admin
+      summary: Valider/rejeter un prestataire
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isVerified
+              properties:
+                isVerified:
+                  type: boolean
+      responses:
+        '200':
+          description: Prestataire validé/rejeté
+
+  /admin/providers/{id}/feature:
+    put:
+      tags:
+        - Admin
+      summary: Mettre en avant un prestataire
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isFeatured
+              properties:
+                isFeatured:
+                  type: boolean
+      responses:
+        '200':
+          description: Mise en avant modifiée
+
+  /admin/reviews:
+    get:
+      tags:
+        - Admin
+      summary: Liste de tous les avis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: visible
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Liste des avis
+
+  /admin/reviews/{id}/visibility:
+    put:
+      tags:
+        - Admin
+      summary: Afficher/masquer un avis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isVisible
+              properties:
+                isVisible:
+                  type: boolean
+      responses:
+        '200':
+          description: Visibilité modifiée

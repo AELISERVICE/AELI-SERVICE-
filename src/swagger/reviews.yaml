@@ -1,0 +1,123 @@
+paths:
+  /reviews:
+    post:
+      tags:
+        - Reviews
+      summary: Créer un avis
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - providerId
+                - rating
+              properties:
+                providerId:
+                  type: string
+                  format: uuid
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                  maxLength: 1000
+      responses:
+        '201':
+          description: Avis créé
+        '400':
+          description: Avis déjà existant pour ce prestataire
+
+  /reviews/provider/{providerId}:
+    get:
+      tags:
+        - Reviews
+      summary: Avis d'un prestataire
+      parameters:
+        - in: path
+          name: providerId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Liste des avis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      reviews:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /reviews/{id}:
+    put:
+      tags:
+        - Reviews
+      summary: Modifier son avis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Avis modifié
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+    delete:
+      tags:
+        - Reviews
+      summary: Supprimer son avis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Avis supprimé

@@ -1,0 +1,318 @@
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Inscription d'un nouvel utilisateur
+      description: Crée un compte et envoie un code OTP par email pour vérification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - firstName
+                - lastName
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: marie@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: SecurePass123!
+                firstName:
+                  type: string
+                  example: Marie
+                lastName:
+                  type: string
+                  example: Dupont
+                phone:
+                  type: string
+                  example: "+237690000000"
+                role:
+                  type: string
+                  enum: [client, provider]
+                  default: client
+      responses:
+        '201':
+          description: Inscription réussie, OTP envoyé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      requiresOTP:
+                        type: boolean
+                        example: true
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/verify-otp:
+    post:
+      tags:
+        - Auth
+      summary: Vérifier le code OTP
+      description: Vérifie le code OTP envoyé par email et active le compte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+              properties:
+                email:
+                  type: string
+                  format: email
+                otp:
+                  type: string
+                  minLength: 6
+                  maxLength: 6
+                  example: "123456"
+      responses:
+        '200':
+          description: Email vérifié avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        '400':
+          description: OTP invalide ou expiré
+
+  /auth/resend-otp:
+    post:
+      tags:
+        - Auth
+      summary: Renvoyer le code OTP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: OTP renvoyé si le compte existe
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Connexion utilisateur
+      description: Connecte l'utilisateur et retourne les tokens JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Connexion réussie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      provider:
+                        $ref: '#/components/schemas/Provider'
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        '401':
+          description: Identifiants incorrects
+        '423':
+          description: Compte verrouillé
+
+  /auth/refresh-token:
+    post:
+      tags:
+        - Auth
+      summary: Rafraîchir l'access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token rafraîchi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+        '401':
+          description: Refresh token invalide ou expiré
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: Déconnexion
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Déconnexion réussie
+
+  /auth/logout-all:
+    post:
+      tags:
+        - Auth
+      summary: Déconnexion de tous les appareils
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Déconnexion de tous les appareils réussie
+
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Mot de passe oublié
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Email de réinitialisation envoyé si le compte existe
+
+  /auth/reset-password/{token}:
+    post:
+      tags:
+        - Auth
+      summary: Réinitialiser le mot de passe
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Mot de passe réinitialisé
+        '400':
+          description: Token invalide ou expiré
+
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: Obtenir le profil connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil utilisateur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      provider:
+                        $ref: '#/components/schemas/Provider'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'

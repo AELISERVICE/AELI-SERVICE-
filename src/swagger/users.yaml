@@ -1,0 +1,88 @@
+paths:
+  /users/profile:
+    get:
+      tags:
+        - Users
+      summary: Obtenir son profil
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil récupéré
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/User'
+                      provider:
+                        $ref: '#/components/schemas/Provider'
+    put:
+      tags:
+        - Users
+      summary: Mettre à jour son profil
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                phone:
+                  type: string
+                profilePhoto:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Profil mis à jour
+
+  /users/password:
+    put:
+      tags:
+        - Users
+      summary: Changer son mot de passe
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Mot de passe modifié
+        '401':
+          description: Mot de passe actuel incorrect
+
+  /users/account:
+    delete:
+      tags:
+        - Users
+      summary: Désactiver son compte
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Compte désactivé

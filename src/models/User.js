@@ -1,0 +1,167 @@
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+const bcrypt = require('bcryptjs');
+
+const User = sequelize.define('User', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
+    },
+    email: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: {
+                msg: 'Veuillez fournir un email valide'
+            }
+        }
+    },
+    password: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+        validate: {
+            len: {
+                args: [8, 255],
+                msg: 'Le mot de passe doit contenir au moins 8 caractères'
+            }
+        }
+    },
+    firstName: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        field: 'first_name',
+        validate: {
+            notEmpty: {
+                msg: 'Le prénom est requis'
+            }
+        }
+    },
+    lastName: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        field: 'last_name',
+        validate: {
+            notEmpty: {
+                msg: 'Le nom est requis'
+            }
+        }
+    },
+    phone: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+    },
+    role: {
+        type: DataTypes.ENUM('client', 'provider', 'admin'),
+        defaultValue: 'client'
+    },
+    profilePhoto: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+        field: 'profile_photo'
+    },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'is_active'
+    },
+    isEmailVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'is_email_verified'
+    },
+    resetPasswordToken: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'reset_password_token'
+    },
+    resetPasswordExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'reset_password_expires'
+    },
+    lastLogin: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'last_login'
+    },
+    // OTP fields for email verification
+    otpCode: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'otp_code',
+        comment: 'Hashed OTP code'
+    },
+    otpExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'otp_expires'
+    },
+    otpAttempts: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        field: 'otp_attempts',
+        comment: 'Failed OTP verification attempts'
+    },
+    // Account lockout fields
+    failedLoginAttempts: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        field: 'failed_login_attempts'
+    },
+    lockedUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'locked_until',
+        comment: 'Account locked until this time'
+    },
+    // Session tracking
+    lastActivity: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'last_activity',
+        comment: 'Last user activity timestamp for session timeout'
+    }
+}, {
+    tableName: 'users',
+    timestamps: true,
+    underscored: true,
+    hooks: {
+        beforeCreate: async (user) => {
+            if (user.password) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(user.password, salt);
+            }
+        },
+        beforeUpdate: async (user) => {
+            if (user.changed('password')) {
+                const salt = await bcrypt.genSalt(10);
+                user.password = await bcrypt.hash(user.password, salt);
+            }
+        }
+    }
+});
+
+// Instance method to compare password
+User.prototype.comparePassword = async function (candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Instance method to get public profile (without sensitive data)
+User.prototype.toPublicJSON = function () {
+    return {
+        id: this.id,
+        email: this.email,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        phone: this.phone,
+        role: this.role,
+        profilePhoto: this.profilePhoto,
+        isActive: this.isActive,
+        isEmailVerified: this.isEmailVerified,
+        createdAt: this.createdAt
+    };
+};
+
+module.exports = User;

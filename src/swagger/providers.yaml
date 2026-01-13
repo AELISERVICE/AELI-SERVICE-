@@ -1,0 +1,259 @@
+paths:
+  /providers:
+    get:
+      tags:
+        - Providers
+      summary: Liste des prestataires
+      description: Récupère la liste paginée des prestataires vérifiés
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 12
+            maximum: 50
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Slug de la catégorie
+        - in: query
+          name: location
+          schema:
+            type: string
+          description: Ville ou quartier
+        - in: query
+          name: minRating
+          schema:
+            type: number
+            minimum: 0
+            maximum: 5
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Recherche texte
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [rating, recent, views, name]
+            default: recent
+      responses:
+        '200':
+          description: Liste des prestataires
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      providers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Provider'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /providers/create:
+    post:
+      tags:
+        - Providers
+      summary: Créer un profil prestataire
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - businessName
+                - description
+                - location
+              properties:
+                businessName:
+                  type: string
+                description:
+                  type: string
+                  minLength: 50
+                location:
+                  type: string
+                address:
+                  type: string
+                whatsapp:
+                  type: string
+                facebook:
+                  type: string
+                instagram:
+                  type: string
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  maxItems: 5
+      responses:
+        '201':
+          description: Profil créé
+        '400':
+          description: Profil déjà existant ou validation error
+
+  /providers/{id}:
+    get:
+      tags:
+        - Providers
+      summary: Détails d'un prestataire
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails du prestataire
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      provider:
+                        $ref: '#/components/schemas/Provider'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    put:
+      tags:
+        - Providers
+      summary: Modifier son profil prestataire
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                businessName:
+                  type: string
+                description:
+                  type: string
+                location:
+                  type: string
+                address:
+                  type: string
+                whatsapp:
+                  type: string
+                facebook:
+                  type: string
+                instagram:
+                  type: string
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        '200':
+          description: Profil mis à jour
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /providers/{id}/photos/{photoIndex}:
+    delete:
+      tags:
+        - Providers
+      summary: Supprimer une photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: photoIndex
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Photo supprimée
+
+  /providers/my-profile:
+    get:
+      tags:
+        - Providers
+      summary: Mon profil prestataire
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profil récupéré
+
+  /providers/my-dashboard:
+    get:
+      tags:
+        - Providers
+      summary: Tableau de bord prestataire
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques et données récentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      stats:
+                        type: object
+                        properties:
+                          totalViews:
+                            type: integer
+                          totalContacts:
+                            type: integer
+                          totalReviews:
+                            type: integer
+                          averageRating:
+                            type: number
+                          pendingContacts:
+                            type: integer
+                      recentContacts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Contact'
+                      recentReviews:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Review'

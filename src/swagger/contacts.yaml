@@ -1,0 +1,131 @@
+paths:
+  /contacts:
+    post:
+      tags:
+        - Contacts
+      summary: Envoyer une demande de contact
+      description: Peut être utilisé avec ou sans authentification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - providerId
+                - message
+                - senderName
+                - senderEmail
+              properties:
+                providerId:
+                  type: string
+                  format: uuid
+                message:
+                  type: string
+                  minLength: 10
+                  maxLength: 2000
+                senderName:
+                  type: string
+                senderEmail:
+                  type: string
+                  format: email
+                senderPhone:
+                  type: string
+      responses:
+        '201':
+          description: Message envoyé
+        '404':
+          description: Prestataire non trouvé
+
+  /contacts/received:
+    get:
+      tags:
+        - Contacts
+      summary: Demandes reçues (prestataire)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, read, replied]
+      responses:
+        '200':
+          description: Liste des demandes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      contacts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Contact'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+
+  /contacts/sent:
+    get:
+      tags:
+        - Contacts
+      summary: Demandes envoyées
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des demandes envoyées
+
+  /contacts/{id}/status:
+    put:
+      tags:
+        - Contacts
+      summary: Mettre à jour le statut
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, read, replied]
+      responses:
+        '200':
+          description: Statut mis à jour
