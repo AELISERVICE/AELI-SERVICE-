@@ -3,6 +3,8 @@ const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { successResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
 const { newReviewEmail } = require('../utils/emailTemplates');
+const cache = require('../config/redis');
+const { emitNewReview } = require('../config/socket');
 
 /**
  * @desc    Create a review
@@ -44,6 +46,18 @@ const createReview = asyncHandler(async (req, res) => {
     // Update provider rating
     await provider.updateRating(rating, true);
 
+    // Invalidate reviews cache
+    await cache.delByPattern(`reviews:provider:${providerId}:*`);
+    await cache.del(cache.cacheKeys.provider(providerId));
+
+    // Send WebSocket notification
+    emitNewReview(providerId, {
+        id: review.id,
+        rating,
+        comment,
+        reviewer: `${req.user.firstName} ${req.user.lastName}`
+    });
+
     // Send email notification to provider (async)
     if (provider.user && provider.user.email) {
         sendEmail({
@@ -69,6 +83,13 @@ const getProviderReviews = asyncHandler(async (req, res) => {
     const { providerId } = req.params;
     const { page = 1, limit = 10 } = req.query;
 
+    // Try cache first
+    const cacheKey = cache.cacheKeys.reviews(providerId, page);
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, 'Avis du prestataire', cached);
+    }
+
     const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
     const { count, rows: reviews } = await Review.findAndCountAll({
@@ -90,7 +111,12 @@ const getProviderReviews = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Avis du prestataire', { reviews, pagination });
+    const responseData = { reviews, pagination };
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, responseData, 300);
+
+    successResponse(res, 200, 'Avis du prestataire', responseData);
 });
 
 /**

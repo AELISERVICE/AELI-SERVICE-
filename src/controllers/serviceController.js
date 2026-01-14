@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const { Service, Provider, Category } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { successResponse } = require('../utils/helpers');
+const cache = require('../config/redis');
 
 /**
  * @desc    Get all categories
@@ -9,12 +10,24 @@ const { successResponse } = require('../utils/helpers');
  * @access  Public
  */
 const getCategories = asyncHandler(async (req, res) => {
+    // Try cache first
+    const cacheKey = cache.cacheKeys.categories();
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, 'Liste des catégories', cached);
+    }
+
     const categories = await Category.findAll({
         where: { isActive: true },
         order: [['order', 'ASC'], ['name', 'ASC']]
     });
 
-    successResponse(res, 200, 'Liste des catégories', { categories });
+    const responseData = { categories };
+
+    // Cache for 1 hour (categories rarely change)
+    await cache.set(cacheKey, responseData, 3600);
+
+    successResponse(res, 200, 'Liste des catégories', responseData);
 });
 
 /**
@@ -31,6 +44,9 @@ const createCategory = asyncHandler(async (req, res) => {
         icon,
         order: order || 0
     });
+
+    // Invalidate categories cache
+    await cache.del(cache.cacheKeys.categories());
 
     successResponse(res, 201, 'Catégorie créée', { category });
 });
@@ -56,6 +72,9 @@ const updateCategory = asyncHandler(async (req, res) => {
     if (isActive !== undefined) category.isActive = isActive;
 
     await category.save();
+
+    // Invalidate categories cache
+    await cache.del(cache.cacheKeys.categories());
 
     successResponse(res, 200, 'Catégorie mise à jour', { category });
 });
@@ -91,6 +110,9 @@ const createService = asyncHandler(async (req, res) => {
         tags: tags || []
     });
 
+    // Invalidate provider services cache
+    await cache.del(cache.cacheKeys.services(provider.id));
+
     successResponse(res, 201, 'Service créé', { service });
 });
 
@@ -101,6 +123,13 @@ const createService = asyncHandler(async (req, res) => {
  */
 const getServicesByProvider = asyncHandler(async (req, res) => {
     const { providerId } = req.params;
+
+    // Try cache first
+    const cacheKey = cache.cacheKeys.services(providerId);
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, 'Services du prestataire', cached);
+    }
 
     const services = await Service.findAll({
         where: {
@@ -117,7 +146,12 @@ const getServicesByProvider = asyncHandler(async (req, res) => {
         order: [['createdAt', 'DESC']]
     });
 
-    successResponse(res, 200, 'Services du prestataire', { services });
+    const responseData = { services };
+
+    // Cache for 10 minutes
+    await cache.set(cacheKey, responseData, 600);
+
+    successResponse(res, 200, 'Services du prestataire', responseData);
 });
 
 /**

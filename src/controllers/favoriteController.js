@@ -1,6 +1,7 @@
 const { Favorite, Provider, User } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { successResponse } = require('../utils/helpers');
+const cache = require('../config/redis');
 
 /**
  * @desc    Add provider to favorites
@@ -31,6 +32,9 @@ const addFavorite = asyncHandler(async (req, res) => {
         providerId
     });
 
+    // Invalidate user favorites cache
+    await cache.del(cache.cacheKeys.userFavorites(req.user.id));
+
     successResponse(res, 201, 'Ajouté aux favoris', { favorite });
 });
 
@@ -40,6 +44,13 @@ const addFavorite = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const getFavorites = asyncHandler(async (req, res) => {
+    // Try cache first
+    const cacheKey = cache.cacheKeys.userFavorites(req.user.id);
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, 'Liste des favoris', cached);
+    }
+
     const favorites = await Favorite.findAll({
         where: { userId: req.user.id },
         include: [
@@ -58,7 +69,12 @@ const getFavorites = asyncHandler(async (req, res) => {
         order: [['createdAt', 'DESC']]
     });
 
-    successResponse(res, 200, 'Liste des favoris', { favorites });
+    const responseData = { favorites };
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, responseData, 300);
+
+    successResponse(res, 200, 'Liste des favoris', responseData);
 });
 
 /**
@@ -78,6 +94,9 @@ const removeFavorite = asyncHandler(async (req, res) => {
     }
 
     await favorite.destroy();
+
+    // Invalidate user favorites cache
+    await cache.del(cache.cacheKeys.userFavorites(req.user.id));
 
     successResponse(res, 200, 'Retiré des favoris');
 });

@@ -3,6 +3,7 @@ const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { successResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
 const { newContactEmail } = require('../utils/emailTemplates');
+const { emitNewContact, emitContactStatusChange } = require('../config/socket');
 
 /**
  * @desc    Send a contact request to a provider
@@ -33,6 +34,14 @@ const createContact = asyncHandler(async (req, res) => {
 
     // Increment provider's contact count
     await provider.incrementContacts();
+
+    // Send WebSocket notification to provider
+    emitNewContact(providerId, {
+        id: contact.id,
+        senderName,
+        senderEmail,
+        message: message.substring(0, 100) + (message.length > 100 ? '...' : '')
+    });
 
     // Send email notification to provider
     if (provider.user && provider.user.email) {
@@ -156,6 +165,15 @@ const updateContactStatus = asyncHandler(async (req, res) => {
 
     contact.status = status;
     await contact.save({ fields: ['status'] });
+
+    // Notify sender via WebSocket if they were authenticated
+    if (contact.userId) {
+        emitContactStatusChange(contact.userId, {
+            id: contact.id,
+            status,
+            providerId: contact.providerId
+        });
+    }
 
     successResponse(res, 200, 'Statut mis à jour', { contact });
 });

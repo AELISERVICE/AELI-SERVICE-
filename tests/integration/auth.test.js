@@ -1,0 +1,139 @@
+const request = require('supertest');
+const app = require('../../src/app');
+const { User } = require('../../src/models');
+
+describe('Auth API', () => {
+    const testEmail = `test_auth_${Date.now()}@example.com`;
+    const testPassword = 'SecureTestPass123!';
+    let createdUserId;
+
+    afterAll(async () => {
+        // Cleanup test user
+        if (createdUserId) {
+            await User.destroy({ where: { id: createdUserId }, force: true });
+        }
+    });
+
+    describe('POST /api/auth/register', () => {
+        it('should register a new user and require OTP', async () => {
+            const res = await request(app)
+                .post('/api/auth/register')
+                .send({
+                    email: testEmail,
+                    password: testPassword,
+                    firstName: 'Test',
+                    lastName: 'User',
+                    phone: '+237690000001'
+                });
+
+            expect(res.statusCode).toBe(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.requiresOTP).toBe(true);
+            expect(res.body.data.user.email).toBe(testEmail);
+            expect(res.body.data.user.isEmailVerified).toBe(false);
+
+            createdUserId = res.body.data.user.id;
+        });
+
+        it('should reject duplicate email', async () => {
+            const res = await request(app)
+                .post('/api/auth/register')
+                .send({
+                    email: testEmail,
+                    password: testPassword,
+                    firstName: 'Duplicate',
+                    lastName: 'User'
+                });
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body.success).toBe(false);
+        });
+
+        it('should validate required fields', async () => {
+            const res = await request(app)
+                .post('/api/auth/register')
+                .send({
+                    email: 'incomplete@test.com'
+                });
+
+            expect(res.statusCode).toBe(400);
+            expect(res.body.success).toBe(false);
+        });
+    });
+
+    describe('POST /api/auth/login', () => {
+        it('should require OTP for unverified email', async () => {
+            const res = await request(app)
+                .post('/api/auth/login')
+                .send({
+                    email: testEmail,
+                    password: testPassword
+                });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.data.requiresOTP).toBe(true);
+        });
+
+        it('should reject invalid credentials', async () => {
+            const res = await request(app)
+                .post('/api/auth/login')
+                .send({
+                    email: testEmail,
+                    password: 'WrongPassword123!'
+                });
+
+            expect(res.statusCode).toBe(401);
+            expect(res.body.success).toBe(false);
+        });
+
+        it('should reject non-existent user', async () => {
+            const res = await request(app)
+                .post('/api/auth/login')
+                .send({
+                    email: 'nonexistent@test.com',
+                    password: testPassword
+                });
+
+            expect(res.statusCode).toBe(401);
+        });
+    });
+
+    describe('POST /api/auth/forgot-password', () => {
+        it('should accept valid email', async () => {
+            const res = await request(app)
+                .post('/api/auth/forgot-password')
+                .send({ email: testEmail });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+        });
+
+        it('should not reveal if email exists', async () => {
+            const res = await request(app)
+                .post('/api/auth/forgot-password')
+                .send({ email: 'nonexistent@test.com' });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+        });
+    });
+
+    describe('GET /api/auth/me', () => {
+        it('should reject unauthenticated request', async () => {
+            const res = await request(app)
+                .get('/api/auth/me');
+
+            expect(res.statusCode).toBe(401);
+            expect(res.body.code).toBe('NO_TOKEN');
+        });
+
+        it('should reject invalid token', async () => {
+            const res = await request(app)
+                .get('/api/auth/me')
+                .set('Authorization', 'Bearer invalid_token');
+
+            expect(res.statusCode).toBe(401);
+            expect(res.body.code).toBe('INVALID_TOKEN');
+        });
+    });
+});

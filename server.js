@@ -1,16 +1,26 @@
 require('dotenv').config();
+const http = require('http');
 const app = require('./src/app');
 const { sequelize, testConnection } = require('./src/config/database');
 const { verifyTransporter } = require('./src/config/email');
+const { initRedis, closeRedis } = require('./src/config/redis');
+const { initSocketIO } = require('./src/config/socket');
 const logger = require('./src/utils/logger');
 
 const PORT = process.env.PORT || 5000;
+
+// Create HTTP server
+const server = http.createServer(app);
 
 // Graceful shutdown handler
 const gracefulShutdown = async (signal) => {
     logger.info(`${signal} received. Shutting down gracefully...`);
 
     try {
+        server.close();
+        logger.info('HTTP server closed.');
+        await closeRedis();
+        logger.info('Redis connection closed.');
         await sequelize.close();
         logger.info('Database connection closed.');
         process.exit(0);
@@ -29,6 +39,12 @@ const startServer = async () => {
         // Verify email transporter (optional, won't block startup)
         verifyTransporter();
 
+        // Initialize Redis (optional, won't block startup)
+        initRedis();
+
+        // Initialize Socket.IO
+        initSocketIO(server);
+
         // Sync database models (use { alter: true } in development, { force: false } in production)
         const syncOptions = process.env.NODE_ENV === 'development'
             ? { alter: true }
@@ -38,7 +54,7 @@ const startServer = async () => {
         logger.info('✅ Database models synchronized');
 
         // Start listening
-        const server = app.listen(PORT, () => {
+        server.listen(PORT, () => {
             logger.info(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
@@ -47,6 +63,7 @@ const startServer = async () => {
 ║   Server running on port ${PORT}                            ║
 ║   Environment: ${process.env.NODE_ENV || 'development'}                          ║
 ║   API Health: http://localhost:${PORT}/api/health            ║
+║   WebSocket: ws://localhost:${PORT}                          ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
       `);
@@ -85,3 +102,4 @@ process.on('unhandledRejection', (error) => {
 
 // Start the server
 startServer();
+

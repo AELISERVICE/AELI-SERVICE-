@@ -1,0 +1,30 @@
+{
+    "development": {
+        "username": "ngoue",
+        "password": "Angeline2007",
+        "database": "aeli_services",
+        "host": "localhost",
+        "port": 5432,
+        "dialect": "postgres",
+        "seederStorage": "sequelize",
+        "migrationStorageTableName": "SequelizeMeta"
+    },
+    "test": {
+        "username": "ngoue",
+        "password": "Angeline2007",
+        "database": "aeli_services_test",
+        "host": "localhost",
+        "port": 5432,
+        "dialect": "postgres"
+    },
+    "production": {
+        "use_env_variable": "DATABASE_URL",
+        "dialect": "postgres",
+        "dialectOptions": {
+            "ssl": {
+                "require": true,
+                "rejectUnauthorized": false
+            }
+        }
+    }
+}

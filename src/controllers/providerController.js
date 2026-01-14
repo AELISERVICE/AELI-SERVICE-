@@ -3,6 +3,7 @@ const { Provider, User, Service, Review, Category, Contact } = require('../model
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { successResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../utils/helpers');
 const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
+const cache = require('../config/redis');
 
 /**
  * @desc    Create provider profile
@@ -34,6 +35,9 @@ const createProvider = asyncHandler(async (req, res) => {
         photos
     });
 
+    // Invalidate providers list cache
+    await cache.delByPattern('providers:list:*');
+
     successResponse(res, 201, 'Profil prestataire créé avec succès', { provider });
 });
 
@@ -44,6 +48,15 @@ const createProvider = asyncHandler(async (req, res) => {
  */
 const getProviders = asyncHandler(async (req, res) => {
     const { page = 1, limit = 12, category, location, minRating, search, sort = 'recent' } = req.query;
+
+    // Generate cache key
+    const cacheKey = cache.cacheKeys.providers(page, { category, location, minRating, search, sort });
+
+    // Try cache first
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, 'Liste des prestataires', cached);
+    }
 
     const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
@@ -104,10 +117,12 @@ const getProviders = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Liste des prestataires', {
-        providers,
-        pagination
-    });
+    const responseData = { providers, pagination };
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, responseData, 300);
+
+    successResponse(res, 200, 'Liste des prestataires', responseData);
 });
 
 /**
@@ -118,40 +133,26 @@ const getProviders = asyncHandler(async (req, res) => {
 const getProviderById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
+    // Try cache first
+    const cacheKey = cache.cacheKeys.provider(id);
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, 'Détails du prestataire', cached);
+    }
+
+    // Fetch provider with user info only (avoid deep nesting)
     const provider = await Provider.findByPk(id, {
+        attributes: [
+            'id', 'businessName', 'description', 'location', 'address',
+            'whatsapp', 'facebook', 'instagram', 'photos',
+            'averageRating', 'totalReviews', 'viewsCount', 'contactsCount',
+            'isVerified', 'isFeatured', 'createdAt'
+        ],
         include: [
             {
                 model: User,
                 as: 'user',
                 attributes: ['id', 'firstName', 'lastName', 'profilePhoto', 'phone']
-            },
-            {
-                model: Service,
-                as: 'services',
-                where: { isActive: true },
-                required: false,
-                include: [
-                    {
-                        model: Category,
-                        as: 'category',
-                        attributes: ['id', 'name', 'slug']
-                    }
-                ]
-            },
-            {
-                model: Review,
-                as: 'reviews',
-                where: { isVisible: true },
-                required: false,
-                limit: 10,
-                order: [['createdAt', 'DESC']],
-                include: [
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'firstName', 'lastName', 'profilePhoto']
-                    }
-                ]
             }
         ]
     });
@@ -160,10 +161,47 @@ const getProviderById = asyncHandler(async (req, res) => {
         throw new AppError('Prestataire non trouvé', 404);
     }
 
+    // Fetch services separately (optimized query)
+    const services = await Service.findAll({
+        where: { providerId: id, isActive: true },
+        attributes: ['id', 'name', 'description', 'price', 'priceType', 'duration'],
+        include: [
+            {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name', 'slug']
+            }
+        ],
+        order: [['createdAt', 'DESC']]
+    });
+
+    // Fetch reviews separately (optimized query with limit)
+    const reviews = await Review.findAll({
+        where: { providerId: id, isVisible: true },
+        attributes: ['id', 'rating', 'comment', 'createdAt'],
+        include: [
+            {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'firstName', 'lastName', 'profilePhoto']
+            }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit: 10
+    });
+
+    // Combine results
+    const providerData = provider.toJSON();
+    providerData.services = services;
+    providerData.reviews = reviews;
+
     // Increment view count (don't wait)
     provider.incrementViews().catch(err => console.error('View increment error:', err.message));
 
-    successResponse(res, 200, 'Détails du prestataire', { provider });
+    // Cache for 5 minutes
+    await cache.set(cacheKey, { provider: providerData }, 300);
+
+    successResponse(res, 200, 'Détails du prestataire', { provider: providerData });
 });
 
 /**

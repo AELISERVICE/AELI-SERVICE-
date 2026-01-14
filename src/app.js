@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const hpp = require('hpp');
+const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const swaggerUi = require('swagger-ui-express');
 require('dotenv').config();
@@ -9,6 +10,9 @@ require('dotenv').config();
 const { generalLimiter } = require('./middlewares/rateLimiter');
 const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const { checkSessionActivity } = require('./middlewares/security');
+const { csrfTokenMiddleware, csrfValidation, getCSRFToken } = require('./middlewares/csrf');
+const { getRequestLogger, requestTiming } = require('./middlewares/requestLogger');
+const { basicHealth, detailedHealth, readinessProbe, livenessProbe } = require('./middlewares/healthCheck');
 const swaggerSpec = require('./config/swagger');
 
 // Route imports
@@ -20,9 +24,27 @@ const reviewRoutes = require('./routes/reviews');
 const favoriteRoutes = require('./routes/favorites');
 const contactRoutes = require('./routes/contacts');
 const adminRoutes = require('./routes/admin');
+const paymentRoutes = require('./routes/payments');
 
 // Initialize Express app
 const app = express();
+
+// ============ REQUEST LOGGING ============
+app.use(getRequestLogger());
+app.use(requestTiming);
+
+// ============ COMPRESSION ============
+// Compress all HTTP responses
+app.use(compression({
+    filter: (req, res) => {
+        // Don't compress if client doesn't accept
+        if (req.headers['x-no-compression']) {
+            return false;
+        }
+        return compression.filter(req, res);
+    },
+    level: 6 // Balance between speed and compression ratio
+}));
 
 // ============ SWAGGER DOCUMENTATION ============
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -62,7 +84,7 @@ app.use(cors({
     origin: process.env.FRONTEND_URL || '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-XSRF-Token']
 }));
 
 // Cookie parser (required for CSRF)
@@ -105,21 +127,14 @@ app.use(sanitizeInput);
 
 // ============ API ROUTES ============
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: 'AELI Services API is running',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV,
-        security: {
-            helmet: true,
-            hpp: true,
-            xss: true,
-            rateLimiting: true
-        }
-    });
-});
+// Health check endpoints
+app.get('/api/health', basicHealth);
+app.get('/api/health/detailed', detailedHealth);
+app.get('/api/health/ready', readinessProbe);
+app.get('/api/health/live', livenessProbe);
+
+// CSRF token endpoint (for SPA frontends)
+app.get('/api/csrf-token', getCSRFToken);
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -130,6 +145,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Search endpoint (combined search across providers)
 app.get('/api/search', require('./controllers/providerController').getProviders);

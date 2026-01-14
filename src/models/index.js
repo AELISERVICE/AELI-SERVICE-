@@ -8,6 +8,10 @@ const Favorite = require('./Favorite');
 const Contact = require('./Contact');
 const RefreshToken = require('./RefreshToken');
 const SecurityLog = require('./SecurityLog');
+const BannedIP = require('./BannedIP');
+const AuditLog = require('./AuditLog');
+const Webhook = require('./Webhook');
+const ApiUsage = require('./ApiUsage');
 
 // ==================== ASSOCIATIONS ====================
 
@@ -131,6 +135,53 @@ SecurityLog.belongsTo(User, {
     as: 'user'
 });
 
+// User <-> AuditLog (1:N)
+User.hasMany(AuditLog, {
+    foreignKey: 'userId',
+    as: 'auditLogs',
+    onDelete: 'SET NULL'
+});
+AuditLog.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+
+// User <-> Webhook (1:N)
+User.hasMany(Webhook, {
+    foreignKey: 'userId',
+    as: 'webhooks',
+    onDelete: 'CASCADE'
+});
+Webhook.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+
+// Import Payment model
+const Payment = require('./Payment');
+
+// User <-> Payment (1:N)
+User.hasMany(Payment, {
+    foreignKey: 'userId',
+    as: 'payments',
+    onDelete: 'SET NULL'
+});
+Payment.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+
+// Provider <-> Payment (1:N)
+Provider.hasMany(Payment, {
+    foreignKey: 'providerId',
+    as: 'payments',
+    onDelete: 'SET NULL'
+});
+Payment.belongsTo(Provider, {
+    foreignKey: 'providerId',
+    as: 'provider'
+});
+
 // ==================== EXPORTS ====================
 
 module.exports = {
@@ -143,6 +194,11 @@ module.exports = {
     Favorite,
     Contact,
     RefreshToken,
-    SecurityLog
+    SecurityLog,
+    BannedIP,
+    AuditLog,
+    Webhook,
+    ApiUsage,
+    Payment
 };
 
