@@ -1,6 +1,6 @@
-# 👤 Users API
+# 👤 API Utilisateurs - Documentation Complète
 
-Gestion du profil utilisateur.
+Documentation détaillée des endpoints de gestion du profil utilisateur.
 
 ## Base URL
 ```
@@ -9,84 +9,185 @@ Gestion du profil utilisateur.
 
 🔒 **Toutes les routes requièrent une authentification**
 
-> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+---
+
+## 📋 Profil Utilisateur
+
+### Informations stockées
+| Champ | Type | Description |
+|-------|------|-------------|
+| `firstName` | string | Prénom |
+| `lastName` | string | Nom de famille |
+| `email` | string | Email (unique, non modifiable ici) |
+| `phone` | string | Téléphone (chiffré en base) |
+| `profilePhoto` | string | URL de la photo de profil |
+| `role` | enum | `client`, `provider`, `admin` |
+| `isEmailVerified` | bool | Email vérifié via OTP |
+| `isActive` | bool | Compte actif |
+| `lastLogin` | date | Dernière connexion |
+| `lastActivity` | date | Dernière activité |
 
 ---
 
-## Endpoints
+## 👁️ 1. VOIR MON PROFIL
 
-### GET `/profile` - Obtenir son Profil
+### `GET /profile` - Récupérer mon profil
 
-**Réponse 200:**
+**🔒 Authentification requise**
+
+**Description :**  
+Récupère toutes les informations du profil de l'utilisateur connecté.
+
+**Ce qu'il fait :**
+- Retourne les informations utilisateur
+- Si prestataire : inclut le profil Provider
+- Déchiffre automatiquement le téléphone
+
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "user": {
+  "user": {
+    "id": "uuid",
+    "email": "marie@example.com",
+    "firstName": "Marie",
+    "lastName": "Dupont",
+    "phone": "+237699123456",  // Déchiffré
+    "profilePhoto": "https://cloudinary.com/.../photo.jpg",
+    "role": "provider",
+    "isEmailVerified": true,
+    "isActive": true,
+    "createdAt": "2025-12-01T10:00:00Z",
+    "lastLogin": "2026-01-15T18:00:00Z"
+  }
+}
+```
+
+**Si l'utilisateur est prestataire :**
+```json
+{
+  "success": true,
+  "user": {
+    "id": "uuid",
+    "email": "marie@example.com",
+    "firstName": "Marie",
+    "lastName": "Dupont",
+    "role": "provider",
+    "provider": {
       "id": "uuid",
-      "email": "marie@example.com",
-      "firstName": "Marie",
-      "lastName": "Dupont",
-      "phone": "+237690000000",
-      "role": "client",
-      "profilePhoto": "https://...",
-      "isActive": true,
-      "isEmailVerified": true,
-      "createdAt": "2024-01-01T00:00:00Z"
-    },
-    "provider": null
+      "businessName": "Salon Marie",
+      "isVerified": true,
+      "averageRating": 4.8,
+      "subscription": {
+        "status": "active",
+        "plan": "monthly",
+        "daysRemaining": 15
+      }
+    }
   }
 }
 ```
 
 ---
 
-### PUT `/profile` - Mettre à Jour son Profil
+## ✏️ 2. MODIFIER MON PROFIL
 
-**Content-Type:** `multipart/form-data`
+### `PUT /profile` - Mettre à jour mon profil
 
-**Body:**
-| Champ | Type | Description |
-|-------|------|-------------|
-| `firstName` | string | Prénom |
-| `lastName` | string | Nom |
-| `phone` | string | Téléphone |
-| `profilePhoto` | file | Photo de profil (max 5MB, jpg/png/webp) |
+**🔒 Authentification requise**
 
-**Exemple cURL:**
-```bash
-curl -X PUT http://localhost:5000/api/users/profile \
-  -H "Authorization: Bearer <token>" \
-  -F "firstName=Marie" \
-  -F "lastName=Dupont" \
-  -F "profilePhoto=@photo.jpg"
+**Description :**  
+Met à jour les informations du profil utilisateur.
+
+**Ce qu'il fait :**
+1. Valide les données
+2. Chiffre le téléphone si modifié
+3. Upload la photo si fournie (vers Cloudinary)
+4. Met à jour l'utilisateur
+
+**Content-Type :** `multipart/form-data` (si photo) ou `application/json`
+
+**Body :**
+```json
+{
+  "firstName": "Marie-Claire",
+  "lastName": "Dupont",
+  "phone": "+237699999999"
+}
 ```
 
-**Réponse 200:**
+**Ou avec photo :**
+```
+Content-Type: multipart/form-data
+
+firstName: Marie-Claire
+lastName: Dupont
+profilePhoto: [fichier image]
+```
+
+**Validation :**
+| Champ | Requis | Règles |
+|-------|--------|--------|
+| `firstName` | ❌ | 2-100 caractères, lettres uniquement |
+| `lastName` | ❌ | 2-100 caractères, lettres uniquement |
+| `phone` | ❌ | Format téléphone international |
+| `profilePhoto` | ❌ | Image JPG/PNG, max 5MB |
+
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "message": "Profil mis à jour",
-  "data": { "user": { ... } }
+  "message": "Profil mis à jour avec succès",
+  "user": {
+    "id": "uuid",
+    "firstName": "Marie-Claire",
+    "lastName": "Dupont",
+    "phone": "+237699999999",
+    "profilePhoto": "https://cloudinary.com/.../new-photo.jpg"
+  }
 }
 ```
+
+**⚠️ Notes importantes :**
+- L'**email ne peut pas être modifié** via cet endpoint (utiliser `/auth/change-email`)
+- Le **rôle ne peut pas être modifié** par l'utilisateur
+- La **photo précédente** est supprimée de Cloudinary automatiquement
 
 ---
 
-### PUT `/password` - Changer le Mot de Passe
+## 🔐 3. CHANGER MON MOT DE PASSE
 
-**Body:**
+### `PUT /password` - Modifier le mot de passe
+
+**🔒 Authentification requise**
+
+**Description :**  
+Permet à l'utilisateur de changer son mot de passe.
+
+**Ce qu'il fait :**
+1. Vérifie le mot de passe actuel
+2. Valide le nouveau mot de passe
+3. Hash le nouveau mot de passe (bcrypt)
+4. Invalide tous les refresh tokens (sécurité)
+5. Envoie un email de notification
+
+**Body :**
 ```json
 {
-  "currentPassword": "OldPass123!",
-  "newPassword": "NewSecurePass456!"
+  "currentPassword": "AncienMotDePasse123!",
+  "newPassword": "NouveauMotDePasse456!",
+  "confirmPassword": "NouveauMotDePasse456!"
 }
 ```
 
-**Validation:**
-- `newPassword`: minimum 8 caractères
+**Validation :**
+| Champ | Requis | Règles |
+|-------|--------|--------|
+| `currentPassword` | ✅ | Mot de passe actuel correct |
+| `newPassword` | ✅ | 8-128 car., 1 maj., 1 min., 1 chiffre |
+| `confirmPassword` | ✅ | Doit correspondre à newPassword |
 
-**Réponse 200:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
@@ -94,16 +195,42 @@ curl -X PUT http://localhost:5000/api/users/profile \
 }
 ```
 
-**Erreurs:**
-- `401` - Mot de passe actuel incorrect
+**Erreurs possibles :**
+| Code | Message | Cause |
+|------|---------|-------|
+| 400 | Mot de passe actuel incorrect | Vérification échouée |
+| 400 | Les mots de passe ne correspondent pas | confirm ≠ new |
+| 400 | Mot de passe trop faible | Ne respecte pas les règles |
+
+**⚠️ Sécurité :**  
+Après changement, l'utilisateur doit se reconnecter sur tous ses appareils.
 
 ---
 
-### DELETE `/account` - Désactiver son Compte
+## ❌ 4. DÉSACTIVER MON COMPTE
 
-⚠️ **Soft delete** - Le compte est désactivé mais pas supprimé.
+### `DELETE /account` - Désactiver mon compte
 
-**Réponse 200:**
+**🔒 Authentification requise**
+
+**Description :**  
+Désactive le compte de l'utilisateur (soft delete).
+
+**Ce qu'il fait :**
+1. Met `isActive = false`
+2. Invalide tous les tokens
+3. Envoie un email de confirmation
+4. **Ne supprime PAS les données** (récupération possible)
+
+**Body (optionnel) :**
+```json
+{
+  "password": "MotDePasse123!",  // Confirmation de sécurité
+  "reason": "Je n'utilise plus la plateforme"
+}
+```
+
+**Réponse 200 :**
 ```json
 {
   "success": true,
@@ -111,59 +238,408 @@ curl -X PUT http://localhost:5000/api/users/profile \
 }
 ```
 
- **Note:** L'utilisateur ne pourra plus se connecter après cette action. Contactez un admin pour réactiver le compte.
+**Conséquences :**
+- L'utilisateur ne peut plus se connecter
+- Si prestataire : le profil n'apparaît plus dans les recherches
+- Les données sont conservées 30 jours avant suppression définitive
+- Contacter le support pour réactiver
 
 ---
 
-## 🔄 Workflow Détaillé
+## 🎨 Formulaires Frontend Suggérés
 
-```
-[Authentifié] PUT /api/users/profile
-{ firstName, lastName, phone, profilePhoto (file) }
-    │
-    ▼
-┌─────────────────────┐
-│ Validation JWT      │
-│ Récupère user       │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Upload photo ?      │ ── Oui ──▶ Cloudinary upload
-│                     │            (resize, optimize)
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ MAJ User:           │
-│ - firstName         │
-│ - lastName          │
-│ - phone             │
-│ - profilePhoto URL  │
-└─────────────────────┘
-          │
-          ▼
-     200 OK { user }
-
-═══════════════════════════════════════════════════════════
-
-[Authentifié] PUT /api/users/password
-{ currentPassword, newPassword }
-    │
-    ▼
-┌─────────────────────┐
-│ Vérifie password    │ ── Incorrect ──▶ 401 Unauthorized
-│ actuel (bcrypt)     │
-└─────────┬───────────┘
-          │ Correct
-          ▼
-┌─────────────────────┐
-│ Hash newPassword    │
-│ Sauvegarde          │
-│ SecurityLog(CHANGE) │
-└─────────────────────┘
-          │
-          ▼
-     200 OK
+### Formulaire Profil
+```html
+<form id="profile-form" enctype="multipart/form-data">
+  <div class="photo-section">
+    <img id="profile-preview" src="current-photo.jpg" />
+    <input type="file" name="profilePhoto" accept="image/*" />
+    <button type="button">Changer la photo</button>
+  </div>
+  
+  <div class="form-group">
+    <label>Prénom</label>
+    <input type="text" name="firstName" value="Marie" />
+  </div>
+  
+  <div class="form-group">
+    <label>Nom</label>
+    <input type="text" name="lastName" value="Dupont" />
+  </div>
+  
+  <div class="form-group">
+    <label>Téléphone</label>
+    <input type="tel" name="phone" value="+237699123456" />
+  </div>
+  
+  <div class="form-group">
+    <label>Email</label>
+    <input type="email" value="marie@example.com" disabled />
+    <small>Pour changer d'email, utilisez les paramètres de sécurité</small>
+  </div>
+  
+  <button type="submit">Enregistrer</button>
+</form>
 ```
 
+### Formulaire Changement Mot de Passe
+```html
+<form id="password-form">
+  <div class="form-group">
+    <label>Mot de passe actuel</label>
+    <input type="password" name="currentPassword" required />
+  </div>
+  
+  <div class="form-group">
+    <label>Nouveau mot de passe</label>
+    <input type="password" name="newPassword" required />
+    <small>8 caractères min., 1 majuscule, 1 minuscule, 1 chiffre</small>
+  </div>
+  
+  <div class="form-group">
+    <label>Confirmer le nouveau mot de passe</label>
+    <input type="password" name="confirmPassword" required />
+  </div>
+  
+  <button type="submit">Changer le mot de passe</button>
+</form>
+```
+
+### Validation côté client
+```javascript
+const validatePassword = (password) => {
+  const rules = {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasLowercase: /[a-z]/.test(password),
+    hasNumber: /\d/.test(password)
+  };
+  
+  const isValid = Object.values(rules).every(Boolean);
+  
+  return { isValid, rules };
+};
+
+// Afficher les règles en temps réel
+passwordInput.addEventListener('input', (e) => {
+  const { rules } = validatePassword(e.target.value);
+  
+  Object.entries(rules).forEach(([rule, passed]) => {
+    const indicator = document.querySelector(`[data-rule="${rule}"]`);
+    indicator.classList.toggle('valid', passed);
+  });
+});
+```
+
+---
+
+## 🔄 Cycle de Vie du Compte
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  CYCLE DE VIE DU COMPTE                          │
+└─────────────────────────────────────────────────────────────────┘
+
+  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+  │  REGISTER   │ ───► │   VERIFY    │ ───► │   ACTIVE    │
+  │             │      │   (OTP)     │      │             │
+  └─────────────┘      └─────────────┘      └──────┬──────┘
+                                                   │
+                    ┌──────────────────────────────┼──────────┐
+                    │                              │          │
+                    ▼                              ▼          ▼
+             ┌─────────────┐              ┌─────────────┐ ┌─────────┐
+             │   LOCKED    │              │  INACTIVE   │ │ PROVIDER│
+             │(5 bad logins)│              │(self deact) │ │(applied)│
+             └──────┬──────┘              └─────────────┘ └─────────┘
+                    │
+                    │ 30 min timeout
+                    ▼
+             ┌─────────────┐
+             │   ACTIVE    │
+             └─────────────┘
+```
+
+---
+
+## 🚨 Codes d'erreur
+
+| Code | Situation |
+|------|-----------|
+| 400 | Données invalides, mot de passe incorrect |
+| 401 | Non authentifié |
+| 413 | Photo trop volumineuse (> 5MB) |
+
+---
+
+## 🔄 WORKFLOWS VISUELS
+
+### Page "Mon Profil" (Client/Prestataire)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MON PROFIL                                    │
+│                    GET/PUT /api/users/profile                    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  👤 Mon Profil                                                   │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │        ┌───────────────────┐                                ││
+│  │        │                   │                                ││
+│  │        │    [📸 Photo]     │  [Changer la photo]            ││
+│  │        │                   │                                ││
+│  │        │    Marie D.       │                                ││
+│  │        └───────────────────┘                                ││
+│  │                                                              ││
+│  │  ┌───────────────────────────────────────────────────────┐  ││
+│  │  │ Prénom:    [Marie-Claire_________________________]   │  ││
+│  │  └───────────────────────────────────────────────────────┘  ││
+│  │                                                              ││
+│  │  ┌───────────────────────────────────────────────────────┐  ││
+│  │  │ Nom:       [Dupont______________________________]    │  ││
+│  │  └───────────────────────────────────────────────────────┘  ││
+│  │                                                              ││
+│  │  ┌───────────────────────────────────────────────────────┐  ││
+│  │  │ Téléphone: [+237 699 123 456___________________]     │  ││
+│  │  └───────────────────────────────────────────────────────┘  ││
+│  │                                                              ││
+│  │  ┌───────────────────────────────────────────────────────┐  ││
+│  │  │ Email:     marie@example.com                   🔒     │  ││
+│  │  │            (non modifiable - Paramètres sécurité)     │  ││
+│  │  └───────────────────────────────────────────────────────┘  ││
+│  │                                                              ││
+│  │  [Enregistrer les modifications]                            ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  🔒 Sécurité                                                    │
+│  ├── [Changer mon mot de passe →]                               │
+│  └── [Désactiver mon compte →]                                  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Formulaire Changement Mot de Passe
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CHANGER MON MOT DE PASSE                      │
+│                    PUT /api/users/password                       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  🔐 Changer mon mot de passe                                    │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  Mot de passe actuel:                                       ││
+│  │  [••••••••••••••••••]                                       ││
+│  │                                                              ││
+│  │  Nouveau mot de passe:                                      ││
+│  │  [NouveauMotDePasse456!]                                    ││
+│  │                                                              ││
+│  │  Règles du mot de passe:                                    ││
+│  │  ✅ Au moins 8 caractères                                   ││
+│  │  ✅ Une lettre majuscule                                    ││
+│  │  ✅ Une lettre minuscule                                    ││
+│  │  ✅ Un chiffre                                              ││
+│  │                                                              ││
+│  │  Confirmer le nouveau mot de passe:                         ││
+│  │  [NouveauMotDePasse456!]                                    ││
+│  │  ✅ Les mots de passe correspondent                         ││
+│  │                                                              ││
+│  │  [Changer mon mot de passe]                                 ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+PUT /api/users/password
+{
+  currentPassword: "AncienMotDePasse123!",
+  newPassword: "NouveauMotDePasse456!",
+  confirmPassword: "NouveauMotDePasse456!"
+}
+    │
+    ├── Vérification mot de passe actuel (bcrypt.compare)
+    ├── Hash nouveau mot de passe (bcrypt.hash)
+    ├── Invalidation tous les refresh tokens
+    └── Email notification "Mot de passe modifié"
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ Mot de passe modifié avec succès !                          │
+│                                                                  │
+│  Vous allez être déconnecté de tous vos appareils.             │
+│  Reconnectez-vous avec votre nouveau mot de passe.             │
+│                                                                  │
+│  [Se reconnecter]                                               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Upload Photo de Profil
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    UPLOAD PHOTO PROFIL                           │
+│                    PUT /api/users/profile (multipart/form-data)  │
+└─────────────────────────────────────────────────────────────────┘
+
+[Clic sur "Changer la photo"]
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  📸 Changer ma photo de profil                                  │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  ┌───────────────────────┐   ┌───────────────────────┐      ││
+│  │  │                       │   │                       │      ││
+│  │  │   [ Photo actuelle ]  │ → │   [ Aperçu nouvelle ] │      ││
+│  │  │                       │   │                       │      ││
+│  │  └───────────────────────┘   └───────────────────────┘      ││
+│  │                                                              ││
+│  │  [Choisir un fichier]  nouvelle_photo.jpg                   ││
+│  │                                                              ││
+│  │  ⚠️ Format accepté: JPG, PNG                                ││
+│  │  ⚠️ Taille max: 5 MB                                        ││
+│  │                                                              ││
+│  │  [Annuler]   [Sauvegarder]                                  ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+PUT /api/users/profile
+Content-Type: multipart/form-data
+    │
+    ├── Upload vers Cloudinary
+    ├── Suppression ancienne photo (si existante)
+    └── Update user.profilePhoto = nouvelle_url
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ Photo mise à jour !                                          │
+│                                                                  │
+│  [Voir mon profil]                                              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Désactivation de Compte
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DÉSACTIVER MON COMPTE                         │
+│                    DELETE /api/users/account                     │
+└─────────────────────────────────────────────────────────────────┘
+
+[Clic sur "Désactiver mon compte"]
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  ⚠️ Désactiver mon compte                                       │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  Êtes-vous sûr de vouloir désactiver votre compte ?        ││
+│  │                                                              ││
+│  │  ⚠️ Votre profil ne sera plus visible                       ││
+│  │  ⚠️ Vous ne pourrez plus vous connecter                     ││
+│  │  ⚠️ Vos données seront conservées 30 jours                  ││
+│  │                                                              ││
+│  │  Pour réactiver votre compte, contactez le support.         ││
+│  │                                                              ││
+│  │  Raison (optionnel):                                        ││
+│  │  [Je n'utilise plus la plateforme___________________]       ││
+│  │                                                              ││
+│  │  Confirmez avec votre mot de passe:                         ││
+│  │  [••••••••••••••••••]                                       ││
+│  │                                                              ││
+│  │  [Annuler]   [Désactiver définitivement]                    ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+DELETE /api/users/account
+{
+  password: "MonMotDePasse123!",
+  reason: "Je n'utilise plus la plateforme"
+}
+    │
+    ├── Vérification mot de passe
+    ├── user.isActive = false
+    ├── Invalidation tous les tokens
+    └── Email "Compte désactivé"
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                  │
+│  ✅ Compte désactivé                                             │
+│                                                                  │
+│  Votre compte a été désactivé avec succès.                      │
+│                                                                  │
+│  Vos données seront supprimées dans 30 jours.                   │
+│  Pour réactiver, contactez support@aeli.cm                      │
+│                                                                  │
+│  [Retour à l'accueil]                                           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Profil Prestataire (Vue étendue)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    PROFIL PRESTATAIRE                            │
+│                    GET /api/users/profile (role: provider)       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  👤 Mon Profil                                                   │
+│                                                                  │
+│  ┌──────────── INFORMATIONS PERSONNELLES ──────────────────────┐│
+│  │                                                              ││
+│  │  [📸] Marie Dupont                                          ││
+│  │  marie@example.com                                          ││
+│  │  +237 699 123 456                                           ││
+│  │                                                              ││
+│  │  [Modifier mes informations →]                              ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌──────────── MON ACTIVITÉ PRESTATAIRE ───────────────────────┐│
+│  │                                                              ││
+│  │  🏪 Salon Marie                                             ││
+│  │  ✅ Profil vérifié                                          ││
+│  │                                                              ││
+│  │  ⭐ 4.8/5 (25 avis)                                         ││
+│  │  📩 45 contacts reçus                                       ││
+│  │  👁️ 1 234 vues ce mois                                      ││
+│  │                                                              ││
+│  │  [Gérer mon profil prestataire →]                           ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌──────────── ABONNEMENT ─────────────────────────────────────┐│
+│  │                                                              ││
+│  │  💎 ACTIF - Plan Mensuel                                    ││
+│  │  Expire dans 15 jours                                       ││
+│  │                                                              ││
+│  │  [Gérer mon abonnement →]                                   ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```

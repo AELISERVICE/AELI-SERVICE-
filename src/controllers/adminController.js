@@ -1,5 +1,5 @@
-const { Op } = require('sequelize');
-const { User, Provider, Service, Review, Contact, Category } = require('../models');
+const { Op, fn, col } = require('sequelize');
+const { User, Provider, Service, Review, Contact, Category, Payment } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
@@ -29,7 +29,7 @@ const getStats = asyncHandler(async (req, res) => {
     const totalReviews = await Review.count({ where: { isVisible: true } });
     const avgRating = await Review.findOne({
         attributes: [
-            [require('sequelize').fn('AVG', require('sequelize').col('rating')), 'avgRating']
+            [fn('AVG', col('rating')), 'avgRating']
         ],
         where: { isVisible: true },
         raw: true
@@ -38,6 +38,21 @@ const getStats = asyncHandler(async (req, res) => {
     // Contacts stats
     const totalContacts = await Contact.count();
     const pendingContacts = await Contact.count({ where: { status: 'pending' } });
+
+    // Payments stats
+    const totalPayments = await Payment.count();
+    const acceptedPayments = await Payment.count({ where: { status: 'accepted' } });
+    const pendingPayments = await Payment.count({ where: { status: 'pending' } });
+    const refusedPayments = await Payment.count({ where: { status: 'refused' } });
+    const cancelledPayments = await Payment.count({ where: { status: 'cancelled' } });
+
+    const totalAmountResult = await Payment.findOne({
+        attributes: [
+            [fn('SUM', col('amount')), 'totalAmount']
+        ],
+        where: { status: 'accepted' },
+        raw: true
+    });
 
     // Recent data
     const recentUsers = await User.findAll({
@@ -76,6 +91,14 @@ const getStats = asyncHandler(async (req, res) => {
         contacts: {
             total: totalContacts,
             pending: pendingContacts
+        },
+        payments: {
+            total: totalPayments,
+            totalAmount: parseInt(totalAmountResult?.totalAmount || 0),
+            accepted: acceptedPayments,
+            pending: pendingPayments,
+            refused: refusedPayments,
+            cancelled: cancelledPayments
         },
         recentUsers,
         recentProviders

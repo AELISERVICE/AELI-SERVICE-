@@ -1,279 +1,568 @@
-# 📧 Contacts API
+# 📩 API Contacts - Documentation Complète
 
-Demandes de contact entre clients et prestataires.
+Documentation détaillée des endpoints de demande de contact entre clients et prestataires.
 
 ## Base URL
 ```
 /api/contacts
 ```
 
-> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+---
+
+## 📞 Fonctionnalité Contact
+
+### Principe
+Les clients peuvent envoyer des demandes de contact aux prestataires. Ces demandes contiennent un message et les coordonnées du client pour que le prestataire puisse répondre.
+
+### Confidentialité
+- Les **emails** et **téléphones** des clients sont **chiffrés** en base de données (AES-256-GCM)
+- Seul le prestataire destinataire peut voir les coordonnées
 
 ---
 
-## Endpoints
+## 📧 1. ENVOYER UN MESSAGE
 
-### POST `/` - Envoyer une Demande
+### `POST /` - Contacter un prestataire
 
-Peut être utilisé avec ou sans authentification.
+**🔓 Authentification optionnelle** (mais recommandée)
 
-**Rate Limit:** 10 /heure
+**Description :**  
+Envoie une demande de contact à un prestataire. Peut être utilisé par des visiteurs non inscrits.
 
-**Body:**
+**Ce qu'il fait :**
+1. Vérifie que le prestataire existe et a un abonnement actif
+2. Chiffre les coordonnées du client (email, téléphone)
+3. Crée l'enregistrement Contact
+4. Incrémente le compteur de contacts du prestataire
+5. Envoie un email de notification au prestataire
+6. Envoie un email de confirmation au client
+
+**Rate Limiting :** 5 contacts / heure par IP
+
+**Body :**
 ```json
 {
   "providerId": "uuid",
-  "message": "Bonjour, je souhaite prendre rendez-vous pour...",
-  "senderName": "Jeanne Kamga",
-  "senderEmail": "jeanne@example.com",
-  "senderPhone": "+237690000000"
+  "message": "Bonjour, je voudrais prendre rendez-vous pour une coupe et une coloration. Êtes-vous disponible samedi matin ?",
+  "senderName": "Fatou Kamga",
+  "senderEmail": "fatou@example.com",
+  "senderPhone": "+237699123456"  // Optionnel
 }
 ```
 
-**Validation:**
-| Champ | Règle |
-|-------|-------|
-| `message` | 10-2000 caractères |
-| `senderName` | requis |
-| `senderEmail` | email valide, requis |
-| `senderPhone` | optionnel |
+**Validation :**
+| Champ | Requis | Règles |
+|-------|--------|--------|
+| `providerId` | ✅ | UUID valide |
+| `message` | ✅ | 10-2000 caractères |
+| `senderName` | ✅ | Max 200 caractères |
+| `senderEmail` | ✅ | Email valide |
+| `senderPhone` | ❌ | Format téléphone |
 
-**Réponse 201:**
+**Réponse 201 :**
 ```json
 {
   "success": true,
-  "message": "Message envoyé avec succès"
+  "message": "Message envoyé avec succès",
+  "contact": {
+    "id": "uuid",
+    "message": "Bonjour, je voudrais...",
+    "status": "pending",
+    "createdAt": "2026-01-15T19:30:00Z"
+  }
 }
 ```
 
-> **Note:** Un email est envoyé au prestataire.
+**⚠️ Si l'utilisateur est connecté :**
+- Les champs `senderName`, `senderEmail` peuvent être pré-remplis depuis le profil
+- Le contact est lié à `userId`
+
+**Erreurs possibles :**
+| Code | Message | Cause |
+|------|---------|-------|
+| 400 | Message trop court | < 10 caractères |
+| 404 | Prestataire non trouvé | ID invalide |
+| 429 | Trop de demandes | Rate limit atteint |
 
 ---
 
-### GET `/received` - Demandes Reçues 🔒
+## 📥 2. MESSAGES REÇUS (Prestataire)
 
-⚠️ **Rôle requis:** `provider`
+### `GET /received` - Mes contacts reçus
 
-**Query Params:**
+**🔒 Authentification requise** | **Rôle : provider**
+
+**Description :**  
+Récupère la liste des demandes de contact reçues par le prestataire connecté.
+
+**Ce qu'il fait :**
+- Déchiffre automatiquement les coordonnées (email, téléphone)
+- Retourne les contacts avec pagination
+- Peut filtrer par statut
+
+**Paramètres query :**
 | Param | Type | Description |
 |-------|------|-------------|
-| `page` | int | Page |
-| `limit` | int | Éléments/page |
-| `status` | string | `pending`, `read`, `replied` |
+| `page` | int | Numéro de page |
+| `limit` | int | Éléments par page |
+| `status` | string | `pending`, `contacted`, `completed`, `spam` |
 
-**Réponse 200:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "contacts": [
-      {
+  "contacts": [
+    {
+      "id": "uuid",
+      "senderName": "Fatou Kamga",
+      "senderEmail": "fatou@example.com",  // Déchiffré !
+      "senderPhone": "+237699123456",      // Déchiffré !
+      "message": "Bonjour, je voudrais...",
+      "status": "pending",
+      "createdAt": "2026-01-15T19:30:00Z",
+      "user": {  // Si connecté lors de l'envoi
         "id": "uuid",
-        "message": "Bonjour...",
-        "senderName": "Jeanne Kamga",
-        "senderEmail": "jeanne@example.com",
-        "senderPhone": "+237690000000",
-        "status": "pending",
-        "createdAt": "2024-01-15T10:00:00Z",
-        "sender": {
-          "id": "uuid",
-          "firstName": "Jeanne",
-          "profilePhoto": "..."
-        }
+        "firstName": "Fatou",
+        "lastName": "Kamga"
       }
-    ],
-    "pagination": { ... }
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalItems": 45
   }
 }
 ```
 
 ---
 
-### GET `/sent` - Demandes Envoyées 🔒
+### `PUT /:id/status` - Changer le statut d'un contact
 
-Liste des demandes envoyées par l'utilisateur connecté.
+**🔒 Authentification requise** | **Propriétaire du contact**
 
----
+**Description :**  
+Met à jour le statut d'un contact pour le suivi.
 
-### PUT `/:id/status` - Mettre à Jour le Statut 🔒
+**Ce qu'il fait :**
+- Vérifie que le prestataire est bien le destinataire
+- Met à jour le statut
 
-⚠️ Seul le prestataire destinataire peut modifier.
-
-**Body:**
-```json
-{
-  "status": "read"
-}
-```
-
-**Statuts:**
+**Statuts disponibles :**
 | Statut | Description |
 |--------|-------------|
-| `pending` | Non lu |
-| `read` | Lu |
-| `replied` | Répondu |
+| `pending` | Nouveau, non traité |
+| `contacted` | Client contacté |
+| `completed` | Prestation effectuée |
+| `spam` | Marqué comme spam |
 
-> **Note:** Un email est envoyé au client lorsque le statut passe à `read` ou `replied`.
-
----
-
-### GET `/stats/daily` - Statistiques Journalières 🔒
-
-⚠️ **Rôle requis:** `provider`
-
-Retourne les contacts groupés par jour pour le dashboard prestataire.
-
-**Query Params:**
-| Param | Type | Description |
-|-------|------|-------------|
-| `startDate` | date | Date de début (défaut: -30 jours) |
-| `endDate` | date | Date de fin (défaut: aujourd'hui) |
-
-**Réponse 200:**
+**Body :**
 ```json
 {
-  "success": true,
-  "data": {
-    "period": {
-      "start": "2025-12-15",
-      "end": "2026-01-15"
-    },
-    "totalContacts": 47,
-    "dailyStats": [
-      { "date": "2026-01-15", "count": 5 },
-      { "date": "2026-01-14", "count": 3 },
-      { "date": "2026-01-13", "count": 8 }
-    ]
-  }
+  "status": "contacted"
 }
 ```
 
 ---
 
-### GET `/by-date/:date` - Contacts par Date 🔒
+### `GET /stats/daily` - Statistiques journalières
 
-⚠️ **Rôle requis:** `provider`
+**🔒 Authentification requise** | **Rôle : provider**
 
-Retourne la liste des contacts reçus un jour spécifique.
+**Description :**  
+Récupère les statistiques de contacts par jour (30 derniers jours).
 
-**Params:**
-| Param | Type | Description |
-|-------|------|-------------|
-| `date` | string | Date au format YYYY-MM-DD |
+**Ce qu'il retourne :**
+- Nombre de contacts par jour
+- Évolution sur le mois
+- Utile pour graphiques dashboard
 
-**Query Params:**
-| Param | Type | Description |
-|-------|------|-------------|
-| `page` | int | Page |
-| `limit` | int | Éléments/page |
-
-**Réponse 200:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "date": "2026-01-15",
-    "contacts": [
-      {
+  "stats": [
+    { "date": "2026-01-15", "count": 5 },
+    { "date": "2026-01-14", "count": 3 },
+    { "date": "2026-01-13", "count": 7 }
+  ],
+  "total": 45,
+  "period": "30 days"
+}
+```
+
+---
+
+### `GET /by-date/:date` - Contacts d'une date
+
+**🔒 Authentification requise** | **Rôle : provider**
+
+**Description :**  
+Récupère tous les contacts reçus à une date spécifique.
+
+**Exemple :**
+```
+GET /api/contacts/by-date/2026-01-15
+```
+
+---
+
+## 📤 3. MESSAGES ENVOYÉS (Client)
+
+### `GET /sent` - Mes messages envoyés
+
+**🔒 Authentification requise**
+
+**Description :**  
+Récupère la liste des demandes de contact envoyées par l'utilisateur connecté.
+
+**Ce qu'il fait :**
+- Retourne les contacts envoyés par l'utilisateur
+- Inclut les informations du prestataire
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "contacts": [
+    {
+      "id": "uuid",
+      "message": "Bonjour, je voudrais...",
+      "status": "contacted",
+      "createdAt": "2026-01-15T19:30:00Z",
+      "provider": {
         "id": "uuid",
-        "senderName": "Marie Kamga",
-        "senderEmail": "marie@example.com",
-        "message": "Bonjour...",
-        "status": "pending",
-        "createdAt": "2026-01-15T10:30:00Z"
+        "businessName": "Salon Marie",
+        "photos": ["url"]
       }
-    ],
-    "pagination": { ... }
-  }
+    }
+  ],
+  "pagination": {...}
 }
 ```
 
 ---
 
-## Workflow
+## 📧 Emails Automatiques
 
-```mermaid
-sequenceDiagram
-    Client->>API: POST /contacts
-    API->>Provider: Email notification
-    API-->>Client: 201 Message envoyé
-    Provider->>API: PUT /contacts/:id/status (read)
-    Provider->>Client: Contact direct (WhatsApp, etc.)
-    Provider->>API: PUT /contacts/:id/status (replied)
+### Email au prestataire (nouveau contact)
+```
+Objet: 📩 Nouveau message de Fatou K. - AELI Services
+
+Bonjour Marie,
+
+Vous avez reçu une nouvelle demande de contact !
+
+📝 Message de Fatou Kamga :
+"Bonjour, je voudrais prendre rendez-vous pour une coupe 
+et une coloration. Êtes-vous disponible samedi matin ?"
+
+📞 Coordonnées :
+- Email : fatou@example.com
+- Téléphone : +237 699 123 456
+
+[Voir tous mes messages]
+
+L'équipe AELI Services
 ```
 
-## 🔄 Workflow Détaillé
-
+### Email au client (confirmation)
 ```
-[Client] POST /api/contacts
-{ providerId, message, senderName, senderEmail, senderPhone }
-    │
-    ▼
-┌─────────────────────┐
-│ RateLimit: 10/heure │ ── Dépassé ──▶ 429 Too Many Requests
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Provider existe ?   │ ── Non ──▶ 404 Not Found
-└─────────┬───────────┘
-          │ Oui
-          ▼
-┌─────────────────────┐
-│ Validation:         │
-│ - message 10-2000   │
-│ - email valide      │
-│ - senderName requis │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Crée Contact        │
-│ status = 'pending'  │
-│ userId = req.user   │ (si authentifié)
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Provider.contacts++ │
-│ (contactsCount)     │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ 📧 Email prestataire│
-│ contact-notification│
-└─────────────────────┘
-          │
-          ▼
-     201 Created
+Objet: ✅ Votre message a été envoyé - AELI Services
 
-═══════════════════════════════════════════════════════════
+Bonjour Fatou,
 
-[Prestataire] GET /api/contacts/received
-    │
-    ▼
-┌─────────────────────┐
-│ Liste contacts      │
-│ where providerId    │
-│ Filtres: status     │
-└─────────────────────┘
-          │
-          ▼
-     200 OK { contacts[] }
+Votre message a bien été envoyé à "Salon Marie" !
 
-═══════════════════════════════════════════════════════════
+Le prestataire vous contactera bientôt via les coordonnées 
+que vous avez fournies.
 
-[Prestataire] PUT /api/contacts/:id/status { status: 'read' }
-    │
-    ▼
-┌─────────────────────┐
-│ Transitions:        │
-│ pending → read      │
-│ read → replied      │
-└─────────────────────┘
-          │
-          ▼
-     200 OK
+[Découvrir d'autres prestataires]
+
+L'équipe AELI Services
 ```
 
+---
+
+## 🔄 Workflow Frontend
+
+### Page prestataire (client)
+```javascript
+const contactProvider = async (providerId, message) => {
+  const response = await fetch('/api/contacts', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,  // Optionnel
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      providerId,
+      message,
+      senderName: user?.name || 'Visiteur',
+      senderEmail: user?.email || formEmail,
+      senderPhone: formPhone
+    })
+  });
+  
+  if (response.ok) {
+    showSuccess('Message envoyé !');
+  }
+};
+```
+
+### Dashboard prestataire
+```javascript
+const loadContacts = async () => {
+  const response = await fetch('/api/contacts/received?status=pending', {
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  const { contacts } = await response.json();
+  
+  contacts.forEach(contact => {
+    // Afficher avec boutons d'action
+    showContact({
+      ...contact,
+      actions: [
+        { label: '📞 Appeler', action: () => window.open(`tel:${contact.senderPhone}`) },
+        { label: '✅ Traité', action: () => updateStatus(contact.id, 'completed') }
+      ]
+    });
+  });
+};
+```
+
+---
+
+## 🚨 Codes d'erreur
+
+| Code | Situation |
+|------|-----------|
+| 400 | Données invalides |
+| 401 | Non authentifié (routes protégées) |
+| 403 | Non autorisé (pas propriétaire) |
+| 404 | Contact/Prestataire non trouvé |
+| 429 | Rate limit atteint |
+
+---
+
+## 🔄 WORKFLOWS VISUELS
+
+### Formulaire Contact (Client → Prestataire)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CONTACTER UN PRESTATAIRE                      │
+│                    POST /api/contacts                            │
+└─────────────────────────────────────────────────────────────────┘
+
+[Client] Page du prestataire "Salon Marie"
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  📧 Contacter Salon Marie                                        │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  Votre nom: [Fatou Kamga_____________________]              ││
+│  │                                                              ││
+│  │  Votre email: [fatou@example.com_____________]              ││
+│  │                                                              ││
+│  │  Votre téléphone (optionnel):                               ││
+│  │  [+237 699 ___ ___]                                         ││
+│  │                                                              ││
+│  │  Votre message:                                             ││
+│  │  ┌──────────────────────────────────────────────────────┐   ││
+│  │  │ Bonjour,                                             │   ││
+│  │  │                                                      │   ││
+│  │  │ Je voudrais prendre rendez-vous pour une coupe      │   ││
+│  │  │ et une coloration. Êtes-vous disponible samedi      │   ││
+│  │  │ matin ?                                              │   ││
+│  │  │                                                      │   ││
+│  │  │ Merci !                                              │   ││
+│  │  └──────────────────────────────────────────────────────┘   ││
+│  │  145/2000 caractères                                        ││
+│  │                                                              ││
+│  │  [Envoyer mon message]                                      ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+POST /api/contacts
+{
+  providerId: "uuid",
+  message: "Bonjour...",
+  senderName: "Fatou Kamga",
+  senderEmail: "fatou@example.com", // → Chiffré en BDD
+  senderPhone: "+237699..."         // → Chiffré en BDD
+}
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    TRAITEMENT BACKEND                            │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ 1. Validation des données                                 │  │
+│  │ 2. Vérification rate limit (5/heure/IP)                  │  │
+│  │ 3. Vérification abonnement prestataire actif             │  │
+│  │ 4. Chiffrement email/phone (AES-256-GCM)                 │  │
+│  │ 5. Création Contact en base                               │  │
+│  │ 6. Incrémentation compteur totalContacts du provider     │  │
+│  │ 7. Envoi email au prestataire                            │  │
+│  │ 8. Envoi email confirmation au client                    │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ├────────────────────────────────────────────┐
+    │                                            │
+    ▼                                            ▼
+┌─────────────────────┐                ┌─────────────────────┐
+│ 📧 EMAIL PRESTATAIRE │                │ 📧 EMAIL CLIENT     │
+│                     │                │                     │
+│ "Nouveau message    │                │ "Votre message a    │
+│  de Fatou K."       │                │  été envoyé à       │
+│                     │                │  Salon Marie"       │
+│ Message: "..."      │                │                     │
+│ Email: fatou@...    │                │ "Le prestataire     │
+│ Tél: +237 699...    │                │  vous contactera"   │
+│                     │                │                     │
+│ [Voir le message]   │                │ [Voir d'autres]     │
+└─────────────────────┘                └─────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ Message envoyé !                                             │
+│                                                                  │
+│  Votre demande a été transmise à Salon Marie.                   │
+│  Le prestataire vous contactera via les coordonnées fournies.   │
+│                                                                  │
+│  [Retour au profil]  [Voir d'autres prestataires]               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Inbox Prestataire (Messages reçus)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MES MESSAGES REÇUS                            │
+│                    GET /api/contacts/received                    │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  📩 Messages (45)                        Filtrer: [Tous ▼]      │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 🔴 NOUVEAU                                                  ││
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ Fatou K.                              Il y a 2h      │   ││
+│  │ │ ────────────────────────────────────────────────────  │   ││
+│  │ │ "Bonjour, je voudrais prendre rendez-vous pour..."   │   ││
+│  │ │                                                       │   ││
+│  │ │ 📧 fatou@example.com  📞 +237 699 123 456            │   ││
+│  │ │                                                       │   ││
+│  │ │ [📞 Appeler] [💬 WhatsApp] [✅ Marquer traité] [🗑️] │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📨 CONTACTÉ                                                 ││
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ Jean P.                               Il y a 5h      │   ││
+│  │ │ ────────────────────────────────────────────────────  │   ││
+│  │ │ "Bonjour, disponible samedi pour une coupe ?"        │   ││
+│  │ │                                                       │   ││
+│  │ │ 📧 jean@example.com   📞 +237 677 987 654            │   ││
+│  │ │                                                       │   ││
+│  │ │ [📞 Appeler] [💬 WhatsApp] [✅ Terminé]              │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ ✅ TERMINÉ                                                  ││
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ Aminata                                    Hier       │   ││
+│  │ │ ────────────────────────────────────────────────────  │   ││
+│  │ │ "Prix pour les tresses ?"                             │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  [< Précédent] Page 1 sur 5 [Suivant >]                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Statistiques Contacts (Dashboard)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    STATISTIQUES CONTACTS                         │
+│                    GET /api/contacts/stats/daily                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  📊 Mes demandes de contact - 30 derniers jours                 │
+│                                                                  │
+│  Total: 45 demandes                                             │
+│                                                                  │
+│   8│                               ▓▓                           │
+│   7│                               ██                           │
+│   6│              ▓▓               ██                           │
+│   5│    ▓▓        ██▓▓     ▓▓      ██▓▓                        │
+│   4│    ██▓▓      ██████   ██      ████                        │
+│   3│ ▓▓ ██████    ██████▓▓ ██▓▓    ████▓▓                      │
+│   2│ ██████████▓▓ ████████ ████    ██████                      │
+│   1│ ████████████████████████████████████                      │
+│   0└─────────────────────────────────────────▶                  │
+│     1  5     10        15        20        25   30              │
+│                      Janvier 2026                               │
+│                                                                  │
+│  📈 Évolution: +15% par rapport au mois dernier                 │
+│                                                                  │
+│  Par statut:                                                    │
+│  ├── 🔴 En attente:  5                                         │
+│  ├── 📨 Contactés:   12                                         │
+│  ├── ✅ Terminés:    25                                         │
+│  └── 🚫 Spam:        3                                          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Page "Mes Messages Envoyés" (Client)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MES MESSAGES ENVOYÉS                          │
+│                    GET /api/contacts/sent                        │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  📤 Mes demandes de contact                                     │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ [📸] Salon Marie                        ⭐ 4.8             ││
+│  │      📍 Douala                                              ││
+│  │ ──────────────────────────────────────────────────────────  ││
+│  │ 📅 15 janvier 2026                                          ││
+│  │ "Bonjour, je voudrais prendre rendez-vous..."              ││
+│  │                                                              ││
+│  │ Statut: 📨 Contacté                                         ││
+│  │ (Le prestataire vous a contacté)                            ││
+│  │                                                              ││
+│  │ [Recontacter]  [Laisser un avis ⭐]                         ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ [📸] Traiteur Fatou                     ⭐ 4.5             ││
+│  │      📍 Yaoundé                                             ││
+│  │ ──────────────────────────────────────────────────────────  ││
+│  │ 📅 10 janvier 2026                                          ││
+│  │ "Devis pour un buffet 50 personnes..."                      ││
+│  │                                                              ││
+│  │ Statut: 🔴 En attente                                       ││
+│  │ (Pas encore de réponse)                                     ││
+│  │                                                              ││
+│  │ [Voir d'autres traiteurs]                                   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  [< Précédent] Page 1 sur 2 [Suivant >]                         │
+└─────────────────────────────────────────────────────────────────┘
+```

@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const bcrypt = require('bcryptjs');
+const { encrypt, decrypt, encryptIfNeeded } = require('../utils/encryption');
 
 const User = sequelize.define('User', {
     id: {
@@ -135,7 +136,6 @@ const User = sequelize.define('User', {
             }
             // Encrypt phone
             if (user.phone) {
-                const { encryptIfNeeded } = require('../utils/encryption');
                 user.phone = encryptIfNeeded(user.phone);
             }
         },
@@ -146,13 +146,11 @@ const User = sequelize.define('User', {
             }
             // Encrypt phone if changed
             if (user.changed('phone') && user.phone) {
-                const { encryptIfNeeded } = require('../utils/encryption');
                 user.phone = encryptIfNeeded(user.phone);
             }
         },
         afterFind: (result) => {
             if (!result) return;
-            const { decrypt } = require('../utils/encryption');
 
             const decryptPhone = (user) => {
                 if (user && user.phone) {

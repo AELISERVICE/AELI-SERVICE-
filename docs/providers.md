@@ -1,91 +1,132 @@
-# 🏢 Providers API
+# 🏪 API Prestataires - Documentation Complète
 
-Gestion des profils prestataires.
+Documentation détaillée de tous les endpoints liés aux prestataires.
 
 ## Base URL
 ```
 /api/providers
 ```
 
-> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
-
 ---
 
-## Endpoints Publics
+## 🌐 1. ROUTES PUBLIQUES
 
-### GET `/` - Liste des Prestataires
+### `GET /` - Liste des prestataires
 
-**Query Params:**
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| `page` | int | 1 | Page |
-| `limit` | int | 12 | Éléments/page (max 50) |
-| `category` | string | - | Slug catégorie |
-| `location` | string | - | Ville/quartier |
-| `minRating` | number | - | Note minimum (0-5) |
-| `search` | string | - | Recherche texte |
-| `sort` | string | recent | `rating`, `recent`, `views`, `name` |
+**Description :**  
+Récupère la liste paginée des prestataires avec filtres et recherche. C'est l'endpoint principal pour la page d'accueil et la recherche.
 
-**Exemple:**
+**Ce qu'il fait :**
+- Retourne uniquement les prestataires vérifiés (`isVerified = true`)
+- Les prestataires "featured" apparaissent en premier
+- Tri par note moyenne, nombre de vues ou date
+- Cache Redis (5 min) pour les performances
+
+**Paramètres query :**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Numéro de page (défaut: 1) |
+| `limit` | int | Éléments par page (défaut: 20, max: 50) |
+| `search` | string | Recherche dans nom, description |
+| `location` | string | Filtrer par ville (Douala, Yaoundé, etc.) |
+| `categoryId` | UUID | Filtrer par catégorie de service |
+| `minRating` | float | Note minimum (1-5) |
+| `sortBy` | string | `rating`, `views`, `createdAt` |
+| `sortOrder` | string | `asc`, `desc` |
+
+**Exemple :**
 ```
-GET /api/providers?category=coiffure&location=Douala&minRating=4&sort=rating
+GET /api/providers?location=Douala&minRating=4&sortBy=rating&sortOrder=desc
 ```
 
-**Réponse 200:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "providers": [
-      {
-        "id": "uuid",
-        "businessName": "Salon Marie",
-        "description": "...",
-        "location": "Douala",
-        "photos": ["url1", "url2"],
-        "averageRating": 4.5,
-        "totalReviews": 12,
-        "isVerified": true,
-        "user": { "firstName": "Marie", "profilePhoto": "..." }
-      }
-    ],
-    "pagination": {
-      "currentPage": 1,
-      "totalPages": 5,
-      "totalItems": 48
-    }
-  }
-}
-```
-
----
-
-### GET `/:id` - Détails d'un Prestataire
-
-Incrémente automatiquement le compteur de vues.
-
-**Réponse 200:**
-```json
-{
-  "success": true,
-  "data": {
-    "provider": {
+  "providers": [
+    {
       "id": "uuid",
       "businessName": "Salon Marie",
-      "description": "Description détaillée...",
-      "location": "Douala, Bonanjo",
-      "address": "123 Rue de la Paix",
-      "whatsapp": "+237690000000",
-      "facebook": "https://facebook.com/...",
-      "instagram": "@salonmarie",
-      "photos": [...],
-      "averageRating": 4.5,
-      "totalReviews": 12,
-      "viewsCount": 150,
-      "contactsCount": 25,
-      "isVerified": true,
-      "user": { ... },
-      "services": [ ... ]
+      "description": "Coiffure, tresses, maquillage...",
+      "location": "Douala",
+      "averageRating": 4.8,
+      "totalReviews": 25,
+      "totalViews": 150,
+      "isFeatured": true,
+      "photos": ["url1", "url2"],  // ⚠️ Vide si abonnement expiré
+      "whatsapp": "+237...",       // ⚠️ Masqué si abonnement expiré
+      "subscription": {
+        "isActive": true
+      }
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalItems": 95,
+    "hasNextPage": true
+  }
+}
+```
+
+**⚠️ Impact de l'abonnement :**
+- Si `subscription.isActive = false`, les champs sensibles sont masqués :
+  - `whatsapp` → `"***"`
+  - `phone` → `"***"`
+  - `photos` → `[]`
+- Le profil reste visible mais sans moyens de contact
+
+---
+
+### `GET /:id` - Détails d'un prestataire
+
+**Description :**  
+Récupère le profil complet d'un prestataire avec ses services, avis récents et statistiques.
+
+**Ce qu'il fait :**
+- Incrémente automatiquement le compteur de vues
+- Inclut les services du prestataire
+- Inclut les 5 derniers avis
+- Vérifie le statut d'abonnement pour masquer les contacts
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "provider": {
+    "id": "uuid",
+    "businessName": "Salon Marie",
+    "description": "Salon de coiffure spécialisé...",
+    "location": "Douala",
+    "address": "Rue de la Joie, Akwa",
+    "whatsapp": "+237699123456",  // Masqué si abonnement expiré
+    "facebook": "facebook.com/salonmarie",
+    "instagram": "@salonmarie",
+    "photos": ["url1", "url2", "url3"],
+    "isVerified": true,
+    "isFeatured": false,
+    "averageRating": 4.8,
+    "totalReviews": 25,
+    "totalViews": 151,  // Incrémenté !
+    "services": [
+      {
+        "id": "uuid",
+        "name": "Tresses africaines",
+        "description": "...",
+        "price": 5000,
+        "priceType": "from"
+      }
+    ],
+    "recentReviews": [
+      {
+        "rating": 5,
+        "comment": "Excellent service !",
+        "user": { "firstName": "Fatou" }
+      }
+    ],
+    "subscription": {
+      "isActive": true,
+      "plan": "monthly"
     }
   }
 }
@@ -93,68 +134,121 @@ Incrémente automatiquement le compteur de vues.
 
 ---
 
-## Endpoints Protégés 🔒
+## 📝 2. CANDIDATURE PRESTATAIRE
 
-### POST `/apply` - Candidature Prestataire
+### `POST /apply` - Postuler pour devenir prestataire
 
-⚠️ **Rôle requis:** `client` (tous les users s'inscrivent comme client)
+**🔒 Authentification requise** | **Rôle : client uniquement**
 
-Soumet une candidature pour devenir prestataire. Après approbation par un admin, le rôle passe à `provider`.
+**Description :**  
+Permet à un client de soumettre une candidature pour devenir prestataire. Inclut l'upload de la CNI et des photos.
 
-**Content-Type:** `multipart/form-data`
+**Ce qu'il fait :**
+1. Vérifie que l'utilisateur n'est pas déjà prestataire
+2. Vérifie qu'il n'y a pas de candidature en attente
+3. Vérifie qu'il n'y a pas eu de rejet récent (< 7 jours)
+4. Upload les documents vers Cloudinary
+5. Crée la candidature avec statut `pending`
+6. Envoie un email de confirmation
 
-**Body:**
+**Content-Type :** `multipart/form-data`
+
+**Body :**
 | Champ | Type | Requis | Description |
 |-------|------|--------|-------------|
-| `businessName` | string | ✅ | Nom de l'activité |
-| `description` | string | ✅ | Description (min 50 chars) |
-| `location` | string | ✅ | Ville/quartier |
-| `address` | string | - | Adresse complète |
-| `whatsapp` | string | - | Numéro WhatsApp |
-| `facebook` | string | - | Lien Facebook |
-| `instagram` | string | - | @ Instagram |
-| `photos` | file[] | - | Photos activité (max 5) |
-| `documents` | file[] | ✅ | CNI obligatoire (PDF/JPG) |
+| `businessName` | string | ✅ | Nom de l'activité (3-100 car.) |
+| `description` | string | ✅ | Description (50-2000 car.) |
+| `location` | string | ✅ | Ville |
+| `address` | string | ❌ | Adresse complète |
+| `whatsapp` | string | ❌ | Numéro WhatsApp |
+| `facebook` | string | ❌ | URL Facebook |
+| `instagram` | string | ❌ | Pseudo Instagram |
+| `photos` | files | ❌ | Photos de l'activité (max 5) |
+| `documents` | files | ✅ | **CNI obligatoire** (JPG/PNG/PDF) |
 
-**Réponse 201:**
+**Réponse 201 :**
 ```json
 {
   "success": true,
-  "message": "Votre candidature a été soumise avec succès.",
-  "data": { 
-    "application": { 
-      "id": "...",
-      "businessName": "...",
-      "status": "pending",
-      "createdAt": "..."
-    } 
+  "message": "Candidature soumise avec succès",
+  "application": {
+    "id": "uuid",
+    "businessName": "Salon Marie",
+    "status": "pending",
+    "createdAt": "2026-01-15T19:00:00Z"
   }
 }
 ```
 
-**Erreurs:**
-- `400` - CNI obligatoire
-- `400` - Candidature déjà en attente
-- `400` - Rejet récent (attendre 7 jours)
+**Erreurs possibles :**
+| Code | Message | Cause |
+|------|---------|-------|
+| 400 | Vous êtes déjà prestataire | Role = provider |
+| 400 | Candidature en attente | Déjà une pending |
+| 400 | Délai de 7 jours requis | Rejet récent |
+| 400 | CNI requis | Document CNI manquant |
 
 ---
 
-### GET `/my-application` - Statut Candidature
+### `GET /my-application` - Voir ma candidature
 
-Vérifie le statut de sa candidature.
+**🔒 Authentification requise**
 
-**Réponse 200:**
+**Description :**  
+Récupère le statut de la dernière candidature de l'utilisateur.
+
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "application": {
-      "id": "...",
-      "businessName": "Salon Marie",
-      "status": "pending|approved|rejected",
-      "rejectionReason": null,
-      "createdAt": "...",
-      "reviewedAt": null
+  "application": {
+    "id": "uuid",
+    "businessName": "Salon Marie",
+    "status": "pending",  // pending, approved, rejected
+    "createdAt": "2026-01-15T19:00:00Z",
+    "reviewedAt": null,
+    "rejectionReason": null
+  }
+}
+```
+
+**Workflow frontend :**
+1. Afficher statut avec indicateur visuel
+2. Si `rejected` : afficher `rejectionReason` et bouton pour resoumettre (après 7j)
+3. Si `approved` : rediriger vers dashboard prestataire
+
+---
+
+## 👤 3. PROFIL PRESTATAIRE (Connecté)
+
+### `GET /my-profile` - Mon profil prestataire
+
+**🔒 Authentification requise** | **Rôle : provider**
+
+**Description :**  
+Récupère le profil complet du prestataire connecté, y compris les statistiques.
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "provider": {
+    "id": "uuid",
+    "businessName": "Salon Marie",
+    "description": "...",
+    "location": "Douala",
+    "photos": [...],
+    "documents": [...],
+    "isVerified": true,
+    "verificationStatus": "approved",
+    "averageRating": 4.8,
+    "totalViews": 500,
+    "totalContacts": 45,
+    "subscription": {
+      "status": "active",
+      "plan": "monthly",
+      "daysRemaining": 22,
+      "endDate": "2026-02-06"
     }
   }
 }
@@ -162,256 +256,525 @@ Vérifie le statut de sa candidature.
 
 ---
 
-## 📋 Processus KYC (Vérification Prestataire)
+### `GET /my-dashboard` - Dashboard prestataire
 
-Pour devenir prestataire vérifié, les éléments suivants sont requis :
+**🔒 Authentification requise** | **Rôle : provider**
 
-### 1️⃣ Informations de base (obligatoires)
+**Description :**  
+Récupère les statistiques et activités récentes pour le tableau de bord du prestataire.
 
-| Champ | Description |
-|-------|-------------|
-| `firstName` | Prénom |
-| `lastName` | Nom de famille |
-| `email` | Email (vérifié par OTP) |
-| `phone` | Numéro de téléphone |
+**Ce qu'il retourne :**
+- Statistiques (vues, contacts, avis ce mois)
+- 10 dernières demandes de contact
+- 5 derniers avis reçus
+- Statut de l'abonnement
 
-### 2️⃣ Profil Prestataire (obligatoires)
-
-| Champ | Description |
-|-------|-------------|
-| `businessName` | Nom de l'activité/entreprise |
-| `description` | Description détaillée de l'activité (min 50 caractères) |
-| `location` | Ville (Douala, Yaoundé, Bafoussam...) |
-| `address` | Adresse physique (optionnel) |
-
-### 3️⃣ Contacts (au moins un obligatoire)
-
-| Champ | Description |
-|-------|-------------|
-| `whatsapp` | Numéro WhatsApp (+237...) |
-| `phone` | Téléphone professionnel |
-| `facebook` | Page Facebook |
-| `instagram` | Compte Instagram |
-
-### 4️⃣ Photo(s) de l'activité
-
-| Requirement | Détail |
-|-------------|--------|
-| Nombre | 1 à 5 photos |
-| Format | JPG, PNG, WebP |
-| Taille max | 5 MB par photo |
-| Contenu | Photos du travail, salon, produits... |
-
-### 5️⃣ Pièce d'identité (Carte Nationale)
-
-| Requirement | Détail |
-|-------------|--------|
-| Document | Carte Nationale d'Identité (CNI) |
-| Format | PDF, JPG, PNG |
-| Taille max | 10 MB |
-| Lisibilité | Photo nette, recto/verso si nécessaire |
-
-### ✅ Workflow Candidature Prestataire
-
-```
-1. Inscription utilisateur (role = client)
-   POST /api/auth/register
-             ↓
-2. Candidature prestataire
-   POST /api/providers/apply
-   • Infos business (businessName, description, location)
-   • CNI obligatoire
-   • Photos de l'activité
-   • Contacts (WhatsApp, etc.)
-             ↓
-3. Email confirmation envoyé au candidat
-             ↓
-4. Admin review de la candidature
-   GET /api/admin/provider-applications
-   PUT /api/admin/provider-applications/:id/review
-             ↓
-5a. ✅ APPROUVÉ
-    • Rôle → provider
-    • Profil Provider créé automatiquement
-    • Essai 30 jours gratuit activé
-    • Email de félicitations envoyé
-
-5b. ❌ REJETÉ
-    • Email avec motif du rejet
-    • Peut recandidater après 7 jours
-```
-
-### 📤 Endpoint Upload Documents
-
-```
-POST /api/providers/:id/documents
-Content-Type: multipart/form-data
-
-documents: [CNI.pdf]
-```
-
-**Réponse 201:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "message": "Documents uploadés. En attente de vérification.",
-  "data": {
-    "documents": [
-      {
-        "type": "identity_card",
-        "url": "https://res.cloudinary.com/.../cni.pdf",
-        "status": "pending",
-        "uploadedAt": "2026-01-15T12:00:00Z"
-      }
-    ]
-  }
-}
-```
-
----
-
-### GET `/my-profile` - Mon Profil
-
-⚠️ **Rôle requis:** `provider`
-
----
-
-### GET `/my-dashboard` - Tableau de Bord
-
-⚠️ **Rôle requis:** `provider`
-
-**Réponse 200:**
-```json
-{
-  "success": true,
-  "data": {
-    "provider": { ... },
+  "dashboard": {
     "stats": {
-      "totalViews": 150,
-      "totalContacts": 25,
-      "totalReviews": 12,
-      "averageRating": 4.5,
-      "pendingContacts": 3
+      "viewsThisMonth": 120,
+      "contactsThisMonth": 15,
+      "reviewsThisMonth": 5,
+      "averageRating": 4.8
     },
-    "recentContacts": [...],
-    "recentReviews": [...]
+    "recentContacts": [
+      {
+        "id": "uuid",
+        "senderName": "Fatou",
+        "message": "Bonjour, je voudrais...",
+        "status": "pending",
+        "createdAt": "2026-01-15T18:00:00Z"
+      }
+    ],
+    "recentReviews": [...],
+    "subscription": {
+      "status": "trial",
+      "daysRemaining": 25,
+      "endDate": "2026-02-15"
+    }
   }
 }
 ```
 
 ---
 
-### PUT `/:id` - Modifier son Profil
+## ✏️ 4. MODIFICATION DU PROFIL
 
-**Content-Type:** `multipart/form-data`
+### `PUT /:id` - Mettre à jour le profil
 
-Mêmes champs que création. Les nouvelles photos s'ajoutent aux existantes.
+**🔒 Authentification requise** | **Propriétaire ou Admin**
+
+**Description :**  
+Met à jour les informations du profil prestataire. Permet aussi d'ajouter des photos.
+
+**Content-Type :** `multipart/form-data`
+
+**Body :**
+| Champ | Type | Description |
+|-------|------|-------------|
+| `businessName` | string | Nom de l'activité |
+| `description` | string | Description |
+| `location` | string | Ville |
+| `address` | string | Adresse |
+| `whatsapp` | string | Numéro WhatsApp |
+| `facebook` | string | URL Facebook |
+| `instagram` | string | Pseudo Instagram |
+| `photos` | files | Nouvelles photos à ajouter |
+
+**⚠️ Le WhatsApp est chiffré** en base de données (AES-256-GCM).
 
 ---
 
-### DELETE `/:id/photos/:photoIndex` - Supprimer une Photo
+### `DELETE /:id/photos/:photoIndex` - Supprimer une photo
 
-**Params:**
-- `id` - ID du prestataire
-- `photoIndex` - Index de la photo (0, 1, 2...)
+**🔒 Authentification requise** | **Propriétaire ou Admin**
 
-**Réponse 200:**
+**Description :**  
+Supprime une photo de la galerie du prestataire.
+
+**Ce qu'il fait :**
+1. Supprime l'image de Cloudinary
+2. Retire l'URL du tableau `photos`
+3. Invalide le cache
+
+**Paramètres URL :**
+- `:id` - ID du prestataire
+- `:photoIndex` - Index de la photo (0-based)
+
+---
+
+## 📄 5. DOCUMENTS (KYC)
+
+### `POST /:id/documents` - Upload documents
+
+**🔒 Authentification requise** | **Propriétaire**
+
+**Description :**  
+Soumet des documents pour vérification (CNI, licence commerciale, etc.).
+
+**Content-Type :** `multipart/form-data`
+
+**Body :**
+| Champ | Type | Description |
+|-------|------|-------------|
+| `documents` | files | Fichiers PDF, JPG ou PNG (max 5MB) |
+| `documentType` | string | `cni`, `license`, `tax`, `address_proof` |
+
+**Ce qu'il fait :**
+1. Upload vers Cloudinary (dossier sécurisé)
+2. Ajoute au tableau `documents` du provider
+3. Met `verificationStatus = 'under_review'`
+4. Envoie un email de confirmation
+
+---
+
+### `GET /:id/documents` - Voir mes documents
+
+**🔒 Authentification requise** | **Propriétaire ou Admin**
+
+**Réponse 200 :**
 ```json
 {
-  "success": true,
-  "message": "Photo supprimée"
+  "documents": [
+    {
+      "type": "cni",
+      "url": "https://res.cloudinary.com/...",
+      "status": "approved",  // pending, approved, rejected
+      "uploadedAt": "2026-01-10",
+      "rejectionReason": null
+    }
+  ]
 }
 ```
 
 ---
 
-## 🔄 Workflow Détaillé
+### `DELETE /:id/documents/:docIndex` - Supprimer un document
 
-### Devenir Prestataire
+**🔒 Authentification requise** | **Propriétaire**
+
+---
+
+## 📊 Statuts et Workflow
+
+### Cycle de vie d'un prestataire
+
 ```
-[Client authentifié] POST /api/providers
-{ businessName, description, location, whatsapp, services[] }
+┌─────────────┐     POST /apply      ┌─────────────┐
+│   CLIENT    │ ──────────────────→  │ APPLICATION │
+│             │                      │   pending   │
+└─────────────┘                      └──────┬──────┘
+                                            │
+                    ┌───────────────────────┼───────────────────────┐
+                    │ Admin review          │                       │
+                    ▼                       ▼                       ▼
+            ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+            │  APPROVED   │         │  REJECTED   │         │   PENDING   │
+            │             │         │             │         │  (attente)  │
+            └──────┬──────┘         └─────────────┘         └─────────────┘
+                   │
+                   ▼
+            ┌─────────────┐
+            │  PROVIDER   │
+            │ isVerified  │
+            │ trial 30j   │
+            └──────┬──────┘
+                   │
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+┌─────────────┐ ┌─────┐ ┌─────────────┐
+│ SUBSCRIPTION│ │VIEWS│ │   REVIEWS   │
+│ active/exp  │ │     │ │             │
+└─────────────┘ └─────┘ └─────────────┘
+```
+
+### Statuts d'abonnement
+
+| Statut | Description | Contacts visibles |
+|--------|-------------|-------------------|
+| `trial` | Essai gratuit 30j | ✅ Oui |
+| `active` | Abonnement payé | ✅ Oui |
+| `expired` | Abonnement expiré | ❌ Non (masqués) |
+| `cancelled` | Annulé manuellement | ❌ Non |
+
+---
+
+## 🚨 Codes d'erreur
+
+| Code | Situation |
+|------|-----------|
+| 400 | Validation échouée |
+| 401 | Non authentifié |
+| 403 | Non autorisé (pas propriétaire) |
+| 404 | Prestataire non trouvé |
+| 413 | Fichier trop volumineux |
+
+---
+
+## 🔄 WORKFLOWS VISUELS
+
+### Workflow Complet : Devenir Prestataire
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DEVENIR PRESTATAIRE                           │
+└─────────────────────────────────────────────────────────────────┘
+
+[Client connecté] 
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    FORMULAIRE CANDIDATURE                        │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  Nom de votre activité: [Salon Marie____________]          ││
+│  │                                                              ││
+│  │  Description:                                               ││
+│  │  [Salon de coiffure spécialisé dans les tresses...]        ││
+│  │                                                              ││
+│  │  Ville: [Douala ▼]                                          ││
+│  │                                                              ││
+│  │  WhatsApp: [+237 ___ ___ ___]                               ││
+│  │                                                              ││
+│  │  📸 Photos de votre activité:                               ││
+│  │  [photo1.jpg] [photo2.jpg] [+ Ajouter]                      ││
+│  │                                                              ││
+│  │  📄 CNI (obligatoire):                                      ││
+│  │  [cni_recto.jpg] [cni_verso.jpg]                            ││
+│  │                                                              ││
+│  │  [Soumettre ma candidature]                                 ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+POST /api/providers/apply  (multipart/form-data)
+    │
+    ├── Validation des données
+    ├── Upload photos → Cloudinary
+    ├── Upload documents → Cloudinary (dossier sécurisé)
     │
     ▼
 ┌─────────────────────┐
-│ User.role == client?│ ── Non ──▶ 403 "Déjà prestataire"
-└─────────┬───────────┘
-          │ Oui
-          ▼
-┌─────────────────────┐
-│ Validation:         │
-│ - businessName uniq │
-│ - description 50+   │
-│ - location requis   │
+│ ProviderApplication │
+│ status: "pending"   │
+│ userId: xxx         │
+│ businessName: "..." │
+│ documents: [urls]   │
+│ photos: [urls]      │
 └─────────┬───────────┘
           │
           ▼
 ┌─────────────────────┐
-│ Crée Provider       │
-│ isVerified = false  │
-│ isFeatured = false  │
-│ User.role=provider  │
+│ 📧 Email envoyé:    │
+│ "Candidature reçue, │
+│  nous vous tiendrons│
+│  informé"           │
 └─────────┬───────────┘
           │
-          ▼
-┌─────────────────────┐
-│ Crée Services[]     │
-│ (optionnel)         │
-└─────────┬───────────┘
+          ▼ (Attente validation Admin - 24-72h)
+          
+┌─────────────────────────────────────────────────────────────────┐
+│                           ADMIN                                  │
+│                                                                  │
+│  GET /api/admin/provider-applications?status=pending            │
+│      │                                                           │
+│      ▼                                                           │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📋 Candidatures en attente                                  ││
+│  │                                                              ││
+│  │ • Marie Dupont - Salon Marie - il y a 2h       [Examiner]   ││
+│  │ • Fatou Kamga - Traiteur Fatou - il y a 5h     [Examiner]   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│      │                                                           │
+│      │ Clic [Examiner]                                          │
+│      ▼                                                           │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📄 Détails de la candidature                                ││
+│  │                                                              ││
+│  │ Nom: Marie Dupont          Email: marie@example.com         ││
+│  │ Business: Salon Marie      Ville: Douala                    ││
+│  │                                                              ││
+│  │ Description:                                                 ││
+│  │ "Salon de coiffure spécialisé en tresses africaines..."    ││
+│  │                                                              ││
+│  │ 📸 Photos:      [img1] [img2] [img3]                        ││
+│  │ 📄 Documents:   [CNI recto ✓] [CNI verso ✓]                 ││
+│  │                                                              ││
+│  │ ┌─────────────────┐  ┌─────────────────┐                    ││
+│  │ │ ✅ Approuver    │  │ ❌ Rejeter      │                    ││
+│  │ └─────────────────┘  └─────────────────┘                    ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
           │
-          ▼
-     201 Created
-     ⚠️ En attente validation admin
-```
-
-### Recherche Prestataires
-```
-GET /api/providers?search=coiffure&location=Douala&rating=4&sort=rating
+    ┌─────┴─────┐
+    │           │
+    ▼           ▼
+[APPROUVÉ]  [REJETÉ]
+    │           │
+    │           ▼
+    │     ┌─────────────────────┐
+    │     │ status: "rejected"  │
+    │     │ rejectionReason:    │
+    │     │ "CNI illisible..."  │
+    │     └─────────┬───────────┘
+    │               │
+    │               ▼
+    │     ┌─────────────────────┐
+    │     │ 📧 Email rejet:     │
+    │     │ "CNI illisible,     │
+    │     │  veuillez resoumettre│
+    │     │  dans 7 jours"      │
+    │     └─────────────────────┘
     │
     ▼
-┌─────────────────────┐
-│ Parse query params  │
-│ Build WHERE clause  │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Filtres:            │
-│ - isVerified=true   │
-│ - location ILIKE    │
-│ - category JOIN     │
-│ - rating >=         │
-│ - featured flag     │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ ORDER BY:           │
-│ rating, viewsCount, │
-│ createdAt           │
-│ + LIMIT + OFFSET    │
-└─────────────────────┘
-          │
-          ▼
-     200 OK { providers[], pagination }
+┌─────────────────────────────────────────────────────────────────┐
+│                    TRANSACTION ATOMIQUE                          │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ 1. User.role = 'provider'                                 │  │
+│  │ 2. Provider.create({                                      │  │
+│  │      businessName: "Salon Marie",                         │  │
+│  │      description: "...",                                  │  │
+│  │      whatsapp: encrypt("+237..."),                        │  │
+│  │      photos: [urls],                                      │  │
+│  │      isVerified: true                                     │  │
+│  │    })                                                     │  │
+│  │ 3. Subscription.createTrial({                             │  │
+│  │      providerId: xxx,                                     │  │
+│  │      plan: 'trial',                                       │  │
+│  │      startDate: now(),                                    │  │
+│  │      endDate: now() + 30 days                             │  │
+│  │    })                                                     │  │
+│  │ 4. Application.status = 'approved'                        │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  Si erreur → ROLLBACK total (rien n'est créé)                   │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 📧 Email félicitations:                                          │
+│ "Bienvenue chez AELI Services !                                  │
+│  Votre profil est maintenant visible.                            │
+│  Vous bénéficiez de 30 jours d'essai gratuit."                  │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+    ✅ Nouveau prestataire créé !
+       - Visible dans les recherches
+       - Accès au dashboard prestataire
+       - Essai gratuit 30 jours activé
 ```
 
-### Voir Profil (incrémente vues)
+---
+
+### Dashboard Prestataire
 ```
-GET /api/providers/:id
+┌─────────────────────────────────────────────────────────────────┐
+│                    DASHBOARD PRESTATAIRE                         │
+│                    GET /my-dashboard                             │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  Bonjour Marie ! 👋                              [Mon Profil]   │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐            │
+│  │ 👁️ 120       │ │ 📩 15        │ │ ⭐ 4.8       │            │
+│  │ Vues ce mois │ │ Contacts     │ │ Note moyenne │            │
+│  └──────────────┘ └──────────────┘ └──────────────┘            │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 💎 ABONNEMENT                                               ││
+│  │                                                              ││
+│  │ Plan: Essai gratuit    ████████░░░░░░░░ 25 jours restants   ││
+│  │ Expire le: 15 février 2026                                  ││
+│  │                                                              ││
+│  │ [Passer à un abonnement payant]                             ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 📩 DERNIÈRES DEMANDES DE CONTACT           [Voir tout →]    ││
+│  │                                                              ││
+│  │ • Fatou K. - "Bonjour, je voudrais..." - Il y a 2h  [Nouveau]│
+│  │ • Jean P. - "Disponible samedi ?" - Il y a 5h       [Lu]    ││
+│  │ • Aminata - "Prix pour tresses ?" - Hier            [Traité]││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ ⭐ DERNIERS AVIS                            [Voir tout →]    ││
+│  │                                                              ││
+│  │ ⭐⭐⭐⭐⭐ - Fatou - "Excellent service !"                   ││
+│  │ ⭐⭐⭐⭐ - Jean - "Bon travail"                               ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Gestion Photos et Documents
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    GESTION DU PROFIL                             │
+│                    PUT /:id + POST /:id/documents               │
+└─────────────────────────────────────────────────────────────────┘
+
+[Prestataire] Page "Mon profil"
     │
     ▼
-┌─────────────────────┐
-│ Find provider       │
-│ with user, services │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ viewsCount++        │
-│ (incrémentation)    │
-└─────────────────────┘
-          │
-          ▼
-     200 OK { provider }
+┌─────────────────────────────────────────────────────────────────┐
+│  📸 MES PHOTOS                                                   │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  [img1] 🗑️   [img2] 🗑️   [img3] 🗑️   [+ Ajouter]          ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  Clic 🗑️ sur photo2                                             │
+│      │                                                           │
+│      ▼                                                           │
+│  DELETE /api/providers/:id/photos/1                             │
+│      │                                                           │
+│      ├── Suppression de Cloudinary                              │
+│      ├── Retrait du tableau photos[]                            │
+│      └── Invalidation cache Redis                               │
+│                                                                  │
+│  Clic [+ Ajouter]                                               │
+│      │                                                           │
+│      ▼                                                           │
+│  PUT /api/providers/:id (multipart/form-data)                   │
+│      photos: [newphoto.jpg]                                     │
+│      │                                                           │
+│      ├── Upload vers Cloudinary                                 │
+│      ├── Ajout au tableau photos[]                              │
+│      └── Invalidation cache Redis                               │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  📄 MES DOCUMENTS (KYC)                                          │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  Document           │ Statut        │ Actions               ││
+│  │ ─────────────────────────────────────────────────────────── ││
+│  │  CNI Recto          │ ✅ Approuvé   │ [Voir]               ││
+│  │  CNI Verso          │ ✅ Approuvé   │ [Voir]               ││
+│  │  Licence commerce   │ ⏳ En revue   │ [Voir]               ││
+│  │                                                              ││
+│  │  [+ Ajouter un document]                                    ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  Clic [+ Ajouter]                                               │
+│      │                                                           │
+│      ▼                                                           │
+│  POST /api/providers/:id/documents                              │
+│      documentType: "license"                                    │
+│      documents: [licence.pdf]                                   │
+│      │                                                           │
+│      ├── Upload vers Cloudinary (dossier sécurisé)              │
+│      ├── Ajout au tableau documents[]                           │
+│      ├── verificationStatus = 'under_review'                    │
+│      └── 📧 Email confirmation                                  │
+│                                                                  │
+│      ▼                                                           │
+│  [ADMIN] Révision des documents                                 │
+│      │                                                           │
+│      ├── Approuver → document.status = 'approved'               │
+│      └── Rejeter → document.status = 'rejected'                 │
+│                     document.rejectionReason = "..."            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Recherche Prestataires (Frontend)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    RECHERCHE PRESTATAIRES                        │
+│                    GET /api/providers                            │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  🔍 Rechercher un prestataire                                    │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  [Coiffure, maquillage...]     [Douala ▼]    [🔍 Rechercher]││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  Filtres: [Catégorie ▼] [Note min ⭐⭐⭐⭐] [Trier par: Note ▼] │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+GET /api/providers?search=coiffure&location=Douala&minRating=4&sortBy=rating
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    RÉSULTATS                                     │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ ⭐ MISE EN AVANT                                            ││
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ [📸]  Salon Marie                        ⭐ 4.8 (25)  │   ││
+│  │ │       📍 Douala, Akwa                    💎 Premium   │   ││
+│  │ │       "Coiffure, tresses, maquillage..."              │   ││
+│  │ │       [Voir le profil] [❤️ Favori]                    │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ [📸]  Beauté Cam                         ⭐ 4.5 (18)  │   ││
+│  │ │       📍 Douala, Bonapriso                            │   ││
+│  │ │       "Institut de beauté complet..."                 │   ││
+│  │ │       [Voir le profil] [❤️]                           │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ [📸]  Chez Fatou                         ⭐ 4.3 (12)  │   ││
+│  │ │       📍 Douala, Deido                   ⚠️ Abonnement││
+│  │ │       "Tresses et coiffures traditionnelles"  expiré  │   ││
+│  │ │       [Voir le profil] [❤️]                           │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  [Page 1] [2] [3] ... [5] [Suivant →]                           │
+└─────────────────────────────────────────────────────────────────┘
+
+Note: "Chez Fatou" a un abonnement expiré :
+- Contacts masqués (whatsapp: "***")
+- Photos masquées
+- Profil visible mais non contactable
 ```

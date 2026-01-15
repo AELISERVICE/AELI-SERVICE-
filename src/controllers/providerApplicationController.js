@@ -7,6 +7,7 @@ const { Op } = require('sequelize');
 const { User, Provider, ProviderApplication, Subscription } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, extractPhotoUrls } = require('../utils/helpers');
+const { withTransaction } = require('../utils/dbHelpers');
 const { uploadImage, uploadDocument } = require('../config/cloudinary');
 const { sendEmail } = require('../config/email');
 const cache = require('../config/redis');
@@ -186,41 +187,53 @@ const reviewApplication = asyncHandler(async (req, res) => {
     const user = application.user;
 
     if (decision === 'approved') {
-        // 1. Change user role to provider
-        await User.update(
-            { role: 'provider' },
-            { where: { id: user.id } }
-        );
+        // Use transaction to ensure atomicity
+        const { provider } = await withTransaction(async (transaction) => {
+            // 1. Change user role to provider
+            await User.update(
+                { role: 'provider' },
+                { where: { id: user.id }, transaction }
+            );
 
-        // 2. Create provider profile from application data
-        const provider = await Provider.create({
-            userId: user.id,
-            businessName: application.businessName,
-            description: application.description,
-            location: application.location,
-            address: application.address,
-            whatsapp: application.whatsapp,
-            facebook: application.facebook,
-            instagram: application.instagram,
-            photos: application.photos,
-            documents: application.documents,
-            isVerified: true, // Auto-verified since admin approved
-            verifiedAt: new Date(),
-            verifiedBy: req.user.id,
-            verificationStatus: 'approved'
+            // 2. Create provider profile from application data
+            const newProvider = await Provider.create({
+                userId: user.id,
+                businessName: application.businessName,
+                description: application.description,
+                location: application.location,
+                address: application.address,
+                whatsapp: application.whatsapp,
+                facebook: application.facebook,
+                instagram: application.instagram,
+                photos: application.photos,
+                documents: application.documents,
+                isVerified: true, // Auto-verified since admin approved
+                verifiedAt: new Date(),
+                verifiedBy: req.user.id,
+                verificationStatus: 'approved'
+            }, { transaction });
+
+            // 3. Create 30-day trial subscription
+            await Subscription.create({
+                providerId: newProvider.id,
+                status: 'trial',
+                plan: 'trial',
+                price: 0,
+                startDate: new Date(),
+                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            }, { transaction });
+
+            // 4. Update application status
+            application.status = 'approved';
+            application.reviewedBy = req.user.id;
+            application.reviewedAt = new Date();
+            application.adminNotes = adminNotes;
+            await application.save({ transaction });
+
+            return { provider: newProvider };
         });
 
-        // 3. Create 30-day trial subscription
-        await Subscription.createTrial(provider.id);
-
-        // 4. Update application status
-        application.status = 'approved';
-        application.reviewedBy = req.user.id;
-        application.reviewedAt = new Date();
-        application.adminNotes = adminNotes;
-        await application.save();
-
-        // 5. Send approval email
+        // 5. Send approval email (outside transaction - non-critical)
         try {
             const { providerApprovedEmail } = require('../utils/emailTemplates');
             await sendEmail({

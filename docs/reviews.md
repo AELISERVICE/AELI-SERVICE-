@@ -1,175 +1,592 @@
-# ⭐ Reviews API
+# ⭐ API Avis - Documentation Complète
 
-Gestion des avis et notations.
+Documentation détaillée des endpoints de gestion des avis clients.
 
 ## Base URL
 ```
 /api/reviews
 ```
 
-> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+---
+
+## 📝 Système d'Avis
+
+### Principe
+Les clients authentifiés peuvent laisser des avis sur les prestataires. Un avis comprend une note (1-5) et un commentaire optionnel.
+
+### Règles métier
+- **1 avis par client par prestataire** (modifiable)
+- Note entre **1 et 5 étoiles**
+- Commentaire **max 1000 caractères**
+- La note moyenne du prestataire est **recalculée automatiquement**
 
 ---
 
-## Endpoints
+## 🌐 1. ROUTES PUBLIQUES
 
-### GET `/provider/:providerId` - Avis d'un Prestataire
+### `GET /provider/:providerId` - Avis d'un prestataire
 
-**Query Params:**
-| Param | Type | Default |
-|-------|------|---------|
-| `page` | int | 1 |
-| `limit` | int | 10 |
+**Description :**  
+Récupère tous les avis visibles d'un prestataire.
 
-**Réponse 200:**
+**Ce qu'il fait :**
+- Retourne les avis avec `isVisible = true`
+- Inclut les informations de l'auteur (prénom uniquement pour la confidentialité)
+- Pagination côté serveur
+
+**Paramètres query :**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Numéro de page |
+| `limit` | int | Éléments par page |
+
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "reviews": [
-      {
-        "id": "uuid",
-        "rating": 5,
-        "comment": "Excellent service !",
-        "createdAt": "2024-01-15T10:00:00Z",
-        "user": {
-          "id": "uuid",
-          "firstName": "Jeanne",
-          "lastName": "K.",
-          "profilePhoto": "..."
-        }
+  "reviews": [
+    {
+      "id": "uuid",
+      "rating": 5,
+      "comment": "Excellent service ! Marie est très professionnelle et à l'écoute.",
+      "createdAt": "2026-01-10T14:30:00Z",
+      "user": {
+        "firstName": "Fatou",
+        "profilePhoto": "url"  // Optionnel
       }
-    ],
-    "pagination": { ... }
+    },
+    {
+      "id": "uuid",
+      "rating": 4,
+      "comment": "Bon travail, je recommande.",
+      "createdAt": "2026-01-05T10:00:00Z",
+      "user": {
+        "firstName": "Aminata"
+      }
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 3,
+    "totalItems": 25
+  },
+  "summary": {
+    "averageRating": 4.6,
+    "totalReviews": 25,
+    "distribution": {
+      "5": 15,
+      "4": 7,
+      "3": 2,
+      "2": 1,
+      "1": 0
+    }
+  }
+}
+```
+
+**Workflow frontend - Affichage :**
+```javascript
+// Composant distribution
+const RatingDistribution = ({ distribution, total }) => (
+  <div>
+    {[5, 4, 3, 2, 1].map(star => (
+      <div key={star}>
+        <span>{'⭐'.repeat(star)}</span>
+        <progress value={distribution[star]} max={total} />
+        <span>{distribution[star]}</span>
+      </div>
+    ))}
+  </div>
+);
+```
+
+---
+
+## 🔒 2. ROUTES AUTHENTIFIÉES
+
+### `POST /` - Créer un avis
+
+**🔒 Authentification requise**
+
+**Description :**  
+Permet à un client de laisser un avis sur un prestataire.
+
+**Ce qu'il fait :**
+1. Vérifie que l'utilisateur n'a pas déjà laissé d'avis
+2. Vérifie que l'utilisateur n'est pas le prestataire lui-même
+3. Crée l'avis avec `isVisible = true`
+4. **Recalcule automatiquement** la note moyenne du prestataire
+5. Envoie une notification au prestataire (optionnel)
+
+**Body :**
+```json
+{
+  "providerId": "uuid",
+  "rating": 5,
+  "comment": "Excellent service ! Marie est très professionnelle."
+}
+```
+
+**Validation :**
+| Champ | Requis | Règles |
+|-------|--------|--------|
+| `providerId` | ✅ | UUID valide |
+| `rating` | ✅ | Entier entre 1 et 5 |
+| `comment` | ❌ | Max 1000 caractères |
+
+**Réponse 201 :**
+```json
+{
+  "success": true,
+  "message": "Avis ajouté avec succès",
+  "review": {
+    "id": "uuid",
+    "rating": 5,
+    "comment": "Excellent service !...",
+    "createdAt": "2026-01-15T19:30:00Z"
+  },
+  "provider": {
+    "id": "uuid",
+    "averageRating": 4.7,  // Nouvelle moyenne
+    "totalReviews": 26
+  }
+}
+```
+
+**Erreurs possibles :**
+| Code | Message | Cause |
+|------|---------|-------|
+| 400 | Note invalide | rating < 1 ou > 5 |
+| 400 | Avis déjà existant | 1 avis par prestataire |
+| 400 | Cannot review yourself | Propriétaire du profil |
+| 404 | Prestataire non trouvé | ID invalide |
+
+---
+
+### `PUT /:id` - Modifier un avis
+
+**🔒 Authentification requise** | **Auteur de l'avis uniquement**
+
+**Description :**  
+Permet de modifier son propre avis.
+
+**Ce qu'il fait :**
+1. Vérifie que l'utilisateur est l'auteur
+2. Met à jour les champs modifiés
+3. **Recalcule** la note moyenne du prestataire
+
+**Body :**
+```json
+{
+  "rating": 4,
+  "comment": "Mise à jour : toujours aussi bien !"
+}
+```
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "message": "Avis modifié avec succès",
+  "review": {
+    "id": "uuid",
+    "rating": 4,
+    "comment": "Mise à jour : toujours aussi bien !",
+    "updatedAt": "2026-01-15T20:00:00Z"
   }
 }
 ```
 
 ---
 
-### POST `/` - Créer un Avis 🔒
+### `DELETE /:id` - Supprimer un avis
 
-⚠️ **Limites:**
-- 1 avis par utilisateur par prestataire
-- Ne peut pas s'auto-évaluer
-- **Doit avoir contacté le prestataire** (status `read` ou `replied`)
+**🔒 Authentification requise** | **Auteur ou Admin**
 
-**Body:**
-```json
-{
-  "providerId": "uuid",
-  "rating": 5,
-  "comment": "Très satisfaite du service, je recommande !"
-}
-```
+**Description :**  
+Supprime un avis de manière permanente.
 
-**Validation:**
-| Champ | Règle |
-|-------|-------|
-| `rating` | 1-5, requis |
-| `comment` | max 1000 chars, optionnel |
+**Ce qu'il fait :**
+1. Vérifie que l'utilisateur est l'auteur OU admin
+2. Supprime l'avis
+3. **Recalcule** la note moyenne du prestataire
 
-**Réponse 201:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "message": "Avis créé avec succès",
-  "data": { "review": { ... } }
+  "message": "Avis supprimé avec succès"
 }
 ```
 
-> **Note:** La moyenne du prestataire est automatiquement recalculée.
+---
+
+## 📊 Calcul de la Note Moyenne
+
+### Formule
+```
+averageRating = SUM(rating) / COUNT(reviews) où isVisible = true
+```
+
+### Recalcul automatique
+La note est recalculée à chaque :
+- Création d'un avis
+- Modification d'un avis
+- Suppression d'un avis
+- Modération (masquer/afficher par admin)
+
+### Exemple
+```
+Avis existants : [5, 5, 4, 4, 5]
+Moyenne = (5 + 5 + 4 + 4 + 5) / 5 = 4.6
+
+Nouvel avis : 3
+Nouvelle moyenne = (5 + 5 + 4 + 4 + 5 + 3) / 6 = 4.33
+```
 
 ---
 
-### PUT `/:id` - Modifier son Avis 🔒
+## 🎨 Composants Frontend Suggérés
 
-Seul l'auteur peut modifier.
+### Formulaire d'avis
+```html
+<form id="review-form">
+  <h3>Laisser un avis</h3>
+  
+  <!-- Sélecteur d'étoiles -->
+  <div class="star-rating">
+    <input type="radio" name="rating" value="5" id="star5">
+    <label for="star5">⭐⭐⭐⭐⭐</label>
+    <!-- ... autres étoiles ... -->
+  </div>
+  
+  <!-- Commentaire (optionnel) -->
+  <textarea 
+    name="comment" 
+    placeholder="Partagez votre expérience (optionnel)"
+    maxlength="1000"
+  ></textarea>
+  <span class="counter">0/1000</span>
+  
+  <button type="submit">Publier mon avis</button>
+</form>
+```
 
-**Body:**
-```json
+### Affichage d'un avis
+```javascript
+const ReviewCard = ({ review }) => (
+  <div className="review-card">
+    <div className="review-header">
+      <img src={review.user.profilePhoto || defaultAvatar} />
+      <span>{review.user.firstName}</span>
+      <span className="stars">{'⭐'.repeat(review.rating)}</span>
+      <span className="date">{formatDate(review.createdAt)}</span>
+    </div>
+    <p className="comment">{review.comment}</p>
+  </div>
+);
+```
+
+### Résumé des avis
+```javascript
+const ReviewSummary = ({ summary }) => (
+  <div className="review-summary">
+    <div className="average">
+      <span className="number">{summary.averageRating.toFixed(1)}</span>
+      <span className="stars">⭐⭐⭐⭐⭐</span>
+      <span className="count">{summary.totalReviews} avis</span>
+    </div>
+    <RatingDistribution 
+      distribution={summary.distribution} 
+      total={summary.totalReviews} 
+    />
+  </div>
+);
+```
+
+---
+
+## 🔄 Workflow Complet
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    CYCLE DE VIE D'UN AVIS                        │
+└─────────────────────────────────────────────────────────────────┘
+
+  Client visite profil prestataire
+           │
+           ▼
+  ┌─────────────────────────────────────┐
+  │ GET /reviews/provider/:providerId   │
+  │ → Affiche les avis existants        │
+  └──────────────────┬──────────────────┘
+                     │
+                     ▼
+            [Client authentifié ?]
+                ╱            ╲
+              Non            Oui
+              │               │
+              ▼               ▼
+      Afficher bouton    ┌─────────────────┐
+      "Se connecter      │ POST /reviews   │
+       pour noter"       │ → Créer l'avis  │
+                         └────────┬────────┘
+                                  │
+                         ┌────────┴────────┐
+                         │ Recalcul auto   │
+                         │ averageRating   │
+                         └────────┬────────┘
+                                  │
+                         ┌────────┴────────┐
+                         │ Affichage immédiat
+                         │ isVisible = true │
+                         └─────────────────┘
+
+  [Modération Admin]
+           │
+           ▼
+  ┌─────────────────────────────────────┐
+  │ PUT /admin/reviews/:id/visibility   │
+  │ → isVisible = false                 │
+  │ → Recalcul averageRating            │
+  └─────────────────────────────────────┘
+```
+
+---
+
+## 🚨 Codes d'erreur
+
+| Code | Situation |
+|------|-----------|
+| 400 | Données invalides, avis déjà existant |
+| 401 | Non authentifié |
+| 403 | Non autorisé (pas l'auteur) |
+| 404 | Avis/Prestataire non trouvé |
+
+---
+
+## 🔄 WORKFLOWS VISUELS ADDITIONNELS
+
+### Formulaire d'Avis (Client)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    LAISSER UN AVIS                               │
+│                    POST /api/reviews                             │
+└─────────────────────────────────────────────────────────────────┘
+
+[Client authentifié] Page du prestataire
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ⭐ Laisser un avis pour Salon Marie                            │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  Votre note:                                                ││
+│  │                                                              ││
+│  │  ☆ ☆ ☆ ☆ ☆   ← Cliquez pour noter                         ││
+│  │                                                              ││
+│  │  ★ ★ ★ ★ ★   ← 5 étoiles sélectionnées                     ││
+│  │  "Excellent !"                                              ││
+│  │                                                              ││
+│  │  Votre commentaire (optionnel):                             ││
+│  │  ┌──────────────────────────────────────────────────────┐   ││
+│  │  │ Marie est très professionnelle et à l'écoute.       │   ││
+│  │  │ Le résultat est exactement ce que je voulais !      │   ││
+│  │  │ Je recommande vivement. ❤️                          │   ││
+│  │  └──────────────────────────────────────────────────────┘   ││
+│  │  135/1000 caractères                                        ││
+│  │                                                              ││
+│  │  [Publier mon avis]                                         ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+POST /api/reviews
 {
-  "rating": 4,
-  "comment": "Mise à jour de mon avis..."
+  providerId: "uuid",
+  rating: 5,
+  comment: "Marie est très professionnelle..."
 }
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    TRAITEMENT BACKEND                            │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │ 1. Vérification: user ≠ provider                         │  │
+│  │ 2. Vérification: pas d'avis existant                     │  │
+│  │ 3. Création Review (isVisible: true)                     │  │
+│  │ 4. Recalcul averageRating du provider                    │  │
+│  │    (5+5+4+4+5+5) / 6 = 4.67 → 4.7                        │  │
+│  │ 5. Update provider.totalReviews = 26                     │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ Avis publié !                                                │
+│                                                                  │
+│  Merci pour votre avis sur Salon Marie !                        │
+│  Votre commentaire aide d'autres clients à faire leur choix.    │
+│                                                                  │
+│  [Voir mon avis]  [Retour au profil]                            │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### DELETE `/:id` - Supprimer son Avis 🔒
-
-Seul l'auteur (ou admin) peut supprimer.
-
----
-
-## Notes
-
-- Un email est envoyé au prestataire lors d'un nouvel avis
-- Les avis peuvent être masqués par un admin (modération)
-- La suppression recalcule la moyenne du prestataire
-
----
-
-## 🔄 Workflow Détaillé
-
+### Section Avis sur Profil Prestataire
 ```
-[Client authentifié] POST /api/reviews
-{ providerId, rating: 5, comment: "Excellent!" }
+┌─────────────────────────────────────────────────────────────────┐
+│                    SECTION AVIS                                  │
+│                    GET /api/reviews/provider/:id                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  ⭐ Avis clients (25)                                           │
+│                                                                  │
+│  ┌──────────────────────────────┐ ┌────────────────────────────┐│
+│  │                              │ │                            ││
+│  │    ⭐⭐⭐⭐⭐                │ │ Distribution des notes:    ││
+│  │        4.8                   │ │                            ││
+│  │    sur 25 avis               │ │ ⭐⭐⭐⭐⭐ ████████████ 15  ││
+│  │                              │ │ ⭐⭐⭐⭐   ████████     7   ││
+│  │  [Laisser un avis]           │ │ ⭐⭐⭐     ██           2   ││
+│  │                              │ │ ⭐⭐       █            1   ││
+│  └──────────────────────────────┘ │ ⭐                      0   ││
+│                                   └────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ [👤] Fatou                    ⭐⭐⭐⭐⭐     Il y a 5 jours ││
+│  │ ────────────────────────────────────────────────────────── ││
+│  │ Marie est très professionnelle et à l'écoute.              ││
+│  │ Le résultat est exactement ce que je voulais !             ││
+│  │ Je recommande vivement. ❤️                                 ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ [👤] Aminata                  ⭐⭐⭐⭐       Il y a 2 sem.  ││
+│  │ ────────────────────────────────────────────────────────── ││
+│  │ Bon travail, je recommande.                                 ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ [👤] Jean                     ⭐⭐⭐⭐⭐     Il y a 1 mois  ││
+│  │ ────────────────────────────────────────────────────────── ││
+│  │ Superbe expérience ! Je reviendrai à coup sûr.             ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  [Voir plus d'avis →]                                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Modification d'Avis
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MODIFIER MON AVIS                             │
+│                    PUT /api/reviews/:id                          │
+└─────────────────────────────────────────────────────────────────┘
+
+[Client] Page "Mes avis" ou profil prestataire
     │
     ▼
-┌─────────────────────┐
-│ Déjà avis pour ce   │ ── Oui ──▶ 409 "Avis déjà existant"
-│ provider ?          │
-└─────────┬───────────┘
-          │ Non
-          ▼
-┌─────────────────────┐
-│ Auto-évaluation ?   │ ── Oui ──▶ 403 Forbidden
-│ (user = provider)   │
-└─────────┬───────────┘
-          │ Non
-          ▼
-┌─────────────────────┐
-│ Validation:         │
-│ - rating 1-5        │
-│ - comment max 1000  │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Crée Review         │
-│ isVisible = true    │
-│ userId, providerId  │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Recalcule moyenne   │
-│ AVG(rating)         │
-│ Provider.avgRating  │
-│ Provider.totalReviews│
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ 📧 Email prestataire│
-│ review-notification │
-└─────────────────────┘
-          │
-          ▼
-     201 Created { review }
-
-═══════════════════════════════════════════════════════════
-
-[Admin] PUT /api/admin/reviews/:id/visibility { isVisible: false }
+┌─────────────────────────────────────────────────────────────────┐
+│  ✏️ Modifier mon avis sur Salon Marie                           │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  Ma note actuelle: ★ ★ ★ ★ ★                               ││
+│  │                                                              ││
+│  │  Nouvelle note:    ★ ★ ★ ★ ☆  (clic sur 4ème étoile)       ││
+│  │                                                              ││
+│  │  Mon commentaire:                                           ││
+│  │  ┌──────────────────────────────────────────────────────┐   ││
+│  │  │ Mise à jour après 2ème visite :                      │   ││
+│  │  │ Toujours aussi bien, mais un peu d'attente           │   ││
+│  │  │ cette fois-ci. Je garde 4 étoiles.                   │   ││
+│  │  └──────────────────────────────────────────────────────┘   ││
+│  │                                                              ││
+│  │  [Sauvegarder]  [Annuler]  [Supprimer mon avis]             ││
+│  │                                                              ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
     │
     ▼
-┌─────────────────────┐
-│ Masque l'avis       │
-│ isVisible = false   │
-│ AuditLog(MODERATE)  │
-└─────────────────────┘
-          │
-          ▼
-     200 OK (avis masqué des listings)
+PUT /api/reviews/:id
+{
+  rating: 4,
+  comment: "Mise à jour après 2ème visite..."
+}
+    │
+    ├── Vérification: user = auteur de l'avis
+    ├── Update rating et comment
+    └── Recalcul averageRating du provider
+        (5+5+4+4+5+4) / 6 = 4.5
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ Avis modifié !                                               │
+│                                                                  │
+│  Votre avis a été mis à jour.                                   │
+│  La nouvelle note moyenne est 4.5 ⭐                            │
+│                                                                  │
+│  [Voir mon avis]                                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Modération Admin
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MODÉRATION DES AVIS (Admin)                   │
+│                    PUT /api/admin/reviews/:id/visibility         │
+└─────────────────────────────────────────────────────────────────┘
+
+[Admin] Dashboard modération
+    │
+    ▼
+GET /api/admin/reviews
+┌─────────────────────────────────────────────────────────────────┐
+│  🛡️ Modération des avis                                        │
+│                                                                  │
+│  Filtres: [Tous ▼] [Signalés ▼] [Cette semaine ▼]              │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ ⚠️ SIGNALÉ                                                  ││
+│  │ ┌───────────────────────────────────────────────────────┐   ││
+│  │ │ Anonyme → Traiteur Fatou        ⭐             Hier   │   ││
+│  │ │ ─────────────────────────────────────────────────────  │   ││
+│  │ │ "Nul à chier, arnaque totale !!! 💩💩💩"               │   ││
+│  │ │                                                       │   ││
+│  │ │ 🚩 Signalements: 3                                     │   ││
+│  │ │ Raisons: Langage inapproprié, Injure                  │   ││
+│  │ │                                                       │   ││
+│  │ │ [✅ Laisser visible] [🚫 Masquer] [🗑️ Supprimer]     │   ││
+│  │ └───────────────────────────────────────────────────────┘   ││
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  Clic [🚫 Masquer]                                              │
+│      │                                                           │
+│      ▼                                                           │
+│  PUT /api/admin/reviews/:id/visibility { isVisible: false }     │
+│      │                                                           │
+│      ├── review.isVisible = false                               │
+│      ├── Recalcul averageRating (sans cet avis)                 │
+│      └── Avis masqué publiquement                               │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  ✅ Avis masqué                                                  │
+│                                                                  │
+│  L'avis de "Anonyme" sur "Traiteur Fatou" a été masqué.        │
+│  La note moyenne a été recalculée.                              │
+│                                                                  │
+│  Ancienne moyenne: 4.2 → Nouvelle moyenne: 4.5                  │
+│                                                                  │
+│  [Voir les autres avis à modérer]                               │
+└─────────────────────────────────────────────────────────────────┘
 ```

@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const { encrypt, decrypt, encryptIfNeeded } = require('../utils/encryption');
 
 const Contact = sequelize.define('Contact', {
     id: {
@@ -83,7 +84,6 @@ const Contact = sequelize.define('Contact', {
     ],
     hooks: {
         beforeCreate: (contact) => {
-            const { encryptIfNeeded } = require('../utils/encryption');
             if (contact.senderPhone) {
                 contact.senderPhone = encryptIfNeeded(contact.senderPhone);
             }
@@ -92,7 +92,6 @@ const Contact = sequelize.define('Contact', {
             }
         },
         beforeUpdate: (contact) => {
-            const { encryptIfNeeded } = require('../utils/encryption');
             if (contact.changed('senderPhone') && contact.senderPhone) {
                 contact.senderPhone = encryptIfNeeded(contact.senderPhone);
             }
@@ -102,7 +101,6 @@ const Contact = sequelize.define('Contact', {
         },
         afterFind: (result) => {
             if (!result) return;
-            const { decrypt } = require('../utils/encryption');
 
             const decryptFields = (contact) => {
                 if (contact) {

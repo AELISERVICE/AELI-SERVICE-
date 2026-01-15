@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const { encrypt, decrypt, encryptIfNeeded } = require('../utils/encryption');
 
 const Provider = sequelize.define('Provider', {
     id: {
@@ -155,19 +156,16 @@ const Provider = sequelize.define('Provider', {
     hooks: {
         beforeCreate: (provider) => {
             if (provider.whatsapp) {
-                const { encryptIfNeeded } = require('../utils/encryption');
                 provider.whatsapp = encryptIfNeeded(provider.whatsapp);
             }
         },
         beforeUpdate: (provider) => {
             if (provider.changed('whatsapp') && provider.whatsapp) {
-                const { encryptIfNeeded } = require('../utils/encryption');
                 provider.whatsapp = encryptIfNeeded(provider.whatsapp);
             }
         },
         afterFind: (result) => {
             if (!result) return;
-            const { decrypt } = require('../utils/encryption');
 
             const decryptWhatsapp = (provider) => {
                 if (provider && provider.whatsapp) {

@@ -1,245 +1,642 @@
-# 💳 Payments API (CinetPay)
+# 💳 API Paiements - Documentation Complète
 
-Gestion des paiements Mobile Money via CinetPay.
+Documentation détaillée des endpoints de paiement via CinetPay (Mobile Money Cameroun).
 
 ## Base URL
 ```
 /api/payments
 ```
 
-> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+---
+
+## 🏦 Intégration CinetPay
+
+AELI Services utilise **CinetPay** comme passerelle de paiement pour :
+- **Orange Money** (OM)
+- **MTN Mobile Money** (MOMO)
+- **Visa/Mastercard** (optionnel)
+
+### Devises supportées
+- **XAF** (Franc CFA - CEMAC) - Devise par défaut
+
+### Montants
+- **Minimum** : 100 FCFA
+- **Multiple de** : 5 FCFA
 
 ---
 
-## Endpoints
+## 💰 Types de Paiement
 
-### POST `/initialize` - Initier un Paiement
+| Type | Description | Montant type |
+|------|-------------|--------------|
+| `subscription` | Abonnement mensuel/trimestriel/annuel | 5000-15000 FCFA |
+| `featured` | Mise en avant du profil | 10000 FCFA |
+| `boost` | Boost de visibilité temporaire | 2000-5000 FCFA |
+| `contact_premium` | Accès contact premium | 500 FCFA |
 
-Peut être utilisé avec ou sans authentification.
+---
 
-**Body:**
+## 🚀 1. INITIALISER UN PAIEMENT
+
+### `POST /initialize` - Démarrer un paiement
+
+**🔓 Authentification optionnelle** (mais recommandée)
+
+**Description :**  
+Crée une transaction de paiement et retourne l'URL de paiement CinetPay où rediriger l'utilisateur.
+
+**Ce qu'il fait :**
+1. Valide les paramètres (montant, type)
+2. Génère un ID de transaction unique (`AELI + timestamp + random`)
+3. Crée l'enregistrement Payment en base (status: PENDING)
+4. Appelle l'API CinetPay pour initialiser le paiement
+5. Retourne l'URL de paiement + token
+
+**Body :**
 ```json
 {
   "amount": 5000,
-  "type": "featured",
-  "providerId": "uuid",
-  "description": "Mise en avant 1 mois"
+  "type": "subscription",
+  "providerId": "uuid",  // Requis pour subscription/boost/featured
+  "description": "Abonnement mensuel"
 }
 ```
 
-**Validation:**
-| Champ | Règle |
-|-------|-------|
-| `amount` | min 100, multiple de 5 |
-| `type` | `contact_premium`, `featured`, `boost`, `subscription` |
-| `providerId` | UUID optionnel |
+**Validation :**
+- `amount` : ≥ 100, multiple de 5
+- `type` : `subscription`, `featured`, `boost`, `contact_premium`
+- `providerId` : UUID valide si type ≠ contact_premium
 
-**Réponse 201:**
+**Réponse 200 :**
 ```json
 {
   "success": true,
   "message": "Paiement initialisé",
-  "data": {
-    "paymentId": "uuid",
-    "transactionId": "AELI1704567890123456",
-    "paymentUrl": "https://checkout.cinetpay.com/payment/...",
+  "payment": {
+    "transactionId": "AELI1705347890123456",
     "amount": 5000,
-    "currency": "XAF"
+    "currency": "XAF",
+    "status": "PENDING",
+    "paymentUrl": "https://checkout.cinetpay.com/pay/abc123...",
+    "paymentToken": "abc123..."
   }
 }
 ```
 
-> **Note:** Redirigez l'utilisateur vers `paymentUrl` pour effectuer le paiement.
+**Workflow frontend :**
+1. Appeler `/initialize` avec les données
+2. Récupérer `paymentUrl`
+3. Ouvrir un popup ou rediriger vers `paymentUrl`
+4. L'utilisateur paie via son téléphone
+5. CinetPay appelle le webhook avec le résultat
+6. L'utilisateur est redirigé vers votre `return_url`
+7. Vérifier le statut via `GET /:transactionId/status`
 
----
+**Exemple frontend :**
+```javascript
+const response = await fetch('/api/payments/initialize', {
+  method: 'POST',
+  headers: { 
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    amount: 5000,
+    type: 'subscription',
+    providerId: provider.id
+  })
+});
 
-### POST `/webhook` - Callback CinetPay
+const { payment } = await response.json();
 
-Endpoint appelé par CinetPay après chaque paiement.
-
-⚠️ **Ne pas appeler manuellement**
-
-**Body (envoyé par CinetPay):**
-```json
-{
-  "cpm_trans_id": "AELI1704567890123456",
-  "cpm_site_id": "YOUR_SITE_ID",
-  "cpm_amount": "5000",
-  "cpm_currency": "XAF",
-  "cpm_error_message": "SUCCES"
-}
+// Ouvrir la page de paiement
+window.open(payment.paymentUrl, '_blank', 'width=500,height=600');
 ```
 
 ---
 
-### GET `/:transactionId/status` - Vérifier le Statut
+## 🔔 2. WEBHOOK CINETPAY
 
-**Réponse 200:**
+### `POST /webhook` - Notification CinetPay
+
+**🌐 Accessible publiquement** (appelé par CinetPay)
+
+**Description :**  
+Endpoint appelé automatiquement par CinetPay lorsqu'un paiement change de statut.
+
+**Ce qu'il fait :**
+1. Vérifie la signature de la requête
+2. Récupère le paiement par `transaction_id`
+3. Vérifie le statut auprès de CinetPay (double check)
+4. Met à jour le statut du paiement
+5. Si `ACCEPTED` : active la fonctionnalité payée
+   - Subscription → Active l'abonnement
+   - Featured → Met `isFeatured = true`
+   - Boost → Incrémente les vues
+6. Envoie un email de confirmation/échec
+
+**Statuts CinetPay :**
+| Statut | Signification |
+|--------|---------------|
+| `ACCEPTED` | Paiement réussi |
+| `REFUSED` | Paiement refusé |
+| `WAITING_FOR_CUSTOMER` | En attente confirmation client |
+| `CANCELLED` | Annulé par l'utilisateur |
+
+**⚠️ Ne jamais faire confiance au webhook seul** : toujours vérifier auprès de CinetPay.
+
+---
+
+## ✅ 3. VÉRIFIER UN PAIEMENT
+
+### `GET /:transactionId/status` - Statut d'un paiement
+
+**🌐 Accessible publiquement**
+
+**Description :**  
+Vérifie le statut actuel d'un paiement. À appeler après le retour de l'utilisateur depuis CinetPay.
+
+**Ce qu'il fait :**
+1. Récupère le paiement en base
+2. Si status = PENDING : interroge CinetPay en temps réel
+3. Met à jour le statut si changé
+4. Retourne le statut actuel
+
+**Réponse 200 :**
 ```json
 {
   "success": true,
-  "data": {
-    "transactionId": "AELI1704567890123456",
-    "status": "ACCEPTED",
+  "payment": {
+    "transactionId": "AELI1705347890123456",
     "amount": 5000,
     "currency": "XAF",
-    "type": "featured",
-    "paymentMethod": "MTNCM",
-    "paidAt": "2024-01-15T10:30:00Z"
+    "status": "ACCEPTED",  // ou PENDING, REFUSED, etc.
+    "type": "subscription",
+    "paidAt": "2026-01-15T19:30:00Z",
+    "paymentMethod": "MOMO"  // ou OM, VISAM
   }
 }
 ```
 
-**Statuts possibles:**
-| Statut | Description |
-|--------|-------------|
-| `PENDING` | En attente d'initialisation |
-| `WAITING_CUSTOMER` | En attente validation client |
-| `ACCEPTED` | Paiement réussi ✅ |
-| `REFUSED` | Paiement échoué ❌ |
-| `CANCELLED` | Annulé |
-| `EXPIRED` | Expiré |
+**Workflow frontend après retour CinetPay :**
+```javascript
+// URL de retour : https://votreapp.com/payment/callback?transaction_id=AELI...
+
+const transactionId = new URLSearchParams(location.search).get('transaction_id');
+
+const response = await fetch(`/api/payments/${transactionId}/status`);
+const { payment } = await response.json();
+
+if (payment.status === 'ACCEPTED') {
+  showSuccess('Paiement réussi ! 🎉');
+  // Rafraîchir le profil pour voir les changements
+} else if (payment.status === 'PENDING') {
+  showInfo('Paiement en cours de traitement...');
+  // Polling toutes les 5 secondes
+} else {
+  showError('Paiement échoué');
+}
+```
 
 ---
 
-### GET `/history` - Historique Paiements 🔒
+## 📜 4. HISTORIQUE DES PAIEMENTS
 
-**Auth requise**
+### `GET /history` - Mes paiements
 
-**Query Params:**
-| Param | Type | Default |
-|-------|------|---------|
-| `page` | int | 1 |
-| `limit` | int | 10 |
+**🔒 Authentification requise**
+
+**Description :**  
+Récupère l'historique des paiements de l'utilisateur connecté.
+
+**Paramètres query :**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Numéro de page |
+| `limit` | int | Éléments par page (max 100) |
+| `status` | string | `PENDING`, `ACCEPTED`, `REFUSED`, etc. |
+| `type` | string | `subscription`, `featured`, `boost` |
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "payments": [
+    {
+      "transactionId": "AELI1705347890123456",
+      "amount": 5000,
+      "currency": "XAF",
+      "type": "subscription",
+      "status": "ACCEPTED",
+      "description": "Abonnement mensuel",
+      "paidAt": "2026-01-15T19:30:00Z",
+      "createdAt": "2026-01-15T19:25:00Z"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 3,
+    "totalItems": 25
+  }
+}
+```
 
 ---
 
-## Types de Paiement
+## 🔄 Diagramme de Séquence
 
-| Type | Description | Action si succès |
-|------|-------------|------------------|
-| `contact_premium` | Accès contact prestataire | Débloque contact |
-| `featured` | Mettre en avant | `isFeatured = true` |
-| `boost` | Visibilité accrue | `viewsCount += 100` |
-| `subscription` | Abonnement premium | Active abonnement |
+```
+┌─────────┐          ┌─────────┐          ┌──────────┐          ┌─────────┐
+│ Client  │          │  API    │          │ CinetPay │          │  Mobile │
+└────┬────┘          └────┬────┘          └────┬─────┘          └────┬────┘
+     │                    │                    │                     │
+     │ POST /initialize   │                    │                     │
+     │───────────────────>│                    │                     │
+     │                    │                    │                     │
+     │                    │ Initialize payment │                     │
+     │                    │───────────────────>│                     │
+     │                    │                    │                     │
+     │                    │<───────────────────│                     │
+     │                    │   payment_url      │                     │
+     │                    │                    │                     │
+     │<───────────────────│                    │                     │
+     │   payment_url      │                    │                     │
+     │                    │                    │                     │
+     │                    │                    │                     │
+     │────────────────────────────────────────>│                     │
+     │        Redirect to payment page         │                     │
+     │                    │                    │                     │
+     │                    │                    │ USSD push           │
+     │                    │                    │────────────────────>│
+     │                    │                    │                     │
+     │                    │                    │  Confirm payment    │
+     │                    │                    │<────────────────────│
+     │                    │                    │                     │
+     │                    │ POST /webhook      │                     │
+     │                    │<───────────────────│                     │
+     │                    │   (ACCEPTED)       │                     │
+     │                    │                    │                     │
+     │                    │ Update payment     │                     │
+     │                    │ Activate feature   │                     │
+     │                    │ Send email         │                     │
+     │                    │                    │                     │
+     │<────────────────────────────────────────│                     │
+     │        Redirect to return_url           │                     │
+     │                    │                    │                     │
+     │ GET /status        │                    │                     │
+     │───────────────────>│                    │                     │
+     │                    │                    │                     │
+     │<───────────────────│                    │                     │
+     │   status=ACCEPTED  │                    │                     │
+     │                    │                     │                     │
+```
 
 ---
 
-## 🔄 Workflow Détaillé
+## 💡 Bonnes Pratiques Frontend
 
-```
-1️⃣ INITIALISATION
-──────────────────────────────────────────────────────────
-[Client] POST /api/payments/initialize
-{ amount: 5000, type: "featured", providerId: "..." }
-    │
-    ▼
-┌─────────────────────┐
-│ Validation montant  │ (min 100, multiple de 5)
-│ Génère transactionId│ AELI + timestamp
-│ Crée Payment(PENDING)
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ POST CinetPay API   │
-│ /v2/payment         │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ Reçoit paymentUrl   │
-│ Sauvegarde token    │
-└─────────────────────┘
-          │
-          ▼
-     201 { paymentUrl, transactionId }
-
-2️⃣ REDIRECTION GUICHET
-──────────────────────────────────────────────────────────
-[Client] ──▶ REDIRECT ──▶ paymentUrl (CinetPay)
-                │
-                ▼
-       ┌───────────────────┐
-       │ 📱 Guichet        │
-       │ Mobile Money      │
-       │ MTN/Orange/Moov   │
-       │ ou Carte          │
-       └───────┬───────────┘
-               │
-               ▼
-       ┌───────────────────┐
-       │ Validation OTP    │
-       │ ou Code USSD      │
-       └───────────────────┘
-
-3️⃣ WEBHOOK (asynchrone)
-──────────────────────────────────────────────────────────
-[CinetPay] POST /api/payments/webhook
-{ cpm_trans_id, cpm_site_id, cpm_amount... }
-    │
-    ▼
-┌─────────────────────┐
-│ Vérifie site_id     │
-│ Trouve Payment      │
-└─────────┬───────────┘
-          │
-          ▼
-┌─────────────────────┐
-│ POST CinetPay       │ Double vérification
-│ /v2/payment/check   │
-└─────────┬───────────┘
-          │
-     ┌────┴────┐
-     ▼         ▼
-[ACCEPTED] [REFUSED]
-     │         │
-     ▼         ▼
-┌─────────┐ ┌─────────┐
-│ Process │ │ MAJ     │
-│ Success │ │ REFUSED │
-└────┬────┘ └─────────┘
-     │
-     ▼
-┌─────────────────────┐
-│ Actions selon type: │
-│ featured → true     │
-│ viewsCount += 100   │
-└─────────────────────┘
-     │
-     ▼
-     200 OK
-
-4️⃣ RETOUR CLIENT
-──────────────────────────────────────────────────────────
-[Client] ◀── REDIRECT ◀── return_url?transaction_id=...
-    │
-    ▼
-[Frontend] GET /api/payments/:transactionId/status
-    │
-    ▼
-┌─────────────────────┐
-│ Retourne statut     │
-│ ACCEPTED / REFUSED  │
-└─────────────────────┘
+### 1. Gestion des statuts
+```javascript
+const statusMessages = {
+  'PENDING': 'En attente de paiement...',
+  'WAITING_CUSTOMER': 'Confirmez sur votre téléphone',
+  'ACCEPTED': 'Paiement réussi ! ✅',
+  'REFUSED': 'Paiement refusé ❌',
+  'CANCELLED': 'Paiement annulé',
+  'EXPIRED': 'Délai expiré'
+};
 ```
 
-## Configuration
-
-**Variables d'environnement requises:**
-```env
-CINETPAY_API_KEY=votre_api_key
-CINETPAY_SITE_ID=votre_site_id
-CINETPAY_SECRET_KEY=votre_secret_key
-CINETPAY_NOTIFY_URL=https://votre-domaine.com/api/payments/webhook
-CINETPAY_RETURN_URL=https://votre-frontend.com/payment/success
+### 2. Polling pour statut PENDING
+```javascript
+const pollPaymentStatus = async (transactionId, maxAttempts = 12) => {
+  for (let i = 0; i < maxAttempts; i++) {
+    const { payment } = await checkStatus(transactionId);
+    
+    if (payment.status !== 'PENDING') {
+      return payment;
+    }
+    
+    await new Promise(r => setTimeout(r, 5000)); // 5 secondes
+  }
+  throw new Error('Timeout');
+};
 ```
 
-## Moyens de Paiement
+### 3. Affichage des prix
+```javascript
+const formatPrice = (amount) => {
+  return new Intl.NumberFormat('fr-CM', {
+    style: 'currency',
+    currency: 'XAF',
+    minimumFractionDigits: 0
+  }).format(amount);
+};
 
-| Pays | Opérateurs | Devise |
-|------|------------|--------|
-| Cameroun | MTN MoMo, Orange Money | XAF |
-| Côte d'Ivoire | Orange, MTN, Moov, Wave | XOF |
-| Sénégal | Orange, Wave, Free | XOF |
-| + 10 pays | Voir CinetPay | Variable |
+// formatPrice(5000) → "5 000 FCFA"
+```
+
+---
+
+## 🚨 Codes d'erreur
+
+| Code | Situation |
+|------|-----------|
+| 400 | Montant invalide, type invalide |
+| 401 | Non authentifié (pour /history) |
+| 404 | Transaction non trouvée |
+| 502 | Erreur CinetPay (service indisponible) |
+
+---
+
+## 🔄 WORKFLOWS VISUELS
+
+### Workflow Complet : Paiement Abonnement
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    PAIEMENT ABONNEMENT                           │
+└─────────────────────────────────────────────────────────────────┘
+
+[Prestataire] Dashboard - Abonnement expiré
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  💎 ABONNEMENT                                                   │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  ⚠️ Votre abonnement a expiré                               ││
+│  │                                                              ││
+│  │  Vos contacts et photos sont masqués.                       ││
+│  │  Renouvelez pour être visible !                             ││
+│  │                                                              ││
+│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           ││
+│  │  │ 📅 Mensuel  │ │ 📅 Trimestriel│ │ 📅 Annuel  │           ││
+│  │  │ 5 000 FCFA  │ │ 12 000 FCFA │ │ 15 000 FCFA │           ││
+│  │  │ 30 jours    │ │ 90 jours    │ │ 365 jours   │           ││
+│  │  │             │ │ -20%        │ │ -75%        │           ││
+│  │  │ [Choisir]   │ │ [Choisir]   │ │ [Choisir]   │           ││
+│  │  └─────────────┘ └─────────────┘ └─────────────┘           ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+    │
+    │ Clic [Choisir] sur Mensuel
+    ▼
+POST /api/payments/initialize
+    {
+      "amount": 5000,
+      "type": "subscription",
+      "providerId": "uuid"
+    }
+    │
+    ▼
+┌─────────────────────┐
+│ Payment créé        │
+│ status: PENDING     │
+│ transactionId: xxx  │
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    PAGE CINETPAY                                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                     [Logo CinetPay]                         ││
+│  │                                                              ││
+│  │  Paiement de 5 000 FCFA                                     ││
+│  │  pour: Abonnement AELI Services                             ││
+│  │                                                              ││
+│  │  Choisissez votre mode de paiement:                         ││
+│  │                                                              ││
+│  │  ┌──────────────────┐  ┌──────────────────┐                ││
+│  │  │ [🍊] Orange Money│  │ [📱] MTN MoMo   │                ││
+│  │  └──────────────────┘  └──────────────────┘                ││
+│  │                                                              ││
+│  │  Numéro: [+237 6__ ___ ___]                                 ││
+│  │                                                              ││
+│  │  [Payer maintenant]                                         ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+    │
+    │ Utilisateur entre son numéro et clique [Payer]
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    USSD - TÉLÉPHONE USER                         │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │                                                              ││
+│  │  MTN Mobile Money                                           ││
+│  │                                                              ││
+│  │  Confirmer paiement de 5 000 FCFA                           ││
+│  │  à AELI SERVICES                                            ││
+│  │                                                              ││
+│  │  Entrez votre code PIN:                                     ││
+│  │  [____]                                                     ││
+│  │                                                              ││
+│  │  [Confirmer]  [Annuler]                                     ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+    │
+    │ User entre PIN et confirme
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    WEBHOOK CINETPAY → API                        │
+│                                                                  │
+│  POST /api/payments/webhook                                     │
+│  {                                                               │
+│    "transaction_id": "AELI...",                                 │
+│    "status": "ACCEPTED",                                        │
+│    "payment_method": "MOMO",                                    │
+│    "amount": 5000                                               │
+│  }                                                               │
+│      │                                                           │
+│      ├── Vérifier signature                                     │
+│      ├── Double-check auprès CinetPay API                       │
+│      ├── Payment.status = 'ACCEPTED'                            │
+│      │                                                           │
+│      ▼                                                           │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ if (type === 'subscription') {                              ││
+│  │   Subscription.renew({                                       ││
+│  │     providerId: xxx,                                         ││
+│  │     plan: 'monthly',                                         ││
+│  │     startDate: now(),                                        ││
+│  │     endDate: now() + 30 days                                 ││
+│  │   });                                                        ││
+│  │   // Contacts & photos redeviennent visibles !               ││
+│  │ }                                                            ││
+│  └────────────────────────────────────────────────────────────┘ ││
+│      │                                                           │
+│      ▼                                                           │
+│  📧 Email confirmation:                                         │
+│  "Paiement de 5 000 FCFA reçu. Votre abonnement est actif !"   │
+└─────────────────────────────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  Redirection vers votre app                                      │
+│  https://app.com/payment/callback?transaction_id=AELI...        │
+│      │                                                           │
+│      ▼                                                           │
+│  GET /api/payments/AELI.../status                               │
+│      │                                                           │
+│      ▼                                                           │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │          🎉 Paiement réussi !                               ││
+│  │                                                              ││
+│  │  ✅ Abonnement mensuel activé                               ││
+│  │  📅 Valable jusqu'au: 15 février 2026                       ││
+│  │                                                              ││
+│  │  [Retour au dashboard]                                      ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Écrans Mobile Money
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    EXPÉRIENCE MOBILE MONEY                       │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─── ORANGE MONEY ──────────────────────────────────────────────┐
+│                                                                │
+│  📱 SMS reçu sur le téléphone:                                │
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │ Orange Money                                            │   │
+│  │                                                         │   │
+│  │ Vous allez payer 5 000 FCFA à AELI SERVICES.           │   │
+│  │ Tapez votre code secret:                                │   │
+│  │ #150*1*1*CODE_SECRET#                                   │   │
+│  │                                                         │   │
+│  │ Ou répondez OK pour confirmer.                          │   │
+│  └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│  User répond: OK                                               │
+│                                                                │
+│  📱 SMS confirmation:                                          │
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │ Orange Money                                            │   │
+│  │                                                         │   │
+│  │ Paiement de 5 000 FCFA effectué.                       │   │
+│  │ Nouveau solde: 45 000 FCFA                             │   │
+│  │ Ref: OM2026011512345                                    │   │
+│  └────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+
+┌─── MTN MOBILE MONEY ──────────────────────────────────────────┐
+│                                                                │
+│  📱 Notification USSD pop-up:                                 │
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │ MTN Mobile Money                                        │   │
+│  │                                                         │   │
+│  │ Paiement marchand                                       │   │
+│  │                                                         │   │
+│  │ Montant: 5 000 XAF                                     │   │
+│  │ À: AELI SERVICES                                       │   │
+│  │                                                         │   │
+│  │ PIN: [____]                                             │   │
+│  │                                                         │   │
+│  │ [1] Confirmer   [2] Annuler                            │   │
+│  └────────────────────────────────────────────────────────┘   │
+│                                                                │
+│  User tape: 1234 (son PIN) puis [1]                           │
+│                                                                │
+│  📱 Confirmation:                                             │
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │ Transaction réussie!                                    │   │
+│  │ Montant: 5 000 XAF                                     │   │
+│  │ Ref: MOMO2026011567890                                  │   │
+│  └────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Historique des Paiements (Frontend)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    HISTORIQUE MES PAIEMENTS                      │
+│                    GET /api/payments/history                     │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  💳 Mes paiements                              [Exporter CSV]   │
+│                                                                  │
+│  Filtres: [Tous ▼] [2026 ▼] [Janvier ▼]                        │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ Date       │ Type         │ Montant    │ Statut            ││
+│  │────────────────────────────────────────────────────────────│││
+│  │ 15/01/2026 │ Abonnement   │ 5 000 FCFA │ ✅ Payé          ││
+│  │            │ mensuel      │            │                   ││
+│  │────────────────────────────────────────────────────────────│││
+│  │ 01/01/2026 │ Mise en avant│ 10 000 FCFA│ ✅ Payé          ││
+│  │────────────────────────────────────────────────────────────│││
+│  │ 15/12/2025 │ Abonnement   │ 5 000 FCFA │ ✅ Payé          ││
+│  │            │ mensuel      │            │                   ││
+│  │────────────────────────────────────────────────────────────│││
+│  │ 30/11/2025 │ Boost        │ 2 000 FCFA │ ❌ Échoué        ││
+│  │            │              │            │ (solde insuffisant)│
+│  └─────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  Total payé (2026): 15 000 FCFA                                 │
+│                                                                  │
+│  [< Précédent] Page 1 sur 2 [Suivant >]                         │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### États de Paiement (Frontend)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ÉTATS POSSIBLES D'UN PAIEMENT                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─── PENDING ───────────────────────────────────────────────────┐
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │  ⏳ En attente de paiement                             │   │
+│  │                                                         │   │
+│  │  Montant: 5 000 FCFA                                   │   │
+│  │                                                         │   │
+│  │  Vérifiez votre téléphone et confirmez le paiement.   │   │
+│  │                                                         │   │
+│  │  [Vérifier le statut]                                  │   │
+│  └────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+
+┌─── ACCEPTED ──────────────────────────────────────────────────┐
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │  ✅ Paiement réussi !                                  │   │
+│  │                                                         │   │
+│  │  Montant: 5 000 FCFA                                   │   │
+│  │  Méthode: MTN MoMo                                     │   │
+│  │  Date: 15/01/2026 à 19:30                              │   │
+│  │                                                         │   │
+│  │  Votre abonnement est maintenant actif.                │   │
+│  │                                                         │   │
+│  │  [Retour au dashboard]                                 │   │
+│  └────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+
+┌─── REFUSED ───────────────────────────────────────────────────┐
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │  ❌ Paiement refusé                                    │   │
+│  │                                                         │   │
+│  │  Raison possible:                                      │   │
+│  │  • Solde insuffisant                                   │   │
+│  │  • Limite journalière atteinte                         │   │
+│  │  • Code PIN incorrect                                  │   │
+│  │                                                         │   │
+│  │  [Réessayer]  [Changer de méthode]                     │   │
+│  └────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+
+┌─── CANCELLED ─────────────────────────────────────────────────┐
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │  🚫 Paiement annulé                                    │   │
+│  │                                                         │   │
+│  │  Vous avez annulé cette transaction.                   │   │
+│  │                                                         │   │
+│  │  [Réessayer]                                           │   │
+│  └────────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────────┘
+```
