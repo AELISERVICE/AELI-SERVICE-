@@ -1,6 +1,6 @@
 const { Contact, Provider, User } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
+const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
 const { newContactEmail } = require('../utils/emailTemplates');
 const { emitNewContact, emitContactStatusChange } = require('../config/socket');
@@ -19,7 +19,7 @@ const createContact = asyncHandler(async (req, res) => {
     });
 
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Create contact request
@@ -57,7 +57,7 @@ const createContact = asyncHandler(async (req, res) => {
         }).catch(err => console.error('Contact notification email error:', err.message));
     }
 
-    successResponse(res, 201, 'Message envoyé avec succès', { contact });
+    i18nResponse(req, res, 201, 'contact.sent', { contact });
 });
 
 /**
@@ -71,7 +71,7 @@ const getReceivedContacts = asyncHandler(async (req, res) => {
     // Get provider for current user
     const provider = await Provider.findOne({ where: { userId: req.user.id } });
     if (!provider) {
-        throw new AppError('Profil prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     const { limit: queryLimit, offset } = getPaginationParams(page, limit);
@@ -98,7 +98,7 @@ const getReceivedContacts = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Demandes de contact reçues', { contacts, pagination });
+    i18nResponse(req, res, 200, 'contact.list', { contacts, pagination });
 });
 
 /**
@@ -134,7 +134,7 @@ const getSentContacts = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Demandes de contact envoyées', { contacts, pagination });
+    i18nResponse(req, res, 200, 'contact.list', { contacts, pagination });
 });
 
 /**
@@ -147,7 +147,7 @@ const updateContactStatus = asyncHandler(async (req, res) => {
     const { status } = req.body;
 
     if (!['pending', 'read', 'replied'].includes(status)) {
-        throw new AppError('Statut invalide', 400);
+        throw new AppError(req.t('common.badRequest'), 400);
     }
 
     const contact = await Contact.findByPk(id, {
@@ -155,12 +155,12 @@ const updateContactStatus = asyncHandler(async (req, res) => {
     });
 
     if (!contact) {
-        throw new AppError('Demande de contact non trouvée', 404);
+        throw new AppError(req.t('contact.notFound'), 404);
     }
 
     // Check ownership (provider must be owner)
     if (contact.provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé', 403);
+        throw new AppError(req.t('common.unauthorized'), 403);
     }
 
     contact.status = status;
@@ -175,12 +175,122 @@ const updateContactStatus = asyncHandler(async (req, res) => {
         });
     }
 
-    successResponse(res, 200, 'Statut mis à jour', { contact });
+    // Send email notification to sender
+    if (contact.senderEmail) {
+        const { contactStatusChangedEmail } = require('../utils/emailTemplates');
+        sendEmail({
+            to: contact.senderEmail,
+            ...contactStatusChangedEmail({
+                firstName: contact.senderName.split(' ')[0],
+                providerName: contact.provider.businessName,
+                status
+            })
+        }).catch(err => console.error('Contact status email error:', err.message));
+    }
+
+    i18nResponse(req, res, 200, 'contact.statusUpdated', { contact });
+});
+
+/**
+ * @desc    Get daily contact statistics (for provider dashboard)
+ * @route   GET /api/contacts/stats/daily
+ * @access  Private (provider)
+ */
+const getDailyContactStats = asyncHandler(async (req, res) => {
+    const { startDate, endDate } = req.query;
+    const { Op, fn, col, literal } = require('sequelize');
+
+    // Get provider for current user
+    const provider = await Provider.findOne({ where: { userId: req.user.id } });
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 404);
+    }
+
+    // Default to last 30 days
+    const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+    end.setHours(23, 59, 59, 999);
+
+    // Get contacts grouped by date
+    const dailyStats = await Contact.findAll({
+        where: {
+            providerId: provider.id,
+            createdAt: { [Op.between]: [start, end] }
+        },
+        attributes: [
+            [fn('DATE', col('created_at')), 'date'],
+            [fn('COUNT', col('id')), 'count']
+        ],
+        group: [fn('DATE', col('created_at'))],
+        order: [[fn('DATE', col('created_at')), 'DESC']],
+        raw: true
+    });
+
+    // Get total for period
+    const totalContacts = dailyStats.reduce((sum, day) => sum + parseInt(day.count), 0);
+
+    i18nResponse(req, res, 200, 'contact.list', {
+        period: { start, end },
+        totalContacts,
+        dailyStats
+    });
+});
+
+/**
+ * @desc    Get contacts for a specific date (for provider dashboard)
+ * @route   GET /api/contacts/by-date/:date
+ * @access  Private (provider)
+ */
+const getContactsByDate = asyncHandler(async (req, res) => {
+    const { date } = req.params;
+    const { page = 1, limit = 20 } = req.query;
+    const { Op } = require('sequelize');
+
+    // Get provider for current user
+    const provider = await Provider.findOne({ where: { userId: req.user.id } });
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 404);
+    }
+
+    // Parse date
+    const targetDate = new Date(date);
+    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+
+    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+
+    const { count, rows: contacts } = await Contact.findAndCountAll({
+        where: {
+            providerId: provider.id,
+            createdAt: { [Op.between]: [startOfDay, endOfDay] }
+        },
+        include: [
+            {
+                model: User,
+                as: 'sender',
+                attributes: ['id', 'firstName', 'lastName', 'profilePhoto', 'phone'],
+                required: false
+            }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit: queryLimit,
+        offset
+    });
+
+    const pagination = getPaginationData(page, queryLimit, count);
+
+    i18nResponse(req, res, 200, 'contact.list', {
+        date: date,
+        contacts,
+        pagination
+    });
 });
 
 module.exports = {
     createContact,
     getReceivedContacts,
     getSentContacts,
-    updateContactStatus
+    updateContactStatus,
+    getDailyContactStats,
+    getContactsByDate
 };

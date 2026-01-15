@@ -152,6 +152,44 @@ const successResponse = (res, statusCode, message, data = null) => {
     return res.status(statusCode).json(response);
 };
 
+/**
+ * Create internationalized success response
+ * Uses the i18n middleware to translate message keys
+ * @param {Object} req - Express request object (with req.t function)
+ * @param {Object} res - Express response object
+ * @param {number} statusCode - HTTP status code
+ * @param {string} messageKey - i18n message key (e.g., 'provider.created')
+ * @param {Object} data - Response data
+ * @param {Object} params - Parameters for message interpolation
+ */
+const i18nResponse = (req, res, statusCode, messageKey, data = null, params = {}) => {
+    // Use req.t() if available (i18n middleware), otherwise return the key
+    const message = req.t ? req.t(messageKey, params) : messageKey;
+
+    const response = {
+        success: statusCode >= 200 && statusCode < 300,
+        message,
+        messageKey // Include key for debugging/testing
+    };
+
+    if (data !== null) {
+        response.data = data;
+    }
+
+    return res.status(statusCode).json(response);
+};
+
+/**
+ * Parse boolean from various formats
+ * @param {any} value - Value to parse
+ * @returns {boolean|undefined}
+ */
+const parseBoolean = (value) => {
+    if (value === true || value === 'true' || value === '1' || value === 1) return true;
+    if (value === false || value === 'false' || value === '0' || value === 0) return false;
+    return undefined;
+};
+
 module.exports = {
     getPaginationData,
     getPaginationParams,
@@ -162,5 +200,8 @@ module.exports = {
     sanitizeSearchString,
     buildSortOrder,
     extractPhotoUrls,
-    successResponse
+    successResponse,
+    i18nResponse,
+    parseBoolean
 };
+

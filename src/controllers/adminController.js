@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const { User, Provider, Service, Review, Contact, Category } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
+const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
 const { accountVerifiedEmail } = require('../utils/emailTemplates');
 
@@ -54,7 +54,7 @@ const getStats = asyncHandler(async (req, res) => {
         limit: 5
     });
 
-    successResponse(res, 200, 'Statistiques de la plateforme', {
+    i18nResponse(req, res, 200, 'admin.stats', {
         users: {
             total: totalUsers,
             clients: totalClients,
@@ -103,7 +103,7 @@ const getPendingProviders = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Prestataires en attente', { providers, pagination });
+    i18nResponse(req, res, 200, 'admin.providersUnderReview', { providers, pagination });
 });
 
 /**
@@ -120,7 +120,7 @@ const verifyProvider = asyncHandler(async (req, res) => {
     });
 
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     provider.isVerified = isVerified;
@@ -137,7 +137,7 @@ const verifyProvider = asyncHandler(async (req, res) => {
         }).catch(err => console.error('Verification email error:', err.message));
     }
 
-    successResponse(res, 200, isVerified ? 'Prestataire validé' : 'Prestataire rejeté', { provider });
+    i18nResponse(req, res, 200, isVerified ? 'provider.verified' : 'provider.rejected', { provider });
 });
 
 /**
@@ -149,15 +149,30 @@ const featureProvider = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { isFeatured } = req.body;
 
-    const provider = await Provider.findByPk(id);
+    const provider = await Provider.findByPk(id, {
+        include: [{ model: User, as: 'user' }]
+    });
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     provider.isFeatured = isFeatured;
     await provider.save({ fields: ['isFeatured'] });
 
-    successResponse(res, 200, isFeatured ? 'Prestataire mis en avant' : 'Mise en avant retirée', { provider });
+    // Send email notification to provider
+    if (provider.user && provider.user.email) {
+        const { providerFeaturedEmail } = require('../utils/emailTemplates');
+        sendEmail({
+            to: provider.user.email,
+            ...providerFeaturedEmail({
+                firstName: provider.user.firstName,
+                businessName: provider.businessName,
+                featured: isFeatured
+            })
+        }).catch(err => console.error('Feature email error:', err.message));
+    }
+
+    i18nResponse(req, res, 200, isFeatured ? 'provider.featured' : 'provider.unfeatured', { provider });
 });
 
 /**
@@ -171,18 +186,18 @@ const updateUserStatus = asyncHandler(async (req, res) => {
 
     const user = await User.findByPk(id);
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
     // Prevent admin from deactivating themselves
     if (user.id === req.user.id) {
-        throw new AppError('Vous ne pouvez pas désactiver votre propre compte', 400);
+        throw new AppError(req.t('admin.cannotDeactivateSelf'), 400);
     }
 
     user.isActive = isActive;
     await user.save({ fields: ['isActive'] });
 
-    successResponse(res, 200, isActive ? 'Compte activé' : 'Compte désactivé', {
+    i18nResponse(req, res, 200, isActive ? 'admin.userActivated' : 'admin.userDeactivated', {
         user: user.toPublicJSON()
     });
 });
@@ -214,7 +229,7 @@ const getAllReviews = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Liste des avis', { reviews, pagination });
+    i18nResponse(req, res, 200, 'review.list', { reviews, pagination });
 });
 
 /**
@@ -228,7 +243,7 @@ const updateReviewVisibility = asyncHandler(async (req, res) => {
 
     const review = await Review.findByPk(id);
     if (!review) {
-        throw new AppError('Avis non trouvé', 404);
+        throw new AppError(req.t('review.notFound'), 404);
     }
 
     review.isVisible = isVisible;
@@ -240,7 +255,7 @@ const updateReviewVisibility = asyncHandler(async (req, res) => {
         await provider.updateRating(null, false);
     }
 
-    successResponse(res, 200, isVisible ? 'Avis visible' : 'Avis masqué', { review });
+    i18nResponse(req, res, 200, isVisible ? 'review.visible' : 'review.hidden', { review });
 });
 
 /**
@@ -272,7 +287,129 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    successResponse(res, 200, 'Liste des utilisateurs', { users, pagination });
+    i18nResponse(req, res, 200, 'common.list', { users, pagination });
+});
+
+/**
+ * @desc    Get providers with documents under review
+ * @route   GET /api/admin/providers/under-review
+ * @access  Private (admin)
+ */
+const getProvidersUnderReview = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10 } = req.query;
+    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+
+    const { count, rows: providers } = await Provider.findAndCountAll({
+        where: { verificationStatus: 'under_review' },
+        include: [
+            { model: User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'email', 'phone'] }
+        ],
+        order: [['createdAt', 'ASC']],
+        limit: queryLimit,
+        offset
+    });
+
+    const pagination = getPaginationData(page, queryLimit, count);
+
+    i18nResponse(req, res, 200, 'admin.providersUnderReview', { providers, pagination });
+});
+
+/**
+ * @desc    Review provider documents (approve/reject)
+ * @route   PUT /api/admin/providers/:id/review-documents
+ * @access  Private (admin)
+ */
+const reviewProviderDocuments = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { decision, notes, approvedDocuments, rejectedDocuments } = req.body;
+    // decision: 'approved' or 'rejected'
+    // approvedDocuments: [indexes of approved docs]
+    // rejectedDocuments: [indexes of rejected docs with reasons]
+
+    const provider = await Provider.findByPk(id, {
+        include: [{ model: User, as: 'user' }]
+    });
+
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 404);
+    }
+
+    if (!['approved', 'rejected'].includes(decision)) {
+        throw new AppError(req.t('common.badRequest'), 400);
+    }
+
+    // Update document statuses
+    const documents = provider.documents || [];
+
+    if (approvedDocuments && Array.isArray(approvedDocuments)) {
+        approvedDocuments.forEach(idx => {
+            if (documents[idx]) documents[idx].status = 'approved';
+        });
+    }
+
+    if (rejectedDocuments && Array.isArray(rejectedDocuments)) {
+        rejectedDocuments.forEach(item => {
+            if (documents[item.index]) {
+                documents[item.index].status = 'rejected';
+                documents[item.index].rejectionReason = item.reason;
+            }
+        });
+    }
+
+    // Update provider verification status
+    if (decision === 'approved') {
+        provider.verificationStatus = 'approved';
+        provider.isVerified = true;
+        provider.verifiedAt = new Date();
+        provider.verifiedBy = req.user.id;
+
+        // Send approval email
+        if (provider.user) {
+            sendEmail({
+                to: provider.user.email,
+                ...accountVerifiedEmail({
+                    firstName: provider.user.firstName,
+                    businessName: provider.businessName
+                })
+            }).catch(err => console.error('Verification email error:', err.message));
+        }
+    } else {
+        provider.verificationStatus = 'rejected';
+        provider.isVerified = false;
+
+        // Send rejection email
+        if (provider.user) {
+            const { documentsRejectedEmail } = require('../utils/emailTemplates');
+            const rejectionReasons = rejectedDocuments
+                ? rejectedDocuments.map(d => d.reason).filter(Boolean)
+                : [];
+
+            sendEmail({
+                to: provider.user.email,
+                ...documentsRejectedEmail({
+                    firstName: provider.user.firstName,
+                    businessName: provider.businessName,
+                    reasons: rejectionReasons,
+                    notes: notes
+                })
+            }).catch(err => console.error('Rejection email error:', err.message));
+        }
+    }
+
+    provider.documents = documents;
+    provider.verificationNotes = notes || null;
+    await provider.save();
+
+    i18nResponse(req, res, 200, decision === 'approved' ? 'documents.approved' : 'documents.rejected', {
+        provider: {
+            id: provider.id,
+            businessName: provider.businessName,
+            verificationStatus: provider.verificationStatus,
+            isVerified: provider.isVerified,
+            documents: provider.documents,
+            verificationNotes: provider.verificationNotes
+        }
+    });
 });
 
 module.exports = {
@@ -283,5 +420,7 @@ module.exports = {
     updateUserStatus,
     getAllReviews,
     updateReviewVisibility,
-    getAllUsers
+    getAllUsers,
+    getProvidersUnderReview,
+    reviewProviderDocuments
 };

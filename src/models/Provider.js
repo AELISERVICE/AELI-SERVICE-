@@ -54,7 +54,7 @@ const Provider = sequelize.define('Provider', {
         allowNull: true
     },
     whatsapp: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(200), // Increased for encrypted data
         allowNull: true
     },
     facebook: {
@@ -105,6 +105,34 @@ const Provider = sequelize.define('Provider', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
         field: 'total_reviews'
+    },
+    // Document verification fields
+    documents: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        comment: 'Array of uploaded documents: [{type, url, uploadedAt, status}]'
+    },
+    verificationStatus: {
+        type: DataTypes.ENUM('pending', 'under_review', 'approved', 'rejected'),
+        defaultValue: 'pending',
+        field: 'verification_status'
+    },
+    verificationNotes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'verification_notes',
+        comment: 'Admin notes about verification decision'
+    },
+    verifiedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'verified_at'
+    },
+    verifiedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        field: 'verified_by',
+        comment: 'Admin user ID who verified'
     }
 }, {
     tableName: 'providers',
@@ -123,7 +151,37 @@ const Provider = sequelize.define('Provider', {
         {
             fields: ['is_featured']
         }
-    ]
+    ],
+    hooks: {
+        beforeCreate: (provider) => {
+            if (provider.whatsapp) {
+                const { encryptIfNeeded } = require('../utils/encryption');
+                provider.whatsapp = encryptIfNeeded(provider.whatsapp);
+            }
+        },
+        beforeUpdate: (provider) => {
+            if (provider.changed('whatsapp') && provider.whatsapp) {
+                const { encryptIfNeeded } = require('../utils/encryption');
+                provider.whatsapp = encryptIfNeeded(provider.whatsapp);
+            }
+        },
+        afterFind: (result) => {
+            if (!result) return;
+            const { decrypt } = require('../utils/encryption');
+
+            const decryptWhatsapp = (provider) => {
+                if (provider && provider.whatsapp) {
+                    provider.whatsapp = decrypt(provider.whatsapp);
+                }
+            };
+
+            if (Array.isArray(result)) {
+                result.forEach(decryptWhatsapp);
+            } else {
+                decryptWhatsapp(result);
+            }
+        }
+    }
 });
 
 // Method to increment view count

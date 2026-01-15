@@ -235,11 +235,58 @@ const createCategoryValidation = [
         .withMessage('L\'ordre doit être un entier positif')
 ];
 
+/**
+ * Validation rules for provider application
+ */
+const applyProviderValidation = [
+    body('businessName')
+        .trim()
+        .notEmpty()
+        .withMessage('Le nom de l\'activité est requis')
+        .isLength({ min: 2, max: 255 })
+        .withMessage('Le nom doit contenir entre 2 et 255 caractères'),
+
+    body('description')
+        .trim()
+        .notEmpty()
+        .withMessage('La description de l\'activité est requise')
+        .isLength({ min: 50, max: 5000 })
+        .withMessage('La description doit contenir entre 50 et 5000 caractères'),
+
+    body('location')
+        .trim()
+        .notEmpty()
+        .withMessage('La ville est requise')
+        .isLength({ max: 255 })
+        .withMessage('La localisation ne peut pas dépasser 255 caractères'),
+
+    body('address')
+        .optional()
+        .trim()
+        .isLength({ max: 500 })
+        .withMessage('L\'adresse ne peut pas dépasser 500 caractères'),
+
+    body('whatsapp')
+        .optional()
+        .trim()
+        .matches(/^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,9}$/)
+        .withMessage('Numéro WhatsApp invalide'),
+
+    body('facebook')
+        .optional()
+        .trim(),
+
+    body('instagram')
+        .optional()
+        .trim()
+];
+
 module.exports = {
     createProviderValidation,
     updateProviderValidation,
     listProvidersValidation,
     createServiceValidation,
     updateServiceValidation,
-    createCategoryValidation
+    createCategoryValidation,
+    applyProviderValidation
 };

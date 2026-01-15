@@ -1,0 +1,1669 @@
+{
+    "info": {
+        "_postman_id": "aeli-services-api-v1",
+        "name": "🌸 AELI Services API v1.1",
+        "description": "# AELI Services API\n\n**Plateforme de mise en relation entre clients et prestataires de services au Cameroun.**\n\n## 🔐 Authentification\nL'API utilise JWT (JSON Web Tokens). Après connexion, utilisez le `accessToken` dans le header `Authorization: Bearer <token>`.\n\n## 🌍 Internationalisation\nAjoutez `?lang=en` ou `?lang=fr` pour changer la langue des réponses.\n\n## 📊 Pagination\nLes listes supportent `page` et `limit` (max 50).\n\n## 🔗 Base URL\n- **Dev**: `http://localhost:5000`\n- **Prod**: `https://api.aeli-services.cm`\n\n## 👤 Comptes de test\n- **Admin**: admin@aeli.cm / Admin123!\n- **Provider**: provider@test.cm / Provider123!\n- **Client**: client@test.cm / Client123!\n\n---\n\nDéveloppé par **NGOUE DAVID** pour AELI Services 🇨🇲",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "userId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "providerId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "testEmail",
+            "value": "testuser@example.com",
+            "type": "string"
+        },
+        {
+            "key": "testPassword",
+            "value": "SecurePass123!",
+            "type": "string"
+        },
+        {
+            "key": "adminEmail",
+            "value": "admin@aeli.cm",
+            "type": "string"
+        },
+        {
+            "key": "adminPassword",
+            "value": "Admin123!",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{accessToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "🔐 Auth - Authentification",
+            "description": "## Module d'Authentification\n\nGère l'inscription, la connexion, la vérification OTP et la réinitialisation de mot de passe.\n\n### Flux d'inscription\n1. `POST /register` → Envoie un OTP par email\n2. `POST /verify-otp` → Valide le code OTP\n3. `POST /login` → Obtient les tokens JWT\n\n### Sécurité\n- Rate limiting sur login (5 tentatives/15min)\n- Verrouillage compte après 5 échecs\n- OTP expire après 10 minutes\n- Refresh token valide 7 jours",
+            "item": [
+                {
+                    "name": "Register - Inscription",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"marie.dupont@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"firstName\": \"Marie\",\n    \"lastName\": \"Dupont\",\n    \"phone\": \"+237670123456\",\n    \"role\": \"client\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/register",
+                        "description": "Crée un nouveau compte utilisateur.\n\n**Rôles disponibles**:\n- `client` - Utilisateur recherchant des services\n- `provider` - Prestataire de services\n\n**Après inscription**: Un code OTP est envoyé par email pour vérification."
+                    }
+                },
+                {
+                    "name": "Verify OTP - Vérifier le code",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"marie.dupont@example.com\",\n    \"otp\": \"123456\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/verify-otp",
+                        "description": "Vérifie le code OTP reçu par email.\n\n**Note**: Le code OTP expire après 10 minutes. Max 3 tentatives."
+                    }
+                },
+                {
+                    "name": "Resend OTP - Renvoyer le code",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"marie.dupont@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/resend-otp",
+                        "description": "Renvoie un nouveau code OTP par email.\n\n**Limite**: 3 renvois par heure."
+                    }
+                },
+                {
+                    "name": "Login - Connexion",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.accessToken) {",
+                                    "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                                    "    if (jsonData.data.user) {",
+                                    "        pm.collectionVariables.set('userId', jsonData.data.user.id);",
+                                    "    }",
+                                    "    pm.test('Login successful', () => pm.response.to.have.status(200));",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@aeli.cm\",\n    \"password\": \"Admin123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/login",
+                        "description": "Authentifie un utilisateur et retourne les tokens JWT.\n\n**Comptes de test**:\n- Admin: `admin@aeli.cm` / `Admin123!`\n- Provider: `provider@test.cm` / `Provider123!`\n- Client: `client@test.cm` / `Client123!`\n\n**Réponse**: `accessToken` (15min) + `refreshToken` (7 jours)"
+                    }
+                },
+                {
+                    "name": "Login Provider - Connexion Prestataire",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.accessToken) {",
+                                    "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                                    "    pm.collectionVariables.set('userId', jsonData.data.user.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"provider@test.cm\",\n    \"password\": \"Provider123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/login",
+                        "description": "Connexion avec un compte prestataire pour tester les fonctionnalités provider."
+                    }
+                },
+                {
+                    "name": "Refresh Token - Renouveler le token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.accessToken) {",
+                                    "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/refresh-token",
+                        "description": "Renouvelle le access token en utilisant le refresh token.\n\n**Utilisation**: Quand le access token expire (15min)"
+                    }
+                },
+                {
+                    "name": "Forgot Password - Mot de passe oublié",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"marie.dupont@example.com\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/forgot-password",
+                        "description": "Envoie un email avec un lien de réinitialisation de mot de passe.\n\n**Note**: Le lien expire après 1 heure."
+                    }
+                },
+                {
+                    "name": "Reset Password - Réinitialiser le mot de passe",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"password\": \"NouveauPass123!\",\n    \"confirmPassword\": \"NouveauPass123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/auth/reset-password/TOKEN_FROM_EMAIL",
+                        "description": "Réinitialise le mot de passe avec le token reçu par email.\n\n**Remplacer**: `TOKEN_FROM_EMAIL` par le token reçu dans l'URL du mail."
+                    }
+                },
+                {
+                    "name": "Get Me - Utilisateur connecté",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/auth/me",
+                        "description": "Retourne les informations de l'utilisateur actuellement connecté."
+                    }
+                },
+                {
+                    "name": "Logout - Déconnexion",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/auth/logout",
+                        "description": "Déconnecte l'utilisateur et invalide le refresh token actuel."
+                    }
+                },
+                {
+                    "name": "Logout All - Déconnexion tous appareils",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/auth/logout-all",
+                        "description": "Déconnecte l'utilisateur de tous ses appareils en invalidant tous ses refresh tokens."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "👤 Users - Profil Utilisateur",
+            "description": "## Gestion du Profil Utilisateur\n\nPermet aux utilisateurs connectés de gérer leur profil, changer leur mot de passe et désactiver leur compte.\n\n### Fonctionnalités\n- Voir son profil\n- Mettre à jour ses informations\n- Changer de mot de passe\n- Désactiver son compte\n\n**Authentification requise**: Oui (Bearer Token)",
+            "item": [
+                {
+                    "name": "Get Profile - Mon profil",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/users/profile",
+                        "description": "Retourne le profil complet de l'utilisateur connecté."
+                    }
+                },
+                {
+                    "name": "Update Profile - Modifier profil",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "firstName",
+                                    "value": "Marie",
+                                    "type": "text",
+                                    "description": "Prénom"
+                                },
+                                {
+                                    "key": "lastName",
+                                    "value": "Dupont-Kamga",
+                                    "type": "text",
+                                    "description": "Nom"
+                                },
+                                {
+                                    "key": "phone",
+                                    "value": "+237699887766",
+                                    "type": "text",
+                                    "description": "Téléphone"
+                                },
+                                {
+                                    "key": "profilePhoto",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "Photo de profil (optionnel)"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/api/users/profile",
+                        "description": "Met à jour les informations du profil.\n\n**Upload photo**: Formats acceptés: JPG, PNG, WebP (max 5MB)"
+                    }
+                },
+                {
+                    "name": "Change Password - Changer mot de passe",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"currentPassword\": \"SecurePass123!\",\n    \"newPassword\": \"NouveauPass456!\",\n    \"confirmPassword\": \"NouveauPass456!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/users/password",
+                        "description": "Change le mot de passe de l'utilisateur.\n\n**Exigences mot de passe**:\n- Min 8 caractères\n- 1 majuscule, 1 minuscule, 1 chiffre"
+                    }
+                },
+                {
+                    "name": "Deactivate Account - Désactiver compte",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/users/account",
+                        "description": "Désactive le compte utilisateur.\n\n**⚠️ Attention**: Cette action est irréversible sans intervention admin."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🏪 Providers - Prestataires",
+            "description": "## Gestion des Prestataires\n\nLes prestataires sont des femmes entrepreneures offrant leurs services sur la plateforme.\n\n### Fonctionnalités\n- Listing public (filtres, recherche, tri)\n- Création de profil prestataire\n- Upload de photos (max 5)\n- Vérification KYC (documents)\n- Dashboard avec statistiques\n\n### Vérification KYC\n1. Upload CNI + document professionnel\n2. Admin review\n3. Badge \"Vérifié\" si approuvé\n\n### Abonnement\n- Essai gratuit 30 jours\n- Après expiration: contacts masqués",
+            "item": [
+                {
+                    "name": "List Providers - Liste publique",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/providers?page=1&limit=12&location=Douala&sort=rating&verified=true",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "providers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "Page (défaut: 1)"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "12",
+                                    "description": "Par page (max 50)"
+                                },
+                                {
+                                    "key": "location",
+                                    "value": "Douala",
+                                    "description": "Ville: Douala, Yaoundé, Bafoussam..."
+                                },
+                                {
+                                    "key": "category",
+                                    "value": "",
+                                    "description": "ID catégorie",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "sort",
+                                    "value": "rating",
+                                    "description": "rating, recent, views, contacts"
+                                },
+                                {
+                                    "key": "search",
+                                    "value": "",
+                                    "description": "Recherche texte",
+                                    "disabled": true
+                                },
+                                {
+                                    "key": "verified",
+                                    "value": "true",
+                                    "description": "Uniquement vérifiés"
+                                },
+                                {
+                                    "key": "featured",
+                                    "value": "",
+                                    "description": "Uniquement mis en avant",
+                                    "disabled": true
+                                }
+                            ]
+                        },
+                        "description": "Liste les prestataires avec filtres et pagination.\n\n**Tri disponible**:\n- `rating` - Par note moyenne\n- `recent` - Plus récents\n- `views` - Plus consultés\n- `contacts` - Plus contactés"
+                    }
+                },
+                {
+                    "name": "Get Provider by ID - Détail prestataire",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/providers/{{providerId}}",
+                        "description": "Retourne le profil complet d'un prestataire.\n\n**Note**: Si l'abonnement est expiré, les contacts (whatsapp, phone) sont masqués."
+                    }
+                },
+                {
+                    "name": "Create Provider - Créer profil prestataire",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.id) {",
+                                    "    pm.collectionVariables.set('providerId', jsonData.data.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "businessName",
+                                    "value": "Salon Belle Coiffure",
+                                    "type": "text",
+                                    "description": "Nom de l'entreprise"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Salon de coiffure professionnel avec plus de 10 ans d'expérience. Spécialisée en tresses, tissages, lissage brésilien et soins capillaires. Nous utilisons uniquement des produits de qualité premium.",
+                                    "type": "text",
+                                    "description": "Description (50-5000 car.)"
+                                },
+                                {
+                                    "key": "location",
+                                    "value": "Douala",
+                                    "type": "text",
+                                    "description": "Ville"
+                                },
+                                {
+                                    "key": "address",
+                                    "value": "Rue de la Joie, Akwa, Douala",
+                                    "type": "text",
+                                    "description": "Adresse complète"
+                                },
+                                {
+                                    "key": "whatsapp",
+                                    "value": "+237691234567",
+                                    "type": "text",
+                                    "description": "Numéro WhatsApp"
+                                },
+                                {
+                                    "key": "facebook",
+                                    "value": "https://facebook.com/salonbellecoiffure",
+                                    "type": "text",
+                                    "description": "Page Facebook"
+                                },
+                                {
+                                    "key": "instagram",
+                                    "value": "@salonbellecoiffure",
+                                    "type": "text",
+                                    "description": "Compte Instagram"
+                                },
+                                {
+                                    "key": "photos",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "Photos (max 5)"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/api/providers/create",
+                        "description": "Crée un profil prestataire.\n\n**Prérequis**: Être connecté avec rôle `provider`\n\n**Après création**: Essai gratuit 30 jours activé automatiquement"
+                    }
+                },
+                {
+                    "name": "My Profile - Mon profil prestataire",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/providers/my-profile",
+                        "description": "Retourne le profil prestataire de l'utilisateur connecté.\n\n**Rôle requis**: `provider`"
+                    }
+                },
+                {
+                    "name": "My Dashboard - Tableau de bord",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/providers/my-dashboard",
+                        "description": "Retourne les statistiques du prestataire:\n- Nombre de vues\n- Nombre de contacts\n- Note moyenne\n- Évolution mensuelle"
+                    }
+                },
+                {
+                    "name": "Update Provider - Modifier profil",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "businessName",
+                                    "value": "Salon Belle Coiffure & Beauté",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Description mise à jour avec nouveaux services...",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "whatsapp",
+                                    "value": "+237699888777",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "photos",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "Nouvelles photos à ajouter"
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/api/providers/{{providerId}}",
+                        "description": "Met à jour le profil prestataire."
+                    }
+                },
+                {
+                    "name": "Delete Photo - Supprimer photo",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/providers/{{providerId}}/photos/0",
+                        "description": "Supprime une photo du profil.\n\n**Index**: 0 = première photo, 1 = deuxième, etc."
+                    }
+                },
+                {
+                    "name": "Upload Documents - KYC",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "documents",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "CNI, registre commerce, diplôme..."
+                                }
+                            ]
+                        },
+                        "url": "{{baseUrl}}/api/providers/{{providerId}}/documents",
+                        "description": "Upload des documents pour vérification KYC.\n\n**Documents acceptés**:\n- Carte Nationale d'Identité\n- Registre de commerce\n- Diplôme/Certificat professionnel\n\n**Formats**: PDF, JPG, PNG (max 10MB)"
+                    }
+                },
+                {
+                    "name": "Get Documents - Voir documents",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/providers/{{providerId}}/documents",
+                        "description": "Liste les documents uploadés pour la vérification."
+                    }
+                },
+                {
+                    "name": "Delete Document - Supprimer document",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/providers/{{providerId}}/documents/0",
+                        "description": "Supprime un document."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📂 Services - Catégories & Services",
+            "description": "## Gestion des Services et Catégories\n\nLes prestataires peuvent créer des services dans des catégories prédéfinies.\n\n### Catégories\n- Coiffure & Beauté\n- Couture & Mode\n- Restauration\n- Événementiel\n- Santé & Bien-être\n- Formation\n- etc.\n\n### Services\nChaque prestataire peut créer plusieurs services avec:\n- Nom et description\n- Prix (FCFA)\n- Durée estimée\n- Catégorie associée",
+            "item": [
+                {
+                    "name": "Get Categories - Liste catégories",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/services/categories",
+                        "description": "Liste toutes les catégories de services disponibles.\n\n**Public**: Pas d'authentification requise"
+                    }
+                },
+                {
+                    "name": "Create Category - Nouvelle catégorie",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Décoration d'intérieur\",\n    \"icon\": \"home\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/services/categories",
+                        "description": "Crée une nouvelle catégorie.\n\n**Rôle requis**: `admin` ou `provider`"
+                    }
+                },
+                {
+                    "name": "Update Category - Modifier catégorie",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Décoration & Design\",\n    \"icon\": \"palette\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/services/categories/:categoryId",
+                        "description": "Modifie une catégorie.\n\n**Rôle requis**: `admin`"
+                    }
+                },
+                {
+                    "name": "Get Services by Provider - Services d'un prestataire",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/services/provider/{{providerId}}",
+                        "description": "Liste tous les services d'un prestataire."
+                    }
+                },
+                {
+                    "name": "Create Service - Nouveau service",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Tresses africaines\",\n    \"description\": \"Tresses traditionnelles avec ou sans rajouts. Plusieurs styles disponibles: cornrows, box braids, twists...\",\n    \"price\": 15000,\n    \"duration\": 180,\n    \"categoryId\": \"uuid-category-coiffure\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/services",
+                        "description": "Crée un nouveau service.\n\n**Champs**:\n- `price`: Prix en FCFA\n- `duration`: Durée en minutes\n- `categoryId`: UUID de la catégorie"
+                    }
+                },
+                {
+                    "name": "Update Service - Modifier service",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Tresses africaines premium\",\n    \"price\": 20000,\n    \"duration\": 240\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/services/:serviceId",
+                        "description": "Modifie un service existant."
+                    }
+                },
+                {
+                    "name": "Delete Service - Supprimer service",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/services/:serviceId",
+                        "description": "Supprime un service."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📧 Contacts - Messages",
+            "description": "## Système de Contact\n\nPermet aux clients de contacter les prestataires.\n\n### Flux\n1. Client envoie un message (public ou connecté)\n2. Prestataire reçoit notification email\n3. Prestataire lit et répond (statut: read → replied)\n\n### Statuts\n- `pending`: Non lu\n- `read`: Lu\n- `replied`: Répondu\n\n### Protection\n- Rate limiting: 5 contacts/prestataire/jour\n- Honeypot anti-bot",
+            "item": [
+                {
+                    "name": "Send Contact - Envoyer message",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"providerId\": \"{{providerId}}\",\n    \"message\": \"Bonjour, je suis intéressée par vos services de coiffure. Êtes-vous disponible ce samedi pour des tresses africaines ? Merci de me recontacter.\",\n    \"senderName\": \"Jeanne Kamga\",\n    \"senderEmail\": \"jeanne.kamga@gmail.com\",\n    \"senderPhone\": \"+237677889900\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/contacts",
+                        "description": "Envoie un message de contact à un prestataire.\n\n**Public**: Pas d'authentification requise\n\n**Email envoyé**: Le prestataire reçoit un email de notification"
+                    }
+                },
+                {
+                    "name": "Get Received Contacts - Messages reçus (Provider)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/contacts/received?page=1&limit=20&status=pending",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "contacts",
+                                "received"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "20"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "pending",
+                                    "description": "pending, read, replied"
+                                }
+                            ]
+                        },
+                        "description": "Liste les messages reçus par le prestataire.\n\n**Rôle requis**: `provider`"
+                    }
+                },
+                {
+                    "name": "Get Sent Contacts - Messages envoyés",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/contacts/sent",
+                        "description": "Liste les messages envoyés par l'utilisateur connecté."
+                    }
+                },
+                {
+                    "name": "Update Status - Marquer lu/répondu",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"read\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/contacts/:contactId/status",
+                        "description": "Met à jour le statut d'un contact.\n\n**Statuts**: `read`, `replied`"
+                    }
+                },
+                {
+                    "name": "Daily Stats - Statistiques quotidiennes",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/contacts/stats/daily",
+                        "description": "Statistiques des contacts des 30 derniers jours.\n\n**Rôle requis**: `provider`"
+                    }
+                },
+                {
+                    "name": "By Date - Contacts par date",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/contacts/by-date/2026-01-15",
+                        "description": "Liste les contacts reçus à une date spécifique.\n\n**Format date**: YYYY-MM-DD"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "⭐ Reviews - Avis",
+            "description": "## Système d'Avis\n\nLes clients peuvent laisser des avis sur les prestataires.\n\n### Règles\n- Note de 1 à 5 étoiles\n- Commentaire optionnel (max 1000 car.)\n- Un seul avis par prestataire par utilisateur\n- **Prérequis**: Avoir contacté le prestataire (statut read/replied)\n\n### Modération\nL'admin peut masquer les avis inappropriés.",
+            "item": [
+                {
+                    "name": "Get Provider Reviews - Avis d'un prestataire",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reviews/provider/{{providerId}}?page=1&limit=10",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reviews",
+                                "provider",
+                                "{{providerId}}"
+                            ],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        },
+                        "description": "Liste les avis d'un prestataire avec pagination."
+                    }
+                },
+                {
+                    "name": "Create Review - Laisser un avis",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"providerId\": \"{{providerId}}\",\n    \"rating\": 5,\n    \"comment\": \"Excellent service ! Marie est très professionnelle et à l'écoute. Mes tresses sont magnifiques, je reviendrai sans hésiter. Je recommande vivement !\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/reviews",
+                        "description": "Crée un avis pour un prestataire.\n\n**Prérequis**: Avoir contacté le prestataire avec un statut `read` ou `replied`\n\n**Rating**: 1 à 5"
+                    }
+                },
+                {
+                    "name": "Update Review - Modifier avis",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"rating\": 4,\n    \"comment\": \"Bon service dans l'ensemble, juste un peu long.\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/reviews/:reviewId",
+                        "description": "Modifie son propre avis."
+                    }
+                },
+                {
+                    "name": "Delete Review - Supprimer avis",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/reviews/:reviewId",
+                        "description": "Supprime son propre avis."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "❤️ Favorites - Favoris",
+            "description": "## Gestion des Favoris\n\nLes utilisateurs connectés peuvent sauvegarder leurs prestataires favoris.\n\n**Authentification requise**: Oui",
+            "item": [
+                {
+                    "name": "Get Favorites - Mes favoris",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/favorites",
+                        "description": "Liste tous les prestataires en favoris."
+                    }
+                },
+                {
+                    "name": "Add Favorite - Ajouter aux favoris",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"providerId\": \"{{providerId}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/favorites",
+                        "description": "Ajoute un prestataire aux favoris."
+                    }
+                },
+                {
+                    "name": "Remove Favorite - Retirer des favoris",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/favorites/{{providerId}}",
+                        "description": "Retire un prestataire des favoris."
+                    }
+                },
+                {
+                    "name": "Check Favorite - Vérifier si favori",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/favorites/check/{{providerId}}",
+                        "description": "Vérifie si un prestataire est dans les favoris."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💳 Payments - Paiements",
+            "description": "## Système de Paiement (CinetPay)\n\nIntégration Mobile Money via CinetPay.\n\n### Moyens de paiement\n- Orange Money\n- MTN Mobile Money\n- Carte bancaire\n\n### Types de paiement\n- `subscription`: Abonnement prestataire\n- `featured`: Mise en avant\n- `boost`: Boost de visibilité\n\n### Flux\n1. `POST /initialize` → URL de paiement CinetPay\n2. Utilisateur paie sur CinetPay\n3. Webhook notifie le backend\n4. `GET /status` pour vérifier",
+            "item": [
+                {
+                    "name": "Initialize Payment - Créer paiement",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"amount\": 5000,\n    \"type\": \"subscription\",\n    \"providerId\": \"{{providerId}}\",\n    \"description\": \"Abonnement mensuel AELI Services\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/payments/initialize",
+                        "description": "Initialise un paiement CinetPay.\n\n**Montants abonnement**:\n- Mensuel: 5000 FCFA\n- Trimestriel: 12000 FCFA\n- Annuel: 15000 FCFA\n\n**Réponse**: URL de paiement CinetPay"
+                    }
+                },
+                {
+                    "name": "Check Status - Vérifier statut",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/payments/:transactionId/status",
+                        "description": "Vérifie le statut d'un paiement.\n\n**Statuts**: `pending`, `success`, `failed`"
+                    }
+                },
+                {
+                    "name": "Payment History - Historique",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/payments/history",
+                        "description": "Historique des paiements de l'utilisateur connecté."
+                    }
+                },
+                {
+                    "name": "Webhook (CinetPay Internal)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"cpm_trans_id\": \"AELI_1234567890\",\n    \"cpm_trans_status\": \"ACCEPTED\",\n    \"cpm_amount\": \"5000\",\n    \"cpm_currency\": \"XAF\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/payments/webhook",
+                        "description": "**⚠️ INTERNE**: Endpoint appelé par CinetPay pour notifier les paiements.\n\nNe pas appeler manuellement."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "📦 Subscriptions - Abonnements",
+            "description": "## Système d'Abonnement\n\nLes prestataires ont besoin d'un abonnement actif pour afficher leurs coordonnées.\n\n### Plans\n| Plan | Prix | Durée |\n|------|------|-------|\n| Essai | Gratuit | 30 jours |\n| Mensuel | 5 000 FCFA | 30 jours |\n| Trimestriel | 12 000 FCFA | 90 jours |\n| Annuel | 15 000 FCFA | 365 jours |\n\n### Si expiré\n- Profil reste visible (SEO)\n- Contacts masqués (whatsapp, phone)\n- Photos masquées",
+            "item": [
+                {
+                    "name": "Get Plans - Liste des plans",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/subscriptions/plans",
+                        "description": "Liste tous les plans d'abonnement avec prix et durées."
+                    }
+                },
+                {
+                    "name": "Check Provider Status - Statut abonnement",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/subscriptions/provider/{{providerId}}/status",
+                        "description": "Vérifie si l'abonnement d'un prestataire est actif.\n\n**Réponse**:\n```json\n{\n    \"isActive\": true,\n    \"plan\": \"monthly\",\n    \"expiresAt\": \"2026-02-15\"\n}\n```"
+                    }
+                },
+                {
+                    "name": "My Subscription - Mon abonnement",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/subscriptions/my",
+                        "description": "Retourne l'abonnement du prestataire connecté."
+                    }
+                },
+                {
+                    "name": "Subscribe - Souscrire",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"plan\": \"monthly\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": "{{baseUrl}}/api/subscriptions/subscribe",
+                        "description": "Initie un paiement d'abonnement.\n\n**Plans**: `monthly`, `quarterly`, `yearly`\n\n**Réponse**: URL de paiement CinetPay"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🛡️ Admin",
+            "description": "## Panel d'Administration\n\n**Rôle requis**: `admin`\n\nFonctionnalités:\n- Dashboard et statistiques\n- Gestion utilisateurs\n- Vérification prestataires (KYC)\n- Modération avis\n- Sécurité (IP ban, logs)\n- Exports données",
+            "item": [
+                {
+                    "name": "📊 Dashboard",
+                    "item": [
+                        {
+                            "name": "Get Stats - Statistiques globales",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/stats",
+                                "description": "Statistiques globales de la plateforme:\n- Total utilisateurs, prestataires, avis\n- Inscriptions récentes\n- Revenus"
+                            }
+                        },
+                        {
+                            "name": "Analytics - Analytique API",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/analytics",
+                                "description": "Statistiques d'utilisation de l'API."
+                            }
+                        },
+                        {
+                            "name": "Hourly Analytics - Par heure",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/analytics/hourly?date=2026-01-15",
+                                "description": "Répartition horaire des requêtes API."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "👥 Users",
+                    "item": [
+                        {
+                            "name": "Get All Users - Liste utilisateurs",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/admin/users?page=1&limit=20&role=client",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "users"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "20"
+                                        },
+                                        {
+                                            "key": "role",
+                                            "value": "client",
+                                            "description": "client, provider, admin"
+                                        }
+                                    ]
+                                },
+                                "description": "Liste tous les utilisateurs avec filtres."
+                            }
+                        },
+                        {
+                            "name": "Update User Status - Activer/Désactiver",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"isActive\": false\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/api/admin/users/:userId/status",
+                                "description": "Active ou désactive un compte utilisateur."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "🏪 Providers",
+                    "item": [
+                        {
+                            "name": "Pending Providers - En attente",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/providers/pending",
+                                "description": "Prestataires en attente de vérification."
+                            }
+                        },
+                        {
+                            "name": "Under Review - En cours de review",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/providers/under-review",
+                                "description": "Prestataires avec documents soumis en attente de review."
+                            }
+                        },
+                        {
+                            "name": "Verify Provider - Vérifier",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"isVerified\": true\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
+                                "description": "Accorde le badge vérifié à un prestataire."
+                            }
+                        },
+                        {
+                            "name": "Feature Provider - Mettre en avant",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"isFeatured\": true\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/api/admin/providers/:providerId/feature",
+                                "description": "Met en avant un prestataire sur la page d'accueil."
+                            }
+                        },
+                        {
+                            "name": "Review Documents - Valider KYC",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"status\": \"approved\",\n    \"notes\": \"Documents conformes. CNI et registre de commerce valides.\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/api/admin/providers/:providerId/review-documents",
+                                "description": "Valide ou rejette les documents KYC.\n\n**Status**: `approved`, `rejected`"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "⭐ Reviews",
+                    "item": [
+                        {
+                            "name": "Get All Reviews - Tous les avis",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/reviews",
+                                "description": "Liste tous les avis pour modération."
+                            }
+                        },
+                        {
+                            "name": "Update Visibility - Masquer/Afficher",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"isVisible\": false\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/api/admin/reviews/:reviewId/visibility",
+                                "description": "Masque ou affiche un avis."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "💳 Payments",
+                    "item": [
+                        {
+                            "name": "Get All Payments - Tous les paiements",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/payments",
+                                "description": "Liste tous les paiements de la plateforme."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "🔒 Security",
+                    "item": [
+                        {
+                            "name": "Get Banned IPs - IPs bannies",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/banned-ips",
+                                "description": "Liste les adresses IP bannies."
+                            }
+                        },
+                        {
+                            "name": "Ban IP - Bannir une IP",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"ipAddress\": \"192.168.1.100\",\n    \"reason\": \"Tentatives de connexion suspectes répétées\",\n    \"duration\": 24\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": "{{baseUrl}}/api/admin/banned-ips",
+                                "description": "Bannit une adresse IP.\n\n**duration**: Heures (null = permanent)"
+                            }
+                        },
+                        {
+                            "name": "Unban IP - Débannir",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/banned-ips/192.168.1.100",
+                                "description": "Lève le ban d'une IP."
+                            }
+                        },
+                        {
+                            "name": "Security Logs - Logs de sécurité",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "{{baseUrl}}/api/admin/security-logs?limit=50&eventType=login_failed&riskLevel=high",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "admin",
+                                        "security-logs"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "limit",
+                                            "value": "50"
+                                        },
+                                        {
+                                            "key": "eventType",
+                                            "value": "login_failed",
+                                            "description": "login_failed, suspicious_activity, bot_detected"
+                                        },
+                                        {
+                                            "key": "riskLevel",
+                                            "value": "high",
+                                            "description": "low, medium, high"
+                                        }
+                                    ]
+                                },
+                                "description": "Logs d'activités suspectes."
+                            }
+                        },
+                        {
+                            "name": "Export Security Logs - Export CSV",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/security-logs/export?startDate=2026-01-01&endDate=2026-01-31",
+                                "description": "Exporte les logs de sécurité en CSV."
+                            }
+                        },
+                        {
+                            "name": "Security Stats - Statistiques sécurité",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/security-stats",
+                                "description": "Statistiques de sécurité:\n- Tentatives échouées (1h/24h)\n- Événements high risk\n- IPs bannies actives\n- Top IPs suspectes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "📋 Audit",
+                    "item": [
+                        {
+                            "name": "Audit Logs - Journal d'audit",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/audit-logs?limit=100&entityType=User",
+                                "description": "Journal des actions admin."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "📤 Exports",
+                    "item": [
+                        {
+                            "name": "Export Users CSV",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/export/users",
+                                "description": "Exporte tous les utilisateurs en CSV."
+                            }
+                        },
+                        {
+                            "name": "Export Providers CSV",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/export/providers",
+                                "description": "Exporte tous les prestataires en CSV."
+                            }
+                        },
+                        {
+                            "name": "Export Reviews CSV",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/export/reviews",
+                                "description": "Exporte tous les avis en CSV."
+                            }
+                        },
+                        {
+                            "name": "Export Contacts CSV",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/export/contacts",
+                                "description": "Exporte tous les contacts en CSV."
+                            }
+                        },
+                        {
+                            "name": "Export Report PDF",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": "{{baseUrl}}/api/admin/export/report",
+                                "description": "Génère un rapport PDF complet."
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "🏥 Health",
+            "description": "## Vérification de santé\n\nEndpoint pour vérifier que l'API fonctionne.",
+            "item": [
+                {
+                    "name": "Health Check - Statut API",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/api/health",
+                        "description": "Vérifie que l'API est opérationnelle.\n\n**Réponse attendue**:\n```json\n{\n    \"status\": \"ok\",\n    \"timestamp\": \"2026-01-15T12:00:00Z\",\n    \"uptime\": 3600\n}\n```"
+                    }
+                }
+            ]
+        }
+    ]
+}

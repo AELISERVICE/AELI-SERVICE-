@@ -25,6 +25,7 @@ const favoriteRoutes = require('./routes/favorites');
 const contactRoutes = require('./routes/contacts');
 const adminRoutes = require('./routes/admin');
 const paymentRoutes = require('./routes/payments');
+const subscriptionRoutes = require('./routes/subscriptions');
 
 // Initialize Express app
 const app = express();
@@ -125,6 +126,10 @@ const sanitizeInput = (req, res, next) => {
 
 app.use(sanitizeInput);
 
+// ============ INTERNATIONALIZATION ============
+const { i18nMiddleware } = require('./middlewares/i18n');
+app.use(i18nMiddleware);
+
 // ============ API ROUTES ============
 
 // Health check endpoints
@@ -146,6 +151,7 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Search endpoint (combined search across providers)
 app.get('/api/search', require('./controllers/providerController').getProviders);

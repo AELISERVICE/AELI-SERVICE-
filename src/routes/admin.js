@@ -8,8 +8,15 @@ const {
     updateUserStatus,
     getAllReviews,
     updateReviewVisibility,
-    getAllUsers
+    getAllUsers,
+    getProvidersUnderReview,
+    reviewProviderDocuments
 } = require('../controllers/adminController');
+const {
+    getApplications,
+    reviewApplication,
+    getApplicationDetails
+} = require('../controllers/providerApplicationController');
 const {
     exportUsersCSV,
     exportProvidersCSV,
@@ -20,6 +27,7 @@ const {
 const { protect, restrictTo } = require('../middlewares/auth');
 const { AuditLog, ApiUsage, BannedIP } = require('../models');
 const { asyncHandler } = require('../middlewares/errorHandler');
+const { i18nResponse } = require('../utils/helpers');
 
 // All routes require admin authentication
 router.use(protect);
@@ -32,10 +40,17 @@ router.get('/stats', getStats);
 router.get('/users', getAllUsers);
 router.put('/users/:id/status', updateUserStatus);
 
-// Providers management
+// ============ PROVIDER APPLICATIONS ============
+router.get('/provider-applications', getApplications);
+router.get('/provider-applications/:id', getApplicationDetails);
+router.put('/provider-applications/:id/review', reviewApplication);
+
+// Providers management (existing providers)
 router.get('/providers/pending', getPendingProviders);
+router.get('/providers/under-review', getProvidersUnderReview);
 router.put('/providers/:id/verify', verifyProvider);
 router.put('/providers/:id/feature', featureProvider);
+router.put('/providers/:id/review-documents', reviewProviderDocuments);
 
 // Reviews moderation
 router.get('/reviews', getAllReviews);
@@ -83,7 +98,7 @@ router.get('/banned-ips', asyncHandler(async (req, res) => {
         where: { isActive: true },
         order: [['createdAt', 'DESC']]
     });
-    res.json({ success: true, data: { bannedIPs: ips } });
+    i18nResponse(req, res, 200, 'security.bannedIPsList', { bannedIPs: ips });
 }));
 
 router.post('/banned-ips', asyncHandler(async (req, res) => {
@@ -93,16 +108,117 @@ router.post('/banned-ips', asyncHandler(async (req, res) => {
         bannedBy: req.user.id,
         duration
     });
-    res.status(201).json({ success: true, message: 'IP bannie' });
+    i18nResponse(req, res, 201, 'security.ipBannedSuccess', {});
 }));
 
 router.delete('/banned-ips/:ip', asyncHandler(async (req, res) => {
     await BannedIP.unbanIP(req.params.ip);
-    res.json({ success: true, message: 'IP débannie' });
+    i18nResponse(req, res, 200, 'security.ipUnbanned', {});
 }));
 
 // ============ PAYMENTS ============
 const { getAllPayments } = require('../controllers/paymentController');
 router.get('/payments', getAllPayments);
 
+// ============ SECURITY LOGS ============
+const SecurityLog = require('../models/SecurityLog');
+
+// Get security logs with filters
+router.get('/security-logs', asyncHandler(async (req, res) => {
+    const { limit = 100, eventType, riskLevel, userId, success, startDate, endDate } = req.query;
+    const { Op } = require('sequelize');
+    const where = {};
+
+    if (eventType) where.eventType = eventType;
+    if (riskLevel) where.riskLevel = riskLevel;
+    if (userId) where.userId = userId;
+    if (success !== undefined) where.success = success === 'true';
+
+    if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) where.createdAt[Op.gte] = new Date(startDate);
+        if (endDate) where.createdAt[Op.lte] = new Date(endDate);
+    }
+
+    const logs = await SecurityLog.findAll({
+        where,
+        order: [['createdAt', 'DESC']],
+        limit: parseInt(limit)
+    });
+
+    i18nResponse(req, res, 200, 'security.securityLogs', { logs });
+}));
+
+// Export security logs as CSV
+router.get('/security-logs/export', asyncHandler(async (req, res) => {
+    const { startDate, endDate, eventType, riskLevel } = req.query;
+    const { Op } = require('sequelize');
+    const where = {};
+
+    if (eventType) where.eventType = eventType;
+    if (riskLevel) where.riskLevel = riskLevel;
+
+    // Default to last 30 days
+    const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+    where.createdAt = { [Op.between]: [start, end] };
+
+    const logs = await SecurityLog.findAll({
+        where,
+        order: [['createdAt', 'DESC']],
+        limit: 10000
+    });
+
+    // Generate CSV
+    const headers = ['Date', 'Event Type', 'IP Address', 'Email', 'User Agent', 'Risk Level', 'Success', 'Details'];
+    const rows = logs.map(log => [
+        log.createdAt.toISOString(),
+        log.eventType,
+        log.ipAddress || '',
+        log.email || '',
+        (log.userAgent || '').substring(0, 100),
+        log.riskLevel,
+        log.success ? 'Yes' : 'No',
+        JSON.stringify(log.details || {})
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=security_logs_${start.toISOString().split('T')[0]}_to_${end.toISOString().split('T')[0]}.csv`);
+    res.send(csv);
+}));
+
+// Get security statistics
+router.get('/security-stats', asyncHandler(async (req, res) => {
+    const { Op, fn, col, literal } = require('sequelize');
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const [hourlyFailed, dailyFailed, highRiskEvents, bannedIPsCount] = await Promise.all([
+        SecurityLog.count({ where: { success: false, createdAt: { [Op.gte]: oneHourAgo } } }),
+        SecurityLog.count({ where: { success: false, createdAt: { [Op.gte]: oneDayAgo } } }),
+        SecurityLog.count({ where: { riskLevel: 'high', createdAt: { [Op.gte]: oneDayAgo } } }),
+        BannedIP.count({ where: { isActive: true } })
+    ]);
+
+    const topSuspiciousIPs = await SecurityLog.findAll({
+        where: { success: false, createdAt: { [Op.gte]: oneDayAgo } },
+        attributes: ['ipAddress', [fn('COUNT', col('id')), 'count']],
+        group: ['ipAddress'],
+        order: [[literal('count'), 'DESC']],
+        limit: 10,
+        raw: true
+    });
+
+    i18nResponse(req, res, 200, 'security.securityStats', {
+        hourlyFailedAttempts: hourlyFailed,
+        dailyFailedAttempts: dailyFailed,
+        highRiskEvents24h: highRiskEvents,
+        activeBannedIPs: bannedIPsCount,
+        topSuspiciousIPs
+    });
+}));
+
 module.exports = router;
+

@@ -48,9 +48,32 @@ const getPublicIdFromUrl = (url) => {
     return publicId;
 };
 
+// Helper function to upload document (PDF, images)
+const uploadDocument = async (file, folder = 'aeli-services/documents') => {
+    try {
+        const result = await cloudinary.uploader.upload(file, {
+            folder: folder,
+            allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
+            resource_type: 'auto', // Allows PDF and images
+            flags: 'attachment', // For PDF download
+            access_mode: 'authenticated' // Secure access
+        });
+        return {
+            url: result.secure_url,
+            publicId: result.public_id,
+            format: result.format,
+            bytes: result.bytes,
+            originalFilename: result.original_filename
+        };
+    } catch (error) {
+        throw new Error(`Document upload failed: ${error.message}`);
+    }
+};
+
 module.exports = {
     cloudinary,
     uploadImage,
     deleteImage,
-    getPublicIdFromUrl
+    getPublicIdFromUrl,
+    uploadDocument
 };

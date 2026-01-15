@@ -12,6 +12,8 @@ const BannedIP = require('./BannedIP');
 const AuditLog = require('./AuditLog');
 const Webhook = require('./Webhook');
 const ApiUsage = require('./ApiUsage');
+const Payment = require('./Payment');
+const ProviderStats = require('./ProviderStats');
 
 // ==================== ASSOCIATIONS ====================
 
@@ -157,8 +159,6 @@ Webhook.belongsTo(User, {
     as: 'user'
 });
 
-// Import Payment model
-const Payment = require('./Payment');
 
 // User <-> Payment (1:N)
 User.hasMany(Payment, {
@@ -182,6 +182,34 @@ Payment.belongsTo(Provider, {
     as: 'provider'
 });
 
+// Subscription model (Provider-only)
+const Subscription = require('./Subscription');
+
+// Provider <-> Subscription (1:1)
+Provider.hasOne(Subscription, {
+    foreignKey: 'providerId',
+    as: 'subscription',
+    onDelete: 'CASCADE'
+});
+Subscription.belongsTo(Provider, {
+    foreignKey: 'providerId',
+    as: 'provider'
+});
+
+// ProviderApplication model
+const ProviderApplication = require('./ProviderApplication');
+
+// User <-> ProviderApplication (1:1)
+User.hasOne(ProviderApplication, {
+    foreignKey: 'userId',
+    as: 'providerApplication',
+    onDelete: 'CASCADE'
+});
+ProviderApplication.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user'
+});
+
 // ==================== EXPORTS ====================
 
 module.exports = {
@@ -199,6 +227,12 @@ module.exports = {
     AuditLog,
     Webhook,
     ApiUsage,
-    Payment
+    Payment,
+    ProviderStats,
+    Subscription,
+    ProviderApplication
 };
+
+
+
 

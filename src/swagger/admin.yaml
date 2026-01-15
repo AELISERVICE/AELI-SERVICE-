@@ -249,3 +249,155 @@ paths:
       responses:
         '200':
           description: Visibilité modifiée
+
+  /admin/security-logs:
+    get:
+      tags:
+        - Admin - Sécurité
+      summary: Journaux de sécurité
+      description: Récupère les logs de sécurité avec filtres optionnels
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+        - in: query
+          name: eventType
+          schema:
+            type: string
+            enum: [login_success, login_failed, account_locked, otp_verified, otp_failed, honeypot_triggered]
+        - in: query
+          name: riskLevel
+          schema:
+            type: string
+            enum: [low, medium, high]
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Liste des logs de sécurité
+
+  /admin/security-logs/export:
+    get:
+      tags:
+        - Admin - Sécurité
+      summary: Exporter les logs en CSV
+      description: Télécharge les logs de sécurité au format CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Fichier CSV téléchargé
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /admin/security-stats:
+    get:
+      tags:
+        - Admin - Sécurité
+      summary: Statistiques de sécurité
+      description: Dashboard temps réel des événements de sécurité
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statistiques de sécurité
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hourlyFailedAttempts:
+                    type: integer
+                  dailyFailedAttempts:
+                    type: integer
+                  highRiskEvents24h:
+                    type: integer
+                  activeBannedIPs:
+                    type: integer
+                  topSuspiciousIPs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ipAddress:
+                          type: string
+                        count:
+                          type: integer
+
+  /admin/banned-ips:
+    get:
+      tags:
+        - Admin - Sécurité
+      summary: Liste des IPs bannies
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des IPs bannies actives
+    post:
+      tags:
+        - Admin - Sécurité
+      summary: Bannir une IP
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ipAddress
+              properties:
+                ipAddress:
+                  type: string
+                reason:
+                  type: string
+                duration:
+                  type: integer
+                  description: Durée en secondes (null = permanent)
+      responses:
+        '201':
+          description: IP bannie
+
+  /admin/banned-ips/{ip}:
+    delete:
+      tags:
+        - Admin - Sécurité
+      summary: Débannir une IP
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: ip
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: IP débannie

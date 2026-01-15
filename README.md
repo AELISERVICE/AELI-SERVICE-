@@ -96,7 +96,8 @@ Le serveur démarrera sur `http://localhost:5000`
 |---------|----------|-------------|
 | GET | `/` | Liste (paginée, filtrable) |
 | GET | `/:id` | Détails d'un prestataire |
-| POST | `/create` | Créer profil (provider) |
+| POST | `/apply` | Candidature prestataire (client→provider) |
+| GET | `/my-application` | Statut de ma candidature |
 | PUT | `/:id` | Modifier profil |
 | DELETE | `/:id/photos/:index` | Supprimer photo |
 | GET | `/my-profile` | Mon profil |
@@ -206,4 +207,4 @@ ISC
 
 ---
 
-Développé avec ❤️ pour AELI Services - Cameroun 🇨🇲
+Développé par NGOUE DAVID pour AELI Services - Cameroun 🇨🇲

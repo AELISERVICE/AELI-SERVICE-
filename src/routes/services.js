@@ -22,8 +22,8 @@ const {
 // Public
 router.get('/categories', getCategories);
 
-// Admin only
-router.post('/categories', protect, restrictTo('admin'), createCategoryValidation, validate, createCategory);
+// Admin or Provider can create categories
+router.post('/categories', protect, restrictTo('admin', 'provider'), createCategoryValidation, validate, createCategory);
 router.put('/categories/:id', protect, restrictTo('admin'), updateCategory);
 
 // ============ SERVICE ROUTES ============

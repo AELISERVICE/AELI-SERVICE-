@@ -7,6 +7,8 @@ Gestion des profils prestataires.
 /api/providers
 ```
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Endpoints Publics
@@ -93,30 +95,176 @@ Incrémente automatiquement le compteur de vues.
 
 ## Endpoints Protégés 🔒
 
-### POST `/create` - Créer un Profil Prestataire
+### POST `/apply` - Candidature Prestataire
 
-⚠️ **Rôle requis:** `provider`
+⚠️ **Rôle requis:** `client` (tous les users s'inscrivent comme client)
+
+Soumet une candidature pour devenir prestataire. Après approbation par un admin, le rôle passe à `provider`.
 
 **Content-Type:** `multipart/form-data`
 
 **Body:**
 | Champ | Type | Requis | Description |
 |-------|------|--------|-------------|
-| `businessName` | string | ✅ | Nom de l'entreprise |
+| `businessName` | string | ✅ | Nom de l'activité |
 | `description` | string | ✅ | Description (min 50 chars) |
 | `location` | string | ✅ | Ville/quartier |
 | `address` | string | - | Adresse complète |
 | `whatsapp` | string | - | Numéro WhatsApp |
 | `facebook` | string | - | Lien Facebook |
 | `instagram` | string | - | @ Instagram |
-| `photos` | file[] | - | Photos (max 5, 5MB chacune) |
+| `photos` | file[] | - | Photos activité (max 5) |
+| `documents` | file[] | ✅ | CNI obligatoire (PDF/JPG) |
 
 **Réponse 201:**
 ```json
 {
   "success": true,
-  "message": "Profil créé avec succès. En attente de validation.",
-  "data": { "provider": { ... } }
+  "message": "Votre candidature a été soumise avec succès.",
+  "data": { 
+    "application": { 
+      "id": "...",
+      "businessName": "...",
+      "status": "pending",
+      "createdAt": "..."
+    } 
+  }
+}
+```
+
+**Erreurs:**
+- `400` - CNI obligatoire
+- `400` - Candidature déjà en attente
+- `400` - Rejet récent (attendre 7 jours)
+
+---
+
+### GET `/my-application` - Statut Candidature
+
+Vérifie le statut de sa candidature.
+
+**Réponse 200:**
+```json
+{
+  "success": true,
+  "data": {
+    "application": {
+      "id": "...",
+      "businessName": "Salon Marie",
+      "status": "pending|approved|rejected",
+      "rejectionReason": null,
+      "createdAt": "...",
+      "reviewedAt": null
+    }
+  }
+}
+```
+
+---
+
+## 📋 Processus KYC (Vérification Prestataire)
+
+Pour devenir prestataire vérifié, les éléments suivants sont requis :
+
+### 1️⃣ Informations de base (obligatoires)
+
+| Champ | Description |
+|-------|-------------|
+| `firstName` | Prénom |
+| `lastName` | Nom de famille |
+| `email` | Email (vérifié par OTP) |
+| `phone` | Numéro de téléphone |
+
+### 2️⃣ Profil Prestataire (obligatoires)
+
+| Champ | Description |
+|-------|-------------|
+| `businessName` | Nom de l'activité/entreprise |
+| `description` | Description détaillée de l'activité (min 50 caractères) |
+| `location` | Ville (Douala, Yaoundé, Bafoussam...) |
+| `address` | Adresse physique (optionnel) |
+
+### 3️⃣ Contacts (au moins un obligatoire)
+
+| Champ | Description |
+|-------|-------------|
+| `whatsapp` | Numéro WhatsApp (+237...) |
+| `phone` | Téléphone professionnel |
+| `facebook` | Page Facebook |
+| `instagram` | Compte Instagram |
+
+### 4️⃣ Photo(s) de l'activité
+
+| Requirement | Détail |
+|-------------|--------|
+| Nombre | 1 à 5 photos |
+| Format | JPG, PNG, WebP |
+| Taille max | 5 MB par photo |
+| Contenu | Photos du travail, salon, produits... |
+
+### 5️⃣ Pièce d'identité (Carte Nationale)
+
+| Requirement | Détail |
+|-------------|--------|
+| Document | Carte Nationale d'Identité (CNI) |
+| Format | PDF, JPG, PNG |
+| Taille max | 10 MB |
+| Lisibilité | Photo nette, recto/verso si nécessaire |
+
+### ✅ Workflow Candidature Prestataire
+
+```
+1. Inscription utilisateur (role = client)
+   POST /api/auth/register
+             ↓
+2. Candidature prestataire
+   POST /api/providers/apply
+   • Infos business (businessName, description, location)
+   • CNI obligatoire
+   • Photos de l'activité
+   • Contacts (WhatsApp, etc.)
+             ↓
+3. Email confirmation envoyé au candidat
+             ↓
+4. Admin review de la candidature
+   GET /api/admin/provider-applications
+   PUT /api/admin/provider-applications/:id/review
+             ↓
+5a. ✅ APPROUVÉ
+    • Rôle → provider
+    • Profil Provider créé automatiquement
+    • Essai 30 jours gratuit activé
+    • Email de félicitations envoyé
+
+5b. ❌ REJETÉ
+    • Email avec motif du rejet
+    • Peut recandidater après 7 jours
+```
+
+### 📤 Endpoint Upload Documents
+
+```
+POST /api/providers/:id/documents
+Content-Type: multipart/form-data
+
+documents: [CNI.pdf]
+```
+
+**Réponse 201:**
+```json
+{
+  "success": true,
+  "message": "Documents uploadés. En attente de vérification.",
+  "data": {
+    "documents": [
+      {
+        "type": "identity_card",
+        "url": "https://res.cloudinary.com/.../cni.pdf",
+        "status": "pending",
+        "uploadedAt": "2026-01-15T12:00:00Z"
+      }
+    ]
+  }
 }
 ```
 

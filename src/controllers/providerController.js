@@ -1,9 +1,10 @@
 const { Op } = require('sequelize');
-const { Provider, User, Service, Review, Category, Contact } = require('../models');
+const { Provider, User, Service, Review, Category, Contact, Subscription } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../utils/helpers');
+const { successResponse, i18nResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../utils/helpers');
 const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
 const cache = require('../config/redis');
+const { t } = require('../middlewares/i18n');
 
 /**
  * @desc    Create provider profile
@@ -16,7 +17,7 @@ const createProvider = asyncHandler(async (req, res) => {
     // Check if user already has a provider profile
     const existingProvider = await Provider.findOne({ where: { userId: req.user.id } });
     if (existingProvider) {
-        throw new AppError('Vous avez déjà un profil prestataire', 400);
+        throw new AppError(req.t('provider.alreadyExists'), 400);
     }
 
     // Extract photo URLs from uploaded files
@@ -35,10 +36,19 @@ const createProvider = asyncHandler(async (req, res) => {
         photos
     });
 
+    // Create FREE 30-day trial subscription
+    await Subscription.createTrial(provider.id);
+
     // Invalidate providers list cache
     await cache.delByPattern('providers:list:*');
 
-    successResponse(res, 201, 'Profil prestataire créé avec succès', { provider });
+    i18nResponse(req, res, 201, 'provider.created', {
+        provider,
+        trial: {
+            days: 30,
+            message: req.t('subscription.trialStarted')
+        }
+    });
 });
 
 /**
@@ -55,7 +65,7 @@ const getProviders = asyncHandler(async (req, res) => {
     // Try cache first
     const cached = await cache.get(cacheKey);
     if (cached) {
-        return successResponse(res, 200, 'Liste des prestataires', cached);
+        return i18nResponse(req, res, 200, 'provider.list', cached);
     }
 
     const { limit: queryLimit, offset } = getPaginationParams(page, limit);
@@ -122,7 +132,7 @@ const getProviders = asyncHandler(async (req, res) => {
     // Cache for 5 minutes
     await cache.set(cacheKey, responseData, 300);
 
-    successResponse(res, 200, 'Liste des prestataires', responseData);
+    i18nResponse(req, res, 200, 'provider.list', responseData);
 });
 
 /**
@@ -137,7 +147,7 @@ const getProviderById = asyncHandler(async (req, res) => {
     const cacheKey = cache.cacheKeys.provider(id);
     const cached = await cache.get(cacheKey);
     if (cached) {
-        return successResponse(res, 200, 'Détails du prestataire', cached);
+        return i18nResponse(req, res, 200, 'provider.details', cached);
     }
 
     // Fetch provider with user info only (avoid deep nesting)
@@ -158,7 +168,7 @@ const getProviderById = asyncHandler(async (req, res) => {
     });
 
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Fetch services separately (optimized query)
@@ -195,13 +205,30 @@ const getProviderById = asyncHandler(async (req, res) => {
     providerData.services = services;
     providerData.reviews = reviews;
 
+    // Check subscription status - hide contacts & images if expired
+    const subscriptionStatus = await Subscription.getStatus(provider.id);
+    providerData.subscriptionActive = subscriptionStatus.isActive;
+
+    if (!subscriptionStatus.isActive) {
+        // Expired: hide contact info and images
+        providerData.whatsapp = null;
+        providerData.facebook = null;
+        providerData.instagram = null;
+        providerData.photos = [];
+        if (providerData.user) {
+            providerData.user.phone = null;
+        }
+        providerData.subscriptionExpired = true;
+        providerData.subscriptionMessage = req.t('provider.subscriptionExpiredMessage');
+    }
+
     // Increment view count (don't wait)
     provider.incrementViews().catch(err => console.error('View increment error:', err.message));
 
-    // Cache for 5 minutes
-    await cache.set(cacheKey, { provider: providerData }, 300);
+    // Cache for 5 minutes (shorter if expired to check status more often)
+    await cache.set(cacheKey, { provider: providerData }, subscriptionStatus.isActive ? 300 : 60);
 
-    successResponse(res, 200, 'Détails du prestataire', { provider: providerData });
+    i18nResponse(req, res, 200, 'provider.details', { provider: providerData });
 });
 
 /**
@@ -215,12 +242,12 @@ const updateProvider = asyncHandler(async (req, res) => {
 
     const provider = await Provider.findByPk(id);
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Check ownership
     if (provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé à modifier ce profil', 403);
+        throw new AppError(req.t('provider.unauthorized'), 403);
     }
 
     // Update fields
@@ -239,7 +266,7 @@ const updateProvider = asyncHandler(async (req, res) => {
 
         // Check max photos limit
         if (currentPhotos.length + newPhotos.length > 5) {
-            throw new AppError('Maximum 5 photos autorisées', 400);
+            throw new AppError(req.t('documents.maxDocuments', { max: 5 }), 400);
         }
 
         provider.photos = [...currentPhotos, ...newPhotos];
@@ -247,7 +274,7 @@ const updateProvider = asyncHandler(async (req, res) => {
 
     await provider.save();
 
-    successResponse(res, 200, 'Profil mis à jour', { provider });
+    i18nResponse(req, res, 200, 'provider.updated', { provider });
 });
 
 /**
@@ -260,19 +287,19 @@ const deleteProviderPhoto = asyncHandler(async (req, res) => {
 
     const provider = await Provider.findByPk(id);
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Check ownership
     if (provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé', 403);
+        throw new AppError(req.t('common.unauthorized'), 403);
     }
 
     const photos = provider.photos || [];
     const index = parseInt(photoIndex);
 
     if (index < 0 || index >= photos.length) {
-        throw new AppError('Photo non trouvée', 404);
+        throw new AppError(req.t('common.notFound'), 404);
     }
 
     // Delete from Cloudinary
@@ -289,7 +316,7 @@ const deleteProviderPhoto = asyncHandler(async (req, res) => {
     provider.photos = photos;
     await provider.save({ fields: ['photos'] });
 
-    successResponse(res, 200, 'Photo supprimée', { provider });
+    i18nResponse(req, res, 200, 'provider.photoDeleted', { provider });
 });
 
 /**
@@ -310,10 +337,10 @@ const getMyProfile = asyncHandler(async (req, res) => {
     });
 
     if (!provider) {
-        throw new AppError('Profil prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
-    successResponse(res, 200, 'Mon profil', { provider });
+    i18nResponse(req, res, 200, 'user.profile', { provider });
 });
 
 /**
@@ -327,7 +354,7 @@ const getMyDashboard = asyncHandler(async (req, res) => {
     });
 
     if (!provider) {
-        throw new AppError('Profil prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Get recent contacts
@@ -356,7 +383,7 @@ const getMyDashboard = asyncHandler(async (req, res) => {
         where: { providerId: provider.id, status: 'pending' }
     });
 
-    successResponse(res, 200, 'Tableau de bord', {
+    i18nResponse(req, res, 200, 'provider.dashboard', {
         stats: {
             totalViews: provider.viewsCount,
             totalContacts: provider.contactsCount,
@@ -364,11 +391,183 @@ const getMyDashboard = asyncHandler(async (req, res) => {
             averageRating: parseFloat(provider.averageRating),
             pendingContacts: pendingContactsCount,
             isVerified: provider.isVerified,
-            isFeatured: provider.isFeatured
+            isFeatured: provider.isFeatured,
+            verificationStatus: provider.verificationStatus
         },
         recentContacts,
         recentReviews
     });
+});
+
+/**
+ * @desc    Upload verification documents
+ * @route   POST /api/providers/:id/documents
+ * @access  Private (owner only)
+ */
+const uploadDocuments = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { documentType } = req.body; // cni, business_license, tax_certificate, other
+
+    const provider = await Provider.findByPk(id);
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 404);
+    }
+
+    // Check ownership
+    if (provider.userId !== req.user.id) {
+        throw new AppError(req.t('common.unauthorized'), 403);
+    }
+
+    // Check if already verified
+    if (provider.isVerified) {
+        throw new AppError(req.t('documents.alreadyVerified'), 400);
+    }
+
+    // Validate document type
+    const validTypes = ['cni', 'business_license', 'tax_certificate', 'proof_of_address', 'other'];
+    if (!validTypes.includes(documentType)) {
+        throw new AppError(req.t('documents.invalidType'), 400);
+    }
+
+    // Check if files uploaded
+    if (!req.files || req.files.length === 0) {
+        throw new AppError(req.t('documents.noDocuments'), 400);
+    }
+
+    // Max 5 documents total
+    const currentDocs = provider.documents || [];
+    if (currentDocs.length + req.files.length > 5) {
+        throw new AppError(req.t('documents.maxDocuments', { max: 5 }), 400);
+    }
+
+    // Upload documents
+    const { uploadDocument } = require('../config/cloudinary');
+    const uploadedDocs = [];
+
+    for (const file of req.files) {
+        const result = await uploadDocument(file.path, 'aeli-services/documents');
+        uploadedDocs.push({
+            type: documentType,
+            url: result.url,
+            publicId: result.publicId,
+            format: result.format,
+            originalFilename: result.originalFilename || file.originalname,
+            uploadedAt: new Date(),
+            status: 'pending' // pending, approved, rejected
+        });
+    }
+
+    // Add to existing documents
+    provider.documents = [...currentDocs, ...uploadedDocs];
+    provider.verificationStatus = 'under_review';
+    await provider.save();
+
+    // Send confirmation email
+    const { sendEmail } = require('../config/email');
+    const { documentsReceivedEmail } = require('../utils/emailTemplates');
+    const user = await User.findByPk(provider.userId);
+
+    if (user) {
+        sendEmail({
+            to: user.email,
+            ...documentsReceivedEmail({
+                firstName: user.firstName,
+                businessName: provider.businessName,
+                documentsCount: uploadedDocs.length
+            })
+        }).catch(err => console.error('Documents received email error:', err.message));
+    }
+
+    // Invalidate cache
+    await cache.del(cache.cacheKeys.provider(id));
+
+    i18nResponse(req, res, 201, 'documents.submitted', {
+        documents: provider.documents,
+        verificationStatus: provider.verificationStatus
+    });
+});
+
+/**
+ * @desc    Get provider documents (owner or admin)
+ * @route   GET /api/providers/:id/documents
+ * @access  Private
+ */
+const getDocuments = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const provider = await Provider.findByPk(id, {
+        include: [{ model: User, as: 'user', attributes: ['id', 'email', 'firstName', 'lastName'] }]
+    });
+
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 404);
+    }
+
+    // Check if owner or admin
+    if (provider.userId !== req.user.id && req.user.role !== 'admin') {
+        throw new AppError(req.t('common.unauthorized'), 403);
+    }
+
+    i18nResponse(req, res, 200, 'documents.list', {
+        provider: {
+            id: provider.id,
+            businessName: provider.businessName,
+            user: provider.user
+        },
+        documents: provider.documents || [],
+        verificationStatus: provider.verificationStatus,
+        verificationNotes: provider.verificationNotes,
+        verifiedAt: provider.verifiedAt
+    });
+});
+
+/**
+ * @desc    Delete a document
+ * @route   DELETE /api/providers/:id/documents/:docIndex
+ * @access  Private (owner only, before verification)
+ */
+const deleteDocument = asyncHandler(async (req, res) => {
+    const { id, docIndex } = req.params;
+
+    const provider = await Provider.findByPk(id);
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 404);
+    }
+
+    if (provider.userId !== req.user.id) {
+        throw new AppError(req.t('common.unauthorized'), 403);
+    }
+
+    if (provider.isVerified) {
+        throw new AppError(req.t('documents.cannotDeleteAfterVerification'), 400);
+    }
+
+    const documents = provider.documents || [];
+    const index = parseInt(docIndex);
+
+    if (index < 0 || index >= documents.length) {
+        throw new AppError(req.t('common.notFound'), 404);
+    }
+
+    // Delete from Cloudinary
+    const doc = documents[index];
+    if (doc.publicId) {
+        await deleteImage(doc.publicId);
+    }
+
+    // Remove from array
+    documents.splice(index, 1);
+    provider.documents = documents;
+
+    // Reset status if no documents left
+    if (documents.length === 0) {
+        provider.verificationStatus = 'pending';
+    }
+
+    await provider.save();
+    await cache.del(cache.cacheKeys.provider(id));
+
+    i18nResponse(req, res, 200, 'documents.deleted', { documents: provider.documents });
 });
 
 module.exports = {
@@ -378,5 +577,8 @@ module.exports = {
     updateProvider,
     deleteProviderPhoto,
     getMyProfile,
-    getMyDashboard
+    getMyDashboard,
+    uploadDocuments,
+    getDocuments,
+    deleteDocument
 };

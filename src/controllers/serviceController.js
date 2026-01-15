@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const { Service, Provider, Category } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/helpers');
+const { i18nResponse, successResponse } = require('../utils/helpers');
 const cache = require('../config/redis');
 
 /**
@@ -14,7 +14,7 @@ const getCategories = asyncHandler(async (req, res) => {
     const cacheKey = cache.cacheKeys.categories();
     const cached = await cache.get(cacheKey);
     if (cached) {
-        return successResponse(res, 200, 'Liste des catégories', cached);
+        return successResponse(res, 200, req.t('category.list'), cached);
     }
 
     const categories = await Category.findAll({
@@ -27,7 +27,7 @@ const getCategories = asyncHandler(async (req, res) => {
     // Cache for 1 hour (categories rarely change)
     await cache.set(cacheKey, responseData, 3600);
 
-    successResponse(res, 200, 'Liste des catégories', responseData);
+    i18nResponse(req, res, 200, 'category.list', responseData);
 });
 
 /**
@@ -48,7 +48,7 @@ const createCategory = asyncHandler(async (req, res) => {
     // Invalidate categories cache
     await cache.del(cache.cacheKeys.categories());
 
-    successResponse(res, 201, 'Catégorie créée', { category });
+    i18nResponse(req, res, 201, 'category.created', { category });
 });
 
 /**
@@ -62,7 +62,7 @@ const updateCategory = asyncHandler(async (req, res) => {
 
     const category = await Category.findByPk(id);
     if (!category) {
-        throw new AppError('Catégorie non trouvée', 404);
+        throw new AppError(req.t('category.notFound'), 404);
     }
 
     if (name) category.name = name;
@@ -76,7 +76,7 @@ const updateCategory = asyncHandler(async (req, res) => {
     // Invalidate categories cache
     await cache.del(cache.cacheKeys.categories());
 
-    successResponse(res, 200, 'Catégorie mise à jour', { category });
+    i18nResponse(req, res, 200, 'category.updated', { category });
 });
 
 /**
@@ -90,13 +90,13 @@ const createService = asyncHandler(async (req, res) => {
     // Get provider for current user
     const provider = await Provider.findOne({ where: { userId: req.user.id } });
     if (!provider) {
-        throw new AppError('Vous devez d\'abord créer un profil prestataire', 400);
+        throw new AppError(req.t('provider.notFound'), 400);
     }
 
     // Verify category exists
     const category = await Category.findByPk(categoryId);
     if (!category) {
-        throw new AppError('Catégorie non trouvée', 404);
+        throw new AppError(req.t('category.notFound'), 404);
     }
 
     const service = await Service.create({
@@ -113,7 +113,7 @@ const createService = asyncHandler(async (req, res) => {
     // Invalidate provider services cache
     await cache.del(cache.cacheKeys.services(provider.id));
 
-    successResponse(res, 201, 'Service créé', { service });
+    i18nResponse(req, res, 201, 'service.created', { service });
 });
 
 /**
@@ -128,7 +128,7 @@ const getServicesByProvider = asyncHandler(async (req, res) => {
     const cacheKey = cache.cacheKeys.services(providerId);
     const cached = await cache.get(cacheKey);
     if (cached) {
-        return successResponse(res, 200, 'Services du prestataire', cached);
+        return successResponse(res, 200, req.t('service.list'), cached);
     }
 
     const services = await Service.findAll({
@@ -151,7 +151,7 @@ const getServicesByProvider = asyncHandler(async (req, res) => {
     // Cache for 10 minutes
     await cache.set(cacheKey, responseData, 600);
 
-    successResponse(res, 200, 'Services du prestataire', responseData);
+    i18nResponse(req, res, 200, 'service.list', responseData);
 });
 
 /**
@@ -168,18 +168,18 @@ const updateService = asyncHandler(async (req, res) => {
     });
 
     if (!service) {
-        throw new AppError('Service non trouvé', 404);
+        throw new AppError(req.t('service.notFound'), 404);
     }
 
     // Check ownership
     if (service.provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé à modifier ce service', 403);
+        throw new AppError(req.t('service.unauthorized'), 403);
     }
 
     // Update fields
     if (categoryId) {
         const category = await Category.findByPk(categoryId);
-        if (!category) throw new AppError('Catégorie non trouvée', 404);
+        if (!category) throw new AppError(req.t('category.notFound'), 404);
         service.categoryId = categoryId;
     }
     if (name) service.name = name;
@@ -192,7 +192,7 @@ const updateService = asyncHandler(async (req, res) => {
 
     await service.save();
 
-    successResponse(res, 200, 'Service mis à jour', { service });
+    i18nResponse(req, res, 200, 'service.updated', { service });
 });
 
 /**
@@ -208,19 +208,19 @@ const deleteService = asyncHandler(async (req, res) => {
     });
 
     if (!service) {
-        throw new AppError('Service non trouvé', 404);
+        throw new AppError(req.t('service.notFound'), 404);
     }
 
     // Check ownership
     if (service.provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé à supprimer ce service', 403);
+        throw new AppError(req.t('service.unauthorized'), 403);
     }
 
     // Soft delete
     service.isActive = false;
     await service.save({ fields: ['isActive'] });
 
-    successResponse(res, 200, 'Service supprimé');
+    i18nResponse(req, res, 200, 'service.deleted');
 });
 
 module.exports = {

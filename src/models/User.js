@@ -49,7 +49,7 @@ const User = sequelize.define('User', {
         }
     },
     phone: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(200), // Increased for encrypted data
         allowNull: true
     },
     role: {
@@ -133,11 +133,37 @@ const User = sequelize.define('User', {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
             }
+            // Encrypt phone
+            if (user.phone) {
+                const { encryptIfNeeded } = require('../utils/encryption');
+                user.phone = encryptIfNeeded(user.phone);
+            }
         },
         beforeUpdate: async (user) => {
             if (user.changed('password')) {
                 const salt = await bcrypt.genSalt(10);
                 user.password = await bcrypt.hash(user.password, salt);
+            }
+            // Encrypt phone if changed
+            if (user.changed('phone') && user.phone) {
+                const { encryptIfNeeded } = require('../utils/encryption');
+                user.phone = encryptIfNeeded(user.phone);
+            }
+        },
+        afterFind: (result) => {
+            if (!result) return;
+            const { decrypt } = require('../utils/encryption');
+
+            const decryptPhone = (user) => {
+                if (user && user.phone) {
+                    user.phone = decrypt(user.phone);
+                }
+            };
+
+            if (Array.isArray(result)) {
+                result.forEach(decryptPhone);
+            } else {
+                decryptPhone(result);
             }
         }
     }

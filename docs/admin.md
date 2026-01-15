@@ -9,6 +9,8 @@ Endpoints d'administration.
 
 🔒 **Toutes les routes requièrent le rôle `admin`**
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Statistiques
@@ -72,6 +74,71 @@ Endpoints d'administration.
 ```
 
 ⚠️ Un admin ne peut pas se désactiver lui-même.
+
+---
+
+## 📋 Candidatures Prestataires
+
+### GET `/provider-applications` - Liste des Candidatures
+
+**Query Params:**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Page |
+| `limit` | int | Éléments/page |
+| `status` | string | `pending`, `approved`, `rejected` |
+
+**Réponse 200:**
+```json
+{
+  "success": true,
+  "data": {
+    "applications": [
+      {
+        "id": "...",
+        "businessName": "Salon Marie",
+        "status": "pending",
+        "createdAt": "...",
+        "user": { "id": "...", "firstName": "Marie", "email": "..." }
+      }
+    ],
+    "pagination": { ... }
+  }
+}
+```
+
+---
+
+### GET `/provider-applications/:id` - Détails Candidature
+
+Voir tous les détails d'une candidature (documents, photos, etc.)
+
+---
+
+### PUT `/provider-applications/:id/review` - Approuver/Rejeter
+
+**Body (approbation):**
+```json
+{
+  "decision": "approved",
+  "adminNotes": "RAS"
+}
+```
+
+**Body (rejet):**
+```json
+{
+  "decision": "rejected",
+  "rejectionReason": "CNI illisible, merci de resoumettre",
+  "adminNotes": "Photo floue"
+}
+```
+
+**Effets (si approuvé):**
+- `user.role` → `provider`
+- Profil `Provider` créé automatiquement
+- `Subscription` essai 30j créée
+- Email de félicitations envoyé
 
 ---
 
@@ -223,4 +290,33 @@ Permet de modérer les avis inappropriés sans les supprimer.
           │
           ▼
      200 OK { payments[], totals }
+```
+
+---
+
+## Gestion Sécurité
+
+> Voir la documentation complète: **[security.md](./security.md)**
+
+### Endpoints Sécurité
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /security-logs` | Journaux de sécurité avec filtres |
+| `GET /security-logs/export` | Export CSV des logs |
+| `GET /security-stats` | Dashboard sécurité temps réel |
+| `GET /banned-ips` | Liste des IPs bannies |
+| `POST /banned-ips` | Bannir une IP |
+| `DELETE /banned-ips/:ip` | Débannir une IP |
+
+### Statistiques Sécurité
+
+```json
+{
+  "hourlyFailedAttempts": 12,
+  "dailyFailedAttempts": 47,
+  "highRiskEvents24h": 3,
+  "activeBannedIPs": 5,
+  "topSuspiciousIPs": [...]
+}
 ```

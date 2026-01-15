@@ -7,6 +7,8 @@ Gestion des services et catégories.
 /api/services
 ```
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Catégories
@@ -37,7 +39,9 @@ Gestion des services et catégories.
 
 ### POST `/categories` - Créer une Catégorie 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Rôle requis:** `admin` ou `provider`
+
+> Les prestataires peuvent créer leurs propres catégories de services.
 
 **Body:**
 ```json
@@ -153,3 +157,47 @@ Seul le propriétaire peut supprimer.
 | `duration` | int | Durée en minutes |
 | `tags` | string[] | Tags/mots-clés |
 | `isActive` | bool | Actif/inactif |
+
+---
+
+## 🔄 Workflow Détaillé
+
+```
+[Prestataire] POST /api/services
+{ categoryId, name, description, price, priceType, duration, tags }
+    │
+    ▼
+┌─────────────────────┐
+│ Validation:         │
+│ - categoryId existe │
+│ - name requis       │
+│ - price >= 0        │
+│ - priceType valide  │
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────┐
+│ Crée Service        │
+│ providerId = user   │
+│ isActive = true     │
+└─────────────────────┘
+          │
+          ▼
+     201 Created { service }
+
+═══════════════════════════════════════════════════════════
+
+[Visiteur] GET /api/services/provider/:providerId
+    │
+    ▼
+┌─────────────────────┐
+│ Filtre:             │
+│ - providerId        │
+│ - isActive = true   │
+│ JOIN Category       │
+└─────────────────────┘
+          │
+          ▼
+     200 OK { services[] }
+```
+

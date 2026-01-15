@@ -30,11 +30,6 @@ const registerValidation = [
         .isLength({ min: 2, max: 100 })
         .withMessage('Le nom doit contenir entre 2 et 100 caractères'),
 
-    body('role')
-        .optional()
-        .isIn(['client', 'provider'])
-        .withMessage('Le rôle doit être "client" ou "provider"'),
-
     body('phone')
         .optional()
         .trim()

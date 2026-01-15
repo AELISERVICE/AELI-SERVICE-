@@ -1,6 +1,6 @@
 const { Favorite, Provider, User } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/helpers');
+const { i18nResponse, successResponse } = require('../utils/helpers');
 const cache = require('../config/redis');
 
 /**
@@ -14,7 +14,7 @@ const addFavorite = asyncHandler(async (req, res) => {
     // Check if provider exists
     const provider = await Provider.findByPk(providerId);
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Check if already favorited
@@ -23,7 +23,7 @@ const addFavorite = asyncHandler(async (req, res) => {
     });
 
     if (existingFavorite) {
-        throw new AppError('Ce prestataire est déjà dans vos favoris', 400);
+        throw new AppError(req.t('favorite.alreadyFavorite'), 400);
     }
 
     // Create favorite
@@ -35,7 +35,7 @@ const addFavorite = asyncHandler(async (req, res) => {
     // Invalidate user favorites cache
     await cache.del(cache.cacheKeys.userFavorites(req.user.id));
 
-    successResponse(res, 201, 'Ajouté aux favoris', { favorite });
+    i18nResponse(req, res, 201, 'favorite.added', { favorite });
 });
 
 /**
@@ -48,7 +48,7 @@ const getFavorites = asyncHandler(async (req, res) => {
     const cacheKey = cache.cacheKeys.userFavorites(req.user.id);
     const cached = await cache.get(cacheKey);
     if (cached) {
-        return successResponse(res, 200, 'Liste des favoris', cached);
+        return successResponse(res, 200, req.t('favorite.list'), cached);
     }
 
     const favorites = await Favorite.findAll({
@@ -74,7 +74,7 @@ const getFavorites = asyncHandler(async (req, res) => {
     // Cache for 5 minutes
     await cache.set(cacheKey, responseData, 300);
 
-    successResponse(res, 200, 'Liste des favoris', responseData);
+    i18nResponse(req, res, 200, 'favorite.list', responseData);
 });
 
 /**
@@ -90,7 +90,7 @@ const removeFavorite = asyncHandler(async (req, res) => {
     });
 
     if (!favorite) {
-        throw new AppError('Ce prestataire n\'est pas dans vos favoris', 404);
+        throw new AppError(req.t('common.notFound'), 404);
     }
 
     await favorite.destroy();
@@ -98,7 +98,7 @@ const removeFavorite = asyncHandler(async (req, res) => {
     // Invalidate user favorites cache
     await cache.del(cache.cacheKeys.userFavorites(req.user.id));
 
-    successResponse(res, 200, 'Retiré des favoris');
+    i18nResponse(req, res, 200, 'favorite.removed');
 });
 
 /**
@@ -113,7 +113,7 @@ const checkFavorite = asyncHandler(async (req, res) => {
         where: { userId: req.user.id, providerId }
     });
 
-    successResponse(res, 200, 'Statut favori', {
+    i18nResponse(req, res, 200, 'favorite.check', {
         isFavorite: !!favorite
     });
 });

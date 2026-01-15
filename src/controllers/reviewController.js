@@ -1,6 +1,6 @@
-const { Review, Provider, User } = require('../models');
+const { Review, Provider, User, Contact } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
+const { i18nResponse, successResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
 const { newReviewEmail } = require('../utils/emailTemplates');
 const cache = require('../config/redis');
@@ -19,12 +19,24 @@ const createReview = asyncHandler(async (req, res) => {
         include: [{ model: User, as: 'user' }]
     });
     if (!provider) {
-        throw new AppError('Prestataire non trouvé', 404);
+        throw new AppError(req.t('provider.notFound'), 404);
     }
 
     // Check if user is not reviewing themselves
     if (provider.userId === req.user.id) {
-        throw new AppError('Vous ne pouvez pas vous auto-évaluer', 400);
+        throw new AppError(req.t('review.cannotSelfReview'), 400);
+    }
+
+    // Check if user has contacted this provider (must have read or replied status)
+    const hasContact = await Contact.findOne({
+        where: {
+            userId: req.user.id,
+            providerId,
+            status: ['read', 'replied']
+        }
+    });
+    if (!hasContact) {
+        throw new AppError(req.t('review.mustContactFirst'), 400);
     }
 
     // Check if review already exists
@@ -32,7 +44,7 @@ const createReview = asyncHandler(async (req, res) => {
         where: { userId: req.user.id, providerId }
     });
     if (existingReview) {
-        throw new AppError('Vous avez déjà laissé un avis pour ce prestataire', 400);
+        throw new AppError(req.t('review.alreadyReviewed'), 400);
     }
 
     // Create review
@@ -71,7 +83,7 @@ const createReview = asyncHandler(async (req, res) => {
         }).catch(err => console.error('Review notification email error:', err.message));
     }
 
-    successResponse(res, 201, 'Avis créé avec succès', { review });
+    i18nResponse(req, res, 201, 'review.created', { review });
 });
 
 /**
@@ -87,7 +99,7 @@ const getProviderReviews = asyncHandler(async (req, res) => {
     const cacheKey = cache.cacheKeys.reviews(providerId, page);
     const cached = await cache.get(cacheKey);
     if (cached) {
-        return successResponse(res, 200, 'Avis du prestataire', cached);
+        return successResponse(res, 200, req.t('review.list'), cached);
     }
 
     const { limit: queryLimit, offset } = getPaginationParams(page, limit);
@@ -116,7 +128,7 @@ const getProviderReviews = asyncHandler(async (req, res) => {
     // Cache for 5 minutes
     await cache.set(cacheKey, responseData, 300);
 
-    successResponse(res, 200, 'Avis du prestataire', responseData);
+    i18nResponse(req, res, 200, 'review.list', responseData);
 });
 
 /**
@@ -130,12 +142,12 @@ const updateReview = asyncHandler(async (req, res) => {
 
     const review = await Review.findByPk(id);
     if (!review) {
-        throw new AppError('Avis non trouvé', 404);
+        throw new AppError(req.t('review.notFound'), 404);
     }
 
     // Check ownership
     if (review.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé à modifier cet avis', 403);
+        throw new AppError(req.t('common.unauthorized'), 403);
     }
 
     const oldRating = review.rating;
@@ -153,7 +165,7 @@ const updateReview = asyncHandler(async (req, res) => {
         }
     }
 
-    successResponse(res, 200, 'Avis mis à jour', { review });
+    i18nResponse(req, res, 200, 'review.updated', { review });
 });
 
 /**
@@ -166,12 +178,12 @@ const deleteReview = asyncHandler(async (req, res) => {
 
     const review = await Review.findByPk(id);
     if (!review) {
-        throw new AppError('Avis non trouvé', 404);
+        throw new AppError(req.t('review.notFound'), 404);
     }
 
     // Check ownership
     if (review.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError('Non autorisé à supprimer cet avis', 403);
+        throw new AppError(req.t('common.unauthorized'), 403);
     }
 
     const providerId = review.providerId;
@@ -183,7 +195,7 @@ const deleteReview = asyncHandler(async (req, res) => {
         await provider.updateRating(null, false);
     }
 
-    successResponse(res, 200, 'Avis supprimé');
+    i18nResponse(req, res, 200, 'review.deleted');
 });
 
 module.exports = {

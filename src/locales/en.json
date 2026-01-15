@@ -1,0 +1,169 @@
+{
+    "common": {
+        "success": "Success",
+        "error": "Error",
+        "notFound": "Not found",
+        "unauthorized": "Unauthorized",
+        "forbidden": "Access forbidden",
+        "badRequest": "Invalid request",
+        "serverError": "Server error",
+        "validationError": "Validation error",
+        "list": "List retrieved",
+        "details": "Details",
+        "created": "Created successfully",
+        "updated": "Updated successfully",
+        "deleted": "Deleted successfully"
+    },
+    "auth": {
+        "registered": "Registration successful. Please check your email.",
+        "loginSuccess": "Login successful",
+        "logoutSuccess": "Logout successful",
+        "logoutAllSuccess": "Logged out from all devices",
+        "invalidCredentials": "Invalid email or password",
+        "accountLocked": "Account locked. Try again in {minutes} minutes.",
+        "emailNotVerified": "Please verify your email",
+        "otpSent": "OTP code sent to your email",
+        "otpExpired": "OTP code expired",
+        "otpInvalid": "Invalid OTP code",
+        "otpMaxAttempts": "Maximum attempts reached",
+        "otpVerified": "Email verified successfully",
+        "passwordResetSent": "Password reset email sent",
+        "passwordResetSuccess": "Password reset successful",
+        "tokenExpired": "Token expired",
+        "tokenInvalid": "Invalid token",
+        "refreshTokenInvalid": "Invalid or expired refresh token",
+        "tokenRefreshed": "Token refreshed"
+    },
+    "user": {
+        "profile": "User profile",
+        "profileUpdated": "Profile updated",
+        "passwordChanged": "Password changed successfully",
+        "accountDeactivated": "Account deactivated successfully",
+        "notFound": "User not found",
+        "incorrectPassword": "Incorrect current password"
+    },
+    "provider": {
+        "list": "Provider list",
+        "details": "Provider details",
+        "created": "Provider profile created successfully. You have 30 days free trial!",
+        "updated": "Provider profile updated",
+        "alreadyExists": "You already have a provider profile",
+        "notFound": "Provider not found",
+        "verified": "Provider verified",
+        "rejected": "Provider rejected",
+        "featured": "Provider featured",
+        "unfeatured": "Feature removed",
+        "photoDeleted": "Photo deleted",
+        "photoAdded": "Photo added",
+        "unauthorized": "Not authorized to modify this profile",
+        "dashboard": "Provider dashboard",
+        "subscriptionExpiredMessage": "This provider does not have an active subscription. Contacts and photos hidden."
+    },
+    "documents": {
+        "submitted": "Documents submitted for verification",
+        "noDocuments": "No documents provided",
+        "maxDocuments": "Maximum {max} documents allowed",
+        "invalidType": "Invalid document type",
+        "alreadyVerified": "Your profile is already verified",
+        "deleted": "Document deleted",
+        "cannotDeleteAfterVerification": "Cannot delete documents after verification",
+        "approved": "Documents approved, provider verified",
+        "rejected": "Documents rejected",
+        "list": "Document list"
+    },
+    "service": {
+        "list": "Service list",
+        "created": "Service created successfully",
+        "updated": "Service updated",
+        "deleted": "Service deleted",
+        "notFound": "Service not found",
+        "unauthorized": "Not authorized to modify this service"
+    },
+    "category": {
+        "list": "Category list",
+        "created": "Category created successfully",
+        "updated": "Category updated",
+        "notFound": "Category not found"
+    },
+    "review": {
+        "list": "Review list",
+        "created": "Review created successfully",
+        "updated": "Review updated",
+        "deleted": "Review deleted",
+        "notFound": "Review not found",
+        "alreadyReviewed": "You have already reviewed this provider",
+        "cannotSelfReview": "You cannot review your own service",
+        "mustContactFirst": "You must have contacted this provider before leaving a review",
+        "visible": "Review visible",
+        "hidden": "Review hidden"
+    },
+    "favorite": {
+        "list": "Favorites list",
+        "added": "Added to favorites",
+        "removed": "Removed from favorites",
+        "alreadyFavorite": "Already in favorites",
+        "check": "Favorite status"
+    },
+    "contact": {
+        "list": "Contact list",
+        "sent": "Message sent successfully",
+        "statusUpdated": "Status updated",
+        "notFound": "Contact request not found"
+    },
+    "payment": {
+        "initialized": "Payment initialized",
+        "success": "Payment confirmed",
+        "failed": "Payment failed",
+        "notFound": "Payment not found",
+        "pending": "Payment pending",
+        "history": "Payment history",
+        "status": "Payment status"
+    },
+    "subscription": {
+        "plans": "Provider subscription plans",
+        "status": "My subscription status",
+        "paymentInitiated": "Payment initiated",
+        "providerRequired": "You must be a provider to have a subscription",
+        "invalidPlan": "Invalid plan. Choose: monthly, quarterly, yearly",
+        "providerStatus": "Provider status",
+        "trialStarted": "Your 30-day free trial has started!",
+        "renewed": "Subscription renewed successfully",
+        "cancelled": "Subscription cancelled",
+        "expired": "Your subscription has expired",
+        "expiringIn": "Your subscription expires in {days} days"
+    },
+    "admin": {
+        "stats": "Platform statistics",
+        "userActivated": "Account activated",
+        "userDeactivated": "Account deactivated",
+        "cannotDeactivateSelf": "Cannot deactivate your own account",
+        "providersUnderReview": "Providers under review",
+        "documentsReviewed": "Documents reviewed"
+    },
+    "validation": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Invalid email",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "firstNameRequired": "First name is required",
+        "lastNameRequired": "Last name is required",
+        "messageRequired": "Message is required",
+        "messageLength": "Message must be between {min} and {max} characters",
+        "ratingRequired": "Rating is required",
+        "ratingRange": "Rating must be between 1 and 5"
+    },
+    "security": {
+        "ipBanned": "Access denied",
+        "ipBannedSuccess": "IP banned successfully",
+        "ipUnbanned": "IP unbanned successfully",
+        "bannedIPsList": "Banned IPs list",
+        "securityLogs": "Security logs",
+        "securityLogsExported": "Security logs exported",
+        "securityStats": "Security statistics",
+        "honeypotTriggered": "Invalid request",
+        "accountLocked": "Account temporarily locked. Try again in {minutes} minutes.",
+        "sessionExpired": "Session expired. Please log in again.",
+        "emailNotVerified": "Please verify your email to access this feature.",
+        "autoBanned": "Your IP has been temporarily banned for suspicious activity"
+    }
+}

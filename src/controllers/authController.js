@@ -4,7 +4,7 @@ const { User, Provider, RefreshToken } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { sendEmail } = require('../config/email');
 const { welcomeEmail, passwordResetEmail } = require('../utils/emailTemplates');
-const { generateResetToken, hashToken, successResponse } = require('../utils/helpers');
+const { generateResetToken, hashToken, i18nResponse, successResponse } = require('../utils/helpers');
 const { generateOTP, hashOTP, verifyOTP, getOTPExpiry, isOTPExpired, otpEmailTemplate } = require('../utils/otp');
 const {
     handleFailedLogin,
@@ -38,12 +38,12 @@ const generateRefreshToken = () => {
  * @access  Public
  */
 const register = asyncHandler(async (req, res) => {
-    const { email, password, firstName, lastName, phone, role } = req.body;
+    const { email, password, firstName, lastName, phone } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-        throw new AppError('Un compte avec cet email existe déjà', 400);
+        throw new AppError(req.t('validation.emailInvalid'), 400);
     }
 
     // Create user (email not verified)
@@ -53,7 +53,7 @@ const register = asyncHandler(async (req, res) => {
         firstName,
         lastName,
         phone,
-        role: role || 'client',
+        role: 'client', // All users start as clients, can apply to become provider
         isEmailVerified: false
     });
 
@@ -72,7 +72,7 @@ const register = asyncHandler(async (req, res) => {
 
     await logSecurityEvent('otp_sent', req, user.id, { action: 'registration' }, true);
 
-    successResponse(res, 201, 'Inscription réussie. Vérifiez votre email pour le code OTP.', {
+    i18nResponse(req, res, 201, 'auth.registered', {
         user: {
             id: user.id,
             email: user.email,
@@ -94,28 +94,28 @@ const verifyOTPCode = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
     if (user.isEmailVerified) {
-        throw new AppError('Email déjà vérifié', 400);
+        throw new AppError(req.t('auth.otpVerified'), 400);
     }
 
     if (!user.otpCode || !user.otpExpires) {
-        throw new AppError('Aucun code OTP en attente. Demandez un nouveau code.', 400);
+        throw new AppError(req.t('auth.otpInvalid'), 400);
     }
 
     if (isOTPExpired(user.otpExpires)) {
-        throw new AppError('Code OTP expiré. Demandez un nouveau code.', 400);
+        throw new AppError(req.t('auth.otpExpired'), 400);
     }
 
     const isValid = await verifyOTP(otp, user.otpCode);
     if (!isValid) {
         const canRetry = await handleFailedOTP(user, req);
         if (!canRetry) {
-            throw new AppError('Trop de tentatives. Demandez un nouveau code.', 400);
+            throw new AppError(req.t('auth.otpMaxAttempts'), 400);
         }
-        throw new AppError(`Code OTP invalide. ${3 - user.otpAttempts} tentative(s) restante(s).`, 400);
+        throw new AppError(req.t('auth.otpInvalid'), 400);
     }
 
     // OTP is valid
@@ -140,7 +140,7 @@ const verifyOTPCode = asyncHandler(async (req, res) => {
         ...welcomeEmail({ firstName: user.firstName, role: user.role })
     }).catch(err => console.error('Welcome email error:', err.message));
 
-    successResponse(res, 200, 'Email vérifié avec succès', {
+    i18nResponse(req, res, 200, 'auth.otpVerified', {
         user: user.toPublicJSON(),
         accessToken,
         refreshToken
@@ -158,11 +158,11 @@ const resendOTP = asyncHandler(async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) {
         // Don't reveal if user exists
-        return successResponse(res, 200, 'Si un compte existe, un nouveau code a été envoyé.');
+        return i18nResponse(req, res, 200, 'auth.otpSent');
     }
 
     if (user.isEmailVerified) {
-        throw new AppError('Email déjà vérifié', 400);
+        throw new AppError(req.t('auth.otpVerified'), 400);
     }
 
     // Generate new OTP
@@ -180,7 +180,7 @@ const resendOTP = asyncHandler(async (req, res) => {
 
     await logSecurityEvent('otp_sent', req, user.id, { action: 'resend' }, true);
 
-    successResponse(res, 200, 'Nouveau code OTP envoyé.');
+    i18nResponse(req, res, 200, 'auth.otpSent');
 });
 
 /**
@@ -194,19 +194,19 @@ const login = asyncHandler(async (req, res) => {
     // Find user by email
     const user = await User.findOne({ where: { email } });
     if (!user) {
-        throw new AppError('Email ou mot de passe incorrect', 401);
+        throw new AppError(req.t('auth.invalidCredentials'), 401);
     }
 
     // Check if account is active
     if (!user.isActive) {
-        throw new AppError('Ce compte a été désactivé', 401);
+        throw new AppError(req.t('common.forbidden'), 401);
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
         await handleFailedLogin(user, req);
-        throw new AppError('Email ou mot de passe incorrect', 401);
+        throw new AppError(req.t('auth.invalidCredentials'), 401);
     }
 
     // Check if email is verified
@@ -223,7 +223,7 @@ const login = asyncHandler(async (req, res) => {
             ...otpEmailTemplate({ firstName: user.firstName, otp })
         });
 
-        return successResponse(res, 200, 'Veuillez vérifier votre email avec le code OTP envoyé.', {
+        return i18nResponse(req, res, 200, 'auth.emailNotVerified', {
             requiresOTP: true,
             email: user.email
         });
@@ -251,7 +251,7 @@ const login = asyncHandler(async (req, res) => {
         provider = await Provider.findOne({ where: { userId: user.id } });
     }
 
-    successResponse(res, 200, 'Connexion réussie', {
+    i18nResponse(req, res, 200, 'auth.loginSuccess', {
         user: user.toPublicJSON(),
         provider: provider ? {
             id: provider.id,
@@ -272,7 +272,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-        throw new AppError('Refresh token requis', 400);
+        throw new AppError(req.t('auth.refreshTokenInvalid'), 400);
     }
 
     // Find refresh token
@@ -281,7 +281,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     });
 
     if (!tokenRecord) {
-        throw new AppError('Refresh token invalide', 401);
+        throw new AppError(req.t('auth.refreshTokenInvalid'), 401);
     }
 
     // Check if expired
@@ -289,7 +289,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         tokenRecord.isRevoked = true;
         tokenRecord.revokedAt = new Date();
         await tokenRecord.save();
-        throw new AppError('Refresh token expiré', 401);
+        throw new AppError(req.t('auth.tokenExpired'), 401);
     }
 
     // Update last used
@@ -301,7 +301,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     await logSecurityEvent('token_refresh', req, tokenRecord.userId, {}, true);
 
-    successResponse(res, 200, 'Token rafraîchi', { accessToken });
+    i18nResponse(req, res, 200, 'auth.tokenRefreshed', { accessToken });
 });
 
 /**
@@ -322,7 +322,7 @@ const logout = asyncHandler(async (req, res) => {
 
     await logSecurityEvent('logout', req, req.user.id, {}, true);
 
-    successResponse(res, 200, 'Déconnexion réussie');
+    i18nResponse(req, res, 200, 'auth.logoutSuccess');
 });
 
 /**
@@ -335,7 +335,7 @@ const logoutAll = asyncHandler(async (req, res) => {
 
     await logSecurityEvent('logout', req, req.user.id, { allDevices: true }, true);
 
-    successResponse(res, 200, 'Déconnexion de tous les appareils réussie');
+    i18nResponse(req, res, 200, 'auth.logoutAllSuccess');
 });
 
 /**
@@ -350,7 +350,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) {
         // Don't reveal if email exists
-        return successResponse(res, 200, 'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé');
+        return i18nResponse(req, res, 200, 'auth.passwordResetSent');
     }
 
     // Generate reset token
@@ -373,13 +373,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
             ...passwordResetEmail({ firstName: user.firstName, resetUrl })
         });
 
-        successResponse(res, 200, 'Si un compte existe avec cet email, un lien de réinitialisation a été envoyé');
+        i18nResponse(req, res, 200, 'auth.passwordResetSent');
     } catch (error) {
         // Clear reset token if email fails
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
         await user.save({ fields: ['resetPasswordToken', 'resetPasswordExpires'] });
-        throw new AppError('Erreur lors de l\'envoi de l\'email. Réessayez plus tard.', 500);
+        throw new AppError(req.t('common.serverError'), 500);
     }
 });
 
@@ -405,7 +405,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new AppError('Token invalide ou expiré', 400);
+        throw new AppError(req.t('auth.tokenInvalid'), 400);
     }
 
     // Update password and clear token
@@ -431,7 +431,7 @@ const resetPassword = asyncHandler(async (req, res) => {
         ipAddress: req.ip
     });
 
-    successResponse(res, 200, 'Mot de passe réinitialisé avec succès', {
+    i18nResponse(req, res, 200, 'auth.passwordResetSuccess', {
         accessToken,
         refreshToken
     });
@@ -455,10 +455,10 @@ const getMe = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
-    successResponse(res, 200, 'Profil récupéré', {
+    i18nResponse(req, res, 200, 'user.profile', {
         user: user.toPublicJSON(),
         provider: user.provider || null
     });

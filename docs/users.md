@@ -9,6 +9,8 @@ Gestion du profil utilisateur.
 
 🔒 **Toutes les routes requièrent une authentification**
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Endpoints
@@ -109,4 +111,59 @@ curl -X PUT http://localhost:5000/api/users/profile \
 }
 ```
 
-> **Note:** L'utilisateur ne pourra plus se connecter après cette action. Contactez un admin pour réactiver le compte.
+ **Note:** L'utilisateur ne pourra plus se connecter après cette action. Contactez un admin pour réactiver le compte.
+
+---
+
+## 🔄 Workflow Détaillé
+
+```
+[Authentifié] PUT /api/users/profile
+{ firstName, lastName, phone, profilePhoto (file) }
+    │
+    ▼
+┌─────────────────────┐
+│ Validation JWT      │
+│ Récupère user       │
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────┐
+│ Upload photo ?      │ ── Oui ──▶ Cloudinary upload
+│                     │            (resize, optimize)
+└─────────┬───────────┘
+          │
+          ▼
+┌─────────────────────┐
+│ MAJ User:           │
+│ - firstName         │
+│ - lastName          │
+│ - phone             │
+│ - profilePhoto URL  │
+└─────────────────────┘
+          │
+          ▼
+     200 OK { user }
+
+═══════════════════════════════════════════════════════════
+
+[Authentifié] PUT /api/users/password
+{ currentPassword, newPassword }
+    │
+    ▼
+┌─────────────────────┐
+│ Vérifie password    │ ── Incorrect ──▶ 401 Unauthorized
+│ actuel (bcrypt)     │
+└─────────┬───────────┘
+          │ Correct
+          ▼
+┌─────────────────────┐
+│ Hash newPassword    │
+│ Sauvegarde          │
+│ SecurityLog(CHANGE) │
+└─────────────────────┘
+          │
+          ▼
+     200 OK
+```
+

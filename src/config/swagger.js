@@ -226,7 +226,9 @@ L'API utilise des JWT tokens:
             { name: 'Reviews', description: 'Avis et notations' },
             { name: 'Favorites', description: 'Gestion des favoris' },
             { name: 'Contacts', description: 'Demandes de contact' },
-            { name: 'Admin', description: 'Administration (admin uniquement)' }
+            { name: 'Abonnements', description: 'Gestion des abonnements prestataires' },
+            { name: 'Admin', description: 'Administration (admin uniquement)' },
+            { name: 'Admin - Sécurité', description: 'Gestion de la sécurité (admin uniquement)' }
         ]
     },
     apis: ['./src/routes/*.js', './src/swagger/*.yaml']

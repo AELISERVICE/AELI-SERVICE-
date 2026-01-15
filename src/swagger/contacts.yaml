@@ -129,3 +129,105 @@ paths:
       responses:
         '200':
           description: Statut mis à jour
+
+  /contacts/stats/daily:
+    get:
+      tags:
+        - Contacts
+      summary: Statistiques journalières (prestataire)
+      description: Retourne les contacts groupés par jour pour le dashboard prestataire
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: "Date de debut (defaut 30 jours avant)"
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: "Date de fin (defaut aujourdhui)"
+      responses:
+        '200':
+          description: Statistiques par jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      period:
+                        type: object
+                        properties:
+                          start:
+                            type: string
+                            format: date
+                          end:
+                            type: string
+                            format: date
+                      totalContacts:
+                        type: integer
+                      dailyStats:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                              format: date
+                            count:
+                              type: integer
+
+  /contacts/by-date/{date}:
+    get:
+      tags:
+        - Contacts
+      summary: Contacts d'une date spécifique
+      description: Retourne la liste des personnes qui ont contacté ce jour là
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: date
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Date au format YYYY-MM-DD
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des contacts du jour
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                      contacts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Contact'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'

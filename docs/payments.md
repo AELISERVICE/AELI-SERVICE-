@@ -7,6 +7,8 @@ Gestion des paiements Mobile Money via CinetPay.
 /api/payments
 ```
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Endpoints

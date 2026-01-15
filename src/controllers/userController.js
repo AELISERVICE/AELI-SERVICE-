@@ -1,7 +1,8 @@
 const { User, Provider } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse } = require('../utils/helpers');
+const { i18nResponse } = require('../utils/helpers');
 const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
+const { sendEmail } = require('../config/email');
 
 /**
  * @desc    Get user profile
@@ -21,10 +22,10 @@ const getProfile = asyncHandler(async (req, res) => {
     });
 
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
-    successResponse(res, 200, 'Profil récupéré', {
+    i18nResponse(req, res, 200, 'user.profile', {
         user: user.toPublicJSON(),
         provider: user.provider || null
     });
@@ -40,7 +41,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     const user = await User.findByPk(req.user.id);
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
     // Update fields
@@ -64,7 +65,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     await user.save();
 
-    successResponse(res, 200, 'Profil mis à jour', {
+    i18nResponse(req, res, 200, 'user.profileUpdated', {
         user: user.toPublicJSON()
     });
 });
@@ -79,20 +80,27 @@ const changePassword = asyncHandler(async (req, res) => {
 
     const user = await User.findByPk(req.user.id);
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
     // Verify current password
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
-        throw new AppError('Mot de passe actuel incorrect', 401);
+        throw new AppError(req.t('user.incorrectPassword'), 401);
     }
 
     // Update password
     user.password = newPassword;
     await user.save();
 
-    successResponse(res, 200, 'Mot de passe modifié avec succès');
+    // Send confirmation email
+    const { passwordChangedConfirmationEmail } = require('../utils/emailTemplates');
+    sendEmail({
+        to: user.email,
+        ...passwordChangedConfirmationEmail({ firstName: user.firstName })
+    }).catch(err => console.error('Password change email error:', err.message));
+
+    i18nResponse(req, res, 200, 'user.passwordChanged');
 });
 
 /**
@@ -103,14 +111,14 @@ const changePassword = asyncHandler(async (req, res) => {
 const deactivateAccount = asyncHandler(async (req, res) => {
     const user = await User.findByPk(req.user.id);
     if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
+        throw new AppError(req.t('user.notFound'), 404);
     }
 
     // Soft delete - just deactivate
     user.isActive = false;
     await user.save({ fields: ['isActive'] });
 
-    successResponse(res, 200, 'Compte désactivé avec succès');
+    i18nResponse(req, res, 200, 'user.accountDeactivated');
 });
 
 module.exports = {

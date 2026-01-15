@@ -1,0 +1,153 @@
+paths:
+  /subscriptions/plans:
+    get:
+      tags:
+        - Abonnements
+      summary: Liste des plans d'abonnement
+      description: Retourne les plans disponibles pour les prestataires
+      responses:
+        '200':
+          description: Liste des plans
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      plans:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              enum: [monthly, quarterly, yearly]
+                            price:
+                              type: integer
+                            duration:
+                              type: integer
+                              description: Durée en jours
+
+  /subscriptions/my-status:
+    get:
+      tags:
+        - Abonnements
+      summary: Statut de mon abonnement
+      description: Retourne le statut d'abonnement du prestataire connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Statut de l'abonnement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      hasSubscription:
+                        type: boolean
+                      subscription:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                          plan:
+                            type: string
+                          status:
+                            type: string
+                            enum: [trial, active, expired, cancelled]
+                          startDate:
+                            type: string
+                            format: date
+                          endDate:
+                            type: string
+                            format: date
+                          daysRemaining:
+                            type: integer
+                          isActive:
+                            type: boolean
+
+  /subscriptions/subscribe:
+    post:
+      tags:
+        - Abonnements
+      summary: S'abonner à un plan
+      description: Initie un paiement pour s'abonner à un plan
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - plan
+              properties:
+                plan:
+                  type: string
+                  enum: [monthly, quarterly, yearly]
+      responses:
+        '200':
+          description: Paiement initié
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      paymentUrl:
+                        type: string
+                        description: URL de paiement CinetPay
+                      transactionId:
+                        type: string
+
+  /subscriptions/check/{providerId}:
+    get:
+      tags:
+        - Abonnements
+      summary: Vérifier le statut d'un prestataire
+      description: Vérifie si un prestataire a un abonnement actif
+      parameters:
+        - in: path
+          name: providerId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Statut du prestataire
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      providerId:
+                        type: string
+                      isActive:
+                        type: boolean
+                      status:
+                        type: string
+                      plan:
+                        type: string
+                      expiresAt:
+                        type: string

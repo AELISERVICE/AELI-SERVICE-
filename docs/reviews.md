@@ -7,6 +7,8 @@ Gestion des avis et notations.
 /api/reviews
 ```
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Endpoints
@@ -50,6 +52,7 @@ Gestion des avis et notations.
 ⚠️ **Limites:**
 - 1 avis par utilisateur par prestataire
 - Ne peut pas s'auto-évaluer
+- **Doit avoir contacté le prestataire** (status `read` ou `replied`)
 
 **Body:**
 ```json

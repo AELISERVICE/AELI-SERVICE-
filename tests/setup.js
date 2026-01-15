@@ -9,6 +9,8 @@ beforeAll(async () => {
     try {
         await sequelize.authenticate();
         console.log('✅ Test database connected');
+        // Sync schema to update column sizes for encrypted fields
+        await sequelize.sync({ alter: true });
     } catch (error) {
         console.error('❌ Test database connection failed:', error.message);
         throw error;

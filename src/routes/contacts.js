@@ -4,7 +4,9 @@ const {
     createContact,
     getReceivedContacts,
     getSentContacts,
-    updateContactStatus
+    updateContactStatus,
+    getDailyContactStats,
+    getContactsByDate
 } = require('../controllers/contactController');
 const { protect, optionalAuth, restrictTo } = require('../middlewares/auth');
 const { contactLimiter } = require('../middlewares/rateLimiter');
@@ -48,4 +50,9 @@ router.get('/received', protect, restrictTo('provider'), getReceivedContacts);
 router.get('/sent', protect, getSentContacts);
 router.put('/:id/status', protect, updateContactStatus);
 
+// Provider dashboard routes - daily stats
+router.get('/stats/daily', protect, restrictTo('provider'), getDailyContactStats);
+router.get('/by-date/:date', protect, restrictTo('provider'), getContactsByDate);
+
 module.exports = router;
+

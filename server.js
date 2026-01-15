@@ -5,6 +5,9 @@ const { sequelize, testConnection } = require('./src/config/database');
 const { verifyTransporter } = require('./src/config/email');
 const { initRedis, closeRedis } = require('./src/config/redis');
 const { initSocketIO } = require('./src/config/socket');
+const { initCronJobs, stopCronJobs } = require('./src/jobs/cron');
+const { initEmailWorker } = require('./src/workers/emailWorker');
+const { closeQueues } = require('./src/config/queue');
 const logger = require('./src/utils/logger');
 
 const PORT = process.env.PORT || 5000;
@@ -17,12 +20,22 @@ const gracefulShutdown = async (signal) => {
     logger.info(`${signal} received. Shutting down gracefully...`);
 
     try {
+        // Stop cron jobs first
+        stopCronJobs();
+        logger.info('Cron jobs stopped.');
+
         server.close();
         logger.info('HTTP server closed.');
+
+        await closeQueues();
+        logger.info('Bull queues closed.');
+
         await closeRedis();
         logger.info('Redis connection closed.');
+
         await sequelize.close();
         logger.info('Database connection closed.');
+
         process.exit(0);
     } catch (error) {
         logger.error('Error during shutdown:', error);
@@ -53,6 +66,15 @@ const startServer = async () => {
         await sequelize.sync(syncOptions);
         logger.info('✅ Database models synchronized');
 
+        // Initialize background services
+        if (process.env.NODE_ENV !== 'test') {
+            // Initialize email worker (Bull)
+            initEmailWorker();
+
+            // Initialize cron jobs
+            initCronJobs();
+        }
+
         // Start listening
         server.listen(PORT, () => {
             logger.info(`
@@ -64,6 +86,8 @@ const startServer = async () => {
 ║   Environment: ${process.env.NODE_ENV || 'development'}                          ║
 ║   API Health: http://localhost:${PORT}/api/health            ║
 ║   WebSocket: ws://localhost:${PORT}                          ║
+║   Cron Jobs: Active                                       ║
+║   Email Queue: Active                                     ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
       `);

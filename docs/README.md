@@ -18,7 +18,10 @@ Après avoir démarré le serveur, accédez à **Swagger UI** :
 | 🛠️ [Services](./services.md) | `services.md` | Services et catégories |
 | ⭐ [Reviews](./reviews.md) | `reviews.md` | Avis et notations |
 | ❤️ [Favorites](./favorites.md) | `favorites.md` | Gestion favoris |
-| 📧 [Contacts](./contacts.md) | `contacts.md` | Demandes de contact |
+| 📧 [Contacts](./contacts.md) | `contacts.md` | Demandes de contact + stats journalières |
+| 💳 [Payments](./payments.md) | `payments.md` | Paiements CinetPay Mobile Money |
+| 💎 [Subscriptions](./subscriptions.md) | `subscriptions.md` | Abonnements prestataires |
+| 🔐 [Security](./security.md) | `security.md` | Logs sécurité, IP banning, protection |
 | 👑 [Admin](./admin.md) | `admin.md` | Administration |
 
 ## 🔑 Authentification
@@ -65,3 +68,59 @@ Authorization: Bearer <access_token>
 | `ACCOUNT_DISABLED` | 401 | Compte désactivé |
 | `FORBIDDEN` | 403 | Accès interdit |
 | `EMAIL_NOT_VERIFIED` | 403 | Email non vérifié |
+
+---
+
+## 🌍 Internationalisation (i18n)
+
+L'API supporte le **français (fr)** et l'**anglais (en)**.
+
+### Comment changer la langue ?
+
+**Option 1 : Query Parameter**
+```
+GET /api/providers?lang=en
+GET /api/auth/login?lang=fr
+```
+
+**Option 2 : Header Accept-Language**
+```
+Accept-Language: en
+Accept-Language: fr
+```
+
+**Option 3 : Header X-Lang**
+```
+X-Lang: en
+```
+
+### Langues supportées
+
+| Code | Langue |
+|------|--------|
+| `fr` | Français (par défaut) |
+| `en` | English |
+
+### Exemple de réponse
+
+**Français (défaut) :**
+```json
+{
+  "success": true,
+  "message": "Connexion réussie"
+}
+```
+
+**Anglais (`?lang=en`) :**
+```json
+{
+  "success": true,
+  "message": "Login successful"
+}
+```
+
+### Fichiers de traduction
+
+Les traductions sont dans `src/locales/` :
+- `fr.json` - Français
+- `en.json` - Anglais

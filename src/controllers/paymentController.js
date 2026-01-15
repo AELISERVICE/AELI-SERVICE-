@@ -4,6 +4,7 @@ const Payment = require('../models/Payment');
 const { sequelize, User, Provider } = require('../models');
 const { CINETPAY_CONFIG, PAYMENT_STATUS, CINETPAY_CODES } = require('../config/cinetpay');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
+const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 /**
@@ -16,13 +17,13 @@ const initializePayment = asyncHandler(async (req, res) => {
 
     // Validate amount (must be multiple of 5)
     if (!amount || amount < 100 || amount % 5 !== 0) {
-        throw new AppError('Le montant doit être au minimum 100 FCFA et un multiple de 5', 400);
+        throw new AppError(req.t('common.badRequest'), 400);
     }
 
     // Validate type
     const validTypes = ['contact_premium', 'featured', 'boost', 'subscription'];
     if (!validTypes.includes(type)) {
-        throw new AppError('Type de paiement invalide', 400);
+        throw new AppError(req.t('common.badRequest'), 400);
     }
 
     // Get user info for card payments
@@ -92,16 +93,12 @@ const initializePayment = asyncHandler(async (req, res) => {
 
             logger.info(`Payment initialized: ${transactionId}`);
 
-            res.status(201).json({
-                success: true,
-                message: 'Paiement initialisé',
-                data: {
-                    paymentId: payment.id,
-                    transactionId: payment.transactionId,
-                    paymentUrl: payment.paymentUrl,
-                    amount: payment.amount,
-                    currency: payment.currency
-                }
+            i18nResponse(req, res, 201, 'payment.initialized', {
+                paymentId: payment.id,
+                transactionId: payment.transactionId,
+                paymentUrl: payment.paymentUrl,
+                amount: payment.amount,
+                currency: payment.currency
             });
         } else {
             // Handle error
@@ -109,10 +106,7 @@ const initializePayment = asyncHandler(async (req, res) => {
             payment.errorMessage = cinetpayResponse.message;
             await payment.save();
 
-            throw new AppError(
-                cinetpayResponse.description || 'Erreur lors de l\'initialisation du paiement',
-                400
-            );
+            throw new AppError(req.t('payment.failed'), 400);
         }
     } catch (error) {
         if (error.response) {
@@ -202,12 +196,14 @@ const handleWebhook = asyncHandler(async (req, res) => {
  * Process successful payment
  */
 const processPaymentSuccess = async (payment) => {
-    switch (payment.type) {
-        case 'contact_premium':
-            // Unlock premium contact for user
-            logger.info(`Unlocked premium contact for user ${payment.userId}`);
-            break;
+    const { sendEmail } = require('../config/email');
+    const { paymentSuccessEmail } = require('../utils/emailTemplates');
+    const { activateSubscription } = require('./subscriptionController');
 
+    // Get user for email
+    const user = await User.findByPk(payment.userId);
+
+    switch (payment.type) {
         case 'featured':
             // Make provider featured
             if (payment.providerId) {
@@ -231,9 +227,48 @@ const processPaymentSuccess = async (payment) => {
             break;
 
         case 'subscription':
-            // Handle subscription
+            // Handle subscription activation
+            await activateSubscription(payment);
             logger.info(`Subscription activated for user ${payment.userId}`);
             break;
+    }
+
+    // Send success email
+    if (user) {
+        sendEmail({
+            to: user.email,
+            ...paymentSuccessEmail({
+                firstName: user.firstName,
+                transactionId: payment.transactionId,
+                amount: payment.amount,
+                currency: payment.currency,
+                type: payment.type,
+                description: payment.description
+            })
+        }).catch(err => console.error('Payment success email error:', err.message));
+    }
+};
+
+/**
+ * Process failed payment
+ */
+const processPaymentFailure = async (payment, errorMessage) => {
+    const { sendEmail } = require('../config/email');
+    const { paymentFailedEmail } = require('../utils/emailTemplates');
+
+    const user = await User.findByPk(payment.userId);
+
+    if (user) {
+        sendEmail({
+            to: user.email,
+            ...paymentFailedEmail({
+                firstName: user.firstName,
+                transactionId: payment.transactionId,
+                amount: payment.amount,
+                currency: payment.currency,
+                errorMessage: errorMessage
+            })
+        }).catch(err => console.error('Payment failed email error:', err.message));
     }
 };
 
@@ -246,7 +281,7 @@ const checkPaymentStatus = asyncHandler(async (req, res) => {
 
     const payment = await Payment.findByTransactionId(transactionId);
     if (!payment) {
-        throw new AppError('Paiement non trouvé', 404);
+        throw new AppError(req.t('payment.notFound'), 404);
     }
 
     // If pending, check with CinetPay
@@ -272,17 +307,14 @@ const checkPaymentStatus = asyncHandler(async (req, res) => {
         }
     }
 
-    res.json({
-        success: true,
-        data: {
-            transactionId: payment.transactionId,
-            status: payment.status,
-            amount: payment.amount,
-            currency: payment.currency,
-            type: payment.type,
-            paymentMethod: payment.paymentMethod,
-            paidAt: payment.paidAt
-        }
+    i18nResponse(req, res, 200, 'payment.status', {
+        transactionId: payment.transactionId,
+        status: payment.status,
+        amount: payment.amount,
+        currency: payment.currency,
+        type: payment.type,
+        paymentMethod: payment.paymentMethod,
+        paidAt: payment.paidAt
     });
 });
 
@@ -293,27 +325,18 @@ const checkPaymentStatus = asyncHandler(async (req, res) => {
 const getPaymentHistory = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
+    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
     const { count, rows: payments } = await Payment.findAndCountAll({
         where: { userId },
         order: [['createdAt', 'DESC']],
-        limit: parseInt(limit),
+        limit: queryLimit,
         offset
     });
 
-    res.json({
-        success: true,
-        data: {
-            payments,
-            pagination: {
-                total: count,
-                pages: Math.ceil(count / limit),
-                current: parseInt(page),
-                limit: parseInt(limit)
-            }
-        }
-    });
+    const pagination = getPaginationData(page, queryLimit, count);
+
+    i18nResponse(req, res, 200, 'payment.history', { payments, pagination });
 });
 
 /**
@@ -322,7 +345,7 @@ const getPaymentHistory = asyncHandler(async (req, res) => {
  */
 const getAllPayments = asyncHandler(async (req, res) => {
     const { page = 1, limit = 20, status, type } = req.query;
-    const offset = (page - 1) * limit;
+    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
     const where = {};
 
     if (status) where.status = status;
@@ -335,9 +358,11 @@ const getAllPayments = asyncHandler(async (req, res) => {
             { model: Provider, as: 'provider', attributes: ['id', 'businessName'] }
         ],
         order: [['createdAt', 'DESC']],
-        limit: parseInt(limit),
+        limit: queryLimit,
         offset
     });
+
+    const pagination = getPaginationData(page, queryLimit, count);
 
     // Calculate totals
     const totals = await Payment.findAll({
@@ -349,18 +374,10 @@ const getAllPayments = asyncHandler(async (req, res) => {
         raw: true
     });
 
-    res.json({
-        success: true,
-        data: {
-            payments,
-            totals: totals[0],
-            pagination: {
-                total: count,
-                pages: Math.ceil(count / limit),
-                current: parseInt(page),
-                limit: parseInt(limit)
-            }
-        }
+    i18nResponse(req, res, 200, 'common.list', {
+        payments,
+        totals: totals[0],
+        pagination
     });
 });
 

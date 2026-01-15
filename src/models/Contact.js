@@ -49,17 +49,13 @@ const Contact = sequelize.define('Contact', {
         }
     },
     senderEmail: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.STRING(500), // Increased for encrypted data
         allowNull: false,
-        field: 'sender_email',
-        validate: {
-            isEmail: {
-                msg: 'Veuillez fournir un email valide'
-            }
-        }
+        field: 'sender_email'
+        // Note: Email validation happens before encryption in controller
     },
     senderPhone: {
-        type: DataTypes.STRING(20),
+        type: DataTypes.STRING(200), // Increased for encrypted data
         allowNull: true,
         field: 'sender_phone'
     },
@@ -84,7 +80,48 @@ const Contact = sequelize.define('Contact', {
         {
             fields: ['created_at']
         }
-    ]
+    ],
+    hooks: {
+        beforeCreate: (contact) => {
+            const { encryptIfNeeded } = require('../utils/encryption');
+            if (contact.senderPhone) {
+                contact.senderPhone = encryptIfNeeded(contact.senderPhone);
+            }
+            if (contact.senderEmail) {
+                contact.senderEmail = encryptIfNeeded(contact.senderEmail);
+            }
+        },
+        beforeUpdate: (contact) => {
+            const { encryptIfNeeded } = require('../utils/encryption');
+            if (contact.changed('senderPhone') && contact.senderPhone) {
+                contact.senderPhone = encryptIfNeeded(contact.senderPhone);
+            }
+            if (contact.changed('senderEmail') && contact.senderEmail) {
+                contact.senderEmail = encryptIfNeeded(contact.senderEmail);
+            }
+        },
+        afterFind: (result) => {
+            if (!result) return;
+            const { decrypt } = require('../utils/encryption');
+
+            const decryptFields = (contact) => {
+                if (contact) {
+                    if (contact.senderPhone) {
+                        contact.senderPhone = decrypt(contact.senderPhone);
+                    }
+                    if (contact.senderEmail) {
+                        contact.senderEmail = decrypt(contact.senderEmail);
+                    }
+                }
+            };
+
+            if (Array.isArray(result)) {
+                result.forEach(decryptFields);
+            } else {
+                decryptFields(result);
+            }
+        }
+    }
 });
 
 module.exports = Contact;

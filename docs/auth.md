@@ -7,12 +7,16 @@ Module d'authentification avec OTP et refresh tokens.
 /api/auth
 ```
 
+> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+
 ---
 
 ## Endpoints
 
 ### POST `/register` - Inscription
-Crée un compte et envoie un code OTP par email.
+Crée un compte **client** et envoie un code OTP par email.
+
+> **Note:** Tous les utilisateurs s'inscrivent comme `client`. Pour devenir prestataire, utilisez `/api/providers/apply` après inscription.
 
 **Body:**
 ```json
@@ -21,8 +25,7 @@ Crée un compte et envoie un code OTP par email.
   "password": "SecurePass123!",
   "firstName": "Marie",
   "lastName": "Dupont",
-  "phone": "+237690000000",
-  "role": "client"
+  "phone": "+237690000000"
 }
 ```
 
@@ -32,7 +35,7 @@ Crée un compte et envoie un code OTP par email.
   "success": true,
   "message": "Inscription réussie. Vérifiez votre email.",
   "data": {
-    "user": { "id": "...", "email": "...", "isEmailVerified": false },
+    "user": { "id": "...", "email": "...", "role": "client", "isEmailVerified": false },
     "requiresOTP": true
   }
 }
