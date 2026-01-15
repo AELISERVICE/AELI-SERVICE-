@@ -1,4 +1,4 @@
-const { Op, fn, col } = require('sequelize');
+const { Op, fn, col, literal } = require('sequelize');
 const { User, Provider, Service, Review, Contact, Category, Payment } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
@@ -6,99 +6,161 @@ const { sendEmail } = require('../config/email');
 const { accountVerifiedEmail } = require('../utils/emailTemplates');
 
 /**
- * @desc    Get platform statistics
+ * @desc    Get platform statistics (OPTIMIZED)
  * @route   GET /api/admin/stats
  * @access  Private (admin)
+ * 
+ * Optimization: Reduced from ~19 sequential queries to ~9 parallel queries
+ * using Promise.all() and grouped aggregates
  */
 const getStats = asyncHandler(async (req, res) => {
-    // Users stats
-    const totalUsers = await User.count();
-    const totalClients = await User.count({ where: { role: 'client' } });
-    const totalProviderUsers = await User.count({ where: { role: 'provider' } });
+    // Run all queries in parallel for better performance
+    const [
+        // User stats with single grouped query
+        userStats,
+        // Provider stats with single grouped query
+        providerStats,
+        // Service count
+        totalServices,
+        // Review stats (count + avg in one query)
+        reviewStats,
+        // Contact stats with grouped query
+        contactStats,
+        // Payment stats with grouped query
+        paymentStats,
+        // Recent data
+        recentUsers,
+        recentProviders
+    ] = await Promise.all([
+        // 1. User stats - Single query with grouping
+        User.findAll({
+            attributes: [
+                'role',
+                [fn('COUNT', col('id')), 'count']
+            ],
+            group: ['role'],
+            raw: true
+        }),
 
-    // Providers stats
-    const totalProviders = await Provider.count();
-    const totalActiveProviders = await Provider.count({ where: { isVerified: true } });
-    const totalPendingProviders = await Provider.count({ where: { isVerified: false } });
-    const totalFeaturedProviders = await Provider.count({ where: { isFeatured: true } });
+        // 2. Provider stats - Single query with conditional counts
+        Provider.findOne({
+            attributes: [
+                [fn('COUNT', col('id')), 'total'],
+                [fn('SUM', literal('CASE WHEN is_verified = true THEN 1 ELSE 0 END')), 'active'],
+                [fn('SUM', literal('CASE WHEN is_verified = false THEN 1 ELSE 0 END')), 'pending'],
+                [fn('SUM', literal('CASE WHEN is_featured = true THEN 1 ELSE 0 END')), 'featured']
+            ],
+            raw: true
+        }),
 
-    // Services stats
-    const totalServices = await Service.count({ where: { isActive: true } });
+        // 3. Services count
+        Service.count({ where: { isActive: true } }),
 
-    // Reviews stats
-    const totalReviews = await Review.count({ where: { isVisible: true } });
-    const avgRating = await Review.findOne({
-        attributes: [
-            [fn('AVG', col('rating')), 'avgRating']
-        ],
-        where: { isVisible: true },
-        raw: true
-    });
+        // 4. Review stats - Combined count and avg
+        Review.findOne({
+            attributes: [
+                [fn('COUNT', col('id')), 'total'],
+                [fn('AVG', col('rating')), 'avgRating']
+            ],
+            where: { isVisible: true },
+            raw: true
+        }),
 
-    // Contacts stats
-    const totalContacts = await Contact.count();
-    const pendingContacts = await Contact.count({ where: { status: 'pending' } });
+        // 5. Contact stats - Single grouped query
+        Contact.findAll({
+            attributes: [
+                'status',
+                [fn('COUNT', col('id')), 'count']
+            ],
+            group: ['status'],
+            raw: true
+        }),
 
-    // Payments stats
-    const totalPayments = await Payment.count();
-    const acceptedPayments = await Payment.count({ where: { status: 'accepted' } });
-    const pendingPayments = await Payment.count({ where: { status: 'pending' } });
-    const refusedPayments = await Payment.count({ where: { status: 'refused' } });
-    const cancelledPayments = await Payment.count({ where: { status: 'cancelled' } });
+        // 6. Payment stats - Single grouped query with total amount
+        Payment.findAll({
+            attributes: [
+                'status',
+                [fn('COUNT', col('id')), 'count'],
+                [fn('SUM', col('amount')), 'totalAmount']
+            ],
+            group: ['status'],
+            raw: true
+        }),
 
-    const totalAmountResult = await Payment.findOne({
-        attributes: [
-            [fn('SUM', col('amount')), 'totalAmount']
-        ],
-        where: { status: 'accepted' },
-        raw: true
-    });
+        // 7. Recent users
+        User.findAll({
+            attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'createdAt'],
+            order: [['createdAt', 'DESC']],
+            limit: 5
+        }),
 
-    // Recent data
-    const recentUsers = await User.findAll({
-        attributes: ['id', 'firstName', 'lastName', 'email', 'role', 'createdAt'],
-        order: [['createdAt', 'DESC']],
-        limit: 5
-    });
+        // 8. Recent providers (with eager loading)
+        Provider.findAll({
+            include: [
+                { model: User, as: 'user', attributes: ['firstName', 'lastName', 'email'] }
+            ],
+            order: [['createdAt', 'DESC']],
+            limit: 5
+        })
+    ]);
 
-    const recentProviders = await Provider.findAll({
-        include: [
-            { model: User, as: 'user', attributes: ['firstName', 'lastName', 'email'] }
-        ],
-        order: [['createdAt', 'DESC']],
-        limit: 5
-    });
+    // Process user stats
+    const userStatsMap = userStats.reduce((acc, row) => {
+        acc[row.role] = parseInt(row.count);
+        return acc;
+    }, { client: 0, provider: 0, admin: 0 });
+
+    const totalUsers = Object.values(userStatsMap).reduce((a, b) => a + b, 0);
+
+    // Process contact stats
+    const contactStatsMap = contactStats.reduce((acc, row) => {
+        acc[row.status] = parseInt(row.count);
+        return acc;
+    }, { pending: 0, read: 0, replied: 0 });
+
+    const totalContacts = Object.values(contactStatsMap).reduce((a, b) => a + b, 0);
+
+    // Process payment stats
+    const paymentStatsMap = paymentStats.reduce((acc, row) => {
+        acc[row.status] = {
+            count: parseInt(row.count),
+            amount: parseInt(row.totalAmount || 0)
+        };
+        return acc;
+    }, { accepted: { count: 0, amount: 0 }, pending: { count: 0, amount: 0 }, refused: { count: 0, amount: 0 }, cancelled: { count: 0, amount: 0 } });
+
+    const totalPayments = Object.values(paymentStatsMap).reduce((a, b) => a + b.count, 0);
 
     i18nResponse(req, res, 200, 'admin.stats', {
         users: {
             total: totalUsers,
-            clients: totalClients,
-            providers: totalProviderUsers
+            clients: userStatsMap.client || 0,
+            providers: userStatsMap.provider || 0
         },
         providers: {
-            total: totalProviders,
-            active: totalActiveProviders,
-            pending: totalPendingProviders,
-            featured: totalFeaturedProviders
+            total: parseInt(providerStats?.total || 0),
+            active: parseInt(providerStats?.active || 0),
+            pending: parseInt(providerStats?.pending || 0),
+            featured: parseInt(providerStats?.featured || 0)
         },
         services: {
             total: totalServices
         },
         reviews: {
-            total: totalReviews,
-            averageRating: parseFloat(avgRating?.avgRating || 0).toFixed(2)
+            total: parseInt(reviewStats?.total || 0),
+            averageRating: parseFloat(reviewStats?.avgRating || 0).toFixed(2)
         },
         contacts: {
             total: totalContacts,
-            pending: pendingContacts
+            pending: contactStatsMap.pending || 0
         },
         payments: {
             total: totalPayments,
-            totalAmount: parseInt(totalAmountResult?.totalAmount || 0),
-            accepted: acceptedPayments,
-            pending: pendingPayments,
-            refused: refusedPayments,
-            cancelled: cancelledPayments
+            totalAmount: paymentStatsMap.accepted?.amount || 0,
+            accepted: paymentStatsMap.accepted?.count || 0,
+            pending: paymentStatsMap.pending?.count || 0,
+            refused: paymentStatsMap.refused?.count || 0,
+            cancelled: paymentStatsMap.cancelled?.count || 0
         },
         recentUsers,
         recentProviders

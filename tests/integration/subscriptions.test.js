@@ -46,7 +46,8 @@ describe('Subscription Integration Tests', () => {
                 password: 'TestPassword123!'
             });
 
-        authToken = loginRes.body.accessToken;
+        // Handle different response formats
+        authToken = loginRes.body.accessToken || loginRes.body.data?.accessToken;
     });
 
     afterEach(async () => {
@@ -64,7 +65,7 @@ describe('Subscription Integration Tests', () => {
                 expect(subscription).toBeDefined();
                 expect(subscription.status).toBe('trial');
                 expect(subscription.plan).toBe('trial');
-                expect(subscription.price).toBe(0);
+                expect(parseFloat(subscription.price)).toBe(0);
                 expect(subscription.providerId).toBe(testProvider.id);
 
                 // Check dates
@@ -166,12 +167,14 @@ describe('Subscription Integration Tests', () => {
                     endDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
                 });
 
-                const renewed = await Subscription.renewSubscription(testProvider.id, 'monthly', 'payment-uuid-123');
+                // Use a valid UUID for paymentId
+                const validPaymentId = 'a0000000-0000-0000-0000-000000000001';
+                const renewed = await Subscription.renewSubscription(testProvider.id, 'monthly', validPaymentId);
 
                 expect(renewed.status).toBe('active');
                 expect(renewed.plan).toBe('monthly');
-                expect(renewed.price).toBe(5000);
-                expect(renewed.paymentId).toBe('payment-uuid-123');
+                expect(parseFloat(renewed.price)).toBe(5000);
+                expect(renewed.paymentId).toBe(validPaymentId);
 
                 // Should have 30 more days
                 const daysRemaining = Math.round((renewed.endDate - new Date()) / (1000 * 60 * 60 * 24));
