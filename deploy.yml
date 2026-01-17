@@ -1,0 +1,24 @@
+name: Deploy AELI Service
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: 51.79.68.223
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/my-app
+            git pull origin main
+            # On lance docker-compose directement ici
+            sudo docker-compose up -d --build
+            # Nettoyage des images orphelines
+            sudo docker image prune -f
