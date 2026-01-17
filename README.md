@@ -207,4 +207,4 @@ ISC
 
 ---
 
-Développé par NGOUE DAVID pour AELI Services - Cameroun 🇨🇲
+Développé par NGOUE DAVID pour AELI Services - Cameroun avec beaucoup de fatigue de flemme et de maladie
