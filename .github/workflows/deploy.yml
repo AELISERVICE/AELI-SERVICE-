@@ -2,11 +2,9 @@ name: Deploy AELI Service
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   test:
@@ -14,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Version plus récente
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # Version plus récente
         with:
           node-version: '18'
           cache: 'npm'
@@ -26,35 +24,26 @@ jobs:
         run: npm ci
 
       - name: Run Tests
-        run: npm test || echo "No tests specified yet"
+        # On retire le "|| echo" pour que le déploiement s'arrête si le code est cassé
+        run: npm test
 
   deploy:
     name: 🚀 Deploy to VPS
     needs: test
     runs-on: ubuntu-latest
+    # Déploiement uniquement si c'est un push sur main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: 51.79.68.223
-          username: ubuntu
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/my-app
-            
-            # 1. Mise à jour du code
             git pull origin main
-            
-            # 2. Redémarrage avec la nouvelle syntaxe (SANS le tiret)
-            # On utilise -T pour éviter les erreurs de terminal (TTY) dans le CI
             sudo docker compose up -d --build
-            
-            # 3. Application des migrations Sequelize
             sudo docker compose exec -T api npx sequelize-cli db:migrate
-            
-            # 4. Nettoyage
             sudo docker image prune -f
-            
-            # 5. Statut final
             sudo docker ps
