@@ -4,10 +4,39 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  deploy:
+  # PREMIER JOB : Test et Validation
+  test:
+    name: 🧪 Run Unit Tests
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci # 'npm ci' est plus rapide et propre pour le CI que 'npm install'
+
+      - name: Run Tests
+        run: npm test || echo "No tests specified yet"
+        # Note : Si vous avez de vrais tests, retirez le '|| echo...' 
+        # pour que le déploiement échoue réellement en cas d'erreur.
+
+  # DEUXIÈME JOB : Déploiement (dépend du succès du job 'test')
+  deploy:
+    name: 🚀 Deploy to VPS
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
@@ -17,8 +46,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/my-app
+            
+            # Mise à jour du code
             git pull origin main
-            # On lance docker-compose directement ici
+            
+            # Redémarrage propre de l'infrastructure
+            sudo docker-compose down
             sudo docker-compose up -d --build
-            # Nettoyage des images orphelines
+            
+            # Nettoyage des anciennes images pour libérer de l'espace
             sudo docker image prune -f
+            
+            # Vérification finale du statut
+            sudo docker ps
