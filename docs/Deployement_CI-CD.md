@@ -82,22 +82,36 @@ name: Deploy AELI Service
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   test:
     name: 🧪 Run Unit Tests
     runs-on: ubuntu-latest
+    
+    # Base de données temporaire pour GitHub
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: aeli_test
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -106,7 +120,20 @@ jobs:
         run: npm ci
 
       - name: Run Tests
-        run: npm test || echo "No tests specified yet"
+        env:
+          NODE_ENV: test
+          # On définit TOUTES les variantes possibles pour être sûr que Sequelize les voit
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_USERNAME: postgres
+          DB_PASS: password
+          DB_PASSWORD: password
+          DB_NAME: aeli_test
+          DB_DATABASE: aeli_test
+          # Ajoute ici tes autres variables nécessaires (JWT_SECRET, etc.)
+          JWT_SECRET: test_secret
+        run: npm test
 
   deploy:
     name: 🚀 Deploy to VPS
@@ -117,26 +144,15 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@master
         with:
-          host: 51.79.68.223
-          username: ubuntu
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/my-app
-            
-            # 1. Mise à jour du code
             git pull origin main
-            
-            # 2. Redémarrage avec la nouvelle syntaxe (SANS le tiret)
-            # On utilise -T pour éviter les erreurs de terminal (TTY) dans le CI
             sudo docker compose up -d --build
-            
-            # 3. Application des migrations Sequelize
             sudo docker compose exec -T api npx sequelize-cli db:migrate
-            
-            # 4. Nettoyage
             sudo docker image prune -f
-            
-            # 5. Statut final
             sudo docker ps
 ```
 
