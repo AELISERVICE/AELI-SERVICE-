@@ -11,7 +11,7 @@ jobs:
     name: 🧪 Run Unit Tests
     runs-on: ubuntu-latest
     
-    # AJOUTE CE BLOC "services" ICI :
+    # Base de données temporaire pour GitHub
     services:
       postgres:
         image: postgres:15-alpine
@@ -40,20 +40,25 @@ jobs:
         run: npm ci
 
       - name: Run Tests
-        # On passe les variables de connexion à la DB de test de GitHub
         env:
           NODE_ENV: test
+          # On définit TOUTES les variantes possibles pour être sûr que Sequelize les voit
           DB_HOST: localhost
+          DB_PORT: 5432
           DB_USER: postgres
+          DB_USERNAME: postgres
           DB_PASS: password
+          DB_PASSWORD: password
           DB_NAME: aeli_test
+          DB_DATABASE: aeli_test
+          # Ajoute ici tes autres variables nécessaires (JWT_SECRET, etc.)
+          JWT_SECRET: test_secret
         run: npm test
 
   deploy:
     name: 🚀 Deploy to VPS
     needs: test
     runs-on: ubuntu-latest
-    # Déploiement uniquement si c'est un push sur main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Deploy via SSH
