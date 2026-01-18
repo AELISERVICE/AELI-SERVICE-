@@ -9,7 +9,6 @@ on:
       - main
 
 jobs:
-  # PREMIER JOB : Test et Validation
   test:
     name: 🧪 Run Unit Tests
     runs-on: ubuntu-latest
@@ -24,14 +23,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci # 'npm ci' est plus rapide et propre pour le CI que 'npm install'
+        run: npm ci
 
       - name: Run Tests
         run: npm test || echo "No tests specified yet"
-        # Note : Si vous avez de vrais tests, retirez le '|| echo...' 
-        # pour que le déploiement échoue réellement en cas d'erreur.
 
-  # DEUXIÈME JOB : Déploiement (dépend du succès du job 'test')
   deploy:
     name: 🚀 Deploy to VPS
     needs: test
@@ -47,15 +43,18 @@ jobs:
           script: |
             cd ~/my-app
             
-            # Mise à jour du code
+            # 1. Mise à jour du code
             git pull origin main
             
-            # Redémarrage propre de l'infrastructure
-            sudo docker-compose down
-            sudo docker-compose up -d --build
+            # 2. Redémarrage avec la nouvelle syntaxe (SANS le tiret)
+            # On utilise -T pour éviter les erreurs de terminal (TTY) dans le CI
+            sudo docker compose up -d --build
             
-            # Nettoyage des anciennes images pour libérer de l'espace
+            # 3. Application des migrations Sequelize
+            sudo docker compose exec -T api npx sequelize-cli db:migrate
+            
+            # 4. Nettoyage
             sudo docker image prune -f
             
-            # Vérification finale du statut
+            # 5. Statut final
             sudo docker ps
