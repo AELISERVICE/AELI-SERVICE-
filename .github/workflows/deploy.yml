@@ -10,12 +10,28 @@ jobs:
   test:
     name: 🧪 Run Unit Tests
     runs-on: ubuntu-latest
+    
+    # AJOUTE CE BLOC "services" ICI :
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: aeli_test
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Version plus récente
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4 # Version plus récente
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -24,7 +40,13 @@ jobs:
         run: npm ci
 
       - name: Run Tests
-        # On retire le "|| echo" pour que le déploiement s'arrête si le code est cassé
+        # On passe les variables de connexion à la DB de test de GitHub
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_USER: postgres
+          DB_PASS: password
+          DB_NAME: aeli_test
         run: npm test
 
   deploy:
