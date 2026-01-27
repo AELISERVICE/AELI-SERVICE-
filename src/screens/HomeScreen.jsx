@@ -6,7 +6,7 @@ import { ServicesSection } from '../components/home/ServicesSection'
 
 
 
-export function Home() {
+export function HomeScreen() {
     const [activeTab, setActiveTab] = useState('service')
 
 

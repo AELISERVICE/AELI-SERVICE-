@@ -33,7 +33,6 @@ const contacts = [
 export function StatsProvider() {
   return (
     <aside className="w-full xl:w-80 bg-white p-6 flex flex-col gap-8 border-l border-gray-100">
-      {/* Stats Section */}
       <div className="bg-pink-50/50 rounded-3xl p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-lg text-gray-800">Stats</h3>
@@ -41,8 +40,6 @@ export function StatsProvider() {
             <MoreVertical size={20} />
           </button>
         </div>
-
-        {/* Circular Chart Placeholder */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex items-center justify-center relative mb-4">
             <div className="w-24 h-24 rounded-full overflow-hidden">
@@ -59,8 +56,6 @@ export function StatsProvider() {
             Continue your learning to as done your target
           </p>
         </div>
-
-        {/* Bar Chart */}
         <div className="h-32 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
@@ -81,8 +76,6 @@ export function StatsProvider() {
           </div>
         </div>
       </div>
-
-      {/* Contacts Section */}
       <div>
         <h3 className="font-bold text-lg text-gray-800 mb-4">
           Dernière personnes contactées
@@ -107,9 +100,7 @@ export function StatsProvider() {
           ))}
         </div>
       </div>
-
       <div className="mt-auto">
-        {/* Remplacement par ton bouton UI variant gradient */}
         <Button
           variant="gradient"
           size="lg"

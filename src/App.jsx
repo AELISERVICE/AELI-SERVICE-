@@ -3,10 +3,10 @@ import { LoginScreen } from './screens/LoginScreen'
 import { RegisterScreen } from './screens/RegisterScreen'
 import { OtpScreen } from './screens/OtpScreen'
 import { Base } from './screens/Base'
-import { Profile } from './screens/profile'
-import { Shearch } from './screens/Recherche'
-import { Provider } from './screens/provider'
-import { Home } from './screens/home'
+import { HomeScreen } from './screens/HomeScreen'
+import { ProfileScreen } from './screens/ProfileScreen'
+import { SearchScreen } from './screens/SearchScreen'
+import { ProviderScreen } from './screens/ProviderScreen'
 import { RegistrationProviderScreen } from './screens/RegistrationProviderScreen'
 import { AddServiceScreen } from "./screens/AddServiceScreen"
 import { SubscriptionScreen } from "./screens/SubscriptionScreen"
@@ -21,13 +21,12 @@ function App() {
       <Route path="/become-service-provider" element={<RegistrationProviderScreen />} />
       <Route path="/add-service" element={<AddServiceScreen />} />
 
-
       {/* Toutes ces routes seront injectées dans le composant Base */}
       <Route element={<Base />}>
-        <Route path="/accueil" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/recherche" element={<Shearch />} />
-        <Route path="/prestataire" element={<Provider />} />
+        <Route path="/home" element={<HomeScreen />} />
+        <Route path="/profile" element={<ProfileScreen />} />
+        <Route path="/search" element={<SearchScreen />} />
+        <Route path="/provider" element={<ProviderScreen />} />
         <Route path="/subscription" element={<SubscriptionScreen />} />
       </Route>
     </Routes>

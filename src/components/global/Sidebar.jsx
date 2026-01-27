@@ -16,9 +16,9 @@ export function Sidebar({ onOpenMessage, onOpenFavorite }) {
 
   // Items de navigation classiques
   const navLinks = [
-    { icon: LayoutDashboard, path: '/accueil', label: 'Accueil' },
-    { icon: Search, path: '/recherche', label: 'Recherche' },
-    { icon: Users, path: '/prestataire', label: 'Prestataires' },
+    { icon: LayoutDashboard, path: '/home', label: 'Accueil' },
+    { icon: Search, path: '/search', label: 'Recherche' },
+    { icon: Users, path: '/provider', label: 'Prestataires' },
   ]
 
   return (
@@ -26,7 +26,7 @@ export function Sidebar({ onOpenMessage, onOpenFavorite }) {
       {/* Logo */}
       <div className="mb-12">
         <div className="w-10 h-10 flex items-center justify-center text-white font-bold shadow-lg">
-          <img src='./aelilogo.svg' alt='logo' className="w-full h-full"/>
+          <img src='./aelilogo.svg' alt='logo' className="w-full h-full" />
         </div>
       </div>
 
