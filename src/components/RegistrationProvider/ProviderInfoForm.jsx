@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
-import { User, Briefcase } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { User, Briefcase, X, Check } from 'lucide-react'
 import { SectionHeader } from '../../ui/SectionHeader'
 import { Input } from '../../ui/Input'
+import { Button } from '../../ui/Button'
+import { TermsSection } from "./TermsSection"
 
-export function ProviderInfoForm({ onChange }) {
+export function ProviderInfoForm() {
+    const navigate = useNavigate()
+    const [agreed, setAgreed] = useState(false)
     const [formData, setFormData] = useState({
         name: '',
         surname: '',
@@ -19,119 +24,146 @@ export function ProviderInfoForm({ onChange }) {
 
     const handleChange = (e) => {
         const { name, value } = e.target
-        const newData = { ...formData, [name]: value }
-        setFormData(newData)
-        if (onChange) onChange(newData)
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }))
+    }
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        if (!agreed) {
+            alert("Veuillez accepter les conditions")
+            return
+        }
+        console.log("Données envoyées au serveur :", formData)
     }
 
     return (
-        <>
-            {/* Section 1: Informations Personnelles */}
+        <form className="space-y-10" onSubmit={handleSubmit}>
             <section>
                 <SectionHeader
                     icon={User}
                     title="Informations Personnelles"
                     colorClass="text-blue-600"
                 />
+
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <Input
                         name="name"
                         label="Prénom *"
-                        placeholder="Entrez votre prénom"
+                        placeholder="Prénom"
                         onChange={handleChange}
                     />
+
                     <Input
                         name="surname"
                         label="Nom *"
-                        placeholder="Entrez votre nom"
+                        placeholder="Nom"
                         onChange={handleChange}
                     />
+
                     <Input
                         name="gender"
                         label="Genre *"
                         type="select"
                         onChange={handleChange}
                         options={[
-                            { value: '', label: 'Sélectionnez le genre' },
                             { value: 'male', label: 'Homme' },
-                            { value: 'female', label: 'Femme' },
+                            { value: 'female', label: 'Femme' }
                         ]}
                     />
-                    <Input
-                        name="country"
-                        label="Pays *"
-                        type="select"
-                        onChange={handleChange}
-                        options={[
-                            { value: '', label: 'Sélectionnez votre pays' },
-                            { value: 'fr', label: 'France' },
-                            { value: 'cm', label: 'Cameroun' },
-                            { value: 'ca', label: 'Canada' },
-                        ]}
-                    />
+
                     <Input
                         name="email"
                         label="Adresse E-mail *"
                         type="email"
-                        placeholder="exemple@email.com"
+                        placeholder="email@exemple.com"
                         onChange={handleChange}
                     />
+
                     <Input
                         name="phone"
                         label="Téléphone *"
                         type="tel"
-                        placeholder="Numéro de téléphone"
+                        placeholder="6xx xxx xxx"
                         onChange={handleChange}
                     />
                 </div>
             </section>
-
-            {/* Section 2: Informations sur la Structure */}
-            <section className="mt-10">
+            <section>
                 <SectionHeader
                     icon={Briefcase}
                     title="Informations sur la Structure"
                     colorClass="text-purple-600"
                 />
+
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <Input
                         name="photo"
-                        label="Photo ou logo de la structure "
+                        label="Photo / Logo *"
                         type="file"
-                        required
                         onChange={handleChange}
                         className="h-[250px]"
                     />
-                    <div className="space-y-6 col-span-1">
+
+                    <div className="space-y-6">
                         <Input
                             name="idNumber"
-                            label="Numéro de CNI "
-                            placeholder="Entrez le numéro de votre carte"
+                            label="Numéro CNI"
+                            placeholder="CNI"
                             onChange={handleChange}
                         />
+
                         <Input
                             name="businessName"
-                            label="Nom de l'entreprise "
-                            placeholder="Nom de l'entreprise"
+                            label="Entreprise"
+                            placeholder="Nom structure"
                             onChange={handleChange}
                         />
+
                         <Input
                             name="businessContact"
-                            label="Contact Professionnel "
-                            placeholder="Contact de l'entreprise"
+                            label="Contact Pro"
+                            placeholder="Contact"
                             onChange={handleChange}
                         />
                     </div>
+
                     <Input
                         name="description"
-                        label="Description de l'activité "
+                        label="Description *"
                         type="textarea"
-                        placeholder="Décrivez vos services et activités..."
-                        required
+                        placeholder="Vos services..."
                         onChange={handleChange}
                     />
                 </div>
             </section>
-        </>
+            <TermsSection
+                agreed={agreed}
+                onToggle={(checked) => setAgreed(checked)}
+            />
+            <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
+                <Button
+                    variant="secondary"
+                    className="w-full sm:w-auto gap-2"
+                    type="button"
+                    onClick={() => navigate(-1)}
+                >
+                    <X className="w-4 h-4" />
+                    Retour
+                </Button>
+
+                <Button
+                    variant="gradient"
+                    type="submit"
+                    className="w-full sm:w-auto gap-2"
+                    disabled={!agreed}
+                >
+                    <Check className="w-4 h-4" />
+                    Soumettre
+                </Button>
+            </div>
+        </form>
     )
 }
