@@ -10,7 +10,7 @@ export function Input({
   required,
   ...props
 }) {
-  const baseInputStyles = `w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none text-slate-800 placeholder:text-slate-400`
+  const baseInputStyles = `w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent transition-all outline-none text-slate-800 placeholder:text-slate-400`
 
   return (
     <div className={`w-full ${type === 'textarea' ? 'col-span-1 sm:col-span-2' : ''}`}>

@@ -8,8 +8,8 @@ export function Header() {
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Welcome, Amanda</h1>
-        <p className="text-sm text-gray-500 mt-1">Tue, 07 June 2022</p>
+        <h1 className="text-2xl font-bold text-gray-900">Bienvenue, Amanda</h1>
+        <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
       </div>
 
       <div className="flex items-center gap-4">
@@ -17,7 +17,7 @@ export function Header() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Rechercher"
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none shadow-sm"
           />
         </div>

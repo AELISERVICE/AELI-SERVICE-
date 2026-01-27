@@ -6,7 +6,7 @@ export function FormCard({
     title,
     subtitle,
     gradientFrom = "from-purple-600",
-    gradientTo = "to-pink-400"
+    gradientTo = "to-[#FCE0D6]",
 }) {
     return (
         <div className="min-h-screen w-full p-4 sm:p-6 md:p-8 font-sans relative">

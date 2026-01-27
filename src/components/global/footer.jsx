@@ -23,15 +23,9 @@ export function Footer() {
                 >
                     <Globe className="w-5 h-5" />
                 </a>
-                <a
-                    href="#"
-                    className="text-slate-400 hover:text-purple-600 transition-colors"
-                >
-                    <Github className="w-5 h-5" />
-                </a>
             </div>
             <p className="text-xs text-slate-400">
-                Copyright © 2022 - AEU Service
+                Copyright © 2026 - AELI Service
             </p>
         </div>
     )

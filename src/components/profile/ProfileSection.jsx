@@ -14,7 +14,7 @@ export function ProfileSection() {
     return (
         <div className="space-y-6">
             {/* Profile Header Card */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-purple-500 to-pink-400 p-6 text-white shadow-lg">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600  to-[#FCE0D6] p-6 text-white shadow-lg">
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
                 <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
 
@@ -147,7 +147,9 @@ export function ProfileSection() {
                         variant="gradient" className="w-full sm:w-auto">
                         Devenir prestataire
                     </Button>
-                    <Button variant="primary" className="w-full sm:w-auto bg-purple-600">
+                    <Button
+                        onClick={() => navigate("/subscription")}
+                        variant="softRed" className="w-full sm:w-auto ">
                         Souscrire a un plan
                     </Button>
                 </div>

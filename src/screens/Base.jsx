@@ -5,12 +5,14 @@ import { Header } from '../components/global/header'
 import { Messagecustomer } from '../components/modal/Messagecustomer'
 import { ContactCustomer } from '../components/modal/ContactCustomer'
 import { FeedbackCard } from '../components/modal/FeedbackCard'
+import { FavoriteList } from '../components/modal/FavoriteList'
 
 export function Base() {
     // 1. États pour gérer l'affichage des modales
     const [isMessageOpen, setIsMessageOpen] = useState(false)
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
     const [isContactOpen, setIsContactOpen] = useState(false)
+    const [isFavoriteOpen, setIsFavoriteOpen] = useState(false)
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] min-h-screen bg-[#FAFAFB] font-sans text-slate-900 relative">
@@ -19,7 +21,7 @@ export function Base() {
             <aside className="h-full">
                 <Sidebar
                     onOpenMessage={() => setIsMessageOpen(true)}
-                    onOpenFeedback={() => setIsFeedbackOpen(true)}
+                    onOpenFavorite={() => setIsFavoriteOpen(true)}
                 />
             </aside>
 
@@ -29,7 +31,10 @@ export function Base() {
                         <Header />
 
                         <div className="mt-6 ">
-                            <Outlet context={{ openContact: () => setIsContactOpen(true) }} />
+                            <Outlet context={{
+                                openContact: () => setIsContactOpen(true),
+                                openFeedback: () => setIsFeedbackOpen(true)
+                            }} />
                         </div>
                     </div>
 
@@ -38,7 +43,10 @@ export function Base() {
                         <Messagecustomer closeMessage={() => setIsMessageOpen(false)} />
                     )}
                     {isFeedbackOpen && (
-                        <FeedbackCard />
+                        <FeedbackCard closeFeedback={() => setIsFeedbackOpen(false)} />
+                    )}
+                    {isFavoriteOpen && (
+                        <FavoriteList closeFavorite={() => setIsFavoriteOpen(false)} onContact={() => setIsContactOpen(true)} />
                     )}
                 </div>
             </main>

@@ -1,28 +1,16 @@
 import React from 'react'
 import { MoreVertical, Mail } from 'lucide-react'
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts'
+import { Button } from '../../ui/Button' // Vérifie que le chemin vers ton bouton est correct
+
 const data = [
-  {
-    name: '1-10',
-    value: 65,
-  },
-  {
-    name: '11-20',
-    value: 45,
-  },
-  {
-    name: '21-30',
-    value: 55,
-  },
-  {
-    name: '1-10',
-    value: 55,
-  },
-  {
-    name: '11-20',
-    value: 55,
-  },
+  { name: '1-10', value: 65 },
+  { name: '11-20', value: 45 },
+  { name: '21-30', value: 55 },
+  { name: '1-10', value: 55 },
+  { name: '11-20', value: 55 },
 ]
+
 const contacts = [
   {
     name: 'Ava Chen',
@@ -41,6 +29,7 @@ const contacts = [
     img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop',
   },
 ]
+
 export function StatsProvider() {
   return (
     <aside className="w-full xl:w-80 bg-white p-6 flex flex-col gap-8 border-l border-gray-100">
@@ -79,7 +68,7 @@ export function StatsProvider() {
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={index % 2 === 0 ? '#9F54E8' : '#C4B5FD'}
+                    fill={index % 2 === 0 ? '#FCE0D6' : '#C4B5FD'}
                   />
                 ))}
               </Bar>
@@ -96,7 +85,7 @@ export function StatsProvider() {
       {/* Contacts Section */}
       <div>
         <h3 className="font-bold text-lg text-gray-800 mb-4">
-          Derniere personnes contactees
+          Dernière personnes contactées
         </h3>
         <div className="flex flex-col gap-4">
           {contacts.map((contact, i) => (
@@ -120,10 +109,15 @@ export function StatsProvider() {
       </div>
 
       <div className="mt-auto">
-        <button className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200">
+        {/* Remplacement par ton bouton UI variant gradient */}
+        <Button
+          variant="gradient"
+          size="lg"
+          className="w-full gap-2"
+        >
           <Mail size={18} />
           Messagerie
-        </button>
+        </Button>
       </div>
     </aside>
   )

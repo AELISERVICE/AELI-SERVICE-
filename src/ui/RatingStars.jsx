@@ -29,7 +29,7 @@ export function RatingStars({ rating, hoverRating, onRate, onHover }) {
           <span className="text-yellow-600 font-semibold">
             {rating === 5 ? 'Excellent!' : rating === 4 ? 'Good' : rating === 3 ? 'Average' : rating === 2 ? 'Poor' : 'Very Poor'}
           </span>
-        ) : 'Click to rate'}
+        ) : 'Cliquez pour évaluer'}
       </span>
     </div>
   )

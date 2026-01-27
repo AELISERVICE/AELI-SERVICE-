@@ -10,7 +10,7 @@ import {
   Search
 } from 'lucide-react'
 
-export function Sidebar({ onOpenMessage, onOpenFeedback }) {
+export function Sidebar({ onOpenMessage, onOpenFavorite }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -25,8 +25,8 @@ export function Sidebar({ onOpenMessage, onOpenFeedback }) {
     <aside className="hidden md:flex flex-col items-center w-20 py-8 bg-white border-r border-gray-100 h-screen sticky left-0 top-0 z-20">
       {/* Logo */}
       <div className="mb-12">
-        <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-orange-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
-          M
+        <div className="w-10 h-10 flex items-center justify-center text-white font-bold shadow-lg">
+          <img src='./aelilogo.svg' alt='logo' className="w-full h-full"/>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export function Sidebar({ onOpenMessage, onOpenFeedback }) {
 
         {/* Bouton Feedback (Modal) */}
         <button
-          onClick={onOpenFeedback}
+          onClick={onOpenFavorite}
           className="p-3 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-yellow-500 transition-all duration-200 flex items-center justify-center group"
         >
           <Star className="w-5 h-5" />

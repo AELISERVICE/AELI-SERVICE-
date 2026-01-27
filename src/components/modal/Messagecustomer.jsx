@@ -56,8 +56,10 @@ export function Messagecustomer({ closeMessage }) {
     return (
         <div
             onClick={() => closeMessage()}
-            className="absolute left-0 right-0 bg-black/60 backdrop-blur-sm h-screen flex flex-col ">
-            <div className="w-full lg:w-[60%] xl:w-[55%] h-full flex flex-col bg-[#FAFAFB] px-4 overflow-hidden">
+            className="fixed w-full bg-black/60 backdrop-blur-sm h-screen flex flex-col z-20 ">
+            <div
+                onClick={(e) => e.stopPropagation()}
+                className="w-full lg:w-[60%] xl:w-[55%] h-full flex flex-col bg-[#FAFAFB] px-4 overflow-hidden">
                 <header className="py-8 md:py-10 flex-shrink-0">
                     <h1 className="text-3xl font-bold text-[#0F172A]">Messages</h1>
                 </header>

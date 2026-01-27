@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { StatsProvider } from '../components/provider/StatsProvider'
 import { ProductCard } from '../ui/productCard'
 import { Pagination } from '../components/global/Pagination'
+import { Button } from '../ui/Button' // Import de ton composant UI
 
 const categories = [
     {
@@ -69,20 +70,21 @@ const products = [
         likes: 312,
     },
 ]
+
 export function Provider() {
     const navigate = useNavigate()
 
     return (
         <main className="flex-1 flex flex-col xl:flex-row h-screen overflow-hidden">
             <div className="flex-1 h-full overflow-y-auto p-4 md:p-2">
-                <div className=" mx-auto">
+                <div className="mx-auto">
                     <div className="flex flex-wrap items-center gap-4 mb-10">
                         {categories.map((cat, i) => (
                             <button
                                 key={i}
                                 className={`
-                                        px-6 py-2.5 rounded-2xl text-sm font-medium transition-all
-                                        ${cat.active ?
+                                    px-6 py-2.5 rounded-2xl text-sm font-medium transition-all
+                                    ${cat.active ?
                                         'bg-purple-50 text-purple-700 shadow-sm ring-1 ring-purple-100' :
                                         'bg-white text-gray-500 hover:bg-gray-50 border border-transparent hover:border-gray-100'
                                     }
@@ -92,18 +94,28 @@ export function Provider() {
                                 {cat.active && <span className="ml-2 text-xs">⋮</span>}
                             </button>
                         ))}
-                        <button className="px-6 py-2.5 rounded-2xl text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200">
+
+                        {/* Premier bouton ajouter */}
+                        <Button
+                            variant="gradient"
+                            size="md"
+                            onClick={() => navigate("/add-service")}
+                        >
                             ajouter
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold text-gray-800">Categorie 1</h2>
-                        <button
+
+                        {/* Deuxième bouton Ajouter */}
+                        <Button
+                            variant="gradient"
+                            size="md"
                             onClick={() => navigate("/add-service")}
-                            className="px-4 py-2 rounded-xl text-sm font-medium bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-md shadow-purple-200">
+                        >
                             Ajouter
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -115,10 +127,10 @@ export function Provider() {
                     <Pagination />
                 </div>
             </div>
+
             <div className="xl:h-full xl:overflow-y-auto border-t xl:border-t-0 xl:border-l border-gray-100 bg-white">
                 <StatsProvider />
             </div>
         </main>
-
     )
 }

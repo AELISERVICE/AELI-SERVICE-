@@ -38,11 +38,11 @@ export function TermsSection({ agreed, onToggle }) {
                 </div>
                 <label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer select-none">
                     J'ai lu et j'accepte les{' '}
-                    <a href="#" className="text-purple-600 hover:underline font-medium">
+                    <a href="#" className="text-[#E8524D] hover:underline font-medium">
                         Conditions d'utilisation
                     </a>{' '}
                     et la{' '}
-                    <a href="#" className="text-purple-600 hover:underline font-medium">
+                    <a href="#" className="text-[#E8524D] hover:underline font-medium">
                         Politique de confidentialité
                     </a>{' '}
                     <span className="text-red-500">*</span>

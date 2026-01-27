@@ -13,7 +13,7 @@ export function ProviderPanel() {
     <div className="h-full">
       <Card className="h-full overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-700 to-pink-500 p-4 text-white">
+        <div className="bg-gradient-to-r from-purple-700 to-[#FCE0D6] p-4 text-white">
           <div className="flex items-center gap-2">
             <Store className="w-5 h-5 text-white/80" />
             <h3 className="font-semibold">Provider Details</h3>

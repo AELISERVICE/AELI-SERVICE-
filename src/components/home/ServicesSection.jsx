@@ -62,7 +62,7 @@ const PRODUCTS = [
 ]
 
 export function ServicesSection() {
-    const { openContact } = useOutletContext()
+    const { openContact, openFeedback } = useOutletContext()
 
     return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -71,6 +71,7 @@ export function ServicesSection() {
                     key={product.id}
                     {...product}
                     onContact={openContact}
+                    onFeedback={openFeedback}
                 />
             ))}
         </div>

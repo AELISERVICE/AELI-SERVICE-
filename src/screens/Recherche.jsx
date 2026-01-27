@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { Sidebar } from '../components/global/Sidebar'
-import { Header } from '../components/global/header'
 import { ProductCard } from '../ui/productCard'
 import { Pagination } from '../components/global/Pagination'
-import { X } from 'lucide-react'
+// Importation de ton nouveau composant Button
+import { Button } from '../ui/Button'
 
 const PRODUCTS = [
     {
@@ -65,29 +64,35 @@ const PRODUCTS = [
     },
 ]
 
-export function Shearch() {
+export function Shearch({ openFeedback }) {
     const [activeTab, setActiveTab] = useState('service')
     const { openContact } = useOutletContext()
 
     return (
-        <div className="w-full ">
+        <div className="w-full">
             <div className="px-6 pb-12 md:px-2">
                 <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                     <h2 className="text-3xl font-bold text-slate-900">Recherche</h2>
 
-                    <div className="flex self-center rounded-2xl bg-gray-100 p-1 md:self-auto">
-                        <button
+                    {/* Conteneur des onglets (Tabs) */}
+                    <div className="flex self-center rounded-2xl bg-gray-100 p-1 md:self-auto gap-1">
+                        <Button
+                            variant={activeTab === 'service' ? 'gradient' : 'ghost'}
                             onClick={() => setActiveTab('service')}
-                            className={`rounded-xl px-8 py-2 text-sm font-medium transition-all ${activeTab === 'service' ? 'bg-fuchsia-500 text-white shadow-md' : 'text-gray-500'}`}
+                            className={`px-8 transition-all duration-300 ${activeTab === 'service' ? '' : 'text-gray-500 hover:bg-gray-200'
+                                }`}
                         >
                             Service
-                        </button>
-                        <button
+                        </Button>
+
+                        <Button
+                            variant={activeTab === 'carte' ? 'gradient' : 'ghost'}
                             onClick={() => setActiveTab('carte')}
-                            className={`rounded-xl px-8 py-2 text-sm font-medium transition-all ${activeTab === 'carte' ? 'bg-fuchsia-500 text-white shadow-md' : 'text-gray-500'}`}
+                            className={`px-8 transition-all duration-300 ${activeTab === 'carte' ? '' : 'text-gray-500 hover:bg-gray-200'
+                                }`}
                         >
                             Carte
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -97,6 +102,7 @@ export function Shearch() {
                             key={product.id}
                             {...product}
                             onContact={openContact}
+                            onFeedback={openFeedback}
                         />
                     ))}
                 </div>
