@@ -1,5 +1,8 @@
 import React from 'react'
-import { MessageCard } from '../../ui/messageCustomerCard'
+import { ModalCard } from '../../ui/ModalCard'
+import { Button } from '../../ui/Button'
+import { MessageCard } from '../../ui/MessageCustomerCard'
+import { Trash2 } from 'lucide-react'
 
 const MOCK_DATA = [
     {
@@ -54,29 +57,28 @@ const MOCK_DATA = [
 
 export function Messagecustomer({ closeMessage }) {
     return (
-        <div
-            onClick={() => closeMessage()}
-            className="fixed w-full bg-black/60 backdrop-blur-sm h-screen flex flex-col z-20 ">
-            <div
-                onClick={(e) => e.stopPropagation()}
-                className="w-full lg:w-[60%] xl:w-[55%] h-full flex flex-col bg-[#FAFAFB] px-4 overflow-hidden">
-                <header className="py-8 md:py-10 flex-shrink-0">
-                    <h1 className="text-3xl font-bold text-[#0F172A]">Messages</h1>
-                </header>
-                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] flex-1 min-h-0">
-                    <div className="flex flex-col gap-2 p-4 justify-center items-center">
-                        <div className="w-1.5 h-12 bg-purple-200 rounded-full"></div>
-                        <div className="w-1.5 h-12 bg-purple-700 rounded-full"></div>
-                        <div className="w-1.5 h-12 bg-purple-200 rounded-full"></div>
-                        <div className="w-1.5 h-12 bg-purple-200 rounded-full"></div>
-                    </div>
-                    <div className="flex flex-col gap-4 overflow-y-auto h-full pr-2">
-                        {MOCK_DATA.map((msg) => (
-                            <MessageCard key={msg.id} {...msg} />
-                        ))}
-                    </div>
-                </div>
+        <ModalCard
+            closeModal={closeMessage}
+            isWide={true}
+        >
+            <div className="flex flex-col gap-4 overflow-y-auto h-full pr-2">
+                {MOCK_DATA.map((msg) => (
+                    <MessageCard
+                        key={msg.id} {...msg}
+                        actions={
+                            <Button
+                                variant="secondary" 
+                                className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
+                                onClick={() => handleDelete(msg.id)}
+                                aria-label="Supprimer"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        }
+                    />
+                ))}
             </div>
-        </div>
+
+        </ModalCard>
     )
 }

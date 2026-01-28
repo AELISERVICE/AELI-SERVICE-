@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { Button } from '../../ui/Button'
 import { RecommendationCard } from '../../ui/RecommendationCard'
 
 const DATA = [
@@ -54,6 +56,16 @@ export function RecommendationSection() {
                         title={item.title}
                         description={item.description}
                         isActive={index === activeIndex}
+                        action={[
+                            <Button
+                                variant={index === activeIndex ? 'gradient' : 'ghost'}
+                                size={index === activeIndex ? 'lg' : 'sm'}
+                                className={index === activeIndex ? 'px-8' : 'text-gray-300'}
+                            >
+                                {index === activeIndex ? 'Consulter catalogue' : 'Voir plus'}
+                                <ArrowRight size={16} className="ml-2" />
+                            </Button>
+                        ]}
                     />
                 ))}
             </div>

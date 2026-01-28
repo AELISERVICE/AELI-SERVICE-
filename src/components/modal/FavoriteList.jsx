@@ -1,5 +1,10 @@
 import React from 'react'
+import { ModalCard } from '../../ui/ModalCard'
 import { FavoriteCard } from '../../ui/FavoriteCard'
+import { Button } from '../../ui/Button'
+import { Heart, MapPin, Star } from 'lucide-react'
+
+
 const businesses = [
     {
         name: 'Salon Marie',
@@ -43,37 +48,33 @@ const businesses = [
 ]
 export function FavoriteList({ closeFavorite, onContact }) {
     return (
-        <div
-            onClick={() => closeFavorite()}
-            className="fixed w-full bg-black/60 backdrop-blur-sm h-screen flex flex-col z-20 "
-        >
-            <div
-                // Empêche le clic à l'intérieur de fermer la modale
-                onClick={(e) => e.stopPropagation()}
-                className="w-full lg:w-[40%] xl:w-[30%] h-full flex flex-col bg-[#FAFAFB] px-4"
-            >
-                <header className="py-8 md:py-10 flex-shrink-0">
-                    <h1 className="text-3xl font-bold text-[#0F172A]">Favories</h1>
-                </header>
-
-                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] flex-1 min-h-0">
-                    {/* Indicateur de scroll optionnel à gauche */}
-                    <div className="hidden md:flex flex-col gap-2 p-4 justify-center items-center">
-                        <div className="w-1.5 h-12 bg-purple-200 rounded-full"></div>
-                        <div className="w-1.5 h-12 bg-purple-700 rounded-full"></div>
-                        <div className="w-1.5 h-12 bg-purple-200 rounded-full"></div>
+        <ModalCard closeModal={closeFavorite}>
+            <div className="flex flex-col gap-4 overflow-y-auto h-full  flex-1 pb-10 custom-scrollbar">
+                {businesses.map((business, index) => (
+                    <div key={index} className="flex-shrink-0">
+                        <FavoriteCard
+                            {...business}
+                            actions={[
+                                <button
+                                    className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                                    aria-label="Add to favorites"
+                                >
+                                    <Heart className="w-4 h-4 text-red-500 fill-current" />
+                                </button>,
+                                <Button
+                                    variant="softRed"
+                                    size="sm"
+                                    onClick={onContact}
+                                    className="rounded-xl px-5"
+                                >
+                                    Contacter
+                                </Button>
+                            ]
+                            }
+                        />
                     </div>
-
-                    {/* Zone de Scroll */}
-                    <div className="flex flex-col gap-4 overflow-y-auto h-full  flex-1 pb-10 custom-scrollbar">
-                        {businesses.map((business, index) => (
-                            <div key={index} className="flex-shrink-0"> {/* FORCE LA TAILLE ICI */}
-                                <FavoriteCard {...business} onContact={onContact} />
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                ))}
             </div>
-        </div>
+        </ModalCard>
     )
 }

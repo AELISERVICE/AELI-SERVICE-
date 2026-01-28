@@ -6,6 +6,7 @@ import { Messagecustomer } from '../components/modal/Messagecustomer'
 import { ContactCustomer } from '../components/modal/ContactCustomer'
 import { FeedbackCard } from '../components/modal/FeedbackCard'
 import { FavoriteList } from '../components/modal/FavoriteList'
+import { ReviewList } from '../components/modal/ReviewList'
 
 export function Base() {
     // 1. États pour gérer l'affichage des modales
@@ -13,6 +14,7 @@ export function Base() {
     const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
     const [isContactOpen, setIsContactOpen] = useState(false)
     const [isFavoriteOpen, setIsFavoriteOpen] = useState(false)
+    const [isReviewOpen, setIsReviewOpen] = useState(true)
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] min-h-screen bg-[#FAFAFB] font-sans text-slate-900 relative">
@@ -47,6 +49,9 @@ export function Base() {
                     )}
                     {isFavoriteOpen && (
                         <FavoriteList closeFavorite={() => setIsFavoriteOpen(false)} onContact={() => setIsContactOpen(true)} />
+                    )}
+                    {isReviewOpen && (
+                        <ReviewList closeReview={() => setIsReviewOpen(false)} />
                     )}
                 </div>
             </main>

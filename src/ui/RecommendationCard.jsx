@@ -2,7 +2,7 @@ import React from 'react'
 import { ArrowRight, ShoppingBag } from 'lucide-react'
 import { Button } from './Button'
 
-export function RecommendationCard({ title, description, isActive }) {
+export function RecommendationCard({ title, description, isActive, actions }) {
     return (
         <div
             className={`
@@ -14,15 +14,11 @@ export function RecommendationCard({ title, description, isActive }) {
             `}
         >
             <div className="relative z-10 h-full flex flex-col p-8 justify-between">
-
-                {/* En-tête */}
                 <div className={`transition-all duration-500 ${isActive ? 'scale-100' : 'scale-75 origin-top-left'}`}>
                     <div className="w-12 h-12 bg-[#FCE0D6]/40 rounded-xl flex items-center justify-center">
                         <ShoppingBag className="text-[#E8524D]" size={24} />
                     </div>
                 </div>
-
-                {/* Corps du texte */}
                 <div className={`transition-all duration-500 ${isActive ? 'opacity-100 translate-x-0' : 'opacity-80'}`}>
                     <h3 className={`font-bold text-white mb-2 ${isActive ? 'text-3xl' : 'text-xl'}`}>
                         {title}
@@ -34,14 +30,7 @@ export function RecommendationCard({ title, description, isActive }) {
 
                 {/* Action utilisant ton composant Button */}
                 <div className="mt-4">
-                    <Button
-                        variant={isActive ? 'gradient' : 'ghost'}
-                        size={isActive ? 'lg' : 'sm'}
-                        className={isActive ? 'px-8' : 'text-gray-300'}
-                    >
-                        {isActive ? 'Consulter catalogue' : 'Voir plus'}
-                        <ArrowRight size={16} className="ml-2" />
-                    </Button>
+                    {actions && actions[0]}
                 </div>
             </div>
 

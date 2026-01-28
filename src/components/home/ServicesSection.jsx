@@ -1,6 +1,7 @@
 import React from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { ProductCard } from '../../ui/productCard'
+import { Button } from '../../ui/Button'
 
 const PRODUCTS = [
     {
@@ -72,6 +73,16 @@ export function ServicesSection() {
                     {...product}
                     onContact={openContact}
                     onFeedback={openFeedback}
+                    actions={[
+                        <Button
+                            variant="softRed"
+                            size="md"
+                            onClick={openContact}
+                            className="rounded-full px-6"
+                        >
+                            Contacter
+                        </Button>
+                    ]}
                 />
             ))}
         </div>

@@ -12,7 +12,8 @@ export function ProductCard({
   isAdmin = false,
   showMenu = false,
   onContact,
-  onFeedback
+  onFeedback,
+  actions
 }) {
   const displayTitle = title || name
   const displaySub = description || role
@@ -38,34 +39,17 @@ export function ProductCard({
 
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
-              <Heart className="fill-white text-white" size={16} onClick={onFeedback}/>
+              <Heart className="fill-white text-white" size={16} onClick={onFeedback} />
               <span className="text-sm font-medium">{likes}</span>
             </div>
 
-            {isAdmin ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20 rounded-full p-2"
-              >
-                <MoreHorizontal size={20} />
-              </Button>
-            ) : (
-              /* Utilisation de ton bouton Primary */
-              <Button
-                variant="softRed"
-                size="md"
-                onClick={onContact}
-                className="rounded-full px-6" // On force le arrondi complet pour le style pilule
-              >
-                Contacter
-              </Button>
-            )}
+            {actions && actions[0]}
           </div>
         </div>
 
         {/* Menu Admin */}
-        {isAdmin && showMenu && (
+
+        {/* {isAdmin && showMenu && (
           <div className="absolute bottom-16 left-4 bg-white rounded-xl shadow-xl p-2 w-36 z-10">
             <Button
               variant="ghost"
@@ -82,7 +66,7 @@ export function ProductCard({
               <Trash2 size={14} /> Supprimer
             </Button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   )

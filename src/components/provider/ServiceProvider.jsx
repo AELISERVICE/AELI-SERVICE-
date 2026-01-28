@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ProductCard } from '../../ui/productCard'
 import { Pagination } from '../global/Pagination'
 import { Button } from '../../ui/Button'
+import { MoreHorizontal } from 'lucide-react'
 
 
 const categories = [
@@ -115,7 +116,20 @@ export function ServiceProvider() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {
                     products.map((product) => (
-                        <ProductCard key={product.id} {...product} isAdmin={true} />
+                        <ProductCard
+                            key={product.id}
+                            {...product} isAdmin={true}
+                            actions={[
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-white hover:bg-white/20 rounded-full p-2"
+                                >
+                                    <MoreHorizontal size={20} />
+                                </Button>
+                            ]}
+                        />
                     ))
                 }
             </div >

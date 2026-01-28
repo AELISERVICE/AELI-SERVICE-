@@ -14,7 +14,11 @@ export function Button({
     gradient: 'bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white hover:shadow-lg border-none',
     softRed: 'bg-[#FCE0D6] text-[#E8524D] hover:bg-[#E8524D] hover:text-white',
     whatsapp: 'bg-[#22C55E] text-white hover:bg-[#16A34A]',
-    phone: 'bg-[#3B82F6] text-white hover:bg-[#2563EB]'
+    phone: 'bg-[#3B82F6] text-white hover:bg-[#2563EB]',
+    outline: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 focus:ring-gray-200',
+    danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] focus:ring-red-500 shadow-sm',
+    ghost: 'bg-transparent text-gray-700 hover:bg-gray-50 justify-start',
+    ghostDanger: 'bg-transparent text-red-600 hover:bg-red-50 justify-start'
   }
 
   const sizes = {

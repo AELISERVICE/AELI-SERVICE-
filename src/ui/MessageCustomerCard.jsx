@@ -10,7 +10,7 @@ export function MessageCard({
     message,
     status,
     displayId,
-    onDelete,
+    actions,
 }) {
     return (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200">
@@ -46,15 +46,11 @@ export function MessageCard({
                 {message}
             </div>
 
-            <div className="flex justify-end">
-                <button
-                    onClick={onDelete}
-                    className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-full transition-colors"
-                    aria-label="Supprimer"
-                >
-                    <Trash2 className="w-4 h-4" />
-                </button>
-            </div>
+            {actions && (
+                <div className="flex justify-end">
+                    {actions}
+                </div>
+            )}
         </div>
     )
 }
