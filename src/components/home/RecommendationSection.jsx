@@ -56,7 +56,7 @@ export function RecommendationSection() {
                         title={item.title}
                         description={item.description}
                         isActive={index === activeIndex}
-                        action={[
+                        actions={[
                             <Button
                                 variant={index === activeIndex ? 'gradient' : 'ghost'}
                                 size={index === activeIndex ? 'lg' : 'sm'}

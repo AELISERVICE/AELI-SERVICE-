@@ -33,7 +33,7 @@ export function LoginForm() {
                                 type="submit"
                                 variant="gradient"
                                 size="lg"
-                                onClick={() => navigate('/accueil')}
+                                onClick={() => navigate('/home')}
                                 className="w-full"
                             >
                                 Confirmer
