@@ -4,10 +4,30 @@ import { Button } from '../../ui/Button'
 import { RecommendationCard } from '../../ui/RecommendationCard'
 
 const DATA = [
-    { id: 1, title: 'ONLINE SHOP', description: '5,000 years ago, Black Adam was empowered by the Egyptian gods...' },
-    { id: 2, title: 'SUMMER TRENDS', description: 'Explore the latest fashion trends for the upcoming summer season.' },
-    { id: 3, title: 'TECH DEALS', description: 'Get the best discounts on high-end technology and gadgets.' },
-    { id: 4, title: 'NEW LOOK', description: 'Discover our new collection for 2026.' },
+    {
+        id: 1,
+        title: 'ONLINE SHOP',
+        image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000',
+        description: '5,000 years ago, Black Adam was empowered by the Egyptian gods...'
+    },
+    {
+        id: 2,
+        title: 'SUMMER TRENDS',
+        image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1000',
+        description: 'Explore the latest fashion trends for the upcoming summer season.'
+    },
+    {
+        id: 3,
+        title: 'TECH DEALS',
+        image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1000',
+        description: 'Get the best discounts on high-end technology and gadgets.'
+    },
+    {
+        id: 4,
+        title: 'NEW LOOK',
+        image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000',
+        description: 'Discover our new collection for 2026.'
+    },
 ]
 
 export function RecommendationSection() {
@@ -43,8 +63,6 @@ export function RecommendationSection() {
 
     return (
         <div >
-
-
             <div
                 ref={scrollRef}
                 className="flex items-center gap-4 overflow-x-auto pb-10 no-scrollbar scroll-smooth"
@@ -54,6 +72,7 @@ export function RecommendationSection() {
                     <RecommendationCard
                         key={item.id}
                         title={item.title}
+                        image={item.image}
                         description={item.description}
                         isActive={index === activeIndex}
                         actions={[

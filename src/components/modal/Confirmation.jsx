@@ -3,18 +3,20 @@ import { Button } from '../../ui/Button'
 import { ConfirmCard } from '../../ui/ConfirmCard'
 
 
-export function Confirmation() {
+export function Confirmation({ closeConfirm }) {
   return (
-    <main className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-[#FF8C42] to-[#FF6B35]">
+    <main
+      onClick={closeConfirm}
+      className="fixed min-h-screen w-full flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-50">
       <ConfirmCard
         question={"Are you sure you want to delete?"}
         werning={"If you delete this post, it will disappear permanently."}
-        action={[
+        actions={[
           <Button
             key="cancel"
             variant="outline"
             className="flex-1"
-            onClick={""}
+            onClick={closeConfirm}
           >
             Annuler
           </Button>,
@@ -22,7 +24,7 @@ export function Confirmation() {
             key="delete"
             variant="danger"
             className="flex-1"
-            onClick={""}
+            onClick={closeConfirm}
           >
             Supprimer
           </Button>

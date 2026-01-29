@@ -3,16 +3,18 @@ import { TriangleAlert } from 'lucide-react'
 
 
 export function ConfirmCard(
-    Question,
-    werning,
-    actions
-) {
+    {
+        Question,
+        werning,
+        actions
+    }) {
     return (
         <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            className="w-full max-w-[400px] bg-white rounded-2xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+            className=" w-full max-w-[400px] bg-white rounded-2xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-300"
         >
             <div className="flex flex-col items-center text-center">
                 {/* Icon */}

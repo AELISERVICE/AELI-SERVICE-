@@ -55,9 +55,10 @@ const MOCK_DATA = [
     },
 ]
 
-export function Messagecustomer({ closeMessage }) {
+export function Messagecustomer({ closeMessage, onConfirmation }) {
     return (
         <ModalCard
+            title="Messages"
             closeModal={closeMessage}
             isWide={true}
         >
@@ -67,9 +68,9 @@ export function Messagecustomer({ closeMessage }) {
                         key={msg.id} {...msg}
                         actions={
                             <Button
-                                variant="secondary" 
+                                variant="secondary"
                                 className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
-                                onClick={() => handleDelete(msg.id)}
+                                onClick={onConfirmation}
                                 aria-label="Supprimer"
                             >
                                 <Trash2 className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import React from 'react'
 import { MoreVertical, Mail } from 'lucide-react'
+import { useOutletContext } from 'react-router-dom'
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts'
 import { Button } from '../../ui/Button' // Vérifie que le chemin vers ton bouton est correct
 
@@ -31,8 +32,10 @@ const contacts = [
 ]
 
 export function StatsProvider() {
+  const { openMessaging } = useOutletContext()
+
   return (
-    <aside className="w-full xl:w-80 bg-white p-6 flex flex-col gap-8 border-l border-gray-100">
+    <aside className="w-full xl:w-full bg-white p-6 flex flex-col gap-8 border-none md:border-2 md:border-gray-100 rounded-4xl md:shadow-sm hover:shadow-xl transition-all duration-300 group md:mb-10">
       <div className="bg-pink-50/50 rounded-3xl p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="font-bold text-lg text-gray-800">Stats</h3>
@@ -42,9 +45,9 @@ export function StatsProvider() {
         </div>
         <div className="flex flex-col items-center mb-8">
           <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex items-center justify-center relative mb-4">
-            <div className="w-24 h-24 rounded-full overflow-hidden">
+            <div className="w-full h-full rounded-full overflow-hidden no-scrollbar">
               <img
-                src="https://images.unsplash.com/photo-1588515603068-013c911ed5bf?w=200&h=200&fit=crop"
+                src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1000"
                 alt="Stats"
                 className="w-full h-full object-cover opacity-80"
               />
@@ -105,6 +108,7 @@ export function StatsProvider() {
           variant="gradient"
           size="lg"
           className="w-full gap-2"
+          onClick={openMessaging}
         >
           <Mail size={18} />
           Messagerie

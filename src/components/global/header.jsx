@@ -1,15 +1,25 @@
 import React from 'react'
-import { Search, Bell } from 'lucide-react'
+import { Search, Bell, Menu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-export function Header() {
+export function Header({ onOpenMenu }) {
   const navigate = useNavigate()
 
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Bienvenue, Amanda</h1>
-        <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
+      <div className="w-full flex items-center justify-between gap-4">
+        {/* BOUTON BURGER : visible uniquement sur mobile */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Bienvenue, Amanda</h1>
+          <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
+        </div>
+
+        <button
+          onClick={onOpenMenu}
+          className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-600 md:hidden shadow-sm hover:bg-gray-50"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
       </div>
 
       <div className="flex items-center gap-4">

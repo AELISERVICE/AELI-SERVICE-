@@ -78,12 +78,12 @@ export function ServiceProvider() {
 
     return (
         <>
-            <div className="flex flex-wrap items-center gap-4 mb-10">
+            <div className="flex overflow-y-auto no-scrollbar items-center gap-4 mb-10">
                 {categories.map((cat, i) => (
                     <button
                         key={i}
                         className={`
-                                    px-6 py-2.5 rounded-2xl text-sm font-medium transition-all
+                                    px-6 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap
                                     ${cat.active ?
                                 'bg-purple-50 text-purple-700 shadow-sm ring-1 ring-purple-100' :
                                 'bg-white text-gray-500 hover:bg-gray-50 border border-transparent hover:border-gray-100'
