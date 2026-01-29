@@ -12,7 +12,7 @@ export function Button({
     primary: 'bg-[#FCE0D6] text-[#E8524D] hover:bg-[#E8524D] hover:text-white shadow-sm',
     secondary: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50',
     gradient: 'bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white hover:shadow-lg border-none',
-    softRed: 'bg-[#FCE0D6] text-[#E8524D] hover:bg-[#E8524D] hover:text-white',
+    softRed: 'bg-[#E8524D] text-white hover:bg-[#FCE0D6] hover:text-[#E8524D]',
     whatsapp: 'bg-[#22C55E] text-white hover:bg-[#16A34A]',
     phone: 'bg-[#3B82F6] text-white hover:bg-[#2563EB]',
     outline: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 focus:ring-gray-200',
