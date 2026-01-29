@@ -8,57 +8,55 @@ import { FeedbackCard } from '../components/modal/FeedbackCard'
 import { FavoriteList } from '../components/modal/FavoriteList'
 import { ReviewList } from '../components/modal/ReviewList'
 
+
+
 export function Base() {
-    // 1. États pour gérer l'affichage des modales
-    const [isMessageOpen, setIsMessageOpen] = useState(false)
-    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false)
-    const [isContactOpen, setIsContactOpen] = useState(false)
-    const [isFavoriteOpen, setIsFavoriteOpen] = useState(false)
-    const [isReviewOpen, setIsReviewOpen] = useState(true)
+    const MODALS = { NONE: 0, MESSAGE: 1, FEEDBACK: 2, CONTACT: 3, FAVORITE: 4, REVIEW: 5 };
+    const [activeModal, setActiveModal] = useState(null);
+    const closeModal = () => setActiveModal(MODALS.NONE);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] min-h-screen bg-[#FAFAFB] font-sans text-slate-900 relative">
-
-            {/* Sidebar avec les fonctions d'ouverture */}
             <aside className="h-full">
                 <Sidebar
-                    onOpenMessage={() => setIsMessageOpen(true)}
-                    onOpenFavorite={() => setIsFavoriteOpen(true)}
+                    onOpenMessage={() => setActiveModal(MODALS.MESSAGE)}
+                    onOpenFavorite={() => setActiveModal(MODALS.FAVORITE)}
+                    onOpenReview={() => setActiveModal(MODALS.REVIEW)}
+                    activeModal={activeModal}
+                    MODALS={MODALS}
                 />
             </aside>
-
             <main className="h-screen overflow-y-auto">
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
                         <Header />
-
                         <div className="mt-6 ">
                             <Outlet context={{
-                                openContact: () => setIsContactOpen(true),
-                                openFeedback: () => setIsFeedbackOpen(true)
+                                openContact: () => setActiveModal(MODALS.CONTACT),
+                                openFeedback: () => setActiveModal(MODALS.FEEDBACK)
                             }} />
                         </div>
                     </div>
-
-                    {/* --- MODALES --- */}
-                    {isMessageOpen && (
-                        <Messagecustomer closeMessage={() => setIsMessageOpen(false)} />
+                    {activeModal === MODALS.MESSAGE && (
+                        <Messagecustomer closeMessage={closeModal} />
                     )}
-                    {isFeedbackOpen && (
-                        <FeedbackCard closeFeedback={() => setIsFeedbackOpen(false)} />
+                    {activeModal === MODALS.FEEDBACK && (
+                        <FeedbackCard closeFeedback={closeModal} />
                     )}
-                    {isFavoriteOpen && (
-                        <FavoriteList closeFavorite={() => setIsFavoriteOpen(false)} onContact={() => setIsContactOpen(true)} />
+                    {activeModal === MODALS.FAVORITE && (
+                        <FavoriteList
+                            closeFavorite={closeModal}
+                            onContact={() => setActiveModal(MODALS.CONTACT)}
+                        />
                     )}
-                    {isReviewOpen && (
-                        <ReviewList closeReview={() => setIsReviewOpen(false)} />
+                    {activeModal === MODALS.REVIEW && (
+                        <ReviewList closeReview={closeModal} />
                     )}
                 </div>
             </main>
-            {isContactOpen && (
-                <ContactCustomer closeContact={() => setIsContactOpen(false)} />
+            {activeModal === MODALS.CONTACT && (
+                <ContactCustomer closeContact={closeModal} />
             )}
-
         </div>
     )
 }

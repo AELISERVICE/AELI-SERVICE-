@@ -79,7 +79,7 @@ export function ServiceSearch() {
                         onFeedback={openFeedback}
                         actions={[
                             <Button
-                                variant="softRed"
+                                variant="gradient"
                                 size="md"
                                 onClick={openContact}
                                 className="rounded-full px-6" 

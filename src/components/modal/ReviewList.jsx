@@ -59,7 +59,7 @@ export function ReviewList({ closeReview }) {
 
     return (
         <ModalCard closeModal={closeReview}>
-            <div className="flex flex-col gap-6 overflow-y-auto h-full pb-10 custom-scrollbar">
+            <div className="flex flex-col gap-6 overflow-y-auto h-full pb-10 custom-scrollbar no-scrollbar">
                 {profiles.map((profile) => (
                     <div key={profile.id} className="flex-shrink-0">
                         <ReviewCard

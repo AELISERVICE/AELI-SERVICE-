@@ -1,13 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom' // Ajoute cet import
+import { BrowserRouter } from 'react-router-dom'
+import { ThemeProvider } from 'next-themes' // <--- Import
 import './index.css'
 import App from './App.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter> {/* Enveloppe App avec BrowserRouter */}
-      <App />
-    </BrowserRouter>
+    <ThemeProvider attribute="class" defaultTheme="light"> {/* Gère le mode sombre */}
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>,
 )

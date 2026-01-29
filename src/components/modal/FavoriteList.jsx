@@ -49,7 +49,7 @@ const businesses = [
 export function FavoriteList({ closeFavorite, onContact }) {
     return (
         <ModalCard closeModal={closeFavorite}>
-            <div className="flex flex-col gap-4 overflow-y-auto h-full  flex-1 pb-10 custom-scrollbar">
+            <div className="flex flex-col gap-4 overflow-y-auto h-full  flex-1 pb-10 custom-scrollbar no-scrollbar">
                 {businesses.map((business, index) => (
                     <div key={index} className="flex-shrink-0">
                         <FavoriteCard

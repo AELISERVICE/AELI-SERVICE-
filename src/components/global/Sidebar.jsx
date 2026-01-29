@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTheme } from 'next-themes'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
@@ -6,13 +7,16 @@ import {
   Users,
   Mail,
   LogOut,
+  Sun,
   Moon,
-  Search
+  Search,
+  MessageSquare
 } from 'lucide-react'
 
-export function Sidebar({ onOpenMessage, onOpenFavorite }) {
+export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
 
   // Items de navigation classiques
   const navLinks = [
@@ -59,15 +63,23 @@ export function Sidebar({ onOpenMessage, onOpenFavorite }) {
         {/* Bouton Messages (Modal) */}
         <button
           onClick={onOpenMessage}
-          className="p-3 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-purple-600 transition-all duration-200 flex items-center justify-center group"
+          className={`p-3 rounded-xl text-gray-400 transition-all duration-200 flex items-center justify-center group ${activeModal === MODALS.MESSAGE ? 'bg-purple-50 text-purple-600 shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}`}
         >
           <Mail className="w-5 h-5" />
+        </button>
+
+        {/* Bouton Commentaires */}
+        <button
+          onClick={onOpenReview}
+          className={`p-3 rounded-xl text-gray-400 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center group  ${activeModal === MODALS.REVIEW ? 'bg-purple-50 text-purple-600 shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}`}
+        >
+          <MessageSquare className="w-5 h-5" />
         </button>
 
         {/* Bouton Feedback (Modal) */}
         <button
           onClick={onOpenFavorite}
-          className="p-3 rounded-xl text-gray-400 hover:bg-gray-50 hover:text-yellow-500 transition-all duration-200 flex items-center justify-center group"
+          className={`p-3 rounded-xl text-gray-400  transition-all duration-200 flex items-center justify-center group  ${activeModal === MODALS.FAVORITE ? 'bg-purple-50 text-purple-600 shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}`}
         >
           <Star className="w-5 h-5" />
         </button>
@@ -84,10 +96,15 @@ export function Sidebar({ onOpenMessage, onOpenFavorite }) {
 
         <div className="w-full h-px bg-gray-100" />
 
-        <button className="p-1 bg-purple-100 rounded-full w-full flex items-center justify-end relative h-8">
-          <div className="absolute left-1 w-6 h-6 bg-white rounded-full shadow-sm" />
-          <div className="w-7 h-7 rounded-full bg-gray-900 flex items-center justify-center text-white z-10">
-            <Moon className="w-4 h-4" />
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-1 bg-purple-100 dark:bg-purple-900 rounded-full w-full flex items-center justify-end relative h-8 transition-colors"
+        >
+          {/* Le petit cercle blanc qui bouge selon le mode */}
+          <div className={`absolute w-6 h-6 bg-white rounded-full shadow-sm transition-all duration-300 ${theme === 'dark' ? 'left-7' : 'left-1'}`} />
+
+          <div className="w-7 h-7 rounded-full bg-gray-900 dark:bg-yellow-400 flex items-center justify-center text-white dark:text-gray-900 z-10">
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </div>
         </button>
       </div>

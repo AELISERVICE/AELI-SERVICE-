@@ -61,7 +61,7 @@ export function Messagecustomer({ closeMessage }) {
             closeModal={closeMessage}
             isWide={true}
         >
-            <div className="flex flex-col gap-4 overflow-y-auto h-full pr-2">
+            <div className="flex flex-col gap-4 overflow-y-auto h-full pr-2 no-scrollbar">
                 {MOCK_DATA.map((msg) => (
                     <MessageCard
                         key={msg.id} {...msg}
