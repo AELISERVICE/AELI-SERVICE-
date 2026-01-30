@@ -10,7 +10,6 @@ import { Button } from '../../ui/Button'
 export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose }) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { theme, setTheme } = useTheme()
 
   // État pour gérer l'agrandissement sur ordinateur
   const [isCollapsed, setIsCollapsed] = useState(true)

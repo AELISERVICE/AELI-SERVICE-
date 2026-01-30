@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { ReviewCard } from '../../ui/ReviewCard'
 import { ModalCard } from '../../ui/ModalCard'
-import { ItemsCount } from '../../ui/ItemsCount'
+import { CountItems } from '../global/CountItems'
 import { ActionMenu } from '../global/ActionMenu'
 import { MoreHorizontal } from 'lucide-react'
 
@@ -72,7 +72,7 @@ export function ReviewList({ closeReview }) {
     return (
         <ModalCard title="Avis" closeModal={closeReview}>
             {/* On passe la ref du conteneur */}
-            <ItemsCount count={profiles.length} scrollContainerRef={scrollRef} />
+            <CountItems count={profiles.length} scrollContainerRef={scrollRef} />
 
             <div
                 ref={scrollRef}

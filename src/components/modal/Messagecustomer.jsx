@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { ModalCard } from '../../ui/ModalCard'
 import { Button } from '../../ui/Button'
-import { ItemsCount } from '../../ui/ItemsCount'
+import { CountItems } from '../global/CountItems'
 import { MessageCard } from '../../ui/MessageCustomerCard'
 import { Trash2 } from 'lucide-react'
 
@@ -101,7 +101,7 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
             closeModal={closeMessage}
             isWide={true}
         >
-            <ItemsCount count={MOCK_DATA.length} scrollContainerRef={scrollRef} />
+            <CountItems count={MOCK_DATA.length} scrollContainerRef={scrollRef} />
             <div
                 ref={scrollRef}
                 className="flex flex-col gap-4 overflow-y-auto h-full pr-2 no-scrollbar">

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { ModalCard } from '../../ui/ModalCard'
 import { FavoriteCard } from '../../ui/FavoriteCard'
-import { ItemsCount } from '../../ui/ItemsCount'
+import { CountItems } from '../global/CountItems'
 import { Button } from '../../ui/Button'
 import { Heart, MapPin, Star } from 'lucide-react'
 
@@ -55,7 +55,7 @@ export function FavoriteList({ closeFavorite, onContact }) {
             title="Favoris"
             closeModal={closeFavorite}
         >
-            <ItemsCount count={businesses.length} scrollContainerRef={scrollRef} />
+            <CountItems count={businesses.length} scrollContainerRef={scrollRef} />
             <div
                 ref={scrollRef}
                 className="flex flex-col gap-4 overflow-y-auto h-full  flex-1 pb-10 custom-scrollbar no-scrollbar">
