@@ -13,7 +13,7 @@ export function FavoriteCard({
     actions
 }) {
     return (
-        <div className="group flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
+        <div className="w-full max-w-sm mx-auto group flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
             <div className="relative h-48 sm:h-56 w-full overflow-hidden">
                 <img
                     src={image}

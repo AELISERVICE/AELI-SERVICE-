@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ProductCard } from '../../ui/productCard'
 import { Pagination } from '../global/Pagination'
 import { Button } from '../../ui/Button'
 import { MoreHorizontal } from 'lucide-react'
+import { ActionMenu } from '../global/ActionMenu'
 
 
 const categories = [
@@ -75,6 +76,8 @@ const products = [
 
 export function ServiceProvider() {
     const navigate = useNavigate()
+    const [openMenuId, setOpenMenuId] = useState(null)
+    const triggerRef = useRef(null)
 
     return (
         <>
@@ -124,10 +127,20 @@ export function ServiceProvider() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
+                                    ref={openMenuId === product.id ? triggerRef : null}
+                                    onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
                                     className="text-white hover:bg-white/20 rounded-full p-2"
                                 >
                                     <MoreHorizontal size={20} />
-                                </Button>
+                                </Button>,
+                                <ActionMenu
+                                    key="menu"
+                                    isOpen={openMenuId === product.id}
+                                    onClose={() => setOpenMenuId(null)}
+                                    triggerRef={triggerRef} // On passe la ref ici
+                                    onEdit={() => console.log("Editer", product.id)}
+                                    onDelete={() => console.log("Supprimer", product.id)}
+                                />
                             ]}
                         />
                     ))

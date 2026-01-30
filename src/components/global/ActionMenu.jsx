@@ -1,8 +1,27 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 
-export function ActionMenu({ isOpen, onClose, menuRef, onEdit, onDelete }) {
+export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete }) {
+    const menuRef = useRef(null)
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        function handleClickOutside(event) {
+            // Si le clic n'est ni sur le menu, ni sur le bouton qui l'a ouvert
+            if (
+                menuRef.current && !menuRef.current.contains(event.target) &&
+                triggerRef?.current && !triggerRef.current.contains(event.target)
+            ) {
+                onClose()
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [isOpen, onClose, triggerRef])
+
     if (!isOpen) return null
 
     return (
@@ -14,24 +33,17 @@ export function ActionMenu({ isOpen, onClose, menuRef, onEdit, onDelete }) {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full gap-2 px-3 py-2 text-xs"
-                    onClick={() => {
-                        if (onEdit) onEdit()
-                        onClose()
-                    }}
+                    className="w-full gap-2 px-3 py-2 text-xs justify-start"
+                    onClick={() => { onEdit?.(); onClose(); }}
                 >
                     <Pencil size={14} className="text-blue-500" />
                     <span>Modifier</span>
                 </Button>
-
                 <Button
                     variant="ghostDanger"
                     size="sm"
-                    className="w-full gap-2 px-3 py-2 text-xs"
-                    onClick={() => {
-                        if (onDelete) onDelete()
-                        onClose()
-                    }}
+                    className="w-full gap-2 px-3 py-2 text-xs justify-start"
+                    onClick={() => { onDelete?.(); onClose(); }}
                 >
                     <Trash2 size={14} />
                     <span>Supprimer</span>

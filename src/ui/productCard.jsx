@@ -44,6 +44,7 @@ export function ProductCard({
             </div>
 
             {actions && actions[0]}
+            {actions && actions[1]}
           </div>
         </div>
 

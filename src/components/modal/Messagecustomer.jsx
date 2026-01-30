@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { ModalCard } from '../../ui/ModalCard'
 import { Button } from '../../ui/Button'
+import { ItemsCount } from '../../ui/ItemsCount'
 import { MessageCard } from '../../ui/MessageCustomerCard'
 import { Trash2 } from 'lucide-react'
 
@@ -53,30 +54,73 @@ const MOCK_DATA = [
             "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
         status: 'contacted',
     },
+    {
+        id: '4',
+        businessName: 'Nails & Beauty',
+        image:
+            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
+        date: '12 Jan 2026',
+        time: '16:45',
+        displayId: 'e2f5b9c7',
+        message:
+            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
+        status: 'contacted',
+    },
+    {
+        id: '4',
+        businessName: 'Nails & Beauty',
+        image:
+            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
+        date: '12 Jan 2026',
+        time: '16:45',
+        displayId: 'e2f5b9c7',
+        message:
+            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
+        status: 'contacted',
+    },
+    {
+        id: '4',
+        businessName: 'Nails & Beauty',
+        image:
+            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
+        date: '12 Jan 2026',
+        time: '16:45',
+        displayId: 'e2f5b9c7',
+        message:
+            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
+        status: 'contacted',
+    },
 ]
 
 export function Messagecustomer({ closeMessage, onConfirmation }) {
+    const scrollRef = useRef(null)
+
     return (
         <ModalCard
             title="Messages"
             closeModal={closeMessage}
             isWide={true}
         >
-            <div className="flex flex-col gap-4 overflow-y-auto h-full pr-2 no-scrollbar">
-                {MOCK_DATA.map((msg) => (
-                    <MessageCard
-                        key={msg.id} {...msg}
-                        actions={
-                            <Button
-                                variant="secondary"
-                                className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
-                                onClick={onConfirmation}
-                                aria-label="Supprimer"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
-                        }
-                    />
+            <ItemsCount count={MOCK_DATA.length} scrollContainerRef={scrollRef} />
+            <div
+                ref={scrollRef}
+                className="flex flex-col gap-4 overflow-y-auto h-full pr-2 no-scrollbar">
+                {MOCK_DATA.map((msg, index) => (
+                    <div key={msg.id} data-index={index} className="flex-shrink-0">
+                        <MessageCard
+                            {...msg}
+                            actions={
+                                <Button
+                                    variant="secondary"
+                                    className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
+                                    onClick={onConfirmation}
+                                    aria-label="Supprimer"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                            }
+                        />
+                    </div>
                 ))}
             </div>
 

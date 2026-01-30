@@ -18,7 +18,9 @@ export function Button({
     outline: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 focus:ring-gray-200',
     danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] focus:ring-red-500 shadow-sm',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-50 justify-start',
-    ghostDanger: 'bg-transparent text-red-600 hover:bg-red-50 justify-start'
+    ghostDanger: 'bg-transparent text-red-600 hover:bg-red-50 justify-start',
+    close: 'bg-white text-gray-500 hover:text-black shadow-md border-0',
+    tab: 'bg-[#E8524D] text-white shadow-lg hover:scale-110 border-0'
   }
 
   const sizes = {

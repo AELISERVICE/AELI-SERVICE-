@@ -64,7 +64,7 @@ export function Base() {
                         <ReviewList closeReview={closeModal} />
                     )}
                     {activeModal === MODALS.MESSAGING && (
-                        <ProviderMessaging />
+                        <ProviderMessaging closeMessaging={closeModal}/>
                     )}
                 </div>
             </main>

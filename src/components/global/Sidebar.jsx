@@ -2,9 +2,10 @@ import React, { useState } from 'react' // Ajout de useState
 import { useTheme } from 'next-themes'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Star, Users, Mail, LogOut, Sun, Moon, Search, MessageSquare, X,
+  LayoutDashboard, Star, Mail, LogOut, Store, Search, MessageSquare, X,
   ChevronRight, ChevronLeft // Nouvelles icônes pour le toggle
 } from 'lucide-react'
+import { Button } from '../../ui/Button'
 
 export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose }) {
   const location = useLocation()
@@ -17,7 +18,7 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
   const navLinks = [
     { icon: LayoutDashboard, path: '/home', label: 'Accueil' },
     { icon: Search, path: '/search', label: 'Recherche' },
-    { icon: Users, path: '/provider', label: 'Prestataires' },
+    { icon: Store, path: '/provider', label: 'Prestataires' },
   ]
 
   return (
@@ -28,12 +29,12 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
       )}
 
       <aside className={`
-        fixed md:sticky left-0 top-0 h-screen z-30
+        fixed md:sticky left-0 top-0 h-screen z-40
         flex flex-col py-8 bg-white border-r border-gray-100
-        transition-all duration-300 ease-in-out
+        transition-all duration-300 ease-in-out 
         
         /* Gestion Largeur : Mobile toujours large (w-64). Desktop varie selon isCollapsed */
-        w-64 ${isCollapsed ? 'md:w-20' : 'md:w-64'}
+        w-70 ${isCollapsed ? 'md:w-20' : 'md:w-64'}
         
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0
@@ -48,7 +49,7 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
         </button>
 
         {/* Header : Logo + Titre */}
-        <div className={`flex items-center w-full px-6 mb-12 ${isCollapsed ? 'md:justify-center md:px-0' : 'md:justify-start md:px-6'}`}>
+        <div className={`flex items-center justify-between w-full px-6 mb-12 ${isCollapsed ? 'md:justify-center md:px-0' : 'md:justify-start md:px-6'}`}>
           <div className="flex items-center gap-3">
             <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />
             {/* Texte affiché si mobile OU si desktop n'est pas réduit */}
@@ -56,9 +57,16 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
               AELI Service
             </span>
           </div>
-          <button onClick={onClose} className="md:hidden p-2 text-gray-400">
-            <X className="w-6 h-6" />
-          </button>
+          <Button
+            variant="close"
+            size="none"
+            isCircle={true}
+            onClick={onClose}
+            className="md:hidden p-2 text-gray-400"
+            aria-label="Fermer"
+          >
+            <X size={24} />
+          </Button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-4 w-full px-4">

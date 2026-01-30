@@ -13,7 +13,7 @@ export function MessageCard({
     actions,
 }) {
     return (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200">
+        <div className="w-full max-w-xl mx-auto bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex gap-4">
                     <img
