@@ -8,47 +8,20 @@ export function FeedbackCard({ closeFeedback }) {
   const [hoverRating, setHoverRating] = useState(0);
   const [feedback, setFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      setSubmitted(true);
     }, 1500);
   };
-
-  // État après soumission
-  if (submitted) {
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm h-screen flex flex-col justify-center items-center z-20">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-in fade-in zoom-in duration-300">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Star className="w-8 h-8 text-green-500 fill-green-500" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Merci !</h2>
-          <p className="text-gray-600 mb-6">Votre avis nous aide à nous améliorer.</p>
-
-          {/* Utilisation de Button en version ghost pour fermer */}
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setSubmitted(false);
-              closeFeedback(); // On ferme la modale
-            }}
-          >
-            Fermer
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
       onClick={() => closeFeedback()}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm h-screen flex flex-col justify-center items-center z-20"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm h-screen flex flex-col justify-center items-center z-20 p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}

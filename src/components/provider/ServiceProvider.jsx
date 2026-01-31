@@ -81,7 +81,7 @@ export function ServiceProvider() {
 
     return (
         <>
-            <div className="flex overflow-y-auto no-scrollbar items-center gap-4 mb-10">
+            <div className="flex md:overflow-y-auto no-scrollbar items-center gap-4 mb-10">
                 {categories.map((cat, i) => (
                     <button
                         key={i}

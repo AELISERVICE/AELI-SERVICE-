@@ -41,7 +41,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
       xl:static xl:w-[350px] xl:translate-x-0 xl:flex 
       /* Mode Mobile (Drawer) */
       fixed right-0 top-0 h-full w-[85%] sm:w-[400px]
-      bg-white lg:bg-transparent transition-transform duration-300 ease-in-out 
+      bg-white xl:bg-transparent transition-transform duration-300 ease-in-out 
       ${showStats ? 'translate-x-0' : 'translate-x-full'}
   `}>
       <div className="flex flex-col h-full w-full relative">
@@ -55,7 +55,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
         </Button>
 
         <div className="flex-1 overflow-y-auto no-scrollbar xl:py-0">
-          <aside className="w-full xl:w-full bg-white p-6 flex flex-col gap-8 border-none md:border-2 md:border-gray-100 rounded-4xl md:shadow-sm hover:shadow-xl transition-all duration-300 group md:mb-10">
+          <aside className="w-full xl:w-full bg-white p-6 flex flex-col gap-8 border-none md:border-2 md:border-gray-100 rounded-4xl xl:shadow-sm hover:shadow-xl transition-all duration-300 group md:mb-10">
             <div className="bg-pink-50/50 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-lg text-gray-800">Stats</h3>

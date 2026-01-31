@@ -66,7 +66,7 @@ export function OtpForm() {
                     variant="gradient"
                     size="lg"
                     className="w-full py-4 text-xs tracking-widest uppercase"
-                    onClick={() => navigate('/accueil')}
+                    onClick={() => navigate('/home')}
                     disabled={otp.some((d) => d === '')}
                 >
                     Vérifier
