@@ -42,13 +42,13 @@ export function Input({
 
         {/* CAS 3 : FILE (UPLOAD PHOTO) */}
         {type === 'file' && (
-          <div className={`group relative flex min-h-[138px] ${className} cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-purple-400 hover:bg-white`}>
+          <div className={`group relative flex min-h-[138px] ${className} cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white`}>
             <div className="flex flex-col items-center justify-center space-y-2 text-center">
               <div className="rounded-full bg-white p-2 shadow-sm group-hover:bg-purple-50">
-                <UploadCloud className="h-6 w-6 text-gray-400 group-hover:text-purple-500" />
+                <UploadCloud className="h-6 w-6 text-gray-400 group-hover:text-[#FCE0D6]" />
               </div>
               <div className="text-xs text-gray-500">
-                <span className="font-medium text-purple-600">Click to upload</span> or drag and drop
+                <span className="font-medium text-[#E8524D]">Click to upload</span> or drag and drop
               </div>
               <p className="text-[10px] text-gray-400 uppercase">PNG, JPG up to 5MB</p>
             </div>

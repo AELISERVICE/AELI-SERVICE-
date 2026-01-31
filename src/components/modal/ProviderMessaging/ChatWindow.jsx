@@ -9,8 +9,8 @@ export function ChatWindow({ contact, onBack }) {
     if (!contact) return <div className="flex-1 flex items-center justify-center text-gray-400">Sélectionnez une discussion</div>;
 
     return (
-        <div className="flex flex-col h-full">
-            <header className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 z-20">
+        <div className="flex flex-col h-full pb-4">
+            <header className="flex items-center justify-between md:px-6 py-4 border-b border-gray-100 sticky top-0 z-20">
                 <div className="flex items-center">
                     <button onClick={onBack} className="mr-3 p-2 md:hidden text-gray-600 hover:bg-gray-100 rounded-full"><ArrowLeft size={20} /></button>
                     <Avatar src={contact.avatar} alt={contact.name} isOnline={contact.isOnline} />

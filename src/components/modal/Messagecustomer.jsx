@@ -104,7 +104,7 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
             <CountItems count={MOCK_DATA.length} scrollContainerRef={scrollRef} />
             <div
                 ref={scrollRef}
-                className="flex flex-col gap-4 overflow-y-auto h-full pr-2 no-scrollbar">
+                className="flex flex-col gap-4 overflow-y-auto h-full pb-5 md:pb-10 no-scrollbar ">
                 {MOCK_DATA.map((msg, index) => (
                     <div key={msg.id} data-index={index} className="flex-shrink-0">
                         <MessageCard

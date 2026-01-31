@@ -76,7 +76,7 @@ export function ReviewList({ closeReview }) {
 
             <div
                 ref={scrollRef}
-                className="flex-1 flex flex-col gap-6 overflow-y-auto h-full pb-10 no-scrollbar scroll-smooth"
+                className="flex-1 flex flex-col gap-6 overflow-y-auto h-full pb-5 md:pb-10 no-scrollbar scroll-smooth"
             >
                 {profiles.map((profile, index) => (
                     <div

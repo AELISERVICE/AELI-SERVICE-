@@ -13,7 +13,7 @@ export function MessageCard({
     actions,
 }) {
     return (
-        <div className="w-full max-w-xl mx-auto bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow duration-200">
+        <div className="w-full max-w-xl mx-auto bg-white rounded-xl  shadow-sm p-5 hover:shadow-md transition-shadow duration-200">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex gap-4">
                     <img
@@ -38,7 +38,7 @@ export function MessageCard({
                 <span
                     className={`text-xs font-semibold px-2 py-1 rounded-full ${status === 'pending' ? 'text-yellow-500 bg-yellow-50' : 'text-green-600 bg-green-50'}`}
                 >
-                    {status === 'pending' ? 'En attente' : 'Contacté'}
+                    {status === 'pending' ? 'Attente' : 'Contacté'}
                 </span>
             </div>
 

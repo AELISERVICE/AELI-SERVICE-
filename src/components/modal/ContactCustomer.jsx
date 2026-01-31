@@ -16,11 +16,11 @@ export function ContactCustomer({ closeContact }) {
         {/* Main Appointment Card */}
         <div className="bg-white rounded-2xl overflow-hidden shadow-2xl relative">
           {/* Gradient Header */}
-          <div className="bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] px-6 py-8 md:px-10">
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 tracking-tight">
+          <div className=" px-6 py-8 md:px-10">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-700 mb-2 tracking-tight">
               Prendre rendez-vous
             </h1>
-            <p className="text-white/90 text-sm md:text-base font-medium">
+            <p className="text-gray-500 text-sm md:text-base font-medium">
               Contactez Marie pour réserver votre créneau ou poser vos questions
             </p>
           </div>
@@ -56,11 +56,11 @@ export function ContactCustomer({ closeContact }) {
             />
 
             {/* Action Buttons */}
-            <div className="flex flex-col-reverse sm:flex-row gap-4 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row gap-4 pt-2 ">
               <Button
                 type="button"
                 variant="secondary"
-                className="flex-1"
+                className="flex-1 py-3"
                 onClick={closeContact}
               >
                 Annuler
@@ -68,9 +68,9 @@ export function ContactCustomer({ closeContact }) {
               <Button
                 type="submit"
                 variant="gradient"
-                className="flex-[2] gap-2"
+                className="flex-[2] gap-2 py-3"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-4 h-4 " />
                 Envoyer la demande
               </Button>
             </div>
@@ -85,12 +85,12 @@ export function ContactCustomer({ closeContact }) {
               <div className="p-2.5 bg-green-100 rounded-xl text-green-600">
                 <MessageCircle className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-lg text-gray-900">WhatsApp</h3>
+              <h3 className="font-bold text-lg text-gray-700">WhatsApp</h3>
             </div>
             <p className="text-gray-500 text-sm mb-6 flex-grow">
               Réponse rapide pour vos questions urgentes.
             </p>
-            <Button variant="whatsapp" className="w-full">
+            <Button variant="whatsapp" className="w-full py-3">
               Ouvrir WhatsApp
             </Button>
           </div>
@@ -101,12 +101,12 @@ export function ContactCustomer({ closeContact }) {
               <div className="p-2.5 bg-blue-100 rounded-xl text-blue-600">
                 <Phone className="w-6 h-6" />
               </div>
-              <h3 className="font-bold text-lg text-gray-900">Appel direct</h3>
+              <h3 className="font-bold text-lg text-gray-700">Appel direct</h3>
             </div>
             <p className="text-gray-500 text-sm mb-6 flex-grow">
               Disponibilité immédiate par téléphone.
             </p>
-            <Button variant="phone" className="w-full">
+            <Button variant="phone" className="w-full py-3">
               Appeler maintenant
             </Button>
           </div>

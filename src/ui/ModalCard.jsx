@@ -20,14 +20,14 @@ export function ModalCard({
                 className={`w-fit   h-full flex flex-col bg-[#FAFAFB] px-4`}
             >
                 {title && (
-                    <header className="py-8 md:py-10 flex-shrink-0">
+                    <header className="py-6 md:py-10 flex-shrink-0">
                         <h1 className="text-3xl font-bold text-[#0F172A]">{title}</h1>
                         <Button
                             variant="close"
                             size="none"
                             isCircle={true}
                             onClick={closeModal}
-                            className="md:hidden absolute top-4 right-4 z-10 p-2"
+                            className="md:hidden absolute top-5 right-4 z-10 p-2"
                             aria-label="Fermer"
                         >
                             <X size={24} />

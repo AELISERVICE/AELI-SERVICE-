@@ -71,7 +71,7 @@ export function ServiceInfoForm() {
                 <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
                     <Button
                         variant="secondary"
-                        className="w-full sm:w-auto gap-2"
+                        className="w-full sm:w-auto gap-2 py-3"
                         type="button"
                         onClick={() => navigate(-1)}
                     >
@@ -82,7 +82,7 @@ export function ServiceInfoForm() {
                     <Button
                         variant="gradient"
                         type="submit"
-                        className="w-full sm:w-auto gap-2 px-8"
+                        className="w-full sm:w-auto gap-2 px-8 py-3"
                         disabled={!agreed}
                     >
                         <Check className="w-4 h-4" />

@@ -58,7 +58,7 @@ export function FavoriteList({ closeFavorite, onContact }) {
             <CountItems count={businesses.length} scrollContainerRef={scrollRef} />
             <div
                 ref={scrollRef}
-                className="flex flex-col gap-4 overflow-y-auto h-full  flex-1 pb-10 custom-scrollbar no-scrollbar">
+                className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-5 md:pb-10 custom-scrollbar no-scrollbar">
                 {businesses.map((business, index) => (
                     <div key={index} data-index={index} className="flex-shrink-0">
                         <FavoriteCard
