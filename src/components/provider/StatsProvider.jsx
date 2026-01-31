@@ -54,18 +54,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
           {showStats ? <ChevronRight size={28} /> : <ChevronLeft size={28} />}
         </Button>
 
-        <Button
-          variant="close"
-          size="none"
-          isCircle={true}
-          onClick={setHideStats}
-          className="md:hidden absolute top-4 left-4 z-10 p-2"
-          aria-label="Fermer"
-        >
-          <X size={24} />
-        </Button>
-
-        <div className="flex-1 overflow-y-auto no-scrollbar py-12 xl:py-0">
+        <div className="flex-1 overflow-y-auto no-scrollbar xl:py-0">
           <aside className="w-full xl:w-full bg-white p-6 flex flex-col gap-8 border-none md:border-2 md:border-gray-100 rounded-4xl md:shadow-sm hover:shadow-xl transition-all duration-300 group md:mb-10">
             <div className="bg-pink-50/50 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
