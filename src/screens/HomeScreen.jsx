@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-
 import { Pagination } from '../components/global/Pagination'
 import { RecommendationSection } from "../components/home/RecommendationSection"
 import { ServicesSection } from '../components/home/ServicesSection'
