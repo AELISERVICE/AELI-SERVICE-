@@ -144,12 +144,12 @@ export function ProfileSection() {
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
                     <Button
                         onClick={() => navigate("/become-service-provider")}
-                        variant="gradient" className="w-full sm:w-auto">
+                        variant="gradient" className="w-full sm:w-auto py-3">
                         Devenir prestataire
                     </Button>
                     <Button
                         onClick={() => navigate("/subscription")}
-                        variant="softRed" className="w-full sm:w-auto ">
+                        variant="softRed" className="w-full sm:w-auto py-3">
                         Souscrire a un plan
                     </Button>
                 </div>
