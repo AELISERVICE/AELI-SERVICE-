@@ -9,7 +9,7 @@ export function ProviderScreen() {
     return (
         <main className="flex-1 flex flex-col xl:flex-row h-screen overflow-hidden relative">
             {/* Contenu Principal */}
-            <div className="flex-1 h-full overflow-y-auto py-4 md:p-2 md:pr-4 no-scrollbar">
+            <div className="flex-1 h-full md:overflow-y-auto py-4 md:p-2 md:pr-4 no-scrollbar">
                 <div className="mx-auto">
                     <ServiceProvider />
                 </div>
