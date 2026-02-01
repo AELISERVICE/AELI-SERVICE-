@@ -116,8 +116,10 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                         {contact.name}
                       </span>
                     </div>
-                    <button className="px-3 py-1 rounded-full border border-purple-200 text-purple-600 text-xs font-medium hover:bg-purple-50 transition-colors">
-                      Contacter
+                    <button
+                      onClick={openMessaging}
+                      className="px-3 py-1 rounded-full border border-purple-200 text-purple-600 text-xs font-medium hover:bg-purple-50 transition-colors">
+                      Consulter
                     </button>
                   </div>
                 ))}

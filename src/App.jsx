@@ -8,6 +8,7 @@ import { ProfileScreen } from './screens/ProfileScreen'
 import { SearchScreen } from './screens/SearchScreen'
 import { ProviderScreen } from './screens/ProviderScreen'
 import { RegistrationProviderScreen } from './screens/RegistrationProviderScreen'
+import { AddCategorycreen } from './screens/AddCategory'
 import { AddServiceScreen } from "./screens/AddServiceScreen"
 import { SubscriptionScreen } from "./screens/SubscriptionScreen"
 
@@ -19,6 +20,7 @@ function App() {
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/otp" element={<OtpScreen />} />
       <Route path="/become-service-provider" element={<RegistrationProviderScreen />} />
+      <Route path="/add-category" element={<AddCategorycreen />} />
       <Route path="/add-service" element={<AddServiceScreen />} />
 
       {/* Toutes ces routes seront injectées dans le composant Base */}

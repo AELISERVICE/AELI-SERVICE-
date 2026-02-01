@@ -1,3 +1,5 @@
+import React, { useRef, forwardRef } from "react"
+
 export function Button({
   children,
   variant = 'primary',
@@ -36,3 +38,33 @@ export function Button({
     </button>
   )
 }
+
+
+
+
+
+// Utilise forwardRef pour que la ref du parent arrive sur le span
+export const CategoryTag = forwardRef(({ cat, onSelect, onPressMenu }, ref) => {
+  return (
+    <button
+      onClick={onSelect} // Clique n'importe où sur le bouton pour l'activer
+      className={`px-3 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap flex items-center border ${cat.active
+        ? 'bg-purple-50 text-purple-700 shadow-sm border-purple-100 ring-1 ring-purple-100'
+        : 'bg-white text-gray-500 hover:bg-gray-50 border-transparent hover:border-gray-100'
+        }`}
+    >
+      {cat.name}
+      {cat.active && (
+        <span
+          ref={ref}
+          onClick={onPressMenu}
+          className="ml-2 text-xs px-2 py-[3px] rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
+        >
+          ⋮
+        </span>
+      )}
+    </button>
+  );
+});
+
+CategoryTag.displayName = 'CategoryTag';

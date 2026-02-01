@@ -22,16 +22,16 @@ export function ProfileSection() {
                     <div className="relative">
                         <img
                             src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
-                            alt="Alexa Rawles"
+                            alt="profile"
                             className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-xl"
                         />
                         <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-purple-600 rounded-full"></div>
                     </div>
 
                     <div className="flex-1 text-center sm:text-left">
-                        <h2 className="text-xl font-bold">Alexa Rawles</h2>
+                        <h2 className="text-xl font-bold">Amanda Atangana</h2>
                         <p className="text-purple-100 text-sm mb-4">
-                            alexarawles@gmail.com
+                            amandaatangana@gmail.com
                         </p>
                     </div>
 
@@ -48,11 +48,15 @@ export function ProfileSection() {
             {/* Form Section */}
             <Card className="p-6 md:p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <Input label="Nom" placeholder="Votre nom" defaultValue="Rawles" />
+                    <Input
+                        label="Nom"
+                        placeholder="Votre nom"
+                        defaultValue="Atangana"
+                    />
                     <Input
                         label="Prenom"
                         placeholder="Votre prenom"
-                        defaultValue="Alexa"
+                        defaultValue="Amanda"
                     />
 
                     <Input
@@ -79,8 +83,8 @@ export function ProfileSection() {
                         type="select"
                         options={[
                             {
-                                value: 'fr',
-                                label: 'France',
+                                value: 'CMR',
+                                label: 'Cameroun',
                             },
                             {
                                 value: 'us',
@@ -118,11 +122,11 @@ export function ProfileSection() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-gray-900 truncate">
-                                    alexarawles@gmail.com
+                                    amandaatangana@gmail.com
                                 </p>
                                 <p className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
                                     <CheckCircle2 className="w-3 h-3" />
-                                    Verified
+                                    Verifier
                                 </p>
                             </div>
                         </div>
@@ -135,7 +139,7 @@ export function ProfileSection() {
                         <div>
                             <Badge variant="success" className="px-3 py-1.5 text-sm">
                                 <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                                Active
+                                Actif
                             </Badge>
                         </div>
                     </div>

@@ -16,11 +16,11 @@ export function ProviderPanel() {
           {/* Salon Info */}
           <div className="text-center">
             <h2 className="text-xl font-bold text-gray-900 mb-1">
-              Salon Marie
+              Salon Amanda
             </h2>
             <div className="flex items-center justify-center gap-1.5 text-blue-600 text-sm font-medium">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Verified Business</span>
+              <span>Business Verifier</span>
             </div>
           </div>
 
@@ -28,7 +28,7 @@ export function ProviderPanel() {
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
             <div className="flex items-center gap-2 text-gray-600 font-medium">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              Rating
+              Note
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-gray-900">4.8</span>
@@ -47,29 +47,28 @@ export function ProviderPanel() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Calendar className="w-5 h-5 text-gray-400" />
-              <h3 className="font-bold text-gray-900">Subscription</h3>
+              <h3 className="font-bold text-gray-900">Souscription</h3>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-500 text-sm">Status</span>
-                <Badge variant="success">Active</Badge>
+                <Badge variant="success">Actif</Badge>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-500 text-sm">Plan</span>
-                <span className="font-medium text-gray-900">Monthly</span>
+                <span className="font-medium text-gray-900">Mois</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-500 text-sm">Days Remaining</span>
-                <span className="font-bold text-red-500">15 days</span>
+                <span className="text-gray-500 text-sm">Jours Restants</span>
+                <span className="font-bold text-red-500">15 jours</span>
               </div>
             </div>
 
             <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800 font-medium">
-                Subscription expires in 15 days. Renew now to keep your provider
-                benefits.
+                Votre souscription expire dans 15 jours. Renouvelez a nouveau afin de conserver votre activite.
               </p>
             </div>
           </div>

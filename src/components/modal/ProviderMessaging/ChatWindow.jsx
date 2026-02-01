@@ -37,7 +37,7 @@ export function ChatWindow({ contact, onBack }) {
                                     {msg.text}
                                 </div>
                                 {msg.hasActionButton && (
-                                    <button className="mt-4 px-6 py-1.5 rounded-full border border-purple-400 text-purple-600 text-xs font-bold hover:bg-purple-50">Contacter</button>
+                                    <button className="mt-4 px-6 py-1.5 rounded-full border border-purple-400 text-purple-600 text-xs font-bold hover:bg-purple-50">Changer status</button>
                                 )}
                             </div>
                         </div>

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 
-export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose }) {
+export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -74,7 +74,7 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
             return (
               <button
                 key={link.path}
-                onClick={() => { navigate(link.path); onClose(); }}
+                onClick={() => { navigate(link.path); onClose(); closeModal(); }}
                 className={`p-3 rounded-xl transition-all duration-200 group relative flex items-center gap-4
                   ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}
                   ${isActive ? 'bg-purple-50 text-[#E8524D] shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}

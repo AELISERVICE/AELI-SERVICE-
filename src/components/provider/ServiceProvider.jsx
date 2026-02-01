@@ -2,21 +2,24 @@ import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ProductCard } from '../../ui/productCard'
 import { Pagination } from '../global/Pagination'
-import { Button } from '../../ui/Button'
+import { Button, CategoryTag } from '../../ui/Button'
 import { MoreHorizontal } from 'lucide-react'
 import { ActionMenu } from '../global/ActionMenu'
 
 
 const categories = [
     {
+        id: 7,
         name: 'Categorie 1',
         active: true,
     },
     {
+        id: 8,
         name: 'Categorie 2',
         active: false,
     },
     {
+        id: 9,
         name: 'Categorie 4',
         active: false,
     },
@@ -79,28 +82,42 @@ export function ServiceProvider() {
     const [openMenuId, setOpenMenuId] = useState(null)
     const triggerRef = useRef(null)
 
+    const [cats, setCats] = useState(categories);
+
+    // 2. Fonction pour changer la catégorie active
+    const handleActiveCategory = (id) => {
+        setCats(prevCats =>
+            prevCats.map(c => ({
+                ...c,
+                active: c.id === id // Devient true seulement pour l'id cliqué
+            }))
+        );
+    };
+
     return (
         <>
             <div className="flex overflow-y-auto no-scrollbar items-center gap-4 mb-10">
-                {categories.map((cat, i) => (
-                    <button
-                        key={i}
-                        className={`
-                                    px-6 py-2.5 rounded-2xl text-sm font-medium transition-all whitespace-nowrap
-                                    ${cat.active ?
-                                'bg-purple-50 text-purple-700 shadow-sm ring-1 ring-purple-100' :
-                                'bg-white text-gray-500 hover:bg-gray-50 border border-transparent hover:border-gray-100'
-                            }
-                                `}
-                    >
-                        {cat.name}
-                        {cat.active && <span className="ml-2 text-xs">⋮</span>}
-                    </button>
+                {cats.map((cat) => (
+                    <React.Fragment key={cat.id}>
+                        <CategoryTag
+                            cat={cat}
+                            onSelect={() => handleActiveCategory(cat.id)}
+                            onPressMenu={() => setOpenMenuId(openMenuId === cat.id ? null : cat.id)}
+                            ref={openMenuId === cat.id ? triggerRef : null}
+                        />
+                        <ActionMenu
+                            isOpen={openMenuId === cat.id}
+                            onClose={() => setOpenMenuId(null)}
+                            triggerRef={triggerRef}
+                            onEdit={() => console.log("Editer", cat.id)}
+                            onDelete={() => console.log("Supprimer", cat.id)}
+                        />
+                    </React.Fragment>
                 ))}
                 <Button
                     variant="gradient"
                     size="md"
-                    onClick={() => navigate("/add-service")}
+                    onClick={() => navigate("/add-category")}
                 >
                     ajouter
                 </Button>

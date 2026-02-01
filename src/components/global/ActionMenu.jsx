@@ -27,27 +27,31 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete }) {
     return (
         <div
             ref={menuRef}
-            className="absolute bottom-8 right-0 bg-white rounded-xl shadow-xl border border-gray-100 p-2 w-40 z-20 animate-in fade-in zoom-in-95 duration-200 origin-bottom-right"
+            className="absolute bottom-8 right-0 bg-white rounded-xl shadow-xl border border-gray-100 w-40 z-20 animate-in fade-in zoom-in-95 duration-200 origin-bottom-right"
         >
-            <div className="flex flex-col gap-1">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full gap-2 px-3 py-2 text-xs justify-start"
-                    onClick={() => { onEdit?.(); onClose(); }}
-                >
-                    <Pencil size={14} className="text-blue-500" />
-                    <span>Modifier</span>
-                </Button>
-                <Button
-                    variant="ghostDanger"
-                    size="sm"
-                    className="w-full gap-2 px-3 py-2 text-xs justify-start"
-                    onClick={() => { onDelete?.(); onClose(); }}
-                >
-                    <Trash2 size={14} />
-                    <span>Supprimer</span>
-                </Button>
+            <div className="flex flex-col ">
+                <div className="border-b border-gray-300 hover:bg-gray-50 rounded-tl-xl rounded-tr-xl">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full gap-2 px-3 py-[13px] text-xs justify-start "
+                        onClick={() => { onEdit?.(); onClose(); }}
+                    >
+                        <Pencil size={14} className="" />
+                        <span>Modifier</span>
+                    </Button>
+                </div>
+                <div className="hover:bg-red-50 rounded-bl-xl rounded-br-xl">
+                    <Button
+                        variant="ghostDanger"
+                        size="sm"
+                        className="w-full gap-2 px-3 py-3 text-xs justify-start"
+                        onClick={() => { onDelete?.(); onClose(); }}
+                    >
+                        <Trash2 size={14} />
+                        <span>Supprimer</span>
+                    </Button>
+                </div>
             </div>
         </div>
     )
