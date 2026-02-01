@@ -39,7 +39,7 @@ export function AuthCard({
                                 <img src='./aelilogo.svg' alt='logo' className="w-25 absolute flex-shrink-0 -mt-4 ml-2" />
                             </div>
                             <span className={`font-bold text-xl  md:transition-opacity  -mt-20 z-2`}>
-                                AELI Service
+                                AELI Services
                             </span>
                         </div>
                         <div className="mb-8 mt-17 md:mt-10">
