@@ -1,11 +1,11 @@
 import React from 'react'
 import { Footer } from '../components/global/footer'
 
-export function AuthCard({ 
-    title, 
-    subtitle, 
-    headerTitle, 
-    headerSubtitle, 
+export function AuthCard({
+    title,
+    subtitle,
+    headerTitle,
+    headerSubtitle,
     children,
     isWide = false // Par défaut, on utilise la version étroite
 }) {
@@ -30,11 +30,19 @@ export function AuthCard({
                     </div>
 
                     {/* Floating Card dynamique */}
-                    <div className={`
+                    <div className={` relative
                         w-full bg-white rounded-2xl shadow-xl -mt-24 md:-mt-50 relative z-20 p-6 md:p-10 lg:p-12 border border-slate-100 transition-all duration-300
                         ${isWide ? 'max-w-4xl' : 'max-w-4xl lg:max-w-[500px]'}
                     `}>
-                        <div className="mb-8">
+                        <div className="absolute -top-20 left-0 right-0 flex flex-col justify-center items-center mb-8 ">
+                            <div className="relative bg-white rounded-full p-10 w-[200px] h-[200px] -z-1">
+                                <img src='./aelilogo.svg' alt='logo' className="w-25 absolute flex-shrink-0 -mt-4 ml-2" />
+                            </div>
+                            <span className={`font-bold text-xl  md:transition-opacity  -mt-20 z-2`}>
+                                AELI Service
+                            </span>
+                        </div>
+                        <div className="mb-8 mt-17 md:mt-10">
                             <h2 className="text-2xl font-bold text-slate-800 mb-2">{title}</h2>
                             <p className="text-slate-500 text-sm">{subtitle}</p>
                         </div>
