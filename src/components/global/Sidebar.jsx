@@ -52,7 +52,7 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
           <div className="flex items-center gap-3">
             <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />
             {/* Texte affiché si mobile OU si desktop n'est pas réduit */}
-            <span className={`font-bold text-xl  md:transition-opacity ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
+            <span className={`font-bold text-xl  md:transition-opacity pacifico-regular ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
               AELI Service
             </span>
           </div>

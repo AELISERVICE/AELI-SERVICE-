@@ -11,9 +11,9 @@ export function HomeScreen() {
 
     return (
         <div className="w-full ">
-            <div className=" pb-12 md:px-2">
+            <div className=" pb-4 md:px-2">
                 <div className="mt-16">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-8 tracking-tight">Recommandations</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-8 tracking-tight ">Recommandations</h2>
                     <RecommendationSection />
                 </div>
                 <div className="mt-16">

@@ -23,7 +23,7 @@ export function FormCard({
 
                 {/* Header Banner */}
                 <div className={`bg-gradient-to-r ${gradientFrom} ${gradientTo} px-6 py-8 sm:px-10`}>
-                    <h1 className="text-2xl font-bold text-white sm:text-3xl">
+                    <h1 className="text-3xl font-bold text-white sm:text-3xl pacifico-regular">
                         {title}
                     </h1>
                     {subtitle && (

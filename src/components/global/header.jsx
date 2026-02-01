@@ -10,7 +10,7 @@ export function Header({ onOpenMenu }) {
       <div className="w-full flex items-center justify-between gap-4">
         {/* BOUTON BURGER : visible uniquement sur mobile */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Bienvenue, Amanda</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Bienvenue, <span className="text-[#E8524D] pacifico-regular text-3xl"> Amanda</span></h1>
           <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
         </div>
 

@@ -17,7 +17,7 @@ export function ContactCustomer({ closeContact }) {
         <div className="bg-white rounded-2xl overflow-hidden shadow-2xl relative">
           {/* Gradient Header */}
           <div className=" px-6 py-8 md:px-10">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-700 mb-2 tracking-tight">
+            <h1 className="text-3xl md:text-3xl font-bold text-gray-700 mb-2 tracking-tight pacifico-regular">
               Prendre rendez-vous
             </h1>
             <p className="text-gray-500 text-sm md:text-base font-medium">
