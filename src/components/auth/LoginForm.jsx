@@ -38,7 +38,13 @@ export function LoginForm() {
                             >
                                 Confirmer
                             </Button>
-
+                            <div className="flex justify-end mt-2">
+                                <button
+                                    className=" text-sm text-[#E8524D] font-semibold hover:underline cursor-pointer bg-transparent border-none "
+                                >
+                                    Mot de passe oublié?
+                                </button>
+                            </div>
                             <div className="relative flex items-center justify-center">
                                 <div className="absolute inset-0 flex items-center">
                                     <div className="w-full border-t border-slate-200"></div>
