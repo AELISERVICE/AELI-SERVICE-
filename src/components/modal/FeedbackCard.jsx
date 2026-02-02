@@ -25,7 +25,7 @@ export function FeedbackCard({ closeFeedback }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-md bg-white rounded-2xl shadow-2xl h-auto"
       >
         <div className="p-6 sm:p-8 md:p-10">
           <div className="flex justify-center mb-6">
