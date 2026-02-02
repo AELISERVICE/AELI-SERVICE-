@@ -150,6 +150,7 @@
         "messageRequired": "Message is required",
         "messageLength": "Message must be between {min} and {max} characters",
         "ratingRequired": "Rating is required",
+        "emailInUse": "Email is already in use",
         "ratingRange": "Rating must be between 1 and 5"
     },
     "security": {

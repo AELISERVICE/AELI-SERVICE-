@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://51.79.68.223:5000/",
+      "value": "http://localhost:5000/",
       "type": "string"
     },
     {
@@ -454,6 +454,54 @@
       "description": "## Gestion des Prestataires\n\nLes prestataires sont des femmes entrepreneures offrant leurs services sur la plateforme.\n\n### Fonctionnalités\n- Listing public (filtres, recherche, tri)\n- Création de profil prestataire\n- Upload de photos (max 5)\n- Vérification KYC (documents)\n- Dashboard avec statistiques\n\n### Vérification KYC\n1. Upload CNI + document professionnel\n2. Admin review\n3. Badge \"Vérifié\" si approuvé\n\n### Abonnement\n- Essai gratuit 30 jours\n- Après expiration: contacts masqués",
       "item": [
         {
+          "name": "Apply - Devenir prestataire",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "businessName",
+                  "value": "Mon Business",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Description de mon activité...",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "Douala",
+                  "type": "text"
+                },
+                {
+                  "key": "documents",
+                  "type": "file",
+                  "description": "CNI Obligatoire (PDF/JPG)"
+                },
+                {
+                  "key": "photos",
+                  "type": "file",
+                  "description": "Photos d'activité (Max 5)"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/providers/apply",
+            "description": "Soumettre une candidature pour devenir prestataire."
+          }
+        },
+        {
+          "name": "My Application - Ma candidature",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/providers/my-application",
+            "description": "Voir le statut de ma candidature."
+          }
+        },
+        {
           "name": "List Providers - Liste publique",
           "request": {
             "auth": {
@@ -463,8 +511,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/providers?page=1&limit=12&location=Douala&sort=rating&verified=true",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "providers"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "providers"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -872,8 +925,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/contacts/received?page=1&limit=20&status=pending",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "contacts", "received"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "contacts",
+                "received"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -959,8 +1018,15 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/reviews/provider/{{providerId}}?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "reviews", "provider", "{{providerId}}"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "provider",
+                "{{providerId}}"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -1269,8 +1335,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/api/admin/users?page=1&limit=20&role=client",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "admin", "users"],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "users"
+                  ],
                   "query": [
                     {
                       "key": "page",
@@ -1311,6 +1383,52 @@
                 },
                 "url": "{{baseUrl}}/api/admin/users/:userId/status",
                 "description": "Active ou désactive un compte utilisateur."
+              }
+            }
+          ]
+        },
+        {
+          "name": "📄 Applications",
+          "item": [
+            {
+              "name": "List Applications - Candidatures",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/provider-applications?status=pending",
+                "description": "Liste les candidatures de prestataires."
+              }
+            },
+            {
+              "name": "Get Application - Détail candidature",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId",
+                "description": "Détails d'une candidature spécifique."
+              }
+            },
+            {
+              "name": "Review Application - Valider/Rejeter",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"status\": \"approved\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
+                "description": "Valider ou rejeter une candidature.\n\n**Status**: `approved` ou `rejected`\n**Body si rejet**: `{ \"status\": \"rejected\", \"rejectionReason\": \"CNI illisible\" }`"
               }
             }
           ]
@@ -1509,8 +1627,14 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/api/admin/security-logs?limit=50&eventType=login_failed&riskLevel=high",
-                  "host": ["{{baseUrl}}"],
-                  "path": ["api", "admin", "security-logs"],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "security-logs"
+                  ],
                   "query": [
                     {
                       "key": "limit",

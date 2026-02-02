@@ -43,7 +43,7 @@ const register = asyncHandler(async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
-        throw new AppError(req.t('validation.emailInvalid'), 400);
+        throw new AppError(req.t('validation.emailInUse'), 400);
     }
 
     // Create user (email not verified)

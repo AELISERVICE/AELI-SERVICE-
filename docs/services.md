@@ -203,8 +203,8 @@ Permet à un prestataire d'ajouter un service à son catalogue.
 |-------|--------|--------|
 | `name` | ✅ | 2-200 caractères |
 | `description` | ❌ | Max 2000 caractères |
-| `price` | ✅ | Entier ≥ 0 |
-| `priceType` | ❌ | `from` ou `fixed` (défaut: `fixed`) |
+| `price` | ❌ | Entier ≥ 0 |
+| `priceType` | ❌ | `fixed`, `from`, `range`, `contact` (défaut: `contact`) |
 | `duration` | ❌ | Entier en minutes |
 | `categoryId` | ✅ | UUID de catégorie valide |
 

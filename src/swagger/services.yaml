@@ -111,9 +111,14 @@ paths:
                   type: string
                 price:
                   type: number
+                  format: float
+                  minimum: 0
+                  description: Prix du service
                 priceType:
                   type: string
                   enum: [fixed, from, range, contact]
+                  default: contact
+                  description: Type de tarification
                 priceMax:
                   type: number
                 duration:

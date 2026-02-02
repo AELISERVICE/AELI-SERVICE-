@@ -179,7 +179,7 @@ User.prototype.toPublicJSON = function () {
         email: this.email,
         firstName: this.firstName,
         lastName: this.lastName,
-        phone: this.phone,
+        phone: decrypt(this.phone),
         role: this.role,
         profilePhoto: this.profilePhoto,
         isActive: this.isActive,

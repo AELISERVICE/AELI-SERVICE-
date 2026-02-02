@@ -165,6 +165,7 @@
         "messageRequired": "Le message est requis",
         "messageLength": "Le message doit contenir entre {min} et {max} caractères",
         "ratingRequired": "La note est requise",
+        "emailInUse": "Cet email est déjà utilisé",
         "ratingRange": "La note doit être entre 1 et 5"
     },
     "security": {
