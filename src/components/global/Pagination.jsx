@@ -25,7 +25,7 @@ export function Pagination() {
         15
       </button>
 
-      <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8524D] text-white transition-colors hover:bg-purple-700 shadow-lg shadow-purple-200">
+      <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8524D] text-white transition-colors hover:bg-[#FCE0D6] hover:text-[#E8524D] shadow-lg shadow-purple-200">
         <ChevronRight className="h-5 w-5" />
       </button>
     </div>

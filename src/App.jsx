@@ -29,6 +29,7 @@ function App() {
         <Route path="/profile" element={<ProfileScreen />} />
         <Route path="/search" element={<SearchScreen />} />
         <Route path="/provider" element={<ProviderScreen />} />
+        <Route path="/consult-provider" element={<ProviderScreen />} />
         <Route path="/subscription" element={<SubscriptionScreen />} />
       </Route>
     </Routes>

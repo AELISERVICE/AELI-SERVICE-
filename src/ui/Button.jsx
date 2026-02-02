@@ -44,7 +44,7 @@ export function Button({
 
 
 // Utilise forwardRef pour que la ref du parent arrive sur le span
-export const CategoryTag = forwardRef(({ cat, onSelect, onPressMenu }, ref) => {
+export const CategoryTag = forwardRef(({ cat, isConsult, onSelect, onPressMenu }, ref) => {
   return (
     <button
       onClick={onSelect} // Clique n'importe où sur le bouton pour l'activer
@@ -54,14 +54,16 @@ export const CategoryTag = forwardRef(({ cat, onSelect, onPressMenu }, ref) => {
         }`}
     >
       {cat.name}
-      {cat.active && (
-        <span
-          ref={ref}
-          onClick={onPressMenu}
-          className="ml-2 text-xs px-2 py-[3px] rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
-        >
-          ⋮
-        </span>
+      {!isConsult && (
+        cat.active && (
+          <span
+            ref={ref}
+            onClick={onPressMenu}
+            className="ml-2 text-xs px-2 py-[3px] rounded-full hover:bg-purple-200 transition-colors cursor-pointer"
+          >
+            ⋮
+          </span>
+        )
       )}
     </button>
   );

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Heart, MoreHorizontal, Edit2, Trash2 } from 'lucide-react'
+import { Heart, MapPin, Star, Trash2 } from 'lucide-react'
 import { Button } from './Button' // Vérifie le chemin d'importation
 
 export function ProductCard({
@@ -9,8 +9,11 @@ export function ProductCard({
   role,
   image,
   likes,
+  location,
+  rating,
   isAdmin = false,
   showMenu = false,
+  isStructure = false,
   onContact,
   onFeedback,
   actions
@@ -36,6 +39,18 @@ export function ProductCard({
           <p className="text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90">
             {displaySub}
           </p>
+          {isStructure &&
+            <>
+              <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">
+                <MapPin className="text-white" size={16} />
+                {location}
+              </p>
+              <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">
+                <Star className=" fill-yellow-400 text-yellow-400" size={16} />
+                {rating}
+              </p>
+            </>
+          }
 
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
@@ -47,27 +62,6 @@ export function ProductCard({
             {actions && actions[1]}
           </div>
         </div>
-
-        {/* Menu Admin */}
-
-        {/* {isAdmin && showMenu && (
-          <div className="absolute bottom-16 left-4 bg-white rounded-xl shadow-xl p-2 w-36 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 text-gray-600 hover:text-purple-600"
-            >
-              <Edit2 size={14} /> Modifier
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start gap-2 text-red-500 hover:bg-red-50"
-            >
-              <Trash2 size={14} /> Supprimer
-            </Button>
-          </div>
-        )} */}
       </div>
     </div>
   )

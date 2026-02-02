@@ -5,64 +5,64 @@ import { Pagination } from '../global/Pagination';
 import { Button } from '../../ui/Button'
 
 
-const PRODUCTS = [
+const data = [
     {
         id: 1,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&q=80&w=800',
+        title: 'Pantalon Cargo Sable',
+        description: 'Coupe décontractée en coton robuste avec poches latérales fonctionnelles.',
+        image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop',
+        likes: 124,
+        price: 59.99,
+        category: 'Lifestyle',
+        showMenu: true,
     },
     {
         id: 2,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&q=80&w=800',
+        title: 'Jean Slim Indigo',
+        description: 'Denim stretch premium pour un confort optimal et une silhouette affinée.',
+        image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&h=800&fit=crop',
+        likes: 89,
+        price: 75.00,
+        category: 'Denim',
     },
     {
         id: 3,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=800',
+        title: 'Chino Slim Olive',
+        description: 'L\'équilibre parfait entre élégance et décontracté pour vos sorties.',
+        image: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=800&fit=crop',
+        likes: 210,
+        price: 45.50,
+        category: 'Classique',
     },
     {
         id: 4,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1615184697985-c9bde1b07da7?auto=format&fit=crop&q=80&w=800',
+        title: 'Pantalon Lin Beige',
+        description: 'Matière légère et respirante, idéal pour les journées ensoleillées.',
+        image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop',
+        likes: 56,
+        price: 65.00,
+        category: 'Été',
     },
     {
         id: 5,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=800',
+        title: 'Jogging Tech Fleece',
+        description: 'Style urbain avec finition hydrophobe et coupe ajustée.',
+        image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=800&fit=crop',
+        likes: 312,
+        price: 89.90,
+        category: 'Sport',
     },
     {
         id: 6,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&q=80&w=800',
-    },
-    {
-        id: 7,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&q=80&w=800',
-    },
-    {
-        id: 8,
-        name: 'Sophie Bennett',
-        role: 'A Product Designer focused on intuitive user experiences.',
-        likes: 212,
-        image: 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=800',
+        title: 'Pantalon Velours Côtelé',
+        description: 'Texture rétro et chaleur douce pour la saison automne-hiver.',
+        image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop',
+        likes: 142,
+        price: 55.00,
+        category: 'Hiver',
     },
 ]
+
 
 
 export function ServiceSearch() {
@@ -71,10 +71,10 @@ export function ServiceSearch() {
     return (
         <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-4">
-                {PRODUCTS.map((product) => (
+                {data.map((item) => (
                     <ProductCard
-                        key={product.id}
-                        {...product}
+                        key={item.id}
+                        {...item}
                         onContact={openContact}
                         onFeedback={openFeedback}
                         actions={[

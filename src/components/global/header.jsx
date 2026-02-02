@@ -7,6 +7,20 @@ export function Header({ onOpenMenu }) {
 
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="w-full flex items-center justify-between gap-4 md:hidden">
+        <div className="flex items-center gap-3 ">
+          <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />
+          <span className={`font-bold text-xl  md:transition-opacity pacifico-regular`}>
+            AELI Services
+          </span>
+        </div>
+        <button
+          onClick={onOpenMenu}
+          className="p-2.5 bg-white rounded-xl text-gray-600 md:hidden shadow-sm hover:bg-gray-50"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
       <div className="w-full flex items-center justify-between gap-4">
         {/* BOUTON BURGER : visible uniquement sur mobile */}
         <div>
@@ -14,12 +28,6 @@ export function Header({ onOpenMenu }) {
           <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
         </div>
 
-        <button
-          onClick={onOpenMenu}
-          className="p-2.5 bg-white rounded-xl text-gray-600 md:hidden shadow-sm hover:bg-gray-50"
-        >
-          <Menu className="w-6 h-6" />
-        </button>
       </div>
 
       <div className="flex items-center gap-4">

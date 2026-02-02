@@ -82,15 +82,13 @@ export function ContactCustomer({ closeContact }) {
           {/* WhatsApp Card */}
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-green-100 rounded-xl text-green-600">
-                <MessageCircle className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-lg text-gray-700">WhatsApp</h3>
+              <h3 className="font-bold text-lg text-gray-700  pacifico-regular">WhatsApp</h3>
             </div>
             <p className="text-gray-500 text-sm mb-6 flex-grow">
               Réponse rapide pour vos questions urgentes.
             </p>
-            <Button variant="whatsapp" className="w-full py-3">
+            <Button variant="whatsapp" className="w-full gap-2 py-3">
+              <MessageCircle className="w-6 h-6" />
               Ouvrir WhatsApp
             </Button>
           </div>
@@ -98,15 +96,13 @@ export function ContactCustomer({ closeContact }) {
           {/* Direct Call Card */}
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-blue-100 rounded-xl text-blue-600">
-                <Phone className="w-6 h-6" />
-              </div>
-              <h3 className="font-bold text-lg text-gray-700">Appel direct</h3>
+              <h3 className="font-bold text-lg text-gray-700  pacifico-regular">Appel direct</h3>
             </div>
             <p className="text-gray-500 text-sm mb-6 flex-grow">
               Disponibilité immédiate par téléphone.
             </p>
-            <Button variant="phone" className="w-full py-3">
+            <Button variant="phone" className="w-full gap-2 py-3">
+              <Phone className="w-6 h-6" />
               Appeler maintenant
             </Button>
           </div>

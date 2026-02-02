@@ -17,6 +17,7 @@ export function Base() {
     const [activeModal, setActiveModal] = useState(null);
     const [activeModal2, setActiveModal2] = useState(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // État pour le burger
+    const [openSidebar, isOpenSidebar] = useState(false);
 
     const closeModal = () => setActiveModal(MODALS.NONE);
     const closeModal2 = () => setActiveModal2(MODALS.NONE);
@@ -25,6 +26,7 @@ export function Base() {
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] min-h-screen bg-[#FAFAFB] font-sans text-slate-900 relative">
             <aside>
                 <Sidebar
+                    isOpenSidebar={isOpenSidebar}
                     onOpenMessage={() => { setActiveModal(MODALS.MESSAGE); setIsSidebarOpen(false); }}
                     onOpenFavorite={() => { setActiveModal(MODALS.FAVORITE); setIsSidebarOpen(false); }}
                     onOpenReview={() => { setActiveModal(MODALS.REVIEW); setIsSidebarOpen(false); }}
@@ -43,7 +45,8 @@ export function Base() {
                             <Outlet context={{
                                 openContact: () => setActiveModal2(MODALS.CONTACT),
                                 openFeedback: () => setActiveModal(MODALS.FEEDBACK),
-                                openMessaging: () => setActiveModal(MODALS.MESSAGING)
+                                openMessaging: () => setActiveModal(MODALS.MESSAGING),
+                                openSidebar: openSidebar
 
                             }} />
                         </div>

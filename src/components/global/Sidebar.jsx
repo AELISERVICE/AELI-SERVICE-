@@ -1,13 +1,10 @@
-import React, { useState } from 'react' // Ajout de useState
+import React, { useState, useEffect } from 'react' // Ajout de useState
 import { useTheme } from 'next-themes'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  LayoutDashboard, Star, Mail, LogOut, Store, Search, MessageSquare, X,
-  ChevronRight, ChevronLeft // Nouvelles icônes pour le toggle
-} from 'lucide-react'
+import { LayoutDashboard, Star, Mail, LogOut, Store, Search, MessageSquare, X, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Button } from '../../ui/Button'
 
-export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal }) {
+export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -19,6 +16,10 @@ export function Sidebar({ onOpenMessage, onOpenFavorite, onOpenReview, activeMod
     { icon: Search, path: '/search', label: 'Recherche' },
     { icon: Store, path: '/provider', label: 'Prestataires' },
   ]
+
+  useEffect(() => {
+    isOpenSidebar(isCollapsed)
+  }, [isCollapsed])
 
   return (
     <>

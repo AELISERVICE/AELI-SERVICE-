@@ -1,7 +1,7 @@
 import React from 'react'
-import { ShoppingBag } from 'lucide-react'
+import { ShoppingBag, Star, MapPin } from 'lucide-react'
 
-export function RecommendationCard({ title, description, isActive, actions, image }) {
+export function RecommendationCard({ title, description, location, rating, isActive, actions, image }) {
     return (
         <div
             className={`
@@ -37,7 +37,21 @@ export function RecommendationCard({ title, description, isActive, actions, imag
                     <p className={`text-gray-200 text-sm leading-relaxed transition-all duration-500 ${isActive ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                         {description}
                     </p>
+                    <div className={`flex ${isActive ? 'opacity-100' : 'opacity-0 overflow-hidden'}`}>
+                        {[...Array(5)].map((_, i) => (
+                            <Star
+                                key={i}
+                                size={14}
+                                className={`${i < rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`}
+                            />
+                        ))}
+                    </div>
+                    <p className={`flex mt-2 text-gray-200 text-sm leading-relaxed transition-all duration-500 items-center gap-2 ${isActive ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                        <MapPin className=" text-white" size={16} />
+                        {location}
+                    </p>
                 </div>
+
 
                 <div className="mt-4">
                     {actions && actions[0]}
