@@ -12,7 +12,7 @@ const data = [
         description: 'Coupe décontractée en coton robuste avec poches latérales fonctionnelles.',
         image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop',
         likes: 124,
-        price: 59.99,
+        price: 5000,
         category: 'Lifestyle',
         showMenu: true,
     },
@@ -22,7 +22,7 @@ const data = [
         description: 'Denim stretch premium pour un confort optimal et une silhouette affinée.',
         image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&h=800&fit=crop',
         likes: 89,
-        price: 75.00,
+        price: 5500,
         category: 'Denim',
     },
     {
@@ -31,7 +31,7 @@ const data = [
         description: 'L\'équilibre parfait entre élégance et décontracté pour vos sorties.',
         image: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=800&fit=crop',
         likes: 210,
-        price: 45.50,
+        price: 14000,
         category: 'Classique',
     },
     {
@@ -40,7 +40,7 @@ const data = [
         description: 'Matière légère et respirante, idéal pour les journées ensoleillées.',
         image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop',
         likes: 56,
-        price: 65.00,
+        price: 30000,
         category: 'Été',
     },
     {
@@ -49,7 +49,7 @@ const data = [
         description: 'Style urbain avec finition hydrophobe et coupe ajustée.',
         image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=800&fit=crop',
         likes: 312,
-        price: 89.90,
+        price: 25000,
         category: 'Sport',
     },
     {
@@ -58,7 +58,7 @@ const data = [
         description: 'Texture rétro et chaleur douce pour la saison automne-hiver.',
         image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop',
         likes: 142,
-        price: 55.00,
+        price: 100000,
         category: 'Hiver',
     },
 ]

@@ -51,13 +51,23 @@ export function ServiceInfoForm() {
                             required
                             onChange={handleChange}
                         />
-                        <Input
-                            name="title"
-                            label="Titre"
-                            placeholder="Entrez le titre du service"
-                            required
-                            onChange={handleChange}
-                        />
+                        <div className="flex flex-col md:flex-row gap-6">
+                            <Input
+                                name="title"
+                                label="Titre"
+                                placeholder="Entrez le titre du service"
+                                required
+                                onChange={handleChange}
+                            />
+                            <Input
+                                name="price"
+                                label="prix"
+                                type="number"
+                                placeholder="15000"
+                                onChange={handleChange}
+                            />
+                        </div>
+
                         <Input
                             name="description"
                             label="Description service"

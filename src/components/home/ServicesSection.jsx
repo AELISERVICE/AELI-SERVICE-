@@ -1,6 +1,5 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useOutletContext } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { ProductCard } from '../../ui/productCard'
 import { Button } from '../../ui/Button'

@@ -20,6 +20,7 @@ export function ProviderInfoForm() {
         idNumber: '',
         businessContact: '',
         businessName: '',
+        location: '',
         description: ''
     })
 
@@ -134,6 +135,12 @@ export function ProviderInfoForm() {
                                 onChange={handleChange}
                             />
                         </div>
+                        <Input
+                            name="location"
+                            label="Localisation"
+                            placeholder="Yaounde, nkolbisson"
+                            onChange={handleChange}
+                        />
 
                         <Input
                             name="description"

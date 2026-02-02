@@ -1,5 +1,5 @@
 import React from 'react'
-import { Heart, MapPin, Star, Trash2 } from 'lucide-react'
+import { Heart, MapPin, Star, Coins } from 'lucide-react'
 import { Button } from './Button' // Vérifie le chemin d'importation
 
 export function ProductCard({
@@ -11,6 +11,7 @@ export function ProductCard({
   likes,
   location,
   rating,
+  price,
   isAdmin = false,
   showMenu = false,
   isStructure = false,
@@ -39,6 +40,12 @@ export function ProductCard({
           <p className="text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90">
             {displaySub}
           </p>
+          {!isStructure &&
+            <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">
+              <Coins color="gold" size={20} />
+              {price} Fcfa
+            </p>
+          }
           {isStructure &&
             <>
               <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">

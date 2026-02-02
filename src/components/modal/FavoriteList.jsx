@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ModalCard } from '../../ui/ModalCard'
 import { FavoriteCard } from '../../ui/FavoriteCard'
 import { CountItems } from '../global/CountItems'
@@ -6,7 +7,7 @@ import { Button } from '../../ui/Button'
 import { Heart, MapPin, Star } from 'lucide-react'
 
 
-const businesses = [
+const data = [
     {
         name: 'Salon Marie',
         image:
@@ -47,22 +48,23 @@ const businesses = [
         isPremium: true,
     },
 ]
-export function FavoriteList({ closeFavorite, onContact }) {
+export function FavoriteList({ closeFavorite }) {
     const scrollRef = useRef(null)
+    const navigate = useNavigate()
 
     return (
         <ModalCard
             title="Favoris"
             closeModal={closeFavorite}
         >
-            <CountItems count={businesses.length} scrollContainerRef={scrollRef} />
+            <CountItems count={data.length} scrollContainerRef={scrollRef} />
             <div
                 ref={scrollRef}
                 className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-5 md:pb-10 custom-scrollbar no-scrollbar">
-                {businesses.map((business, index) => (
+                {data.map((item, index) => (
                     <div key={index} data-index={index} className="flex-shrink-0">
                         <FavoriteCard
-                            {...business}
+                            {...item}
                             actions={[
                                 <button
                                     className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
@@ -73,7 +75,7 @@ export function FavoriteList({ closeFavorite, onContact }) {
                                 <Button
                                     variant="softRed"
                                     size="sm"
-                                    onClick={onContact}
+                                    onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } }, closeFavorite())}
                                     className="rounded-xl px-5"
                                 >
                                     Contacter
