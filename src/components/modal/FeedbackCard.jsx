@@ -79,6 +79,14 @@ export function FeedbackCard({ closeFeedback }) {
               >
                 {isSubmitting ? "Envoi en cours..." : "Envoyer l'avis"}
               </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="md:hidden w-full py-3"
+                onClick={closeFeedback}
+              >
+                Non merci
+              </Button>
             </div>
           </form>
         </div>
