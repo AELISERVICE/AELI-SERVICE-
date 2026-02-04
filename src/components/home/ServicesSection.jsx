@@ -14,7 +14,7 @@ const DATA = [
         location: 'Yaounde, Nkolbisson',
         rating: 4.8,
         image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&q=80&w=800',
-        activities: ["activites1", "activites2", "activites3"]
+        activities: ["activites3"]
     },
     {
         id: 2,
@@ -34,7 +34,7 @@ const DATA = [
         location: 'Douala,Bepanda',
         rating: 4.2,
         image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80&w=800',
-        activities: ["activites1", "activites2", "activites3"]
+        activities: [ "activites2", "activites3"]
     },
     {
         id: 4,
@@ -44,7 +44,7 @@ const DATA = [
         location: 'Douala, deido',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1615184697985-c9bde1b07da7?auto=format&fit=crop&q=80&w=800',
-        activities: ["activites1", "activites2", "activites3"]
+        activities: ["activites1", "activites3"]
     },
     {
         id: 5,
@@ -85,7 +85,7 @@ export function ServicesSection() {
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-row items-center justify-between gap-4">
                 <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Services</h2>
 
                 <SelectFilter
@@ -93,7 +93,7 @@ export function ServicesSection() {
                     value={selectedActivity}
                     onChange={setSelectedActivity}
                     label="Filtrer par activité"
-                    className="w-60 "
+                    className="w-45"
                     classNameButon="shadow-sm"
                 />
             </div>
@@ -114,7 +114,7 @@ export function ServicesSection() {
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
                                 className="rounded-full px-6"
                             >
-                                <span className={openSidebar ? "md:inline hidden lg:inline" : "inline"}>Consulter</span>
+                                <span className={openSidebar ? "lg:inline" : "md:hidden inline"}>Consulter</span>
                                 <ArrowRight size={16} className="ml-2" />
                             </Button>
                         ]}
