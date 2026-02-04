@@ -12,7 +12,7 @@ export function PricingCard({ name, price, description, features = [], isRecomme
     >
       {isRecommended && (
         <div className="absolute -top-4 right-8 bg-[#FFDBB9] text-[#8B5CF6] px-4 py-1.5 rounded-full text-sm font-semibold shadow-sm">
-          Recommended
+          Recommender
         </div>
       )}
 

@@ -91,6 +91,7 @@ export function ServiceProvider({ mode, data }) {
     const [cats, setCats] = useState(categories);
     const { openContact, openFeedback, openSidebar } = useOutletContext()
     const [rating, setRating] = useState(5);
+    const [customerContact, SetcustomerContact] = useState(false)
 
     // 2. Fonction pour changer la catégorie active
     const handleActiveCategory = (id) => {
@@ -131,6 +132,7 @@ export function ServiceProvider({ mode, data }) {
                                     variant="softRed"
                                     size="md"
                                     onClick={openFeedback}
+                                    className={`${!customerContact && "bg-gray-300 hover:bg-gray-300 hover:text-white"}`}
                                 >
                                     noter
                                 </Button>

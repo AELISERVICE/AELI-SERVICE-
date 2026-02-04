@@ -8,7 +8,7 @@ export function SearchScreen() {
 
     return (
         <div className="w-full">
-            <div className="md:px-2 mt-16">
+            <div className="md:px-2 mt-22 md:mt-16">
                 <div className="mb-8 flex flex-row justify-between items-start md:flex-row md:items-center md:justify-between">
                     <h2 className="text-3xl font-bold text-gray-800 mb-8 tracking-tight">Recherche</h2>
                     <div className="flex  rounded-2xl bg-gray-100  md:self-auto gap-1">

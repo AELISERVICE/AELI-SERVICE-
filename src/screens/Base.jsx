@@ -40,7 +40,7 @@ export function Base() {
             <main className="h-screen overflow-y-auto">
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
-                        <Header onOpenMenu={() => setIsSidebarOpen(true)} />
+                        <Header onOpenMenu={() => setIsSidebarOpen(true)} openSidebar={openSidebar} />
                         <div className="mt-6 ">
                             <Outlet context={{
                                 openContact: () => setActiveModal2(MODALS.CONTACT),

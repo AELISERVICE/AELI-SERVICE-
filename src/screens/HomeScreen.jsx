@@ -17,7 +17,6 @@ export function HomeScreen() {
                     <RecommendationSection />
                 </div>
                 <div className="mt-16">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-8 tracking-tight">Services</h2>
                     <ServicesSection />
                 </div>
             </div>

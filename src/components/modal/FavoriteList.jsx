@@ -78,7 +78,7 @@ export function FavoriteList({ closeFavorite }) {
                                     onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } }, closeFavorite())}
                                     className="rounded-xl px-5"
                                 >
-                                    Contacter
+                                    Consulter
                                 </Button>
                             ]
                             }

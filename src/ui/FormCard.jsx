@@ -18,6 +18,14 @@ export function FormCard({
                 <div className="absolute bottom-[20%] left-[30%] w-[300px] h-[300px] bg-blue-100/60 rounded-full blur-[90px]" />
             </div>
 
+            <div className="flex items-center gap-3 mb-10">
+                <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />
+                {/* Texte affiché si mobile OU si desktop n'est pas réduit */}
+                <span className={`font-bold text-xl  md:transition-opacity pacifico-regular `}>
+                    AELI Services
+                </span>
+            </div>
+
             {/* --- LA CARTE --- */}
             <div className="relative z-10 mx-auto max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
 
@@ -38,6 +46,6 @@ export function FormCard({
                     {children}
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
