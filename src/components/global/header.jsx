@@ -42,7 +42,10 @@ export function Header({ onOpenMenu, openSidebar }) {
           <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />
           <span className="font-bold text-xl pacifico-regular">AELI Services</span>
         </div>
-        <Button onClick={onOpenMenu} variant="secondary" className="p-2.5">
+        <Button onClick={onOpenMenu}
+          variant="secondary"
+          size={false}
+          className="p-2.5">
           <Menu className="w-6 h-6" />
         </Button>
       </div>
@@ -102,6 +105,7 @@ export function Header({ onOpenMenu, openSidebar }) {
         </div>
         <Button
           variant="secondary"
+          size={false}
           className="relative p-2.5 shadow-sm border-gray-100"
         >
           <Bell className="w-5 h-5 text-gray-500" />
