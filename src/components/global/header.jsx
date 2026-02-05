@@ -45,8 +45,8 @@ export function Header({ onOpenMenu, openSidebar }) {
         <Button onClick={onOpenMenu}
           variant="secondary"
           size={false}
-          className="p-2.5">
-          <Menu className="w-6 h-6" />
+          className="p-2.5 shadow-sm">
+          <Menu className="w-6 h-6 " />
         </Button>
       </div>
       <div className={`w-full flex items-center justify-between gap-4 ${openSidebar ? "flex" : "md:hidden lg:flex"}`}>
@@ -106,7 +106,7 @@ export function Header({ onOpenMenu, openSidebar }) {
         <Button
           variant="secondary"
           size={false}
-          className="relative p-2.5 shadow-sm border-gray-100"
+          className="relative p-2.5 shadow-sm "
         >
           <Bell className="w-5 h-5 text-gray-500" />
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
