@@ -97,7 +97,7 @@ export function Header({ onOpenMenu, openSidebar }) {
                 value={rating}
                 onChange={setRating}
                 className="w-full border-none shadow-none"
-                classNameButon="md:shadow-sm"
+                classNameButon="border-none md:shadow-sm "
                 customIcon={<Star size={16} className="text-yellow-400 fill-yellow-400" />}
               />
             </div>
