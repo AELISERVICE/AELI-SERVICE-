@@ -12,6 +12,7 @@ const DATA = [
         description: '5,000 years ago, Black Adam was empowered by the Egyptian gods...',
         location: 'Yaounde, Nkolbisson',
         rating: 4.2,
+        activities: ["activites3"]
     },
     {
         id: 2,
@@ -20,6 +21,7 @@ const DATA = [
         description: 'Explore the latest fashion trends for the upcoming summer season.',
         location: 'Yaounde, Melen',
         rating: 3.0,
+        activities: ["Ménage", "Plomberie", "Électricité", "Imobilier", "Import/export"]
     },
     {
         id: 3,
@@ -28,6 +30,7 @@ const DATA = [
         description: 'Get the best discounts on high-end technology and gadgets.',
         location: 'Douala,Bepanda',
         rating: 4.5,
+        activities: ["Mécanique", "Cours d'appui"]
     },
     {
         id: 4,
@@ -36,6 +39,7 @@ const DATA = [
         description: 'Discover our new collection for 2026.',
         location: 'Douala, deido',
         rating: 2.5,
+        activities: ["Ménage"]
     },
 ]
 

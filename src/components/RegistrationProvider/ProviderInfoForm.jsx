@@ -7,6 +7,12 @@ import { Button } from '../../ui/Button'
 import { FormCard } from '../../ui/FormCard'
 import { TermsSection } from "./TermsSection"
 
+
+const availableActivities = [
+    "Ménage", "Plomberie", "Électricité", "Jardinage",
+    "Coiffure", "Esthétique", "Mécanique", "Cours d'appui"
+]
+
 export function ProviderInfoForm() {
     const navigate = useNavigate()
     const [agreed, setAgreed] = useState(false)
@@ -18,11 +24,35 @@ export function ProviderInfoForm() {
         email: '',
         phone: '',
         idNumber: '',
+        imgcnirecto: '',
+        imgcniverso: '',
         businessContact: '',
         businessName: '',
         location: '',
-        description: ''
+        description: '',
+        activities: []
     })
+
+    // Ajouter une activité
+    const handleAddActivity = (e) => {
+        const selected = e.target.value
+        if (selected && !formData.activities.includes(selected)) {
+            setFormData(prev => ({
+                ...prev,
+                activities: [...prev.activities, selected]
+            }))
+        }
+        // Reset le select après sélection
+        e.target.value = ""
+    }
+
+    // Supprimer une activité
+    const removeActivity = (activityToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            activities: prev.activities.filter(act => act !== activityToRemove)
+        }))
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -53,47 +83,47 @@ export function ProviderInfoForm() {
                         title="Informations Personnelles"
                         colorClass="text-blue-600"
                     />
-
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <Input
                             name="name"
-                            label="Prénom *"
-                            placeholder="Prénom"
-                            onChange={handleChange}
-                        />
-
-                        <Input
-                            name="surname"
-                            label="Nom *"
+                            label="Nom"
                             placeholder="Nom"
                             onChange={handleChange}
+                            required
                         />
-
+                        <Input
+                            name="surname"
+                            label="Prénom"
+                            placeholder="Prénom"
+                            onChange={handleChange}
+                            required
+                        />
                         <Input
                             name="gender"
-                            label="Genre *"
+                            label="Genre"
                             type="select"
                             onChange={handleChange}
+                            required
                             options={[
                                 { value: 'male', label: 'Homme' },
                                 { value: 'female', label: 'Femme' }
                             ]}
                         />
-
                         <Input
                             name="email"
-                            label="Adresse E-mail *"
+                            label="Adresse E-mail"
                             type="email"
                             placeholder="email@exemple.com"
                             onChange={handleChange}
+                            required
                         />
-
                         <Input
                             name="phone"
-                            label="Téléphone *"
+                            label="Téléphone"
                             type="tel"
                             placeholder="6xx xxx xxx"
                             onChange={handleChange}
+                            required
                         />
                     </div>
                 </section>
@@ -103,51 +133,105 @@ export function ProviderInfoForm() {
                         title="Informations sur la Structure"
                         colorClass="text-purple-600"
                     />
-
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <Input
-                            name="photo"
-                            label="Photo / Logo *"
-                            type="file"
-                            onChange={handleChange}
-                            className="h-[250px]"
-                        />
-
-                        <div className="space-y-6">
+                        <div className="flex flex-col gap-6">
                             <Input
                                 name="idNumber"
                                 label="Numéro CNI"
                                 placeholder="CNI"
                                 onChange={handleChange}
+                                required
                             />
-
-                            <Input
-                                name="businessName"
-                                label="Entreprise"
-                                placeholder="Nom structure"
-                                onChange={handleChange}
-                            />
-
-                            <Input
-                                name="businessContact"
-                                label="Contact Pro"
-                                placeholder="Contact"
-                                onChange={handleChange}
-                            />
+                            <div className="flex flex-col md:flex-row gap-6">
+                                <Input
+                                    name="imgcnirecto"
+                                    label="Photo CNI Recto"
+                                    type="file"
+                                    onChange={handleChange}
+                                    required
+                                    className="h-[150px]"
+                                />
+                                <Input
+                                    name="imgcniverso"
+                                    label="Photo CNI Verso"
+                                    type="file"
+                                    onChange={handleChange}
+                                    required
+                                    className="h-[150px]"
+                                />
+                            </div>
                         </div>
+                        <Input
+                            name="photo"
+                            label="Photo / Logo"
+                            type="file"
+                            onChange={handleChange}
+                            required
+                            className="h-[250px]"
+                        />
+                        <Input
+                            name="businessName"
+                            label="Entreprise"
+                            placeholder="Nom structure"
+                            onChange={handleChange}
+                            required
+                        />
+                        <Input
+                            name="businessContact"
+                            label="Contact Pro"
+                            placeholder="Contact"
+                            onChange={handleChange}
+                            required
+                        />
                         <Input
                             name="location"
                             label="Localisation"
                             placeholder="Yaounde, nkolbisson"
                             onChange={handleChange}
+                            required
                         />
+                        <div className="space-y-3">
+                            <Input
+                                name="activitySelect"
+                                label="Sélectionner vos activités"
+                                type="select"
+                                onChange={handleAddActivity}
+                                required
+                                options={[
+                                    { value: '', label: 'Choisir une activité...' },
+                                    ...availableActivities
+                                        .filter(act => !formData.activities.includes(act))
+                                        .map(act => ({ value: act, label: act }))
+                                ]}
+                            />
+
+                            {/* Affichage des tags (activités sélectionnées) */}
+                            <div className="flex flex-wrap gap-2">
+                                {formData.activities.map((act) => (
+                                    <span
+                                        key={act}
+                                        className="inline-flex items-center gap-1 px-3 py-1 bg-[#E8524D]/10 text-[#E8524D] text-sm font-medium rounded-full border border-[#E8524D]/20 animate-in zoom-in duration-200"
+                                    >
+                                        {act}
+                                        <button
+                                            type="button"
+                                            onClick={() => removeActivity(act)}
+                                            className="hover:bg-[#E8524D]/2 rounded-full p-0.5 transition-colors"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
 
                         <Input
                             name="description"
-                            label="Description *"
+                            label="Description "
                             type="textarea"
                             placeholder="Vos services..."
                             onChange={handleChange}
+                            required
                         />
                     </div>
                 </section>

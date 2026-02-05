@@ -93,7 +93,6 @@ export function ServiceProvider({ mode, data }) {
     const [rating, setRating] = useState(5);
     const [customerContact, SetcustomerContact] = useState(false)
 
-    // 2. Fonction pour changer la catégorie active
     const handleActiveCategory = (id) => {
         setCats(prevCats =>
             prevCats.map(c => ({
@@ -123,6 +122,16 @@ export function ServiceProvider({ mode, data }) {
                             <p className="text-xs text-gray-500 mt-1 ">
                                 Franchir la porte de notre institut, c'est s'offrir une parenthèse enchantée loin du tumulte du quotidien. Dès l'entrée, l'atmosphère se veut apaisante et raffinée : des nuances poudrées, des matériaux naturels et une lumière tamisée vous enveloppent dans un cocon de douceur.
                             </p>
+                            <div className="flex flex-wrap gap-2 mt-4">
+                                {data?.activities.map((act) => (
+                                    <span
+                                        key={act}
+                                        className="inline-flex items-center gap-1 px-3 py-1 bg-[#E8524D]/10 text-[#E8524D] text-sm font-medium rounded-full border border-[#E8524D]/20 animate-in zoom-in duration-200"
+                                    >
+                                        {act}
+                                    </span>
+                                ))}
+                            </div>
                             <p className="flex gap-2 items-center text-xs text-gray-500 mt-1 mt-4 mb-4">
                                 <MapPin className="text-gray-500" size={16} />
                                 {data?.location}
@@ -145,14 +154,9 @@ export function ServiceProvider({ mode, data }) {
                                         />
                                     ))}
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
-
-
                 </div>
             )}
             <div className="flex overflow-y-auto no-scrollbar items-center gap-4 mb-10">
