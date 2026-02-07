@@ -25,7 +25,7 @@ export function Footer() {
                 </a>
             </div>
             <p className="text-xs text-slate-400">
-                Copyright © 2026 - AELI Service
+                Copyright © {new Date().getFullYear()} - AELI Service
             </p>
         </div>
     )
