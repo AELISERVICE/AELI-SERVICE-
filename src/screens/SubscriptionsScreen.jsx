@@ -5,7 +5,7 @@ import { SubscriptionList } from '../components/Subscription/SubscriptionList';
 
 
 export function SubscriptionsScreen() {
-    const TABS = ['Subscription', 'pending', 'Revoque', 'Free'];
+    const TABS = ['Paiement', 'Attente', 'Revoque', 'Gratuit'];
 
     return (
         <div >
