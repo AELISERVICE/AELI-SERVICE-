@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pagination } from '../components/global/Pagination';
 import { TabButton } from '../components/global/TabButton';
-import { SubscriptionManager } from '../components/SubscriptionManager/SubscriptionManager';
+import { SubscriptionList } from '../components/Subscription/SubscriptionList';
 
 
 export function SubscriptionsScreen() {
@@ -12,7 +12,7 @@ export function SubscriptionsScreen() {
             <div className="mb-6 flex flex-wrap gap-2">
                 <TabButton TABS={TABS} />
             </div>
-            <SubscriptionManager />
+            <SubscriptionList />
             <div className="mt-6">
                 <Pagination />
             </div>

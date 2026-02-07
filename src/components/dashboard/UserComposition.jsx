@@ -14,7 +14,7 @@ export const UserComposition = () => {
       noPadding={true}
       className="p-6 relative h-full"
     >
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">User composition</h3>
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Repartition des utilisateurs</h3>
 
       <div className="h-[250px] w-full flex items-center justify-center relative">
         <PieCharts data={COMPOSITION_DATA} />

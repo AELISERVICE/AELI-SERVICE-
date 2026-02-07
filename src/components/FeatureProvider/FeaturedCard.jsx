@@ -1,4 +1,5 @@
 import React from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { X, Star } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button'
@@ -37,6 +38,8 @@ const FEATURED = [
 
 
 export const FeaturedCard = () => {
+    const { onActiveModal } = useOutletContext()
+
     return (
         <>
             <div className="flex items-center justify-between">
@@ -65,7 +68,11 @@ export const FeaturedCard = () => {
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-300 hover:text-red-500" onRemove={() => console.log('Supprimer:', item.id)}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-slate-300 hover:text-red-500"
+                                        onClick={() => onActiveModal(1)}>
                                         <X size={14} />
                                     </Button>
                                 </div>

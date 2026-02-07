@@ -67,7 +67,8 @@ export function ReviewsList() {
 
                     <Card
                         noPadding={true}
-                        className={`${item.isFlagged && 'bg-red-50 border-red-100'}`}
+                        variant="defaultnobg"
+                        className={`${item.isFlagged ? 'bg-red-50 border-red-100' : 'bg-white'}`}
                     >
                         {/* Flagged Header */}
                         {item.isFlagged && (

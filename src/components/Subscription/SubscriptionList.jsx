@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Badge } from '../../ui/Badge';
-import {Card} from '../../ui/Card';
+import { Card } from '../../ui/Card';
 
 const DATA = [
     {
@@ -53,13 +53,13 @@ const DATA = [
     },
 ]
 
-export const SubscriptionManager = () => {
+export const SubscriptionList = () => {
     return (
         <div className="w-full">
             <div className="space-y-4 max-w-6xl">
                 {DATA.map((item) => (
-                    <Card 
-                    className="backdrop-blur-sm p-4 sm:p-5 "
+                    <Card
+                        className="backdrop-blur-sm p-4 sm:p-5 "
                     >
                         {/* Version Mobile */}
                         <div className="flex flex-col sm:hidden gap-4">

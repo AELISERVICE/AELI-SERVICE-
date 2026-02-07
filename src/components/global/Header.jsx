@@ -1,8 +1,39 @@
-import React from 'react'
-import { Search, Bell, User } from 'lucide-react';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { Search, Bell, Menu } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
-export function Header({ onMenuClick, title, subtitle }) {
+export function Header({ onMenuClick }) {
+
+    const location = useLocation();
+    const pathname = location.pathname;
+
+    const getHeaderContent = () => {
+        if (pathname.startsWith('/dashboard')) {
+            return { title: "Tableau de bord", subtitle: "Vue d'ensemble de votre activité" };
+        }
+        if (pathname.startsWith('/provider')) {
+            return { title: "Gestion des Prestataires", subtitle: "Gérez vos salons et professionnels enregistrés" };
+        }
+        if (pathname.startsWith('/subscriptions')) {
+            return { title: "Abonnements", subtitle: "Suivi des paiements et des formules" };
+        }
+        if (pathname.startsWith('/feature')) {
+            return { title: "Mise en avant", subtitle: "Gérez la visibilité des services" };
+        }
+        if (pathname.startsWith('/users')) {
+            return { title: "Gestion des Utilisateurs", subtitle: "Liste et gestion des comptes clients" };
+        }
+        if (pathname.startsWith('/moderation')) {
+            return { title: "Modération", subtitle: "Contrôle des avis et contenus signalés" };
+        }
+        if (pathname.startsWith('/security')) {
+            return { title: "Sécurité", subtitle: "Paramètres d'accès et logs système" };
+        }
+        return { title: "Administration", subtitle: "Bienvenue sur votre espace de gestion" };
+    };
+    const { title, subtitle } = getHeaderContent();
+
     return (
         <header className=" p-4 lg:p-8 z-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -13,20 +44,7 @@ export function Header({ onMenuClick, title, subtitle }) {
                         onClick={onMenuClick}
                         className=" lg:hidden relative p-2.5 shadow-sm "
                     >
-
-                        <svg
-                            className="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 6h16M4 12h16M4 18h16"
-                            />
-                        </svg>
+                        <Menu className="w-6 h-6 text-gray-500" />
                     </Button>
                     <div>
 

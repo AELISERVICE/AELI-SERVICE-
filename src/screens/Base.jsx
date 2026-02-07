@@ -12,6 +12,7 @@ export function Base() {
     const [activeModal, setActiveModal] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
 
+
     return (
         <div className="flex h-screen bg-gray-50 font-sans text-gray-900 relative">
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden ">
@@ -22,8 +23,6 @@ export function Base() {
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 <Header
-                    title={"Gestion des Prestataires"}
-                    subtitle={"Gérez vos salons enregistrés"}
                     onMenuClick={() => setSidebarOpen(true)}
                 />
                 <div className="flex-1 overflow-y-auto p-4 lg:p-8">
@@ -31,6 +30,7 @@ export function Base() {
                         <Outlet
                             context={{
                                 onActiveModal: (type) => setActiveModal(type),
+
                             }}
                         />
                     </div>

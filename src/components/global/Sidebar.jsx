@@ -60,7 +60,7 @@ export function Sidebar({ isOpen, onClose }) {
                         onClick={onClose}
                         className="lg:hidden relative p-2.5 shadow-sm "
                     >
-                        <X size={24} />
+                        <X size={24} className="text-gray-500"/>
                     </Button>
                 </div>
 
@@ -119,7 +119,7 @@ export function Sidebar({ isOpen, onClose }) {
                 <div className="px-8 pb-4">
                     <div className="flex items-center gap-2 text-[9px] font-bold text-zinc-300 tracking-[0.3em] uppercase">
                         <div className="w-1 h-1 bg-green-400 rounded-full animate-ping" />
-                        <span className={`${isCollapsed ? "hidden" : "flex"} `}> System v2.0.4</span>
+                        <span className={`${isCollapsed ? "hidden" : "flex"} `}> System v1.0.0</span>
                     </div>
                 </div>
             </aside>

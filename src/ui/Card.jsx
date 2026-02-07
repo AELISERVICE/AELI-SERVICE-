@@ -4,6 +4,7 @@ import React from 'react';
 export const Card = ({ children, className = '', variant = 'default', noPadding = false, ...props }) => {
     const variants = {
         default: 'bg-white border border-gray-100 shadow-sm hover:shadow-md',
+        defaultnobg: 'border border-gray-100 shadow-sm hover:shadow-md',
         glass: 'bg-white/80 backdrop-blur-sm border border-slate-200 shadow-sm',
         glass2: 'p-2 bg-white/20 rounded-lg backdrop-blur-sm',
         active: 'bg-violet-50 border-2 border-violet-500 shadow-md',

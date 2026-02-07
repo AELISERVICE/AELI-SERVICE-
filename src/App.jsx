@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { LoginScreen } from './screens/Login'
 import { Base } from './screens/Base'
 import { Dashboard } from './screens/Dashboard'
 import { Provider } from './screens/Provider'
@@ -11,7 +12,8 @@ import { Users } from './screens/Users'
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<LoginScreen />} />
 
       {/* Toutes ces routes seront injectées dans le composant Base */}
       <Route element={<Base />}>

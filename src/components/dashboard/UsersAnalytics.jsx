@@ -13,7 +13,7 @@ export const UsersAnalytics = () => {
     return (
         <Card className="h-full">
             <h3 className="text-lg font-semibold text-gray-800 mb-6">
-                Number of users per day
+                Nombre d'utilisateurs inscrits par jour
             </h3>
             <div className="h-[250px] w-full">
                 <AreaCharts data={USERS_DATA} dataKey="users" color="#8b5cf6" />
