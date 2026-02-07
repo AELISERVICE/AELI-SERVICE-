@@ -61,7 +61,7 @@ export function Header({ onMenuClick }) {
                         <input
                             type="text"
                             placeholder="Type here..."
-                            className="pl-10 pr-4 py-[10px] rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300  w-full md:w-64 shadow-sm"
+                            className="pl-10 pr-4 py-[10px] rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent w-full md:w-64 shadow-sm"
                         />
                     </div>
 
