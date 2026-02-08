@@ -1,5 +1,5 @@
 import React from 'react'
-import { Shield, Bot, Clock, Lock, Trash2, Plus } from 'lucide-react'
+import { Shield, Bot, Clock, Lock } from 'lucide-react'
 import { Card } from '../../ui/Card'
 import { Badge } from '../../ui/Badge'
 
@@ -33,10 +33,10 @@ const data = [
 
 export const ProtectionList = () => (
     <Card
-        className="w-full"
+        className="relative w-full overflow-hidden"
     >
         <div className="mb-6"><h2 className="text-xl font-bold text-gray-900">Active Protections</h2></div>
-        <div className="space-y-6 flex-1">
+        <div className=" space-y-6 flex-1 ">
             {data.map((item) => (
                 <div key={item.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -46,6 +46,9 @@ export const ProtectionList = () => (
                     <Badge>{item.status}</Badge>
                 </div>
             ))}
+        </div>
+        <div className="absolute -bottom-10 -right-27 p-2 opacity-5">
+            <Shield size={220} />
         </div>
     </Card>
 );

@@ -30,7 +30,7 @@ export const LastusersRegister = () => {
 
       <div className="flex flex-col gap-6 ">
         <Card>
-          <div className="px-6 py-2">
+          <div className="px-2 md:px-6 py-2">
             <h3 className="text-lg font-semibold text-gray-800 ">
               5 derniers utilisateurs inscrit
             </h3>
@@ -49,7 +49,7 @@ export const LastusersRegister = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-slate-600">
-                  <div className={`flex items-center rounded-full items-center justify-center gap-2 ${item.gender === "femme" ? "bg-pink-50 text-pink-700" : "bg-blue-50 text-blue-700"}`}>{item.gender}</div>
+                  <div className={`flex items-center rounded-full items-center justify-center gap-2 w-fit py-1 px-2 ${item.gender === "femme" ? "bg-pink-50 text-pink-700" : "bg-blue-50 text-blue-700"}`}>{item.gender}</div>
                 </td>
                 <td className="px-6 py-4 text-slate-600">
                   <div className="flex items-center gap-2">{item.email}</div>
@@ -71,7 +71,7 @@ export const LastusersRegister = () => {
           </Table>
         </Card>
         <Card>
-          <div className="px-6 py-2">
+          <div className="px-2 md:px-6 py-2">
             <h3 className="text-lg font-semibold text-gray-800 ">
               5 derniers prestaires creer
             </h3>

@@ -1,9 +1,10 @@
 import React from 'react';
-import { Kpicount } from '../components/Security/KpiCount'
-import { SecurPeriodeAnalytics } from '../components/Security/SecurPeriodeAnalytics'
-import { RiskLevelDistribution } from '../components/Security/RiskLevelDistribution'
-import { BannedIPList } from '../components/Security/BannedIPList'
-import { ProtectionList } from '../components/Security/ProtectionList'
+import { Kpicount } from '../components/Security/KpiCount';
+import { SecurPeriodeAnalytics } from '../components/Security/SecurPeriodeAnalytics';
+import { RiskLevelDistribution } from '../components/Security/RiskLevelDistribution';
+import { IpDetection } from '../components/Security/Ipdection';
+import { BannedIPList } from '../components/Security/BannedIPList';
+import { ProtectionList } from '../components/Security/ProtectionList';
 
 
 export function SecurityScreen() {
@@ -26,6 +27,7 @@ export function SecurityScreen() {
                         </div>
                     </div>
                 </div>
+                <IpDetection />
                 <div className="flex flex-col md:flex-row gap-6">
                     <BannedIPList />
                     <ProtectionList />

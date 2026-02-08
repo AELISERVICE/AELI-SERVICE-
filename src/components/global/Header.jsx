@@ -37,12 +37,12 @@ export function Header({ onMenuClick }) {
     return (
         <header className=" p-4 lg:p-8 z-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex  gap-4">
                     <Button
                         variant="secondary"
                         size={false}
                         onClick={onMenuClick}
-                        className=" lg:hidden relative p-2.5 shadow-sm "
+                        className=" lg:hidden relative p-2.5 shadow-sm h-fit "
                     >
                         <Menu className="w-6 h-6 text-gray-500" />
                     </Button>

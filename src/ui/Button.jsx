@@ -49,7 +49,7 @@ export const Button = ({
 export const ButtonTab = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`px-4 py-2 text-[12px] font-medium rounded-xl transition-all whitespace-nowrap ${isActive
+        className={`px-4 py-2 text-[12px] md:text-sm font-medium rounded-xl transition-all whitespace-nowrap ${isActive
             ? 'bg-white text-[#E8524D] shadow-sm'
             : 'text-gray-600 hover:text-gray-800'
             }`}
