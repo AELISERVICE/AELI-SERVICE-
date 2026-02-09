@@ -52,7 +52,7 @@ export function Sidebar({ isOpen, onClose }) {
                 <div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
                     <div className="flex items-center gap-3">
                         <img src="./logo.svg" className="w-10 h-10 flex-shrink-0" />
-                        <span className={`font-bold text-xl  md:transition-opacity pacifico-regular ${isCollapsed ? "hidden" : "flex"}`}>AELI service</span>
+                        <span className={`font-bold text-xl  md:transition-opacity pacifico-regular ${isCollapsed ? "hidden" : "flex"}`}>AELI services</span>
                     </div>
                     <Button
                         variant="secondary"
