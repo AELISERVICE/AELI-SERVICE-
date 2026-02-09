@@ -10,47 +10,34 @@ import { Heart, MapPin, Star } from 'lucide-react'
 const data = [
     {
         name: 'Salon Marie',
-        image:
-            'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000',
+        image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000',
         rating: 4.8,
-        reviewCount: 25,
-        description:
-            'Coiffure professionnelle avec des techniques modernes et des produits de haute qualité pour sublimer votre beauté naturelle.',
+        description: 'Coiffure professionnelle avec des techniques modernes et des produits de haute qualité pour sublimer votre beauté naturelle.',
         location: 'Douala',
         dateAdded: '15 Jan 2026',
-        isVerified: true,
-        isPremium: true,
         activities: ["Coiffure", "Esthétique", "Mécanique"]
     },
     {
         name: 'Traiteur Fatou',
-        image:
-            'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000',
+        image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000',
         rating: 4.5,
-        reviewCount: 18,
-        description:
-            'Cuisine traditionnelle camerounaise authentique pour vos événements. Des saveurs uniques qui rappellent la maison.',
+        description: 'Cuisine traditionnelle camerounaise authentique pour vos événements. Des saveurs uniques qui rappellent la maison.',
         location: 'Yaoundé',
         dateAdded: '10 Jan 2026',
-        isVerified: true,
-        isPremium: true,
         activities: ["activites1", "activites3"]
     },
     {
         name: 'Traiteur Fatou',
-        image:
-            'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000',
+        image: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000',
         rating: 4.5,
-        reviewCount: 18,
-        description:
-            'Cuisine traditionnelle camerounaise authentique pour vos événements. Des saveurs uniques qui rappellent la maison.',
+        description: 'Cuisine traditionnelle camerounaise authentique pour vos événements. Des saveurs uniques qui rappellent la maison.',
         location: 'Yaoundé',
         dateAdded: '10 Jan 2026',
-        isVerified: true,
-        isPremium: true,
         activities: ["Ménage", "Plomberie", "Électricité"]
     },
 ]
+
+
 export function FavoriteList({ closeFavorite }) {
     const scrollRef = useRef(null)
     const navigate = useNavigate()
