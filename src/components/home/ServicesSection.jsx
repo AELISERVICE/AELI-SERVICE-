@@ -49,7 +49,7 @@ const DATA = [
         location: 'Tchad, ndjamena',
         rating: 4.7,
         image: 'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&q=80&w=800',
-        activities: ["Coiffure", "Esthétique", "Mécanique",]
+        activities: ["Coiffure", "Esthétique", "Mécanique"]
     },
     {
         id: 6,

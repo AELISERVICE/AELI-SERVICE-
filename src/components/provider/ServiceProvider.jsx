@@ -123,7 +123,7 @@ export function ServiceProvider({ mode, data }) {
                                 Franchir la porte de notre institut, c'est s'offrir une parenthèse enchantée loin du tumulte du quotidien. Dès l'entrée, l'atmosphère se veut apaisante et raffinée : des nuances poudrées, des matériaux naturels et une lumière tamisée vous enveloppent dans un cocon de douceur.
                             </p>
                             <div className="flex flex-wrap gap-2 mt-4">
-                                {data?.activities.map((act) => (
+                                {data?.activities?.map((act) => (
                                     <span
                                         key={act}
                                         className="inline-flex items-center gap-1 px-3 py-1 bg-[#E8524D]/10 text-[#E8524D] text-sm font-medium rounded-full border border-[#E8524D]/20 animate-in zoom-in duration-200"

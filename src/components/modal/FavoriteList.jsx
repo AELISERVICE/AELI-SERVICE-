@@ -20,6 +20,7 @@ const data = [
         dateAdded: '15 Jan 2026',
         isVerified: true,
         isPremium: true,
+        activities: ["Coiffure", "Esthétique", "Mécanique"]
     },
     {
         name: 'Traiteur Fatou',
@@ -33,6 +34,7 @@ const data = [
         dateAdded: '10 Jan 2026',
         isVerified: true,
         isPremium: true,
+        activities: ["activites1", "activites3"]
     },
     {
         name: 'Traiteur Fatou',
@@ -46,6 +48,7 @@ const data = [
         dateAdded: '10 Jan 2026',
         isVerified: true,
         isPremium: true,
+        activities: ["Ménage", "Plomberie", "Électricité"]
     },
 ]
 export function FavoriteList({ closeFavorite }) {
