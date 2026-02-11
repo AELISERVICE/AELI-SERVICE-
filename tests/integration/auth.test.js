@@ -21,6 +21,7 @@ describe('Auth API', () => {
                 .send({
                     email: testEmail,
                     password: testPassword,
+                    confirmPassword: testPassword,
                     firstName: 'Test',
                     lastName: 'User',
                     phone: '+237690000001'
