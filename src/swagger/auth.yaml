@@ -9,11 +9,11 @@ paths:
         required: true
         content:
           application/json:
-            schema:
               type: object
               required:
                 - email
                 - password
+                - confirmPassword
                 - firstName
                 - lastName
               properties:
@@ -25,6 +25,12 @@ paths:
                   type: string
                   minLength: 8
                   example: SecurePass123!
+                  description: Doit contenir au moins 8 caractères avec une majuscule, une minuscule et un chiffre
+                confirmPassword:
+                  type: string
+                  minLength: 8
+                  example: SecurePass123!
+                  description: Doit correspondre au mot de passe
                 firstName:
                   type: string
                   example: Marie
@@ -34,10 +40,15 @@ paths:
                 phone:
                   type: string
                   example: "+237690000000"
-                role:
+                country:
                   type: string
-                  enum: [client, provider]
-                  default: client
+                  example: Cameroun
+                  default: Cameroun
+                  description: Pays de résidence
+                gender:
+                  type: string
+                  enum: [male, female, other, prefer_not_to_say]
+                  description: Genre (optionnel)
       responses:
         '201':
           description: Inscription réussie, OTP envoyé

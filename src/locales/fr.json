@@ -166,7 +166,9 @@
         "messageLength": "Le message doit contenir entre {min} et {max} caractères",
         "ratingRequired": "La note est requise",
         "emailInUse": "Cet email est déjà utilisé",
-        "ratingRange": "La note doit être entre 1 et 5"
+        "ratingRange": "La note doit être entre 1 et 5",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "invalidGender": "Genre invalide. Choisissez: male, female, other, prefer_not_to_say"
     },
     "security": {
         "ipBanned": "Accès refusé",

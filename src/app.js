@@ -80,13 +80,9 @@ app.use(helmet({
 // Prevent HTTP Parameter Pollution
 app.use(hpp());
 
-// Enable CORS
-app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-XSRF-Token']
-}));
+// Enable CORS with centralized configuration
+const corsOptions = require('./config/cors');
+app.use(cors(corsOptions));
 
 // Cookie parser (required for CSRF)
 app.use(cookieParser());

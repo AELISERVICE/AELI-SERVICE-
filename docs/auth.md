@@ -30,16 +30,22 @@ Crée un nouveau compte utilisateur. Par défaut, tous les utilisateurs sont cr�
 {
   "email": "marie@example.com",
   "password": "SecurePass123!",
+  "confirmPassword": "SecurePass123!",
   "firstName": "Marie",
   "lastName": "Dupont",
-  "phone": "+237699123456"  // Optionnel
+  "phone": "+237699123456",  // Optionnel
+  "country": "Cameroun",      // Optionnel, défaut: Cameroun
+  "gender": "female"          // Optionnel: male, female, other, prefer_not_to_say
 }
 ```
 
 **Validation :**
 - `email` : format email valide, unique
 - `password` : min 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre
+- `confirmPassword` : requis, doit correspondre au `password`
 - `firstName`, `lastName` : 2-100 caractères
+- `country` : optionnel, 2-100 caractères
+- `gender` : optionnel, valeurs acceptées: `male`, `female`, `other`, `prefer_not_to_say`
 
 **Réponse 201 :**
 ```json

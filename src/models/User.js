@@ -53,6 +53,21 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING(200), // Increased for encrypted data
         allowNull: true
     },
+    country: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        defaultValue: 'Cameroun',
+        validate: {
+            len: {
+                args: [2, 100],
+                msg: 'Le nom du pays doit contenir entre 2 et 100 caractères'
+            }
+        }
+    },
+    gender: {
+        type: DataTypes.ENUM('male', 'female', 'other', 'prefer_not_to_say'),
+        allowNull: true
+    },
     role: {
         type: DataTypes.ENUM('client', 'provider', 'admin'),
         defaultValue: 'client'
@@ -180,6 +195,8 @@ User.prototype.toPublicJSON = function () {
         firstName: this.firstName,
         lastName: this.lastName,
         phone: decrypt(this.phone),
+        country: this.country,
+        gender: this.gender,
         role: this.role,
         profilePhoto: this.profilePhoto,
         isActive: this.isActive,

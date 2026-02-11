@@ -34,7 +34,24 @@ const registerValidation = [
         .optional()
         .trim()
         .matches(/^[\+]?[(]?[0-9]{1,3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,9}$/)
-        .withMessage('Numéro de téléphone invalide')
+        .withMessage('Numéro de téléphone invalide'),
+
+    body('confirmPassword')
+        .notEmpty()
+        .withMessage('La confirmation du mot de passe est requise')
+        .custom((value, { req }) => value === req.body.password)
+        .withMessage('Les mots de passe ne correspondent pas'),
+
+    body('country')
+        .optional()
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Le nom du pays doit contenir entre 2 et 100 caractères'),
+
+    body('gender')
+        .optional()
+        .isIn(['male', 'female', 'other', 'prefer_not_to_say'])
+        .withMessage('Genre invalide')
 ];
 
 /**

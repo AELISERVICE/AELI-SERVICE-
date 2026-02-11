@@ -38,7 +38,12 @@ const generateRefreshToken = () => {
  * @access  Public
  */
 const register = asyncHandler(async (req, res) => {
-    const { email, password, firstName, lastName, phone } = req.body;
+    const { email, password, confirmPassword, firstName, lastName, phone, country, gender } = req.body;
+
+    // Validate confirmPassword
+    if (password !== confirmPassword) {
+        throw new AppError(req.t('validation.passwordMismatch'), 400);
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ where: { email } });
@@ -53,6 +58,8 @@ const register = asyncHandler(async (req, res) => {
         firstName,
         lastName,
         phone,
+        country: country || 'Cameroun',
+        gender,
         role: 'client', // All users start as clients, can apply to become provider
         isEmailVerified: false
     });

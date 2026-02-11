@@ -151,7 +151,9 @@
         "messageLength": "Message must be between {min} and {max} characters",
         "ratingRequired": "Rating is required",
         "emailInUse": "Email is already in use",
-        "ratingRange": "Rating must be between 1 and 5"
+        "ratingRange": "Rating must be between 1 and 5",
+        "passwordMismatch": "Passwords do not match",
+        "invalidGender": "Invalid gender. Choose: male, female, other, prefer_not_to_say"
     },
     "security": {
         "ipBanned": "Access denied",
