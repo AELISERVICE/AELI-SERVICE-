@@ -1,6 +1,8 @@
 const { Server } = require('socket.io');
 const logger = require('../utils/logger');
 
+const { allAllowedOrigins } = require('./cors');
+
 let io = null;
 
 /**
@@ -10,7 +12,7 @@ let io = null;
 const initSocketIO = (httpServer) => {
     io = new Server(httpServer, {
         cors: {
-            origin: process.env.FRONTEND_URL || '*',
+            origin: allAllowedOrigins,
             methods: ['GET', 'POST'],
             credentials: true
         },
@@ -56,7 +58,7 @@ const initSocketIO = (httpServer) => {
         });
     });
 
-    logger.info('✅ Socket.IO initialized');
+    logger.info(' Socket.IO initialized');
     return io;
 };
 

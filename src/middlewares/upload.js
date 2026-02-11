@@ -35,6 +35,22 @@ const galleryPhotoStorage = new CloudinaryStorage({
 });
 
 /**
+ * Cloudinary storage configuration for advertising banners
+ */
+const bannerStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'aeli-services/banners',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [
+            { width: 1920, height: 600, crop: 'limit' },
+            { quality: 'auto' },
+            { fetch_format: 'auto' }
+        ]
+    }
+});
+
+/**
  * File filter to only allow images
  */
 const imageFileFilter = (req, file, cb) => {
@@ -67,6 +83,17 @@ const uploadGalleryPhotos = multer({
     },
     fileFilter: imageFileFilter
 }).array('photos', 5);
+
+/**
+ * Multer upload configuration for advertising banners (single image)
+ */
+const uploadBanner = multer({
+    storage: bannerStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB max
+    },
+    fileFilter: imageFileFilter
+}).single('bannerImage');
 
 /**
  * Middleware wrapper for profile photo upload with error handling
@@ -110,6 +137,32 @@ const handleGalleryPhotosUpload = (req, res, next) => {
                 return res.status(400).json({
                     success: false,
                     message: 'Maximum 5 images autorisées'
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: `Erreur d'upload: ${err.message}`
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+        next();
+    });
+};
+
+/**
+ * Middleware wrapper for banner upload with error handling
+ */
+const handleBannerUpload = (req, res, next) => {
+    uploadBanner(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La taille de la bannière ne doit pas dépasser 10MB'
                 });
             }
             return res.status(400).json({
@@ -268,5 +321,6 @@ module.exports = {
     handleProfilePhotoUpload,
     handleGalleryPhotosUpload,
     handleDocumentUpload,
-    handleApplicationUpload
+    handleApplicationUpload,
+    handleBannerUpload
 };

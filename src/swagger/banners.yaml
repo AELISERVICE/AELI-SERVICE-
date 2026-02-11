@@ -1,0 +1,131 @@
+paths:
+  /banners:
+    get:
+      tags:
+        - Banners
+      summary: Liste les bannières actives (Public)
+      description: Retourne les bannières publicitaires filtrées par date de validité et statut actif.
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [main_home, sidebar, featured, popup]
+          description: Filtrer par emplacement
+      responses:
+        '200':
+          description: Liste des bannières
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      banners:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Banner'
+
+    post:
+      tags:
+        - Banners
+      summary: Créer une bannière (Admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - bannerImage
+              properties:
+                title: { type: string }
+                description: { type: string }
+                linkUrl: { type: string }
+                type: { type: string, enum: [main_home, sidebar, featured, popup] }
+                order: { type: integer }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+                bannerImage: { type: string, format: binary }
+                isActive: { type: boolean }
+      responses:
+        '201':
+          description: Bannière créée
+        '403':
+          description: Accès interdit
+
+  /banners/admin:
+    get:
+      tags:
+        - Banners
+      summary: Liste toutes les bannières (Admin)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste complète des bannières
+
+  /banners/{id}:
+    put:
+      tags:
+        - Banners
+      summary: Modifier une bannière (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                linkUrl: { type: string }
+                type: { type: string }
+                bannerImage: { type: string, format: binary }
+                isActive: { type: boolean }
+      responses:
+        '200':
+          description: Bannière mise à jour
+
+    delete:
+      tags:
+        - Banners
+      summary: Supprimer une bannière (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Bannière supprimée
+
+components:
+  schemas:
+    Banner:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        imageUrl: { type: string }
+        linkUrl: { type: string }
+        type: { type: string }
+        isActive: { type: boolean }
+        startDate: { type: string, format: date-time }
+        endDate: { type: string, format: date-time }
+        order: { type: integer }

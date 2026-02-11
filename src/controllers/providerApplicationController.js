@@ -245,7 +245,7 @@ const reviewApplication = asyncHandler(async (req, res) => {
         }
 
         // Invalidate cache
-        await cache.delByPattern('providers:list:*');
+        await cache.delByPattern('route:/api/providers*');
 
         i18nResponse(req, res, 200, 'admin.applicationApproved', {
             application,

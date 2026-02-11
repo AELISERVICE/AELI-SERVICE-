@@ -63,6 +63,28 @@ const Contact = sequelize.define('Contact', {
     status: {
         type: DataTypes.ENUM('pending', 'read', 'replied'),
         defaultValue: 'pending'
+    },
+    isUnlocked: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        field: 'is_unlocked',
+        comment: 'Si true, le prestataire peut voir le message complet et les coordonnées'
+    },
+    unlockedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'unlocked_at',
+        comment: 'Date de débloquage du message'
+    },
+    unlockPaymentId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        field: 'unlock_payment_id',
+        references: {
+            model: 'payments',
+            key: 'id'
+        },
+        comment: 'ID du paiement ayant débloqué ce message (si pay-per-view)'
     }
 }, {
     tableName: 'contacts',
@@ -121,5 +143,69 @@ const Contact = sequelize.define('Contact', {
         }
     }
 });
+
+/**
+ * Check if contact can be viewed by user (checks subscription or unlock status)
+ * @param {Object} user - User object with role
+ * @returns {Promise<boolean>}
+ */
+Contact.prototype.canBeViewedBy = async function (user) {
+    // Admin can view everything
+    if (user && user.role === 'admin') return true;
+
+    // If already unlocked
+    if (this.isUnlocked) return true;
+
+    // Check if provider has active subscription (auto-unlock)
+    const { Provider, Subscription } = require('./');
+    const provider = await Provider.findOne({
+        where: { id: this.providerId },
+        include: [{ model: Subscription, as: 'subscription' }]
+    });
+
+    if (provider && provider.subscription && provider.subscription.isActive()) {
+        // Auto-unlock if subscription active
+        this.isUnlocked = true;
+        this.unlockedAt = new Date();
+        await this.save();
+        return true;
+    }
+
+    return false;
+};
+
+/**
+ * Get masked contact data (for locked messages)
+ * @returns {Object}
+ */
+Contact.prototype.getMaskedData = function () {
+    // Mask email: show first char + *** + domain
+    let maskedEmail = '***@***';
+    if (this.senderEmail) {
+        const emailParts = this.senderEmail.split('@');
+        if (emailParts.length === 2) {
+            maskedEmail = `${emailParts[0][0]}***@***`;
+        }
+    }
+
+    // Mask phone: show country code + ***
+    let maskedPhone = null;
+    if (this.senderPhone) {
+        maskedPhone = '+237 6** *** ***';
+    }
+
+    return {
+        id: this.id,
+        messagePreview: this.message.substring(0, 50) + '...',
+        senderName: this.senderName,
+        senderEmail: maskedEmail,
+        senderPhone: maskedPhone,
+        status: this.status,
+        isUnlocked: false,
+        createdAt: this.createdAt,
+        unlockPrice: 500, // FCFA
+        needsUnlock: true
+    };
+};
 
 module.exports = Contact;

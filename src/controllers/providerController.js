@@ -59,15 +59,6 @@ const createProvider = asyncHandler(async (req, res) => {
 const getProviders = asyncHandler(async (req, res) => {
     const { page = 1, limit = 12, category, location, minRating, search, sort = 'recent' } = req.query;
 
-    // Generate cache key
-    const cacheKey = cache.cacheKeys.providers(page, { category, location, minRating, search, sort });
-
-    // Try cache first
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-        return i18nResponse(req, res, 200, 'provider.list', cached);
-    }
-
     const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
     // Build where clause
@@ -129,9 +120,6 @@ const getProviders = asyncHandler(async (req, res) => {
 
     const responseData = { providers, pagination };
 
-    // Cache for 5 minutes
-    await cache.set(cacheKey, responseData, 300);
-
     i18nResponse(req, res, 200, 'provider.list', responseData);
 });
 
@@ -142,13 +130,6 @@ const getProviders = asyncHandler(async (req, res) => {
  */
 const getProviderById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-
-    // Try cache first
-    const cacheKey = cache.cacheKeys.provider(id);
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-        return i18nResponse(req, res, 200, 'provider.details', cached);
-    }
 
     // Fetch provider with user info only (avoid deep nesting)
     const provider = await Provider.findByPk(id, {
@@ -225,9 +206,6 @@ const getProviderById = asyncHandler(async (req, res) => {
     // Increment view count (don't wait)
     provider.incrementViews().catch(err => console.error('View increment error:', err.message));
 
-    // Cache for 5 minutes (shorter if expired to check status more often)
-    await cache.set(cacheKey, { provider: providerData }, subscriptionStatus.isActive ? 300 : 60);
-
     i18nResponse(req, res, 200, 'provider.details', { provider: providerData });
 });
 
@@ -274,6 +252,9 @@ const updateProvider = asyncHandler(async (req, res) => {
 
     await provider.save();
 
+    // Invalidate cache
+    await cache.delByPattern('route:/api/providers*');
+
     i18nResponse(req, res, 200, 'provider.updated', { provider });
 });
 
@@ -315,6 +296,9 @@ const deleteProviderPhoto = asyncHandler(async (req, res) => {
     photos.splice(index, 1);
     provider.photos = photos;
     await provider.save({ fields: ['photos'] });
+
+    // Invalidate cache
+    await cache.delByPattern('route:/api/providers*');
 
     i18nResponse(req, res, 200, 'provider.photoDeleted', { provider });
 });
@@ -479,7 +463,7 @@ const uploadDocuments = asyncHandler(async (req, res) => {
     }
 
     // Invalidate cache
-    await cache.del(cache.cacheKeys.provider(id));
+    await cache.delByPattern('route:/api/providers*');
 
     i18nResponse(req, res, 201, 'documents.submitted', {
         documents: provider.documents,
@@ -565,7 +549,7 @@ const deleteDocument = asyncHandler(async (req, res) => {
     }
 
     await provider.save();
-    await cache.del(cache.cacheKeys.provider(id));
+    await cache.delByPattern('route:/api/providers*');
 
     i18nResponse(req, res, 200, 'documents.deleted', { documents: provider.documents });
 });

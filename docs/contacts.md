@@ -18,6 +18,33 @@ Les clients peuvent envoyer des demandes de contact aux prestataires. Ces demand
 - Les **emails** et **téléphones** des clients sont **chiffrés** en base de données (AES-256-GCM)
 - Seul le prestataire destinataire peut voir les coordonnées
 
+### 💰 Système Pay-Per-View (Nouveau)
+
+**Principe :**
+- Les clients peuvent **toujours** envoyer des messages aux prestataires, même sans abonnement actif
+- Les messages sont créés **verrouillés par défaut** (`isUnlocked: false`)
+- Les prestataires **sans abonnement** voient les coordonnées **masquées**
+- Pour débloquer un message : **2 options**
+  - 💳 **Payer 500 FCFA** pour CE message uniquement
+  - 📦 **Souscrire un abonnement** → tous les messages débloqués automatiquement
+
+**Débloquage automatique :**
+- Si le prestataire a un abonnement actif → message débloqué immédiatement
+- `isUnlocked = true`, `unlockedAt = NOW()`
+
+**Message verrouillé (aperçu) :**
+```json
+{
+  "messagePreview": "Bonjour, je voudrais prendre rendez-v...",
+  "senderName": "Fatou Kamga",
+  "senderEmail": "f***@***",
+  "senderPhone": "+237 6** *** ***",
+  "isUnlocked": false,
+  "unlockPrice": 500,
+  "needsUnlock": true
+}
+```
+
 ---
 
 ## 📧 1. ENVOYER UN MESSAGE
@@ -30,12 +57,13 @@ Les clients peuvent envoyer des demandes de contact aux prestataires. Ces demand
 Envoie une demande de contact à un prestataire. Peut être utilisé par des visiteurs non inscrits.
 
 **Ce qu'il fait :**
-1. Vérifie que le prestataire existe et a un abonnement actif
+1. Vérifie que le prestataire existe (pas besoin d'abonnement actif)
 2. Chiffre les coordonnées du client (email, téléphone)
-3. Crée l'enregistrement Contact
-4. Incrémente le compteur de contacts du prestataire
-5. Envoie un email de notification au prestataire
-6. Envoie un email de confirmation au client
+3. Crée l'enregistrement Contact **verrouillé** (`isUnlocked: false`)
+4. **Si abonnement actif** → débloque automatiquement le message
+5. Incrémente le compteur de contacts du prestataire
+6. Envoie un email de notification au prestataire
+7. Envoie un email de confirmation au client
 
 **Rate Limiting :** 5 contacts / heure par IP
 
@@ -96,8 +124,11 @@ Envoie une demande de contact à un prestataire. Peut être utilisé par des vis
 Récupère la liste des demandes de contact reçues par le prestataire connecté.
 
 **Ce qu'il fait :**
-- Déchiffre automatiquement les coordonnées (email, téléphone)
 - Retourne les contacts avec pagination
+- **Vérifie le statut de débloquage** pour chaque message
+- Si **verrouillé** → masque les coordonnées avec aperçu
+- Si **abonnement actif** → débloque automatiquement
+- Peut filtrer par statut
 - Peut filtrer par statut
 
 **Paramètres query :**
@@ -204,6 +235,106 @@ Récupère tous les contacts reçus à une date spécifique.
 ```
 GET /api/contacts/by-date/2026-01-15
 ```
+
+---
+
+## 💰 4. DÉBLOQUAGE PAYANT (Pay-Per-View)
+
+### `POST /:id/unlock` - Initier le débloquage d'un message
+
+**🔒 Authentification requise** | **Rôle : provider (propriétaire)**
+
+**Description :**  
+Initialise le paiement de 500 FCFA pour débloquer un message verrouillé.
+
+**Ce qu'il fait :**
+1. Vérifie que le prestataire est bien le destinataire du message
+2. Vérifie que le message n'est pas déjà débloqué
+3. Vérifie que le prestataire n'a pas d'abonnement actif (sinon auto-unlock)
+4. Crée un paiement de type `contact_unlock` (500 FCFA)
+5. Initialise la transaction CinetPay
+6. Retourne l'URL de paiement
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "message": "Paiement initialisé",
+  "paymentUrl": "https://cinetpay.com/payment/...",
+  "paymentId": "uuid",
+  "transactionId": "AELI1234567890",
+  "amount": 500
+}
+```
+
+**Erreurs possibles :**
+| Code | Message | Cause |
+|------|---------|-------|
+| 400 | Message déjà débloqué | isUnlocked = true |
+| 403 | Non autorisé | N'est pas le destinataire |
+| 404 | Contact non trouvé | ID invalide |
+
+**Workflow Frontend :**
+```javascript
+// Bouton "Débloquer (500 FCFA)"
+const unlockContact = async (contactId) => {
+  const res = await fetch(`/api/contacts/${contactId}/unlock`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  
+  const { paymentUrl } = await res.json();
+  // Rediriger vers CinetPay
+  window.location.href = paymentUrl;
+};
+```
+
+---
+
+### `POST /:id/unlock/confirm` - Confirmer le débloquage
+
+**🔒 Authentification requise** | **Rôle : provider**
+
+**Description :**  
+Confirme le débloquage après paiement réussi via CinetPay.
+
+**Body :**
+```json
+{
+  "transactionId": "AELI1234567890"
+}
+```
+
+**Ce qu'il fait :**
+1. Vérifie que le paiement existe et est ACCEPTED
+2. Débloque le message (`isUnlocked = true`)
+3. Enregistre la référence du paiement (`unlockPaymentId`)
+4. Retourne le contact avec coordonnées déchiffrées
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "message": "Message débloqué avec succès",
+  "contact": {
+    "id": "uuid",
+    "message": "Bonjour, je voudrais prendre rendez-vous...",
+    "senderName": "Fatou Kamga",
+    "senderEmail": "fatou@example.com",      // ← DÉCHIFFRÉ
+    "senderPhone": "+237699123456",          // ← DÉCHIFFRÉ
+    "isUnlocked": true,
+    "unlockedAt": "2026-02-11T13:45:00Z",
+    "unlockPaymentId": "uuid",
+    "createdAt": "2026-02-11T10:30:00Z"
+  }
+}
+```
+
+**Erreurs possibles :**
+| Code | Message | Cause |
+|------|---------|-------|
+| 400 | Paiement non confirmé | status !== 'ACCEPTED' |
+| 404 | Paiement non trouvé | transactionId invalide |
 
 ---
 

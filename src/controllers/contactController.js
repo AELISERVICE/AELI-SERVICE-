@@ -29,8 +29,18 @@ const createContact = asyncHandler(async (req, res) => {
         message,
         senderName,
         senderEmail,
-        senderPhone
+        senderPhone,
+        isUnlocked: false // Par défaut verrouillé
     });
+
+    // Auto-unlock if provider has active subscription
+    const { Subscription } = require('../models');
+    const subscription = await Subscription.findOne({ where: { providerId } });
+    if (subscription && subscription.isActive()) {
+        contact.isUnlocked = true;
+        contact.unlockedAt = new Date();
+        await contact.save();
+    }
 
     // Increment provider's contact count
     await provider.incrementContacts();
@@ -98,7 +108,19 @@ const getReceivedContacts = asyncHandler(async (req, res) => {
 
     const pagination = getPaginationData(page, queryLimit, count);
 
-    i18nResponse(req, res, 200, 'contact.list', { contacts, pagination });
+    // Check unlock status and mask data if needed
+    const processedContacts = await Promise.all(
+        contacts.map(async (contact) => {
+            const canView = await contact.canBeViewedBy(req.user);
+            if (canView) {
+                return contact;
+            } else {
+                return contact.getMaskedData();
+            }
+        })
+    );
+
+    i18nResponse(req, res, 200, 'contact.list', { contacts: processedContacts, pagination });
 });
 
 /**
@@ -286,11 +308,129 @@ const getContactsByDate = asyncHandler(async (req, res) => {
     });
 });
 
+/**
+ * @desc    Initiate payment to unlock a contact message
+ * @route   POST /api/contacts/:id/unlock
+ * @access  Private (provider - owner)
+ */
+const initiateContactUnlock = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { Payment } = require('../models');
+    const { initializeCinetPayPayment } = require('../config/cinetpay');
+
+    const contact = await Contact.findByPk(id, {
+        include: [{ model: Provider, as: 'provider' }]
+    });
+
+    if (!contact) {
+        throw new AppError(req.t('contact.notFound'), 404);
+    }
+
+    // Check ownership (provider must be owner)
+    if (contact.provider.userId !== req.user.id && req.user.role !== 'admin') {
+        throw new AppError(req.t('common.unauthorized'), 403);
+    }
+
+    // Already unlocked?
+    const canView = await contact.canBeViewedBy(req.user);
+    if (canView) {
+        throw new AppError(req.t('contact.alreadyUnlocked'), 400);
+    }
+
+    // Create payment 500 FCFA
+    const transactionId = Payment.generateTransactionId();
+    const payment = await Payment.create({
+        transactionId,
+        userId: req.user.id,
+        providerId: contact.providerId,
+        amount: 500,
+        currency: 'XAF',
+        type: 'contact_unlock',
+        description: `Débloquage message de ${contact.senderName}`,
+        metadata: {
+            contactId: contact.id,
+            providerId: contact.providerId,
+            senderName: contact.senderName
+        }
+    });
+
+    // Initialize CinetPay payment
+    const cinetpayResponse = await initializeCinetPayPayment({
+        transactionId: payment.transactionId,
+        amount: 500,
+        description: `Débloquer message de ${contact.senderName}`,
+        returnUrl: `${process.env.FRONTEND_URL}/provider/contacts/unlock-success`,
+        notifyUrl: `${process.env.API_URL}/api/contacts/${id}/unlock/callback`
+    });
+
+    // Update payment with CinetPay data
+    payment.paymentUrl = cinetpayResponse.data.payment_url;
+    payment.paymentToken = cinetpayResponse.data.payment_token;
+    payment.status = 'PENDING';
+    await payment.save();
+
+    i18nResponse(req, res, 200, 'payment.initialized', {
+        paymentUrl: cinetpayResponse.data.payment_url,
+        paymentId: payment.id,
+        transactionId: payment.transactionId,
+        amount: 500
+    });
+});
+
+/**
+ * @desc    Confirm contact unlock after successful payment
+ * @route   POST /api/contacts/:id/unlock/confirm
+ * @access  Private (provider - owner)
+ */
+const confirmContactUnlock = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { transactionId } = req.body;
+    const { Payment } = require('../models');
+
+    const payment = await Payment.findByTransactionId(transactionId);
+
+    if (!payment) {
+        throw new AppError(req.t('payment.notFound'), 404);
+    }
+
+    if (payment.status !== 'ACCEPTED') {
+        throw new AppError(req.t('payment.notConfirmed'), 400);
+    }
+
+    const contact = await Contact.findByPk(id);
+
+    if (!contact) {
+        throw new AppError(req.t('contact.notFound'), 404);
+    }
+
+    // Unlock the contact
+    contact.isUnlocked = true;
+    contact.unlockedAt = new Date();
+    contact.unlockPaymentId = payment.id;
+    await contact.save();
+
+    // Reload with fresh data to decrypt
+    const unlockedContact = await Contact.findByPk(id, {
+        include: [
+            {
+                model: User,
+                as: 'sender',
+                attributes: ['id', 'firstName', 'lastName', 'profilePhoto'],
+                required: false
+            }
+        ]
+    });
+
+    i18nResponse(req, res, 200, 'contact.unlocked', { contact: unlockedContact });
+});
+
 module.exports = {
     createContact,
     getReceivedContacts,
     getSentContacts,
     updateContactStatus,
     getDailyContactStats,
-    getContactsByDate
+    getContactsByDate,
+    initiateContactUnlock,
+    confirmContactUnlock
 };

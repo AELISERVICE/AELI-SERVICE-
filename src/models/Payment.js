@@ -37,7 +37,7 @@ const Payment = sequelize.define('Payment', {
     },
     // Payment type
     type: {
-        type: DataTypes.ENUM('contact_premium', 'featured', 'boost', 'subscription'),
+        type: DataTypes.ENUM('contact_premium', 'featured', 'boost', 'subscription', 'contact_unlock'),
         allowNull: false,
         defaultValue: 'contact_premium'
     },

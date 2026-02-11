@@ -231,3 +231,80 @@ paths:
                           $ref: '#/components/schemas/Contact'
                       pagination:
                         $ref: '#/components/schemas/Pagination'
+
+  /contacts/{id}/unlock:
+    post:
+      tags:
+        - Contacts
+      summary: Initier le débloquage d'un message (Pay-Per-View)
+      description: Crée un paiement de 500 FCFA pour débloquer les coordonnées du client
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Paiement initialisé
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  paymentUrl: { type: string }
+                  paymentId: { type: string, format: uuid }
+                  transactionId: { type: string }
+                  amount: { type: integer, example: 500 }
+        '400':
+          description: Message déjà débloqué
+        '403':
+          description: Non autorisé
+
+  /contacts/{id}/unlock/confirm:
+    post:
+      tags:
+        - Contacts
+      summary: Confirmer le débloquage après paiement
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transactionId
+              properties:
+                transactionId:
+                  type: string
+      responses:
+        '200':
+          description: Message débloqué avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  data:
+                    type: object
+                    properties:
+                      contact:
+                        $ref: '#/components/schemas/Contact'
+        '400':
+          description: Paiement non confirmé

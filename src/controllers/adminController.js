@@ -4,6 +4,7 @@ const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const { sendEmail } = require('../config/email');
 const { accountVerifiedEmail } = require('../utils/emailTemplates');
+const cache = require('../config/redis');
 
 /**
  * @desc    Get platform statistics (OPTIMIZED)
@@ -222,6 +223,9 @@ const verifyProvider = asyncHandler(async (req, res) => {
         }).catch(err => console.error('Verification email error:', err.message));
     }
 
+    // Invalidate cache
+    await cache.delByPattern('route:/api/providers*');
+
     i18nResponse(req, res, 200, isVerified ? 'provider.verified' : 'provider.rejected', { provider });
 });
 
@@ -256,6 +260,9 @@ const featureProvider = asyncHandler(async (req, res) => {
             })
         }).catch(err => console.error('Feature email error:', err.message));
     }
+
+    // Invalidate cache
+    await cache.delByPattern('route:/api/providers*');
 
     i18nResponse(req, res, 200, isFeatured ? 'provider.featured' : 'provider.unfeatured', { provider });
 });
@@ -339,6 +346,9 @@ const updateReviewVisibility = asyncHandler(async (req, res) => {
     if (provider) {
         await provider.updateRating(null, false);
     }
+
+    // Invalidate cache
+    await cache.delByPattern('route:/api/providers*');
 
     i18nResponse(req, res, 200, isVisible ? 'review.visible' : 'review.hidden', { review });
 });
@@ -484,6 +494,9 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
     provider.documents = documents;
     provider.verificationNotes = notes || null;
     await provider.save();
+
+    // Invalidate cache
+    await cache.delByPattern('route:/api/providers*');
 
     i18nResponse(req, res, 200, decision === 'approved' ? 'documents.approved' : 'documents.rejected', {
         provider: {

@@ -108,7 +108,10 @@
         "list": "Contact list",
         "sent": "Message sent successfully",
         "statusUpdated": "Status updated",
-        "notFound": "Contact request not found"
+        "notFound": "Contact request not found",
+        "alreadyUnlocked": "This message is already unlocked",
+        "unlocked": "Message unlocked successfully",
+        "unlock": "Unlock message"
     },
     "payment": {
         "initialized": "Payment initialized",
@@ -117,7 +120,8 @@
         "notFound": "Payment not found",
         "pending": "Payment pending",
         "history": "Payment history",
-        "status": "Payment status"
+        "status": "Payment status",
+        "notConfirmed": "Payment not confirmed"
     },
     "subscription": {
         "plans": "Provider subscription plans",
@@ -131,6 +135,11 @@
         "cancelled": "Subscription cancelled",
         "expired": "Your subscription has expired",
         "expiringIn": "Your subscription expires in {days} days"
+    },
+    "banner": {
+        "created": "Banner created successfully",
+        "updated": "Banner updated successfully",
+        "deleted": "Banner deleted successfully"
     },
     "admin": {
         "stats": "Platform statistics",

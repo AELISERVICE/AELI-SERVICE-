@@ -6,7 +6,9 @@ const {
     getSentContacts,
     updateContactStatus,
     getDailyContactStats,
-    getContactsByDate
+    getContactsByDate,
+    initiateContactUnlock,
+    confirmContactUnlock
 } = require('../controllers/contactController');
 const { protect, optionalAuth, restrictTo } = require('../middlewares/auth');
 const { contactLimiter } = require('../middlewares/rateLimiter');
@@ -53,6 +55,10 @@ router.put('/:id/status', protect, updateContactStatus);
 // Provider dashboard routes - daily stats
 router.get('/stats/daily', protect, restrictTo('provider'), getDailyContactStats);
 router.get('/by-date/:date', protect, restrictTo('provider'), getContactsByDate);
+
+// Contact unlock routes (pay-per-view)
+router.post('/:id/unlock', protect, restrictTo('provider'), initiateContactUnlock);
+router.post('/:id/unlock/confirm', protect, restrictTo('provider'), confirmContactUnlock);
 
 module.exports = router;
 

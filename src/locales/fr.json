@@ -118,7 +118,10 @@
         "list": "Liste des contacts",
         "sent": "Message envoyé avec succès",
         "statusUpdated": "Statut mis à jour",
-        "notFound": "Demande de contact non trouvée"
+        "notFound": "Demande de contact non trouvée",
+        "alreadyUnlocked": "Ce message est déjà débloqué",
+        "unlocked": "Message débloqué avec succès",
+        "unlock": "Débloquer le message"
     },
     "payment": {
         "initialized": "Paiement initialisé",
@@ -127,7 +130,8 @@
         "notFound": "Paiement non trouvé",
         "pending": "Paiement en attente",
         "history": "Historique des paiements",
-        "status": "Statut du paiement"
+        "status": "Statut du paiement",
+        "notConfirmed": "Le paiement n'a pas été confirmé"
     },
     "subscription": {
         "plans": "Plans d'abonnement prestataire",
@@ -139,8 +143,12 @@
         "trialStarted": "Votre période d'essai gratuite de 30 jours a commencé!",
         "renewed": "Abonnement renouvelé avec succès",
         "cancelled": "Abonnement annulé",
-        "expired": "Votre abonnement a expiré",
         "expiringIn": "Votre abonnement expire dans {days} jours"
+    },
+    "banner": {
+        "created": "Bannière créée avec succès",
+        "updated": "Bannière mise à jour avec succès",
+        "deleted": "Bannière supprimée avec succès"
     },
     "admin": {
         "stats": "Statistiques de la plateforme",

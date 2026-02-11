@@ -93,7 +93,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"marie.dupont@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"firstName\": \"Marie\",\n    \"lastName\": \"Dupont\",\n    \"phone\": \"+237670123456\",\n    \"role\": \"client\"\n}",
+              "raw": "{\n    \"email\": \"marie.dupont@example.com\",\n    \"password\": \"SecurePass123!\",\n    \"confirmPassword\": \"SecurePass123!\",\n    \"firstName\": \"Marie\",\n    \"lastName\": \"Dupont\",\n    \"phone\": \"+237670123456\",\n    \"role\": \"client\",\n    \"country\": \"Cameroun\",\n    \"gender\": \"female\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -994,12 +994,35 @@
           }
         },
         {
-          "name": "By Date - Contacts par date",
+          "name": "Initiate Unlock - Pay per view",
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
-            "url": "{{baseUrl}}/api/contacts/by-date/2026-01-15",
-            "description": "Liste les contacts reçus à une date spécifique.\n\n**Format date**: YYYY-MM-DD"
+            "url": "{{baseUrl}}/api/contacts/:contactId/unlock",
+            "description": "Initie le paiement pour débloquer un message (500 FCFA)."
+          }
+        },
+        {
+          "name": "Confirm Unlock - Après paiement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"transactionId\": \"AELI_1234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/contacts/:contactId/unlock/confirm",
+            "description": "Confirme le débloquage après paiement réussi."
           }
         }
       ]
@@ -1738,6 +1761,92 @@
               }
             }
           ]
+        }
+      ]
+    },
+    {
+      "name": "📢 Banners - Publicités",
+      "description": "## Gestion des Bannières\n\nPermet à l'admin de gérer les bannières publicitaires et aux utilisateurs de les voir.",
+      "item": [
+        {
+          "name": "Get Active Banners - Liste publique",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/banners",
+            "description": "Récupère les bannières actives en fonction de la date actuelle."
+          }
+        },
+        {
+          "name": "Admin - Get All Banners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/banners/admin",
+            "description": "Liste toutes les bannières (y compris inactives)."
+          }
+        },
+        {
+          "name": "Create Banner - Créer",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Offre Saint-Valentin",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "main_home",
+                  "type": "text"
+                },
+                {
+                  "key": "bannerImage",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "linkUrl",
+                  "value": "https://aeli-services.cm/promo",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/banners"
+          }
+        },
+        {
+          "name": "Update Banner - Modifier",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Offre mise à jour",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/banners/:id"
+          }
+        },
+        {
+          "name": "Delete Banner - Supprimer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/banners/:id"
+          }
         }
       ]
     },

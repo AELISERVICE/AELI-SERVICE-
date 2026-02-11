@@ -480,6 +480,54 @@ Historique des actions effectuées sur la plateforme (création, modification, s
 
 ---
 
+## 📢 10. GESTION DES BANNIÈRES
+
+### `POST /banners` - Créer une bannière (Admin)
+
+**Description :**  
+Ajoute une nouvelle bannière publicitaire avec upload d'image.
+
+**Body (Multipart/Form-Data) :**
+- `title` (string, requis) : Titre de l'annonce
+- `description` (string) : Texte optionnel
+- `bannerImage` (file, requis) : Fichier image (JPG, PNG, WebP)
+- `linkUrl` (string) : URL de redirection au clic
+- `type` (enum) : `main_home`, `sidebar`, `featured`, `popup`
+- `startDate` (date) : Début de diffusion (optionnel)
+- `endDate` (date) : Fin de diffusion (optionnel)
+- `isActive` (boolean) : Défaut true
+- `order` (int) : Priorité d'affichage (0 par défaut)
+
+---
+
+### `GET /banners/admin` - Liste complète (Admin)
+
+**Description :**  
+Récupère toutes les bannières configurées, actives ou non, pour la gestion administrative.
+
+---
+
+### `PUT /banners/:id` - Modifier une bannière (Admin)
+
+**Description :**  
+Met à jour les informations d'une bannière. Si une nouvelle `bannerImage` est fournie, l'ancienne est supprimée de Cloudinary.
+
+---
+
+### `DELETE /banners/:id` - Supprimer (Admin)
+
+**Description :**  
+Supprime définitivement la bannière de la base de données et l'image de Cloudinary.
+
+---
+
+### `GET /api/banners` - Liste publique (Tout le monde)
+
+**Description :**  
+Endpoint public pour afficher les bannières sur le site. Il filtre automatiquement les bannières actives et dont la date est valide.
+
+---
+
 ## 🎨 Recommandations Frontend
 
 ### Dashboard suggéré

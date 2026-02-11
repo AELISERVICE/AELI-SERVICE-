@@ -26,6 +26,7 @@ const contactRoutes = require('./routes/contacts');
 const adminRoutes = require('./routes/admin');
 const paymentRoutes = require('./routes/payments');
 const subscriptionRoutes = require('./routes/subscriptions');
+const bannerRoutes = require('./routes/banners');
 
 // Initialize Express app
 const app = express();
@@ -81,7 +82,7 @@ app.use(helmet({
 app.use(hpp());
 
 // Enable CORS with centralized configuration
-const corsOptions = require('./config/cors');
+const { corsOptions } = require('./config/cors');
 app.use(cors(corsOptions));
 
 // Cookie parser (required for CSRF)
@@ -148,6 +149,7 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/banners', bannerRoutes);
 
 // Search endpoint (combined search across providers)
 app.get('/api/search', require('./controllers/providerController').getProviders);

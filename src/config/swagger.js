@@ -136,7 +136,12 @@ L'API utilise des JWT tokens:
                         senderName: { type: 'string' },
                         senderEmail: { type: 'string', format: 'email' },
                         senderPhone: { type: 'string' },
-                        status: { type: 'string', enum: ['pending', 'read', 'replied'] }
+                        status: { type: 'string', enum: ['pending', 'read', 'replied'] },
+                        isUnlocked: { type: 'boolean' },
+                        unlockedAt: { type: 'string', format: 'date-time' },
+                        unlockPaymentId: { type: 'string', format: 'uuid' },
+                        needsUnlock: { type: 'boolean' },
+                        unlockPrice: { type: 'integer', example: 500 }
                     }
                 },
                 Error: {
@@ -228,7 +233,8 @@ L'API utilise des JWT tokens:
             { name: 'Contacts', description: 'Demandes de contact' },
             { name: 'Abonnements', description: 'Gestion des abonnements prestataires' },
             { name: 'Admin', description: 'Administration (admin uniquement)' },
-            { name: 'Admin - Sécurité', description: 'Gestion de la sécurité (admin uniquement)' }
+            { name: 'Admin - Sécurité', description: 'Gestion de la sécurité (admin uniquement)' },
+            { name: 'Banners', description: 'Gestion des bannières publicitaires' }
         ]
     },
     apis: ['./src/routes/*.js', './src/swagger/*.yaml']

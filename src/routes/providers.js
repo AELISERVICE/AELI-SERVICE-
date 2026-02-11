@@ -25,9 +25,10 @@ const {
     listProvidersValidation,
     applyProviderValidation
 } = require('../validators/serviceValidator');
+const { cacheMiddleware } = require('../config/redis');
 
 // Public routes
-router.get('/', listProvidersValidation, validate, getProviders);
+router.get('/', listProvidersValidation, validate, cacheMiddleware(600), getProviders);
 
 // Protected routes (require authentication)
 router.use(protect);
@@ -54,6 +55,6 @@ router.get('/:id/documents', getDocuments);
 router.delete('/:id/documents/:docIndex', deleteDocument);
 
 // Public get by ID (must be last to avoid capturing other routes)
-router.get('/:id', getProviderById);
+router.get('/:id', cacheMiddleware(300), getProviderById);
 
 module.exports = router;

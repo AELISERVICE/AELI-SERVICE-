@@ -3,37 +3,55 @@
  * Handles Cross-Origin Resource Sharing for multiple frontend URLs
  */
 
-const allowedOrigins = {
-    development: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:5174',
-        'http://localhost:5174'
-    ],
-    production: []
+/**
+ * Parse FRONTEND_URL from environment variable
+ * Supports both comma-separated and JSON array formats [...]
+ */
+const parseFrontendUrls = (urlStr) => {
+    if (!urlStr) return [];
+
+    const rawUrl = urlStr.trim();
+    if (rawUrl.startsWith('[') && rawUrl.endsWith(']')) {
+        try {
+            // Support JSON array format: ["url1", "url2"]
+            return JSON.parse(rawUrl);
+        } catch (e) {
+            console.error('Error parsing FRONTEND_URL as JSON array:', e.message);
+            // Fallback to comma split if JSON parse fails
+            return rawUrl.substring(1, rawUrl.length - 1)
+                .split(',')
+                .map(url => url.trim().replace(/^["']|["']$/g, ''));
+        }
+    }
+
+    // Support comma separated format: url1, url2
+    return rawUrl.split(',').map(url => url.trim());
 };
 
-// Add production origins from environment variable
-if (process.env.FRONTEND_URL) {
-    const frontendUrls = process.env.FRONTEND_URL.split(',').map(url => url.trim());
-    allowedOrigins.production.push(...frontendUrls);
-}
+const defaultOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://localhost:5174'
+];
+
+const envOrigins = parseFrontendUrls(process.env.FRONTEND_URL);
+
+// Combine and remove duplicates
+const allAllowedOrigins = [...new Set([...defaultOrigins, ...envOrigins])];
 
 const corsOptions = {
     origin: (origin, callback) => {
-        const env = process.env.NODE_ENV || 'development';
-        const allowed = allowedOrigins[env];
-
         // Allow requests with no origin (mobile apps, Postman, curl, etc.)
         if (!origin) {
             return callback(null, true);
         }
 
-        // Check if origin is in allowed list
-        if (allowed.includes(origin)) {
+        // Check against our unified list
+        if (allAllowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             console.warn(`CORS blocked request from origin: ${origin}`);
@@ -54,4 +72,7 @@ const corsOptions = {
     maxAge: 86400 // 24 hours - how long browsers cache preflight requests
 };
 
-module.exports = corsOptions;
+module.exports = {
+    corsOptions,
+    allAllowedOrigins
+};
