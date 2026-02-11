@@ -35,14 +35,14 @@ describe('Contact Pay-Per-View E2E Tests', () => {
         subscriptionProvider = await Provider.create({
             userId: providerUserWithSub.id,
             businessName: 'Salon Test Subscribed',
-            category: 'Coiffure',
+            description: 'Il s\'agit d\'une description de test assez longue pour passer la validation de cinquante caractères minimum.',
             location: 'Douala'
         });
 
         // Active subscription
         await Subscription.create({
             providerId: subscriptionProvider.id,
-            plan: 'premium',
+            plan: 'monthly',
             startDate: new Date(),
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
             status: 'active'
@@ -61,7 +61,7 @@ describe('Contact Pay-Per-View E2E Tests', () => {
         noSubscriptionProvider = await Provider.create({
             userId: providerUser.id,
             businessName: 'Salon Test No Sub',
-            category: 'Coiffure',
+            description: 'Il s\'agit d\'une description de test assez longue pour passer la validation de cinquante caractères minimum.',
             location: 'Yaoundé'
         });
 
@@ -137,7 +137,7 @@ describe('Contact Pay-Per-View E2E Tests', () => {
 
             expect(res.statusCode).toBe(200);
 
-            const lockedContact = res.body.contacts.find(c => c.id === contact.id);
+            const lockedContact = res.body.data.contacts.find(c => c.id === contact.id);
             expect(lockedContact.needsUnlock).toBe(true);
             expect(lockedContact.isUnlocked).toBe(false);
             expect(lockedContact.unlockPrice).toBe(500);
@@ -172,8 +172,8 @@ describe('Contact Pay-Per-View E2E Tests', () => {
             expect([200, 500]).toContain(res.statusCode);
 
             if (res.statusCode === 200) {
-                expect(res.body.amount).toBe(500);
-                expect(res.body.paymentUrl).toBeDefined();
+                expect(res.body.data.amount).toBe(500);
+                expect(res.body.data.paymentUrl).toBeDefined();
             }
         });
 
@@ -211,9 +211,9 @@ describe('Contact Pay-Per-View E2E Tests', () => {
                 .send({ transactionId: payment.transactionId });
 
             expect(res.statusCode).toBe(200);
-            expect(res.body.contact.isUnlocked).toBe(true);
-            expect(res.body.contact.senderEmail).toBe('sender@example.com');
-            expect(res.body.contact.senderPhone).toBe('+237699111222');
+            expect(res.body.data.contact.isUnlocked).toBe(true);
+            expect(res.body.data.contact.senderEmail).toBe('sender@example.com');
+            expect(res.body.data.contact.senderPhone).toBe('+237699111222');
         });
     });
 });

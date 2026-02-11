@@ -1,0 +1,17 @@
+﻿
+> aeli-services-backend@1.0.0 test
+> cross-env NODE_ENV=test jest --runInBand tests/integration/contacts-payper view.test.js
+
+  console.log
+    Γ£à Test database connected
+
+      at Object.log (tests/setup.js:11:17)
+
+2026-02-11 22:44:12 [[31MERROR[39M]: 500 - initializeCinetPayPayment is not a function - /api/contacts/7451510c-d200-49f0-bfa4-8a00d9d0c01d/unlock - POST - ::ffff:127.0.0.1
+2026-02-11 22:44:12 [[31MERROR[39M]: ERROR ≡ƒÆÑ initializeCinetPayPayment is not a function
+2026-02-11 22:44:12 [[31MERROR[39M]: 400 - Ce message est d├⌐j├á d├⌐bloqu├⌐ - /api/contacts/8dbae909-8b4b-41e8-92e8-c4df0df57192/unlock - POST - ::ffff:127.0.0.1
+  console.log
+    Γ£à Test database connection closed
+
+      at Object.log (tests/setup.js:24:17)
+

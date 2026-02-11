@@ -131,14 +131,21 @@ Subscription.renewSubscription = async function (providerId, plan, paymentId = n
 };
 
 /**
- * Check if provider has active subscription
+ * Check if provider has active subscription (Static method)
  */
 Subscription.isActive = async function (providerId) {
     const sub = await this.findOne({ where: { providerId } });
     if (!sub) return false;
 
-    return (sub.status === 'trial' || sub.status === 'active')
-        && sub.endDate > new Date();
+    return sub.isActive();
+};
+
+/**
+ * Check if this subscription is active (Instance method)
+ */
+Subscription.prototype.isActive = function () {
+    return (this.status === 'trial' || this.status === 'active')
+        && this.endDate > new Date();
 };
 
 /**
