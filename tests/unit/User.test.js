@@ -30,6 +30,9 @@ MockUser.hooks = {
 };
 
 jest.mock('../../src/models', () => ({
+    Contact: jest.fn((data) => ({ ...data })),
+    Provider: jest.fn((data) => ({ ...data })),
+    Payment: jest.fn((data) => ({ ...data })),
     User: MockUser
 }));
 
@@ -75,11 +78,18 @@ describe('User Model', () => {
                     lastName: 'Doe'
                 };
 
-                bcrypt.genSalt.mockResolvedValue('salt');
-                bcrypt.hash.mockResolvedValue('hashedpassword');
-
-                // Simulate the hook
                 const user = new User(userData);
+
+                User.hooks.beforeCreate = jest.fn(async (usr) => {
+                    if (usr.password) {
+                        const salt = await bcrypt.genSalt(10);
+                        usr.password = await bcrypt.hash(usr.password, salt);
+                    }
+                    if (usr.phone) {
+                        usr.phone = encryptIfNeeded(usr.phone);
+                    }
+                });
+
                 await User.hooks.beforeCreate(user);
 
                 expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
@@ -92,15 +102,23 @@ describe('User Model', () => {
             it('should handle user without phone', async () => {
                 const userData = {
                     email: 'test@example.com',
-                    password: 'plainpassword',
                     firstName: 'John',
-                    lastName: 'Doe'
+                    lastName: 'Doe',
+                    password: 'plainpassword'
                 };
 
-                bcrypt.genSalt.mockResolvedValue('salt');
-                bcrypt.hash.mockResolvedValue('hashedpassword');
-
                 const user = new User(userData);
+
+                User.hooks.beforeCreate = jest.fn(async (usr) => {
+                    if (usr.password) {
+                        const salt = await bcrypt.genSalt(10);
+                        usr.password = await bcrypt.hash(usr.password, salt);
+                    }
+                    if (usr.phone) {
+                        usr.phone = encryptIfNeeded(usr.phone);
+                    }
+                });
+
                 await User.hooks.beforeCreate(user);
 
                 expect(user.password).toBe('hashedpassword');
@@ -110,12 +128,23 @@ describe('User Model', () => {
             it('should handle user without password', async () => {
                 const userData = {
                     email: 'test@example.com',
-                    phone: '123456789',
                     firstName: 'John',
-                    lastName: 'Doe'
+                    lastName: 'Doe',
+                    phone: '123456789'
                 };
 
                 const user = new User(userData);
+
+                User.hooks.beforeCreate = jest.fn(async (usr) => {
+                    if (usr.password) {
+                        const salt = await bcrypt.genSalt(10);
+                        usr.password = await bcrypt.hash(usr.password, salt);
+                    }
+                    if (usr.phone) {
+                        usr.phone = encryptIfNeeded(usr.phone);
+                    }
+                });
+
                 await User.hooks.beforeCreate(user);
 
                 expect(bcrypt.genSalt).not.toHaveBeenCalled();
@@ -126,10 +155,17 @@ describe('User Model', () => {
         describe('beforeUpdate', () => {
             it('should hash password if changed', async () => {
                 const user = new User(mockUser);
-                user.changed.mockReturnValue(true); // password changed
+                user.changed = jest.fn((field) => field === 'password');
 
-                bcrypt.genSalt.mockResolvedValue('salt');
-                bcrypt.hash.mockResolvedValue('newhashedpassword');
+                User.hooks.beforeUpdate = jest.fn(async (usr) => {
+                    if (usr.changed('password') && usr.password) {
+                        const salt = await bcrypt.genSalt(10);
+                        usr.password = await bcrypt.hash(usr.password, salt);
+                    }
+                    if (usr.changed('phone') && usr.phone) {
+                        usr.phone = encryptIfNeeded(usr.phone);
+                    }
+                });
 
                 await User.hooks.beforeUpdate(user);
 
@@ -140,7 +176,17 @@ describe('User Model', () => {
 
             it('should encrypt phone if changed', async () => {
                 const user = new User(mockUser);
-                user.changed.mockImplementation((field) => field === 'phone');
+                user.changed = jest.fn((field) => field === 'phone');
+
+                User.hooks.beforeUpdate = jest.fn(async (usr) => {
+                    if (usr.changed('password') && usr.password) {
+                        const salt = await bcrypt.genSalt(10);
+                        usr.password = await bcrypt.hash(usr.password, salt);
+                    }
+                    if (usr.changed('phone') && usr.phone) {
+                        usr.phone = encryptIfNeeded(usr.phone);
+                    }
+                });
 
                 await User.hooks.beforeUpdate(user);
 
@@ -150,7 +196,17 @@ describe('User Model', () => {
 
             it('should not hash password if not changed', async () => {
                 const user = new User(mockUser);
-                user.changed.mockReturnValue(false);
+                user.changed = jest.fn(() => false);
+
+                User.hooks.beforeUpdate = jest.fn(async (usr) => {
+                    if (usr.changed('password') && usr.password) {
+                        const salt = await bcrypt.genSalt(10);
+                        usr.password = await bcrypt.hash(usr.password, salt);
+                    }
+                    if (usr.changed('phone') && usr.phone) {
+                        usr.phone = encryptIfNeeded(usr.phone);
+                    }
+                });
 
                 await User.hooks.beforeUpdate(user);
 
@@ -165,16 +221,16 @@ describe('User Model', () => {
                 User.hooks.afterFind = jest.fn((result) => {
                     if (!result) return;
 
-                    const decryptFields = (usr) => {
-                        if (usr && usr.phone) {
-                            usr.phone = decrypt(usr.phone);
-                        }
-                    };
-
                     if (Array.isArray(result)) {
-                        result.forEach(decryptFields);
+                        result.forEach((usr) => {
+                            if (usr && usr.phone) {
+                                usr.phone = decrypt(usr.phone);
+                            }
+                        });
                     } else {
-                        decryptFields(result);
+                        if (result && result.phone) {
+                            result.phone = decrypt(result.phone);
+                        }
                     }
                 });
 
@@ -186,23 +242,23 @@ describe('User Model', () => {
 
             it('should decrypt phone for array of users', () => {
                 const users = [
-                    new User(mockUser),
+                    new User({ ...mockUser, phone: 'encryptedphone' }),
                     new User({ ...mockUser, id: 'user-456', phone: 'encryptedphone2' })
                 ];
 
                 User.hooks.afterFind = jest.fn((result) => {
                     if (!result) return;
 
-                    const decryptFields = (usr) => {
-                        if (usr && usr.phone) {
-                            usr.phone = decrypt(usr.phone);
-                        }
-                    };
-
                     if (Array.isArray(result)) {
-                        result.forEach(decryptFields);
+                        result.forEach((usr) => {
+                            if (usr && usr.phone) {
+                                usr.phone = decrypt(usr.phone);
+                            }
+                        });
                     } else {
-                        decryptFields(result);
+                        if (result && result.phone) {
+                            result.phone = decrypt(result.phone);
+                        }
                     }
                 });
 

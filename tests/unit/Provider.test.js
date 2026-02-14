@@ -29,7 +29,10 @@ MockProvider.hooks = {
 };
 
 jest.mock('../../src/models', () => ({
-    Provider: MockProvider,
+    Contact: jest.fn((data) => ({ ...data })),
+    Provider: jest.fn((data) => ({ ...data })),
+    Payment: jest.fn((data) => ({ ...data })),
+    User: jest.fn((data) => ({ ...data })),
     Review: {
         findAll: jest.fn()
     }

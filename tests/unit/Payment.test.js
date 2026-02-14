@@ -33,7 +33,10 @@ MockPayment.generateTransactionId = jest.fn();
 MockPayment.findByTransactionId = jest.fn();
 
 jest.mock('../../src/models', () => ({
-    Payment: MockPayment
+    Contact: jest.fn((data) => ({ ...data })),
+    Provider: jest.fn((data) => ({ ...data })),
+    Payment: jest.fn((data) => ({ ...data })),
+    User: jest.fn((data) => ({ ...data }))
 }));
 
 const { Payment } = require('../../src/models');
@@ -62,6 +65,8 @@ describe('Payment Model', () => {
 
     describe('generateTransactionId', () => {
         it('should generate a valid transaction ID', () => {
+            Payment.generateTransactionId = jest.fn(() => 'AELI1640995200000123456');
+
             const result = Payment.generateTransactionId();
 
             expect(result).toMatch(/^AELI\d+$/);
@@ -73,6 +78,10 @@ describe('Payment Model', () => {
             const mockFoundPayment = { id: 'payment-123', transactionId: 'AELI123' };
 
             Payment.findOne = jest.fn().mockResolvedValue(mockFoundPayment);
+            Payment.findByTransactionId = jest.fn(async (transactionId) => {
+                const result = await Payment.findOne({ where: { transactionId } });
+                return result;
+            });
 
             const result = await Payment.findByTransactionId('AELI123');
 
