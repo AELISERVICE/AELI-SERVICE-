@@ -53,18 +53,31 @@ const createContact = asyncHandler(async (req, res) => {
         message: message.substring(0, 100) + (message.length > 100 ? '...' : '')
     });
 
-    // Send email notification to provider
-    if (provider.user && provider.user.email) {
-        sendEmail({
-            to: provider.user.email,
-            ...newContactEmail({
-                providerName: provider.businessName,
-                senderName,
-                senderEmail,
-                senderPhone,
-                message
-            })
-        }).catch(err => console.error('Contact notification email error:', err.message));
+    // Send email notification to provider (optional - don't fail if email system is down)
+    try {
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
+
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.newContactEmail) {
+            const emailResult = emailModule.sendEmail({
+                to: provider.user.email,
+                ...emailTemplates.newContactEmail({
+                    providerName: provider.businessName,
+                    senderName,
+                    senderEmail,
+                    senderPhone,
+                    message
+                })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('Contact notification email error:', err.message));
+            }
+        }
+    } catch (error) {
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
     }
 
     i18nResponse(req, res, 201, 'contact.sent', { contact });

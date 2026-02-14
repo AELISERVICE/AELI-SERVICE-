@@ -1,5 +1,5 @@
-const { Op } = require('sequelize');
-const { Provider, User, Service, Review, Category, Contact, Subscription } = require('../models');
+const { Op, fn, col, literal } = require('sequelize');
+const { sequelize, User, Provider, Service, Category, Subscription, Review, Contact } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { successResponse, i18nResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../utils/helpers');
 const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
@@ -90,20 +90,13 @@ const getProviders = asyncHandler(async (req, res) => {
         }
     ];
 
-    // If category filter, add services include with category condition
+    // If category filter, add where condition for providers with services in that category
     if (category) {
-        include.push({
-            model: Service,
-            as: 'services',
-            required: true,
-            include: [
-                {
-                    model: Category,
-                    as: 'category',
-                    where: { slug: category },
-                    attributes: ['id', 'name', 'slug']
-                }
-            ]
+        where[Op.and] = where[Op.and] || [];
+        where[Op.and].push({
+            id: {
+                [Op.in]: literal(`(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`)
+            }
         });
     }
 
@@ -333,54 +326,100 @@ const getMyProfile = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const getMyDashboard = asyncHandler(async (req, res) => {
+    console.log('getMyDashboard called with req.user:', req.user);
+
+    // Check if user is authenticated and has provider role
+    if (!req.user) {
+        console.log('No req.user found');
+        throw new AppError('Authentication required.', 401);
+    }
+
+    if (req.user.role !== 'provider') {
+        console.log('User role is not provider:', req.user.role);
+        throw new AppError('Access denied. Provider role required.', 403);
+    }
+
+    console.log('Looking for provider with userId:', req.user.id);
+
     const provider = await Provider.findOne({
         where: { userId: req.user.id }
     });
 
+    console.log('Provider found:', provider ? provider.id : 'null');
+
     if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
+        throw new AppError(req.t ? req.t('provider.notFound') : 'Provider not found', 404);
     }
 
-    // Get recent contacts
-    const recentContacts = await Contact.findAll({
-        where: { providerId: provider.id },
-        order: [['createdAt', 'DESC']],
-        limit: 5
-    });
+    let recentContacts = [];
+    let recentReviews = [];
+    let pendingContactsCount = 0;
 
-    // Get recent reviews
-    const recentReviews = await Review.findAll({
-        where: { providerId: provider.id, isVisible: true },
-        order: [['createdAt', 'DESC']],
-        limit: 5,
-        include: [
-            {
-                model: User,
-                as: 'user',
-                attributes: ['firstName', 'lastName', 'profilePhoto']
-            }
-        ]
-    });
+    try {
+        // Get recent contacts
+        recentContacts = await Contact.findAll({
+            where: { providerId: provider.id },
+            order: [['createdAt', 'DESC']],
+            limit: 5
+        });
+        console.log('Recent contacts fetched:', recentContacts.length);
+    } catch (error) {
+        console.error('Error fetching recent contacts:', error.message);
+        recentContacts = [];
+    }
 
-    // Get pending contacts count
-    const pendingContactsCount = await Contact.count({
-        where: { providerId: provider.id, status: 'pending' }
-    });
+    try {
+        // Get recent reviews
+        recentReviews = await Review.findAll({
+            where: { providerId: provider.id, isVisible: true },
+            order: [['createdAt', 'DESC']],
+            limit: 5,
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['firstName', 'lastName', 'profilePhoto']
+                }
+            ]
+        });
+        console.log('Recent reviews fetched:', recentReviews.length);
+    } catch (error) {
+        console.error('Error fetching recent reviews:', error.message);
+        recentReviews = [];
+    }
 
+    try {
+        // Get pending contacts count
+        pendingContactsCount = await Contact.count({
+            where: { providerId: provider.id, status: 'pending' }
+        });
+        console.log('Pending contacts count:', pendingContactsCount);
+    } catch (error) {
+        console.error('Error counting pending contacts:', error.message);
+        pendingContactsCount = 0;
+    }
+
+    const stats = {
+        totalViews: provider.viewsCount || 0,
+        totalContacts: provider.contactsCount || 0,
+        totalReviews: provider.totalReviews || 0,
+        averageRating: provider.averageRating ? parseFloat(provider.averageRating) : 0,
+        pendingContacts: pendingContactsCount,
+        isVerified: provider.isVerified || false,
+        isFeatured: provider.isFeatured || false,
+        verificationStatus: provider.verificationStatus || 'pending'
+    };
+
+    console.log('Stats prepared:', stats);
+
+    console.log('Calling i18nResponse');
     i18nResponse(req, res, 200, 'provider.dashboard', {
-        stats: {
-            totalViews: provider.viewsCount,
-            totalContacts: provider.contactsCount,
-            totalReviews: provider.totalReviews,
-            averageRating: parseFloat(provider.averageRating),
-            pendingContacts: pendingContactsCount,
-            isVerified: provider.isVerified,
-            isFeatured: provider.isFeatured,
-            verificationStatus: provider.verificationStatus
-        },
+        stats,
         recentContacts,
         recentReviews
     });
+
+    console.log('getMyDashboard completed successfully');
 });
 
 /**

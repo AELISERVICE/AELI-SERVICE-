@@ -217,15 +217,30 @@ const verifyProvider = asyncHandler(async (req, res) => {
     // Audit Log
     auditLogger.providerVerified(req, provider, isVerified);
 
-    // Send email notification if verified
+    // Send email notification if verified (optional - don't fail if email system is down)
     if (isVerified && provider.user) {
-        sendEmail({
-            to: provider.user.email,
-            ...accountVerifiedEmail({
-                firstName: provider.user.firstName,
-                businessName: provider.businessName
-            })
-        }).catch(err => console.error('Verification email error:', err.message));
+        try {
+            const emailModule = require('../config/email');
+            const emailTemplates = require('../utils/emailTemplates');
+
+            if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.accountVerifiedEmail) {
+                const emailResult = emailModule.sendEmail({
+                    to: provider.user.email,
+                    ...emailTemplates.accountVerifiedEmail({
+                        firstName: provider.user.firstName,
+                        businessName: provider.businessName
+                    })
+                });
+
+                // Only catch if it's a promise
+                if (emailResult && typeof emailResult.catch === 'function') {
+                    emailResult.catch(err => console.error('Verification email error:', err.message));
+                }
+            }
+        } catch (error) {
+            // Silently ignore email errors in production
+            console.error('Email sending setup error:', error.message);
+        }
     }
 
     // Invalidate cache
@@ -253,17 +268,31 @@ const featureProvider = asyncHandler(async (req, res) => {
     provider.isFeatured = isFeatured;
     await provider.save({ fields: ['isFeatured'] });
 
-    // Send email notification to provider
+    // Send email notification to provider (optional - don't fail if email system is down)
     if (provider.user && provider.user.email) {
-        const { providerFeaturedEmail } = require('../utils/emailTemplates');
-        sendEmail({
-            to: provider.user.email,
-            ...providerFeaturedEmail({
-                firstName: provider.user.firstName,
-                businessName: provider.businessName,
-                featured: isFeatured
-            })
-        }).catch(err => console.error('Feature email error:', err.message));
+        try {
+            const emailModule = require('../config/email');
+            const emailTemplates = require('../utils/emailTemplates');
+
+            if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.providerFeaturedEmail) {
+                const emailResult = emailModule.sendEmail({
+                    to: provider.user.email,
+                    ...emailTemplates.providerFeaturedEmail({
+                        firstName: provider.user.firstName,
+                        businessName: provider.businessName,
+                        featured: isFeatured
+                    })
+                });
+
+                // Only catch if it's a promise
+                if (emailResult && typeof emailResult.catch === 'function') {
+                    emailResult.catch(err => console.error('Feature email error:', err.message));
+                }
+            }
+        } catch (error) {
+            // Silently ignore email errors in production
+            console.error('Email sending setup error:', error.message);
+        }
     }
 
     // Invalidate cache

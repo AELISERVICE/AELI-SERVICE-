@@ -30,6 +30,9 @@ const { cacheMiddleware } = require('../config/redis');
 // Public routes
 router.get('/', listProvidersValidation, validate, cacheMiddleware(600), getProviders);
 
+// Public get by ID (must be before protect middleware)
+router.get('/:id', cacheMiddleware(300), getProviderById);
+
 // Protected routes (require authentication)
 router.use(protect);
 
@@ -53,8 +56,5 @@ router.delete('/:id/photos/:photoIndex', deleteProviderPhoto);
 router.post('/:id/documents', handleDocumentUpload, uploadDocuments);
 router.get('/:id/documents', getDocuments);
 router.delete('/:id/documents/:docIndex', deleteDocument);
-
-// Public get by ID (must be last to avoid capturing other routes)
-router.get('/:id', cacheMiddleware(300), getProviderById);
 
 module.exports = router;

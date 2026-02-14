@@ -65,11 +65,20 @@ describe('Payment API Integration', () => {
 
     afterAll(async () => {
         nock.cleanAll();
-        // Keep order to avoid foreign key issues
-        await Payment.destroy({ where: {} });
-        await Provider.destroy({ where: {} });
-        await Category.destroy({ where: {} });
-        await User.destroy({ where: {} });
+        try {
+            // Use truncate to avoid foreign key constraint issues
+            await Payment.sequelize.query('TRUNCATE TABLE payments RESTART IDENTITY CASCADE;');
+            await Provider.sequelize.query('TRUNCATE TABLE providers RESTART IDENTITY CASCADE;');
+            await Category.sequelize.query('TRUNCATE TABLE categories RESTART IDENTITY CASCADE;');
+            await User.sequelize.query('TRUNCATE TABLE users RESTART IDENTITY CASCADE;');
+        } catch (error) {
+            console.error('Error during test cleanup:', error.message);
+            // Fallback to individual deletes if truncate fails
+            await Payment.destroy({ where: {}, force: true });
+            await Provider.destroy({ where: {}, force: true });
+            await Category.destroy({ where: {}, force: true });
+            await User.destroy({ where: {}, force: true });
+        }
     });
 
     describe('POST /api/payments/initialize (CinetPay)', () => {

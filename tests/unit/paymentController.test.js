@@ -8,7 +8,7 @@ const { CINETPAY_CONFIG } = require('../../src/config/cinetpay');
 // Mock helpers
 jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn().mockImplementation(() => { }),
-    getPaginationParams: jest.fn().mockImplementation(() => ({ limit: 10, offset: 0 })),
+    getPaginationParams: jest.fn(() => ({ limit: 10, offset: 0 })),
     getPaginationData: jest.fn().mockImplementation(() => ({})),
 }));
 
@@ -102,6 +102,20 @@ describe('PaymentController Unit Tests', () => {
         CINETPAY_CONFIG.siteId = '789456';
         CINETPAY_CONFIG.apiKey = 'api-key-test';
 
+        // Mock paymentGateway functions
+        const paymentGatewayMock = {
+            initializeCinetPayPayment: jest.fn().mockResolvedValue({
+                code: '201',
+                data: { payment_url: 'http://test.com', payment_token: 'token' }
+            }),
+            initializeNotchPayPayment: jest.fn().mockResolvedValue({
+                status: 'Accepted',
+                authorization_url: 'http://pay.notch.me'
+            })
+        };
+
+        jest.mock('../../src/utils/paymentGateway', () => paymentGatewayMock);
+
         jest.clearAllMocks();
     });
 
@@ -163,13 +177,7 @@ describe('PaymentController Unit Tests', () => {
                 save: jest.fn().mockResolvedValue(true)
             };
             Payment.create.mockResolvedValue(mockPayment);
-
-            axios.post.mockResolvedValue({
-                data: {
-                    status: 'Accepted',
-                    authorization_url: 'http://pay.notch.me'
-                }
-            });
+            Payment.generateTransactionId.mockReturnValue('AELI_TX_123');
 
             await initializeNotchPayPayment(req, res, next);
 
@@ -208,6 +216,10 @@ describe('PaymentController Unit Tests', () => {
         const { getPaymentHistory } = require('../../src/controllers/paymentController');
 
         it('should return client payment history', async () => {
+            // Mock getPaginationParams for this specific test
+            const { getPaginationParams } = require('../../src/utils/helpers');
+            getPaginationParams.mockReturnValueOnce({ limit: 10, offset: 0 });
+
             Payment.findAndCountAll.mockResolvedValue({
                 count: 1,
                 rows: [{ id: 'pay-1', amount: 1000 }]
@@ -224,6 +236,10 @@ describe('PaymentController Unit Tests', () => {
         const { getAllPayments } = require('../../src/controllers/paymentController');
 
         it('should return all payments for admin', async () => {
+            // Mock getPaginationParams for this specific test
+            const { getPaginationParams } = require('../../src/utils/helpers');
+            getPaginationParams.mockReturnValueOnce({ limit: 20, offset: 0 });
+
             Payment.findAndCountAll.mockResolvedValue({
                 count: 5,
                 rows: [{ id: 'pay-1', amount: 1000 }]

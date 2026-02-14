@@ -93,12 +93,26 @@ const changePassword = asyncHandler(async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-    // Send confirmation email
-    const { passwordChangedConfirmationEmail } = require('../utils/emailTemplates');
-    sendEmail({
-        to: user.email,
-        ...passwordChangedConfirmationEmail({ firstName: user.firstName })
-    }).catch(err => console.error('Password change email error:', err.message));
+    // Send confirmation email (optional - don't fail if email system is down)
+    try {
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
+
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.passwordChangedConfirmationEmail) {
+            const emailResult = emailModule.sendEmail({
+                to: user.email,
+                ...emailTemplates.passwordChangedConfirmationEmail({ firstName: user.firstName })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('Password change email error:', err.message));
+            }
+        }
+    } catch (error) {
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
+    }
 
     i18nResponse(req, res, 200, 'user.passwordChanged');
 });
