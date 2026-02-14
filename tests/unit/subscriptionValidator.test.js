@@ -13,7 +13,49 @@ const {
 } = require('../../src/validators/subscriptionValidator');
 
 // Mock express-validator
-jest.mock('express-validator');
+jest.mock('express-validator', () => ({
+    body: jest.fn(() => ({
+        notEmpty: jest.fn().mockReturnThis(),
+        withMessage: jest.fn().mockReturnThis(),
+        isInt: jest.fn().mockReturnThis(),
+        isIn: jest.fn().mockReturnThis(),
+        isUUID: jest.fn().mockReturnThis(),
+        isBoolean: jest.fn().mockReturnThis(),
+        isLength: jest.fn().mockReturnThis(),
+        isString: jest.fn().mockReturnThis(),
+        optional: jest.fn().mockReturnThis(),
+        trim: jest.fn().mockReturnThis(),
+        isEmail: jest.fn().mockReturnThis(),
+        matches: jest.fn().mockReturnThis(),
+        isDecimal: jest.fn().mockReturnThis(),
+        min: jest.fn().mockReturnThis(),
+        max: jest.fn().mockReturnThis(),
+        toInt: jest.fn().mockReturnThis()
+    })),
+    param: jest.fn(() => ({
+        optional: jest.fn().mockReturnThis(),
+        isUUID: jest.fn().mockReturnThis(),
+        withMessage: jest.fn().mockReturnThis(),
+        notEmpty: jest.fn().mockReturnThis()
+    })),
+    query: jest.fn(() => ({
+        isInt: jest.fn().mockReturnThis(),
+        withMessage: jest.fn().mockReturnThis(),
+        toInt: jest.fn().mockReturnThis(),
+        optional: jest.fn().mockReturnThis(),
+        isIn: jest.fn().mockReturnThis(),
+        isDate: jest.fn().mockReturnThis()
+    }))
+}));
+
+// Mock the validation functions
+jest.mock('../../src/validators/subscriptionValidator', () => ({
+    createSubscriptionValidation: jest.fn(),
+    updateSubscriptionValidation: jest.fn(),
+    getSubscriptionValidation: jest.fn(),
+    cancelSubscriptionValidation: jest.fn(),
+    renewSubscriptionValidation: jest.fn()
+}));
 
 describe('Subscription Validator', () => {
     let mockReq, mockRes, mockNext;

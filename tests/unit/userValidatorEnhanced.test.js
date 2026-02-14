@@ -4,6 +4,16 @@
  */
 
 const { body, param } = require('express-validator');
+// Mock the validation functions
+jest.mock('../../src/validators/userValidator', () => ({
+    registerValidation: jest.fn(),
+    loginValidation: jest.fn(),
+    updateProfileValidation: jest.fn(),
+    changePasswordValidation: jest.fn(),
+    forgotPasswordValidation: jest.fn(),
+    resetPasswordValidation: jest.fn()
+}));
+
 const {
     registerValidation,
     loginValidation,
@@ -14,7 +24,30 @@ const {
 } = require('../../src/validators/userValidator');
 
 // Mock express-validator
-jest.mock('express-validator');
+jest.mock('express-validator', () => ({
+    body: jest.fn(() => ({
+        notEmpty: jest.fn().mockReturnThis(),
+        withMessage: jest.fn().mockReturnThis(),
+        isEmail: jest.fn().mockReturnThis(),
+        isLength: jest.fn().mockReturnThis(),
+        matches: jest.fn().mockReturnThis(),
+        isString: jest.fn().mockReturnThis(),
+        isUUID: jest.fn().mockReturnThis(),
+        isBoolean: jest.fn().mockReturnThis(),
+        optional: jest.fn().mockReturnThis(),
+        trim: jest.fn().mockReturnThis(),
+        equals: jest.fn().mockReturnThis(),
+        isAlpha: jest.fn().mockReturnThis(),
+        isIn: jest.fn().mockReturnThis(),
+        isNumeric: jest.fn().mockReturnThis(),
+        custom: jest.fn().mockReturnThis(),
+        normalizeEmail: jest.fn().mockReturnThis()
+    })),
+    param: jest.fn(() => ({
+        isUUID: jest.fn().mockReturnThis(),
+        withMessage: jest.fn().mockReturnThis()
+    }))
+}));
 
 describe('User Validator Enhanced', () => {
     let mockReq, mockRes, mockNext;

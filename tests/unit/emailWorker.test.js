@@ -64,11 +64,24 @@ describe('Email Worker', () => {
                 data: { to: 'test@example.com', subject: 'Test', html: '<p>Test</p>', text: 'Test' }
             };
             
+            // Mock the process method to call the callback
             emailQueue.process.mockImplementation((type, callback) => {
-                callback(mockJob);
+                expect(type).toBe('send');
+                // Simulate the callback being called with the job
+                setTimeout(() => callback(mockJob), 0);
+            });
+
+            // Mock the on method for completed event
+            emailQueue.on.mockImplementation((event, callback) => {
+                if (event === 'completed') {
+                    setTimeout(() => callback(mockJob, { success: true }), 0);
+                }
             });
 
             initEmailWorker();
+
+            // Wait for async operations
+            await new Promise(resolve => setTimeout(resolve, 10));
 
             expect(sendEmail).toHaveBeenCalledWith({
                 to: 'test@example.com',
@@ -91,47 +104,75 @@ describe('Email Worker', () => {
             sendEmail.mockRejectedValue(error);
             
             emailQueue.process.mockImplementation((type, callback) => {
-                try {
-                    callback(mockJob);
-                } catch (err) {
-                    // Should re-throw the error
+                setTimeout(() => callback(mockJob), 0);
+            });
+
+            // Mock the on method for failed event
+            emailQueue.on.mockImplementation((event, callback) => {
+                if (event === 'failed') {
+                    setTimeout(() => callback(mockJob, error), 0);
                 }
             });
 
             initEmailWorker();
 
-            expect(logger.error).toHaveBeenCalledWith('[EMAIL] Failed to send to test@example.com: SMTP failed');
+            // Wait for async operations
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            expect(logger.error).toHaveBeenCalledWith('[EMAIL] Failed to send to test@example.com:', 'SMTP failed');
         });
 
-        it('should handle job completion', () => {
-            const mockJob = { id: 'job-123' };
+        it('should handle job completion', async () => {
+            const mockJob = { 
+                id: 'job-123',
+                data: { to: 'test@example.com', subject: 'Test', html: '<p>Test</p>', text: 'Test' }
+            };
             const result = { success: true };
 
             emailQueue.process.mockImplementation((type, callback) => {
-                callback(mockJob);
-                setTimeout(() => {
-                    emailQueue.on.mock.calls[1][1](mockJob, result);
-                }, 0);
+                setTimeout(() => callback(mockJob), 0);
+            });
+
+            // Mock the on method for completed event
+            emailQueue.on.mockImplementation((event, callback) => {
+                if (event === 'completed') {
+                    setTimeout(() => callback(mockJob, result), 0);
+                }
             });
 
             initEmailWorker();
+
+            // Wait for async operations
+            await new Promise(resolve => setTimeout(resolve, 10));
 
             expect(logger.debug).toHaveBeenCalledWith('[EMAIL] Job job-123 completed');
         });
 
-        it('should handle job failure', () => {
-            const mockJob = { id: 'job-123', attemptsMade: 3 };
+        it('should handle job failure', async () => {
+            const mockJob = { 
+                id: 'job-123',
+                data: { to: 'test@example.com', subject: 'Test', html: '<p>Test</p>', text: 'Test' },
+                attemptsMade: 3
+            };
             const error = new Error('Job failed');
 
             emailQueue.process.mockImplementation((type, callback) => {
-                setTimeout(() => {
-                    emailQueue.on.mock.calls[2][1](mockJob, error);
-                }, 0);
+                setTimeout(() => callback(mockJob), 0);
+            });
+
+            // Mock the on method for failed event
+            emailQueue.on.mockImplementation((event, callback) => {
+                if (event === 'failed') {
+                    setTimeout(() => callback(mockJob, error), 0);
+                }
             });
 
             initEmailWorker();
 
-            expect(logger.error).toHaveBeenCalledWith('[EMAIL] Job job-123 failed after 3 attempts: Job failed');
+            // Wait for async operations
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            expect(logger.error).toHaveBeenCalledWith('[EMAIL] Job job-123 failed after 3 attempts:', 'Job failed');
         });
     });
 

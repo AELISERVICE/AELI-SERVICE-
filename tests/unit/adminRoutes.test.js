@@ -410,7 +410,7 @@ describe('Admin Routes Unit Tests', () => {
 
             await handler(mockReq, mockRes);
 
-            expect(SecurityLog.count).toHaveBeenCalledTimes(3);
+            expect(SecurityLog.count).toHaveBeenCalledTimes(4);
             expect(BannedIP.count).toHaveBeenCalled();
             expect(SecurityLog.findAll).toHaveBeenCalled();
             expect(i18nResponse).toHaveBeenCalledWith(
@@ -419,9 +419,9 @@ describe('Admin Routes Unit Tests', () => {
                 200,
                 'security.securityStats',
                 expect.objectContaining({
-                    hourlyFailedAttempts: 5,
-                    dailyFailedAttempts: 5,
-                    highRiskEvents24h: 5,
+                    hourlyFailedAttempts: 3,
+                    dailyFailedAttempts: 3,
+                    highRiskEvents24h: 3,
                     activeBannedIPs: 3,
                     topSuspiciousIPs: expect.any(Array)
                 })

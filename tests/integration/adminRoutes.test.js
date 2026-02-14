@@ -6,7 +6,7 @@
 const request = require('supertest');
 const { sequelize } = require('../../src/config/database');
 const { User, Provider, Contact, Review, AuditLog, SecurityLog, ApiUsage, BannedIP } = require('../../src/models');
-const { generateToken } = require('../../src/utils/jwt');
+const { generateToken } = require('../../src/middlewares/auth');
 const app = require('../../src/app');
 
 describe('Admin Routes Integration', () => {
@@ -39,7 +39,8 @@ describe('Admin Routes Integration', () => {
             userId: regularUser.id,
             businessName: 'Test Provider',
             whatsapp: '+237 600 000 000',
-            description: 'Test description',
+            location: 'Douala, Cameroon',
+            description: 'Test description that is at least 50 characters long to meet the validation requirements for this field in the provider model.',
             verificationStatus: 'approved',
             isVerified: true,
             isFeatured: false
