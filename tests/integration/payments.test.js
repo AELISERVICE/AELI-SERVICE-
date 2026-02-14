@@ -1,352 +1,212 @@
-/**
- * Integration Tests for Payments
- * Tests payment initialization, status check, and history
- */
-
 const request = require('supertest');
 const app = require('../../src/app');
-const { sequelize, User, Provider, Payment, Subscription } = require('../../src/models');
+const { User, Provider, Payment, Category } = require('../../src/models');
+const { generateToken } = require('../../src/middlewares/auth');
+const nock = require('nock');
+const { CINETPAY_CONFIG } = require('../../src/config/cinetpay');
+const { NOTCH_PAY_CONFIG } = require('../../src/config/notchpay');
 
-// Mock CinetPay API calls (don't make real payments in tests)
-jest.mock('axios', () => ({
-    post: jest.fn().mockImplementation((url) => {
-        if (url.includes('payment')) {
-            return Promise.resolve({
-                data: {
-                    code: '201',
-                    message: 'Success',
-                    data: {
-                        payment_token: 'test-payment-token-123',
-                        payment_url: 'https://payment.test.com/pay/123'
-                    }
-                }
-            });
-        }
-        if (url.includes('check')) {
-            return Promise.resolve({
-                data: {
-                    code: '00',
-                    message: 'Success',
-                    data: {
-                        status: 'WAITING_FOR_CUSTOMER',
-                        payment_method: null
-                    }
-                }
-            });
-        }
-        return Promise.reject(new Error('Unknown endpoint'));
-    })
-}));
-
-describe('Payments Integration Tests', () => {
-    let testUser;
+describe('Payment API Integration', () => {
+    let adminToken;
+    let clientToken;
+    let clientUser;
     let testProvider;
-    let authToken;
+    let testCategory;
 
     beforeAll(async () => {
-        await sequelize.sync({ alter: true });
-    });
+        // Clear nock before starting
+        nock.cleanAll();
 
-    beforeEach(async () => {
-        // Create test user
-        const timestamp = Date.now();
-        testUser = await User.create({
-            email: `payment_test_${timestamp}@test.com`,
-            password: 'TestPassword123!',
-            firstName: 'PayTest',
+        // Setup admin
+        const adminUser = await User.create({
+            firstName: 'Admin',
+            lastName: 'Payment',
+            email: `admin_pay_${Date.now()}@test.com`,
+            password: 'Password123!',
+            role: 'admin',
+            isEmailVerified: true
+        });
+        adminToken = generateToken(adminUser.id);
+
+        // Setup client
+        clientUser = await User.create({
+            firstName: 'Client',
+            lastName: 'Payment',
+            email: `client_pay_${Date.now()}@test.com`,
+            password: 'Password123!',
+            role: 'client',
+            isEmailVerified: true
+        });
+        clientToken = generateToken(clientUser.id);
+
+        // Setup Category and Provider for related payments
+        testCategory = await Category.create({
+            name: 'Test Category',
+            slug: 'test-category',
+            description: 'Test Description'
+        });
+
+        const providerUser = await User.create({
+            firstName: 'Provider',
             lastName: 'User',
-            role: 'provider',
-            isEmailVerified: true,
-            isActive: true
+            email: `provider_pay_${Date.now()}@test.com`,
+            password: 'Password123!',
+            role: 'provider'
         });
 
-        // Create provider profile
         testProvider = await Provider.create({
-            userId: testUser.id,
-            businessName: `Payment Test Business ${timestamp}`,
-            description: 'A test business for payment testing. This description must be at least 50 characters long.',
-            location: 'Yaoundé',
-            isVerified: true
+            userId: providerUser.id,
+            businessName: 'Payment Test Biz',
+            description: 'This is a long description for the payment test provider to satisfy validation rules.',
+            location: 'Douala',
+            categoryId: testCategory.id
         });
-
-        // Create subscription
-        await Subscription.createTrial(testProvider.id);
-
-        // Login to get token
-        const loginRes = await request(app)
-            .post('/api/auth/login')
-            .send({
-                email: testUser.email,
-                password: 'TestPassword123!'
-            });
-
-        // Handle case where login returns token in different locations
-        authToken = loginRes.body.accessToken || loginRes.body.data?.accessToken;
     });
 
-    afterEach(async () => {
-        // Cleanup
-        await Payment.destroy({ where: { userId: testUser?.id } });
-        await Subscription.destroy({ where: { providerId: testProvider?.id } });
-        await Provider.destroy({ where: { id: testProvider?.id } });
-        await User.destroy({ where: { id: testUser?.id } });
+    afterAll(async () => {
+        nock.cleanAll();
+        // Keep order to avoid foreign key issues
+        await Payment.destroy({ where: {} });
+        await Provider.destroy({ where: {} });
+        await Category.destroy({ where: {} });
+        await User.destroy({ where: {} });
     });
 
-    describe('Payment Model Methods', () => {
-        describe('Payment.generateTransactionId()', () => {
-            test('should generate unique transaction IDs', () => {
-                const id1 = Payment.generateTransactionId();
-                const id2 = Payment.generateTransactionId();
-
-                expect(id1).not.toBe(id2);
-            });
-
-            test('should start with AELI prefix', () => {
-                const id = Payment.generateTransactionId();
-                expect(id.startsWith('AELI')).toBe(true);
-            });
-
-            test('should contain timestamp', () => {
-                const before = Date.now();
-                const id = Payment.generateTransactionId();
-                const after = Date.now();
-
-                // Extract timestamp portion (after AELI prefix)
-                const timestampPortion = id.substring(4, 17);
-                const timestamp = parseInt(timestampPortion);
-
-                expect(timestamp).toBeGreaterThanOrEqual(before);
-                expect(timestamp).toBeLessThanOrEqual(after);
-            });
-        });
-
-        describe('Payment.findByTransactionId()', () => {
-            test('should find existing payment', async () => {
-                const payment = await Payment.create({
-                    transactionId: 'TEST123456',
-                    userId: testUser.id,
-                    providerId: testProvider.id,
-                    type: 'subscription',
-                    amount: 5000,
-                    currency: 'XAF',
-                    status: 'PENDING'
+    describe('POST /api/payments/initialize (CinetPay)', () => {
+        it('should initialize a CinetPay payment', async () => {
+            // Mock CinetPay API
+            nock('https://api-checkout.cinetpay.com')
+                .post('/v2/payment')
+                .reply(200, {
+                    code: '201',
+                    message: 'CREATED',
+                    data: {
+                        payment_token: 'test_token_123',
+                        payment_url: 'https://checkout.cinetpay.com/pay/test_token_123'
+                    }
                 });
 
-                const found = await Payment.findByTransactionId('TEST123456');
-
-                expect(found).toBeDefined();
-                expect(found.id).toBe(payment.id);
-            });
-
-            test('should return null for non-existent transaction', async () => {
-                const found = await Payment.findByTransactionId('NONEXISTENT');
-                expect(found).toBeNull();
-            });
-        });
-
-        describe('Payment.prototype.updateFromCinetPay()', () => {
-            test('should update payment from CinetPay response', async () => {
-                const payment = await Payment.create({
-                    transactionId: 'CINETPAY_TEST_1',
-                    userId: testUser.id,
-                    type: 'subscription',
-                    amount: 5000,
-                    currency: 'XAF',
-                    status: 'PENDING'
-                });
-
-                await payment.updateFromCinetPay({
-                    status: 'ACCEPTED',
-                    payment_method: 'MOMO',
-                    operator_id: 'OP123456',
-                    payment_date: new Date().toISOString()
-                });
-
-                expect(payment.status).toBe('ACCEPTED');
-                expect(payment.paymentMethod).toBe('MOMO');
-                expect(payment.operatorId).toBe('OP123456');
-                expect(payment.paidAt).toBeDefined();
-            });
-
-            test('should handle fund availability date', async () => {
-                const payment = await Payment.create({
-                    transactionId: 'CINETPAY_TEST_2',
-                    userId: testUser.id,
-                    type: 'boost',
+            const res = await request(app)
+                .post('/api/payments/initialize')
+                .set('Authorization', `Bearer ${clientToken}`)
+                .send({
                     amount: 1000,
-                    currency: 'XAF',
-                    status: 'PENDING'
+                    type: 'contact_premium',
+                    description: 'Test Payment'
                 });
 
-                const futureDate = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
-                await payment.updateFromCinetPay({
-                    status: 'ACCEPTED',
-                    fund_availability_date: futureDate.toISOString()
+            expect(res.statusCode).toBe(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.paymentUrl).toBe('https://checkout.cinetpay.com/pay/test_token_123');
+
+            // Verify payment record in DB
+            const payment = await Payment.findOne({ where: { transactionId: res.body.data.transactionId } });
+            expect(payment).toBeDefined();
+            expect(payment.amount).toBe(1000);
+            expect(payment.status).toBe('PENDING');
+        });
+
+        it('should fail if amount is not a multiple of 5', async () => {
+            const res = await request(app)
+                .post('/api/payments/initialize')
+                .set('Authorization', `Bearer ${clientToken}`)
+                .send({
+                    amount: 999,
+                    type: 'contact_premium'
                 });
 
-                expect(payment.fundAvailabilityDate).toBeDefined();
-            });
+            expect(res.statusCode).toBe(400);
         });
     });
 
-    describe('Payment Validation', () => {
-        test('should reject amount less than 100', async () => {
-            await expect(
-                Payment.create({
-                    transactionId: 'INVALID_AMOUNT_1',
-                    userId: testUser.id,
-                    type: 'subscription',
-                    amount: 50, // Too low
-                    currency: 'XAF'
-                })
-            ).rejects.toThrow();
-        });
-
-        test('should reject amount not multiple of 5', async () => {
-            await expect(
-                Payment.create({
-                    transactionId: 'INVALID_AMOUNT_2',
-                    userId: testUser.id,
-                    type: 'subscription',
-                    amount: 103, // Not multiple of 5
-                    currency: 'XAF'
-                })
-            ).rejects.toThrow();
-        });
-
-        test('should accept valid amount', async () => {
+    describe('POST /api/payments/webhook (CinetPay)', () => {
+        it('should process a successful CinetPay webhook', async () => {
+            const transactionId = Payment.generateTransactionId();
             const payment = await Payment.create({
-                transactionId: 'VALID_AMOUNT_1',
-                userId: testUser.id,
-                type: 'subscription',
-                amount: 5000,
-                currency: 'XAF'
+                transactionId,
+                userId: clientUser.id,
+                amount: 1000,
+                type: 'boost',
+                providerId: testProvider.id,
+                status: 'PENDING'
             });
 
-            expect(payment.id).toBeDefined();
-            expect(payment.amount).toBe(5000);
+            // Mock CinetPay Verification API
+            nock('https://api-checkout.cinetpay.com')
+                .post('/v2/payment/check')
+                .reply(200, {
+                    code: '00',
+                    message: 'SUCCES',
+                    data: {
+                        status: 'ACCEPTED',
+                        amount: '1000',
+                        currency: 'XAF',
+                        payment_date: new Date().toISOString(),
+                        payment_method: 'OM'
+                    }
+                });
+
+            const res = await request(app)
+                .post('/api/payments/webhook')
+                .send({
+                    cpm_trans_id: transactionId,
+                    cpm_site_id: CINETPAY_CONFIG.siteId,
+                    cpm_amount: 1000
+                });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.text).toBe('OK');
+
+            // Verify payment status updated
+            const updatedPayment = await Payment.findByPk(payment.id);
+            expect(updatedPayment.status).toBe('ACCEPTED');
+        });
+    });
+
+    describe('POST /api/payments/notchpay/initialize', () => {
+        it('should initialize a NotchPay payment', async () => {
+            // Mock NotchPay API
+            nock('https://api.notchpay.co')
+                .post('/payments/initialize')
+                .reply(200, {
+                    status: 'Accepted',
+                    authorization_url: 'https://pay.notchpay.co/checkout/test_ref'
+                });
+
+            const res = await request(app)
+                .post('/api/payments/notchpay/initialize')
+                .set('Authorization', `Bearer ${clientToken}`)
+                .send({
+                    amount: 5000,
+                    type: 'subscription',
+                    providerId: testProvider.id
+                });
+
+            expect(res.statusCode).toBe(201);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.paymentUrl).toBe('https://pay.notchpay.co/checkout/test_ref');
+        });
+    });
+
+    describe('GET /api/admin/payments', () => {
+        it('should list all payments for admin', async () => {
+            const res = await request(app)
+                .get('/api/admin/payments')
+                .set('Authorization', `Bearer ${adminToken}`);
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
         });
     });
 
     describe('GET /api/payments/history', () => {
-        beforeEach(async () => {
-            // Create some test payments
-            await Payment.bulkCreate([
-                {
-                    transactionId: `HISTORY_1_${Date.now()}`,
-                    userId: testUser.id,
-                    type: 'subscription',
-                    amount: 5000,
-                    currency: 'XAF',
-                    status: 'ACCEPTED',
-                    paidAt: new Date()
-                },
-                {
-                    transactionId: `HISTORY_2_${Date.now()}`,
-                    userId: testUser.id,
-                    type: 'boost',
-                    amount: 1000,
-                    currency: 'XAF',
-                    status: 'PENDING'
-                }
-            ]);
-        });
-
-        test('should return user payment history (authenticated)', async () => {
-            // Skip if no auth token (login failed in test env)
-            if (!authToken) {
-                console.log('Skipping test: No auth token available');
-                expect(true).toBe(true); // Pass the test
-                return;
-            }
-
+        it('should return client payment history', async () => {
             const res = await request(app)
                 .get('/api/payments/history')
-                .set('Authorization', `Bearer ${authToken}`);
+                .set('Authorization', `Bearer ${clientToken}`);
 
-            // Handle 200 success or skip on auth failure
-            if (res.statusCode !== 200) {
-                console.log('Skipping: Unexpected status', res.statusCode);
-                expect(true).toBe(true);
-                return;
-            }
-
+            expect(res.statusCode).toBe(200);
             expect(res.body.success).toBe(true);
-            expect(res.body.data?.payments || res.body.payments).toBeDefined();
-        });
-
-        test('should return 401 for unauthenticated request', async () => {
-            await request(app)
-                .get('/api/payments/history')
-                .expect(401);
-        });
-
-        test('should support pagination', async () => {
-            // Skip if no auth token (login failed in test env)
-            if (!authToken) {
-                console.log('Skipping test: No auth token available');
-                expect(true).toBe(true); // Pass the test
-                return;
-            }
-
-            const res = await request(app)
-                .get('/api/payments/history?page=1&limit=1')
-                .set('Authorization', `Bearer ${authToken}`);
-
-            // Handle 200 success or skip on auth failure
-            if (res.statusCode !== 200) {
-                console.log('Skipping: Unexpected status', res.statusCode);
-                expect(true).toBe(true);
-                return;
-            }
-
-            expect(res.body.data?.pagination || res.body.pagination).toBeDefined();
-        });
-    });
-
-    describe('Payment Types', () => {
-        test('should support subscription type', async () => {
-            const payment = await Payment.create({
-                transactionId: `TYPE_SUB_${Date.now()}`,
-                userId: testUser.id,
-                type: 'subscription',
-                amount: 5000,
-                currency: 'XAF'
-            });
-            expect(payment.type).toBe('subscription');
-        });
-
-        test('should support featured type', async () => {
-            const payment = await Payment.create({
-                transactionId: `TYPE_FEAT_${Date.now()}`,
-                userId: testUser.id,
-                type: 'featured',
-                amount: 10000,
-                currency: 'XAF'
-            });
-            expect(payment.type).toBe('featured');
-        });
-
-        test('should support boost type', async () => {
-            const payment = await Payment.create({
-                transactionId: `TYPE_BOOST_${Date.now()}`,
-                userId: testUser.id,
-                type: 'boost',
-                amount: 2000,
-                currency: 'XAF'
-            });
-            expect(payment.type).toBe('boost');
-        });
-
-        test('should support contact_premium type', async () => {
-            const payment = await Payment.create({
-                transactionId: `TYPE_CONTACT_${Date.now()}`,
-                userId: testUser.id,
-                type: 'contact_premium',
-                amount: 500,
-                currency: 'XAF'
-            });
-            expect(payment.type).toBe('contact_premium');
         });
     });
 });

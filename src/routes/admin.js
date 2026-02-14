@@ -13,6 +13,13 @@ const {
     reviewProviderDocuments
 } = require('../controllers/adminController');
 const {
+    updateUserStatusValidation,
+    verifyProviderValidation,
+    featureProviderValidation,
+    updateReviewVisibilityValidation
+} = require('../validators/adminValidator');
+const { validate } = require('../middlewares/validation');
+const {
     getApplications,
     reviewApplication,
     getApplicationDetails
@@ -38,7 +45,7 @@ router.get('/stats', getStats);
 
 // Users management
 router.get('/users', getAllUsers);
-router.put('/users/:id/status', updateUserStatus);
+router.put('/users/:id/status', updateUserStatusValidation, validate, updateUserStatus);
 
 // ============ PROVIDER APPLICATIONS ============
 router.get('/provider-applications', getApplications);
@@ -48,13 +55,13 @@ router.put('/provider-applications/:id/review', reviewApplication);
 // Providers management (existing providers)
 router.get('/providers/pending', getPendingProviders);
 router.get('/providers/under-review', getProvidersUnderReview);
-router.put('/providers/:id/verify', verifyProvider);
-router.put('/providers/:id/feature', featureProvider);
+router.put('/providers/:id/verify', verifyProviderValidation, validate, verifyProvider);
+router.put('/providers/:id/feature', featureProviderValidation, validate, featureProvider);
 router.put('/providers/:id/review-documents', reviewProviderDocuments);
 
 // Reviews moderation
 router.get('/reviews', getAllReviews);
-router.put('/reviews/:id/visibility', updateReviewVisibility);
+router.put('/reviews/:id/visibility', updateReviewVisibilityValidation, validate, updateReviewVisibility);
 
 // ============ EXPORTS ============
 router.get('/export/users', exportUsersCSV);

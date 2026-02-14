@@ -441,7 +441,7 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
         throw new AppError(req.t('provider.notFound'), 404);
     }
 
-    if (!['approved', 'rejected'].includes(decision)) {
+    if (!['approved', 'rejected', 'under_review'].includes(decision)) {
         throw new AppError(req.t('common.badRequest'), 400);
     }
 
@@ -480,7 +480,7 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
                 })
             }).catch(err => console.error('Verification email error:', err.message));
         }
-    } else {
+    } else if (decision === 'rejected') {
         provider.verificationStatus = 'rejected';
         provider.isVerified = false;
 
@@ -501,6 +501,9 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
                 })
             }).catch(err => console.error('Rejection email error:', err.message));
         }
+    } else {
+        // decision === 'under_review'
+        provider.verificationStatus = 'under_review';
     }
 
     const oldStatus = provider.verificationStatus;

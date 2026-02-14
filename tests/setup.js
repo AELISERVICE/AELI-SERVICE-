@@ -1,5 +1,11 @@
 const { sequelize } = require('../src/config/database');
 
+// Mock email globally to prevent errors and real emails during tests
+jest.mock('../src/config/email', () => ({
+    sendEmail: jest.fn(() => Promise.resolve({ messageId: 'test-msg-id' })),
+    verifyTransporter: jest.fn().mockResolvedValue(true)
+}));
+
 // Increase timeout for database operations
 jest.setTimeout(30000);
 

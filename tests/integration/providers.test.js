@@ -1,8 +1,61 @@
 const request = require('supertest');
 const app = require('../../src/app');
 const { Provider, User, Category, Service } = require('../../src/models');
+const { generateToken } = require('../../src/middlewares/auth');
 
 describe('Providers API', () => {
+    let providerToken;
+    let providerUser;
+    let clientToken;
+    let clientUser;
+    let testCategory;
+    let testProvider;
+
+    beforeAll(async () => {
+        // Setup category
+        testCategory = await Category.create({
+            name: `Test Category ${Date.now()}`,
+            slug: `test-cat-${Date.now()}`
+        });
+
+        // Setup provider user
+        providerUser = await User.create({
+            firstName: 'Pro',
+            lastName: 'Vider',
+            email: `provider_${Date.now()}@test.com`,
+            password: 'Password123!',
+            role: 'provider',
+            isEmailVerified: true
+        });
+        providerToken = generateToken(providerUser.id);
+
+        // Setup client user
+        clientUser = await User.create({
+            firstName: 'Cli',
+            lastName: 'Ent',
+            email: `client_${Date.now()}@test.com`,
+            password: 'Password123!',
+            role: 'client',
+            isEmailVerified: true
+        });
+        clientToken = generateToken(clientUser.id);
+
+        // Create a provider profile for testing GETByID/Update
+        testProvider = await Provider.create({
+            userId: providerUser.id,
+            businessName: 'Existing Business',
+            description: 'This is a sufficiently long description for testing the provider controller details and ensuring validation passes correctly.',
+            location: 'Douala',
+            isVerified: true
+        });
+    });
+
+    afterAll(async () => {
+        await Provider.destroy({ where: { userId: [providerUser.id] } });
+        await User.destroy({ where: { id: [providerUser.id, clientUser.id] } });
+        await Category.destroy({ where: { id: testCategory.id } });
+    });
+
     describe('GET /api/providers', () => {
         it('should return paginated providers list', async () => {
             const res = await request(app)
@@ -33,6 +86,15 @@ describe('Providers API', () => {
             expect(res.body.success).toBe(true);
         });
 
+        it('should filter by category', async () => {
+            const res = await request(app)
+                .get(`/api/providers?category=${testCategory.slug}`);
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            // Even if empty, it should exercise the category join logic
+        });
+
         it('should accept search parameter', async () => {
             const res = await request(app)
                 .get('/api/providers?search=test');
@@ -55,17 +117,16 @@ describe('Providers API', () => {
             const res = await request(app)
                 .get(`/api/providers/${fakeId}`);
 
-            // Can be 404 (not found) or 401 (if route requires auth)
-            expect([404, 401]).toContain(res.statusCode);
-            expect(res.body.success).toBe(false);
+            expect(res.statusCode).toBe(404);
         });
 
-        it('should handle invalid UUID gracefully', async () => {
+        it('should return provider details', async () => {
             const res = await request(app)
-                .get('/api/providers/invalid-uuid');
+                .get(`/api/providers/${testProvider.id}`);
 
-            // Sequelize throws an error for invalid UUID format, or route may require auth
-            expect([400, 401, 500]).toContain(res.statusCode);
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.provider.id).toBe(testProvider.id);
         });
     });
 
@@ -81,15 +142,62 @@ describe('Providers API', () => {
 
             expect(res.statusCode).toBe(401);
         });
+
+        it('should reject if user already has a provider profile', async () => {
+            const res = await request(app)
+                .post('/api/providers/create')
+                .set('Authorization', `Bearer ${providerToken}`)
+                .send({
+                    businessName: 'Another Business',
+                    description: 'Another long enough description for the second provider attempt',
+                    location: 'Douala'
+                });
+
+            expect(res.statusCode).toBe(400);
+        });
     });
 
     describe('PUT /api/providers/:id', () => {
         it('should reject unauthenticated request', async () => {
             const res = await request(app)
-                .put('/api/providers/00000000-0000-0000-0000-000000000000')
+                .put(`/api/providers/${testProvider.id}`)
                 .send({ businessName: 'Updated' });
 
             expect(res.statusCode).toBe(401);
+        });
+
+        it('should update provider profile', async () => {
+            const res = await request(app)
+                .put(`/api/providers/${testProvider.id}`)
+                .set('Authorization', `Bearer ${providerToken}`)
+                .send({
+                    businessName: 'Updated Business Name',
+                    location: 'Yaounde'
+                });
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data.provider.businessName).toBe('Updated Business Name');
+        });
+    });
+
+    describe('GET /api/providers/my-dashboard', () => {
+        it('should return provider dashboard data', async () => {
+            const res = await request(app)
+                .get('/api/providers/my-dashboard')
+                .set('Authorization', `Bearer ${providerToken}`);
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toHaveProperty('stats');
+        });
+
+        it('should reject client access', async () => {
+            const res = await request(app)
+                .get('/api/providers/my-dashboard')
+                .set('Authorization', `Bearer ${clientToken}`);
+
+            expect(res.statusCode).toBe(403);
         });
     });
 });

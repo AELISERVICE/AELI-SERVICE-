@@ -8,6 +8,7 @@ const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const logger = require('../utils/logger');
 const { auditLogger } = require('../middlewares/audit');
+const { initializeCinetPayPayment, initializeNotchPayPayment: initNotchPay } = require('../utils/paymentGateway');
 
 /**
  * Initialize a payment with CinetPay
@@ -124,7 +125,7 @@ const initializePayment = asyncHandler(async (req, res) => {
  * Initialize a payment with NotchPay
  * POST /api/payments/notchpay/initialize
  */
-const initializeNotchPayPayment = asyncHandler(async (req, res) => {
+const initializeNotchPayPayment = asyncHandler(async (req, res, next) => {
     const { amount, type, providerId, description } = req.body;
     const userId = req.user?.id;
 
@@ -177,20 +178,18 @@ const initializeNotchPayPayment = asyncHandler(async (req, res) => {
     };
 
     try {
-        // Call NotchPay API
-        const response = await axios.post(`${NOTCH_PAY_CONFIG.baseUrl}/payments/initialize`, notchPayData, {
-            headers: {
-                'Authorization': NOTCH_PAY_CONFIG.publicKey,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+        const notchpayResponse = await initNotchPay({
+            email: user?.email || 'test@aeli.com',
+            amount: amount,
+            currency: payment.currency,
+            description: payment.description,
+            reference: transactionId,
+            callback: NOTCH_PAY_CONFIG.callbackUrl
         });
 
-        const notchPayResponse = response.data;
-
-        if (notchPayResponse.status === 'Accepted' || notchPayResponse.authorization_url) {
+        if (notchpayResponse.status === 'Accepted' || notchpayResponse.authorization_url) {
             // Update payment with URL
-            payment.paymentUrl = notchPayResponse.authorization_url;
+            payment.paymentUrl = notchpayResponse.authorization_url;
             await payment.save();
 
             logger.info(`NotchPay payment initialized: ${transactionId}`);
@@ -204,18 +203,13 @@ const initializeNotchPayPayment = asyncHandler(async (req, res) => {
             });
         } else {
             payment.status = 'REFUSED';
-            payment.errorMessage = notchPayResponse.message;
+            payment.errorMessage = notchpayResponse.message;
             await payment.save();
 
             throw new AppError(req.t('payment.failed'), 400);
         }
     } catch (error) {
-        if (error.response) {
-            logger.error('NotchPay API error:', error.response.data);
-            payment.errorMessage = JSON.stringify(error.response.data);
-            await payment.save();
-        }
-        throw error;
+        next(error);
     }
 });
 

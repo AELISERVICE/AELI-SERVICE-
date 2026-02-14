@@ -7,9 +7,21 @@ const { CINETPAY_CONFIG } = require('../../src/config/cinetpay');
 
 // Mock helpers
 jest.mock('../../src/utils/helpers', () => ({
-    i18nResponse: jest.fn(),
-    getPaginationParams: jest.fn().mockReturnValue({ limit: 10, offset: 0 }),
-    getPaginationData: jest.fn().mockReturnValue({}),
+    i18nResponse: jest.fn().mockImplementation(() => { }),
+    getPaginationParams: jest.fn().mockImplementation(() => ({ limit: 10, offset: 0 })),
+    getPaginationData: jest.fn().mockImplementation(() => ({})),
+}));
+
+// Mock paymentGateway
+jest.mock('../../src/utils/paymentGateway', () => ({
+    initializeCinetPayPayment: jest.fn().mockResolvedValue({
+        code: '201',
+        data: { payment_url: 'http://test.com', payment_token: 'token' }
+    }),
+    initializeNotchPayPayment: jest.fn().mockResolvedValue({
+        status: 'Accepted',
+        authorization_url: 'http://pay.notch.me'
+    })
 }));
 
 // Mock logger
@@ -18,6 +30,16 @@ jest.mock('../../src/utils/logger', () => ({
     error: jest.fn(),
     warn: jest.fn(),
     debug: jest.fn(),
+}));
+
+// Mock audit middleware
+jest.mock('../../src/middlewares/audit', () => ({
+    auditLogger: {
+        paymentCompleted: jest.fn(),
+        userLoggedIn: jest.fn(),
+        providerCreated: jest.fn(),
+        reviewModerated: jest.fn()
+    }
 }));
 
 // Mock axios
@@ -119,6 +141,123 @@ describe('PaymentController Unit Tests', () => {
         it('should throw error for invalid amount', async () => {
             req.body = { amount: 50, type: 'subscription' };
             await expect(initializePayment(req, res, next)).rejects.toThrow('common.badRequest');
+        });
+    });
+
+    describe('initializeNotchPayPayment', () => {
+        const { initializeNotchPayPayment } = require('../../src/controllers/paymentController');
+
+        it('should initialize NotchPay payment', async () => {
+            req.body = {
+                amount: 5000,
+                type: 'subscription',
+                description: 'Monthly sub'
+            };
+
+            const mockUser = { id: 'user-123', email: 'test@aeli.com', lastName: 'Doe', firstName: 'John' };
+            User.findByPk.mockResolvedValue(mockUser);
+
+            const mockPayment = {
+                id: 'pay-uuid',
+                transactionId: 'AELI_TX_123',
+                save: jest.fn().mockResolvedValue(true)
+            };
+            Payment.create.mockResolvedValue(mockPayment);
+
+            axios.post.mockResolvedValue({
+                data: {
+                    status: 'Accepted',
+                    authorization_url: 'http://pay.notch.me'
+                }
+            });
+
+            await initializeNotchPayPayment(req, res, next);
+
+            expect(Payment.create).toHaveBeenCalled();
+            expect(mockPayment.save).toHaveBeenCalled();
+            // paymentUrl is set directly on payment object before save
+            const { i18nResponse } = require('../../src/utils/helpers');
+            expect(i18nResponse).toHaveBeenCalled();
+        });
+    });
+
+    describe('checkPaymentStatus', () => {
+        const { checkPaymentStatus } = require('../../src/controllers/paymentController');
+
+        it('should return payment status', async () => {
+            req.params = { transactionId: 'AELI_TX_123' };
+
+            const mockPayment = {
+                transactionId: 'AELI_TX_123',
+                status: 'ACCEPTED',
+                amount: 5000,
+                currency: 'XAF',
+                type: 'boost',
+                paymentMethod: 'OM'
+            };
+            Payment.findByTransactionId.mockResolvedValue(mockPayment);
+
+            await checkPaymentStatus(req, res, next);
+
+            const { i18nResponse } = require('../../src/utils/helpers');
+            expect(i18nResponse).toHaveBeenCalledWith(req, res, 200, 'payment.status', expect.anything());
+        });
+    });
+
+    describe('getPaymentHistory', () => {
+        const { getPaymentHistory } = require('../../src/controllers/paymentController');
+
+        it('should return client payment history', async () => {
+            Payment.findAndCountAll.mockResolvedValue({
+                count: 1,
+                rows: [{ id: 'pay-1', amount: 1000 }]
+            });
+
+            await getPaymentHistory(req, res, next);
+
+            const { i18nResponse } = require('../../src/utils/helpers');
+            expect(i18nResponse).toHaveBeenCalled();
+        });
+    });
+
+    describe('getAllPayments', () => {
+        const { getAllPayments } = require('../../src/controllers/paymentController');
+
+        it('should return all payments for admin', async () => {
+            Payment.findAndCountAll.mockResolvedValue({
+                count: 5,
+                rows: [{ id: 'pay-1', amount: 1000 }]
+            });
+            Payment.findAll.mockResolvedValue([{ totalAmount: 5000, totalCount: 5 }]);
+
+            await getAllPayments(req, res, next);
+
+            const { i18nResponse } = require('../../src/utils/helpers');
+            expect(i18nResponse).toHaveBeenCalled();
+        });
+    });
+
+    describe('handleNotchPayWebhook', () => {
+        const { handleNotchPayWebhook } = require('../../src/controllers/paymentController');
+
+        it('should process accepted NotchPay webhook', async () => {
+            req.headers = { 'x-notch-signature': 'valid-sig' };
+            req.body = {
+                event: 'payment.complete',
+                data: { reference: 'AELI_TX_123', status: 'complete' }
+            };
+
+            const mockPayment = {
+                transactionId: 'AELI_TX_123',
+                status: 'PENDING',
+                updateFromNotchPay: jest.fn().mockResolvedValue(true)
+            };
+            Payment.findByTransactionId.mockResolvedValue(mockPayment);
+
+            await handleNotchPayWebhook(req, res, next);
+
+            expect(mockPayment.updateFromNotchPay).toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
         });
     });
 

@@ -316,7 +316,7 @@ const getContactsByDate = asyncHandler(async (req, res) => {
 const initiateContactUnlock = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { Payment } = require('../models');
-    const { initializeCinetPayPayment } = require('../config/cinetpay');
+    const { initializeCinetPayPayment } = require('../utils/paymentGateway');
 
     const contact = await Contact.findByPk(id, {
         include: [{ model: Provider, as: 'provider' }]
