@@ -170,16 +170,21 @@ const sendExpirationReminders = async () => {
             const daysLeft = Math.ceil((sub.endDate - new Date()) / (1000 * 60 * 60 * 24));
 
             try {
-                await sendEmail({
-                    to: sub.provider.user.email,
-                    ...subscriptionExpiringEmail({
-                        firstName: sub.provider.user.firstName,
-                        businessName: sub.provider.businessName,
-                        daysLeft,
-                        endDate: sub.endDate,
-                        plan: sub.plan
-                    })
-                });
+                const emailModule = require('../config/email');
+                const emailTemplates = require('../utils/emailTemplates');
+
+                if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.subscriptionExpiringEmail) {
+                    await emailModule.sendEmail({
+                        to: sub.provider.user.email,
+                        ...emailTemplates.subscriptionExpiringEmail({
+                            firstName: sub.provider.user.firstName,
+                            businessName: sub.provider.businessName,
+                            daysLeft,
+                            endDate: sub.endDate,
+                            plan: sub.plan
+                        })
+                    });
+                }
 
                 await Subscription.markReminderSent(sub.id);
                 sentCount++;

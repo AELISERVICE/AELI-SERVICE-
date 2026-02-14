@@ -99,13 +99,22 @@ const applyToBeProvider = asyncHandler(async (req, res) => {
         status: 'pending'
     });
 
-    // Send confirmation email to applicant
+    // Send confirmation email to applicant (optional - don't fail if email system is down)
     try {
-        const { applicationReceivedEmail } = require('../utils/emailTemplates');
-        await sendEmail({
-            to: req.user.email,
-            ...applicationReceivedEmail(req.user.firstName, businessName)
-        });
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
+
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.applicationReceivedEmail) {
+            const emailResult = emailModule.sendEmail({
+                to: req.user.email,
+                ...emailTemplates.applicationReceivedEmail(req.user.firstName, businessName)
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('Application email error:', err.message));
+            }
+        }
     } catch (err) {
         console.error('Email error:', err.message);
     }

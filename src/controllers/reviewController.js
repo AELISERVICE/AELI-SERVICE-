@@ -70,17 +70,31 @@ const createReview = asyncHandler(async (req, res) => {
         reviewer: `${req.user.firstName} ${req.user.lastName}`
     });
 
-    // Send email notification to provider (async)
+    // Send email notification to provider (optional - don't fail if email system is down)
     if (provider.user && provider.user.email) {
-        sendEmail({
-            to: provider.user.email,
-            ...newReviewEmail({
-                providerName: provider.businessName,
-                reviewerName: `${req.user.firstName} ${req.user.lastName}`,
-                rating,
-                comment
-            })
-        }).catch(err => console.error('Review notification email error:', err.message));
+        try {
+            const emailModule = require('../config/email');
+            const emailTemplates = require('../utils/emailTemplates');
+
+            if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.newReviewEmail) {
+                const emailResult = emailModule.sendEmail({
+                    to: provider.user.email,
+                    ...emailTemplates.newReviewEmail({
+                        providerName: provider.businessName,
+                        reviewerName: `${req.user.firstName} ${req.user.lastName}`,
+                        rating,
+                        comment
+                    })
+                });
+
+                // Only catch if it's a promise
+                if (emailResult && typeof emailResult.catch === 'function') {
+                    emailResult.catch(err => console.error('Review notification email error:', err.message));
+                }
+            }
+        } catch (err) {
+            console.error('Email error:', err.message);
+        }
     }
 
     i18nResponse(req, res, 201, 'review.created', { review });

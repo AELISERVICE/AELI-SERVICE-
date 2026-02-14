@@ -377,42 +377,65 @@ const processPaymentSuccess = async (payment) => {
     // Audit Log
     auditLogger.paymentCompleted(payment, 'ACCEPTED');
 
-    // Send success email
+    // Send success email (optional - don't fail if email system is down)
     if (user) {
-        sendEmail({
-            to: user.email,
-            ...paymentSuccessEmail({
-                firstName: user.firstName,
-                transactionId: payment.transactionId,
-                amount: payment.amount,
-                currency: payment.currency,
-                type: payment.type,
-                description: payment.description
-            })
-        }).catch(err => console.error('Payment success email error:', err.message));
+        try {
+            const emailModule = require('../config/email');
+            const emailTemplates = require('../utils/emailTemplates');
+
+            if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.paymentSuccessEmail) {
+                const emailResult = emailModule.sendEmail({
+                    to: user.email,
+                    ...emailTemplates.paymentSuccessEmail({
+                        firstName: user.firstName,
+                        transactionId: payment.transactionId,
+                        amount: payment.amount,
+                        currency: payment.currency,
+                        type: payment.type,
+                        description: payment.description
+                    })
+                });
+
+                // Only catch if it's a promise
+                if (emailResult && typeof emailResult.catch === 'function') {
+                    emailResult.catch(err => console.error('Payment success email error:', err.message));
+                }
+            }
+        } catch (error) {
+            // Silently ignore email errors in production
+            console.error('Email sending setup error:', error.message);
+        }
     }
 };
 
-/**
- * Process failed payment
- */
 const processPaymentFailure = async (payment, errorMessage) => {
-    const { sendEmail } = require('../config/email');
-    const { paymentFailedEmail } = require('../utils/emailTemplates');
+    // Send failure email (optional - don't fail if email system is down)
+    try {
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
 
-    const user = await User.findByPk(payment.userId);
+        const user = await User.findByPk(payment.userId);
 
-    if (user) {
-        sendEmail({
-            to: user.email,
-            ...paymentFailedEmail({
-                firstName: user.firstName,
-                transactionId: payment.transactionId,
-                amount: payment.amount,
-                currency: payment.currency,
-                errorMessage: errorMessage
-            })
-        }).catch(err => console.error('Payment failed email error:', err.message));
+        if (user && emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.paymentFailedEmail) {
+            const emailResult = emailModule.sendEmail({
+                to: user.email,
+                ...emailTemplates.paymentFailedEmail({
+                    firstName: user.firstName,
+                    transactionId: payment.transactionId,
+                    amount: payment.amount,
+                    currency: payment.currency,
+                    errorMessage: errorMessage
+                })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('Payment failed email error:', err.message));
+            }
+        }
+    } catch (error) {
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
     }
 };
 
