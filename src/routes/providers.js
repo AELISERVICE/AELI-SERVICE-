@@ -31,7 +31,7 @@ const { cacheMiddleware } = require('../config/redis');
 router.get('/', listProvidersValidation, validate, cacheMiddleware(600), getProviders);
 
 // Public get by ID (must be before protect middleware)
-router.get('/:id', cacheMiddleware(300), getProviderById);
+router.get('/:id([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', cacheMiddleware(300), getProviderById);
 
 // Protected routes (require authentication)
 router.use(protect);
