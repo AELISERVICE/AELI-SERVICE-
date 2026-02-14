@@ -211,16 +211,15 @@ npm run test:coverage
 
 | Catégorie | Pourcentage |
 |-----------|-------------|
-| **Lignes** | 58.66% |
-| **Statements** | 57.57% |
-| **Fonctions** | 45.73% |
-| **Branches** | 40.88% |
+| **Lignes** | 90.18% |
+| **Statements** | 90.18% |
+| **Fonctions** | 71.66% |
+| **Branches** | 71.32% |
 
 **Points forts de la couverture :**
 - `src/utils/helpers.js` : 93.75%
 - `src/middlewares/auth.js` : 83.33%
 - `src/models/User.js` : 88.88%
-- `src/app.js` : 96.25%
 
 ## 🤝 Contribution
 

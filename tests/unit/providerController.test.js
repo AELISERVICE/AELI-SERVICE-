@@ -1,22 +1,43 @@
 /**
  * Provider Controller Unit Tests
- * Tests for provider-related business logic
+ * Tests for provider-related endpoints
  */
+
+const {
+    createProvider,
+    getProviders,
+    getProviderById,
+    updateProvider,
+    deleteProviderPhoto,
+    getMyProfile,
+    getMyDashboard,
+    uploadDocuments,
+    getDocuments,
+    deleteDocument
+} = require('../../src/controllers/providerController');
 
 // Mock dependencies
 jest.mock('../../src/models', () => ({
-    Provider: {
-        findByPk: jest.fn(),
-        findOne: jest.fn(),
-        findAll: jest.fn(),
-        findAndCountAll: jest.fn(),
-        create: jest.fn()
-    },
+    sequelize: {},
     User: {
-        findByPk: jest.fn()
+        findByPk: jest.fn(),
+        findOne: jest.fn()
+    },
+    Provider: {
+        findOne: jest.fn(),
+        findByPk: jest.fn(),
+        findAndCountAll: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        count: jest.fn()
     },
     Service: {
         findAll: jest.fn()
+    },
+    Category: {},
+    Subscription: {
+        createTrial: jest.fn(),
+        getStatus: jest.fn()
     },
     Review: {
         findAll: jest.fn()
@@ -24,237 +45,270 @@ jest.mock('../../src/models', () => ({
     Contact: {
         findAll: jest.fn(),
         count: jest.fn()
-    },
-    Category: {},
-    Subscription: {
-        createTrial: jest.fn(),
-        getStatus: jest.fn()
     }
+}));
+
+jest.mock('../../src/middlewares/errorHandler', () => ({
+    asyncHandler: (fn) => (req, res, next) => fn(req, res, next),
+    AppError: class extends Error {
+        constructor(message, statusCode) {
+            super(message);
+            this.statusCode = statusCode;
+        }
+    }
+}));
+
+jest.mock('../../src/utils/helpers', () => ({
+    successResponse: jest.fn(),
+    i18nResponse: jest.fn(),
+    getPaginationParams: jest.fn(),
+    getPaginationData: jest.fn(),
+    buildSortOrder: jest.fn(),
+    extractPhotoUrls: jest.fn()
+}));
+
+jest.mock('../../src/config/cloudinary', () => ({
+    deleteImage: jest.fn(),
+    getPublicIdFromUrl: jest.fn(),
+    uploadDocument: jest.fn()
 }));
 
 jest.mock('../../src/config/redis', () => ({
-    get: jest.fn().mockResolvedValue(null),
-    set: jest.fn().mockResolvedValue('OK'),
-    del: jest.fn().mockResolvedValue(1),
-    delByPattern: jest.fn().mockResolvedValue(5),
-    cacheKeys: {
-        providers: () => 'providers:test',
-        provider: (id) => `provider:${id}`
-    }
+    delByPattern: jest.fn()
 }));
 
-const { Provider, Subscription, Service, Review } = require('../../src/models');
-const cache = require('../../src/config/redis');
+jest.mock('sequelize', () => ({
+    Op: {
+        iLike: Symbol('iLike'),
+        gte: Symbol('gte'),
+        or: Symbol('or'),
+        and: Symbol('and'),
+        in: Symbol('in')
+    },
+    fn: jest.fn(),
+    col: jest.fn(),
+    literal: jest.fn()
+}));
 
-describe('Provider Controller Logic', () => {
+const { Provider, User, Service, Subscription, Review, Contact } = require('../../src/models');
+const { i18nResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../../src/utils/helpers');
+const cache = require('../../src/config/redis');
+const { deleteImage, getPublicIdFromUrl, uploadDocument } = require('../../src/config/cloudinary');
+
+describe('Provider Controller', () => {
+    let mockReq, mockRes, mockNext;
+
     beforeEach(() => {
         jest.clearAllMocks();
+
+        mockReq = {
+            body: {},
+            params: {},
+            query: {},
+            user: { id: 'user-123', role: 'provider' },
+            files: [],
+            t: jest.fn((key) => key)
+        };
+
+        mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn().mockReturnThis()
+        };
+
+        mockNext = jest.fn();
+
+        // Setup default mocks
+        i18nResponse.mockImplementation(() => {});
+        getPaginationParams.mockReturnValue({ limit: 12, offset: 0 });
+        getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
+        buildSortOrder.mockReturnValue([['createdAt', 'DESC']]);
+        extractPhotoUrls.mockReturnValue(['photo1.jpg', 'photo2.jpg']);
+        Subscription.getStatus.mockResolvedValue({ isActive: true });
     });
 
-    describe('Provider Creation', () => {
-        it('should create provider with trial subscription', async () => {
+    describe('createProvider', () => {
+        it('should create provider successfully', async () => {
+            const providerData = {
+                businessName: 'Test Business',
+                description: 'Test Description',
+                location: 'Yaoundé',
+                address: 'Test Address',
+                whatsapp: '+237699123456',
+                facebook: 'https://facebook.com/test',
+                instagram: 'https://instagram.com/test'
+            };
+            mockReq.body = providerData;
+            mockReq.files = [{}, {}]; // Mock files
+
             const mockProvider = {
-                id: 'provider-uuid',
-                userId: 'user-uuid',
-                businessName: 'Test Business'
+                id: 'provider-123',
+                ...providerData,
+                photos: ['photo1.jpg', 'photo2.jpg'],
+                save: jest.fn().mockResolvedValue()
             };
 
+            Provider.findOne.mockResolvedValue(null);
             Provider.create.mockResolvedValue(mockProvider);
-            Subscription.createTrial.mockResolvedValue({ id: 'sub-uuid' });
+            Subscription.createTrial.mockResolvedValue();
+            cache.delByPattern.mockResolvedValue();
 
-            const provider = await Provider.create({
-                userId: 'user-uuid',
-                businessName: 'Test Business'
+            await createProvider(mockReq, mockRes, mockNext);
+
+            expect(Provider.findOne).toHaveBeenCalledWith({ where: { userId: 'user-123' } });
+            expect(Provider.create).toHaveBeenCalledWith({
+                userId: 'user-123',
+                ...providerData,
+                photos: ['photo1.jpg', 'photo2.jpg']
             });
-
-            expect(provider.id).toBe('provider-uuid');
-            expect(Provider.create).toHaveBeenCalled();
-        });
-
-        it('should invalidate cache after creation', async () => {
-            const mockProvider = { id: 'new-provider' };
-            Provider.create.mockResolvedValue(mockProvider);
-
-            await cache.delByPattern('providers:list:*');
-
+            expect(Subscription.createTrial).toHaveBeenCalledWith('provider-123');
             expect(cache.delByPattern).toHaveBeenCalledWith('providers:list:*');
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 201, 'provider.created', expect.any(Object));
+        });
+
+        it('should throw error if provider already exists', async () => {
+            Provider.findOne.mockResolvedValue({ id: 'existing-provider' });
+
+            await expect(createProvider(mockReq, mockRes, mockNext)).rejects.toThrow('provider.alreadyExists');
         });
     });
 
-    describe('Provider Retrieval', () => {
-        it('should return cached data if available', async () => {
-            const cachedData = { provider: { id: 'cached-provider' } };
-            cache.get.mockResolvedValue(cachedData);
+    describe('getProviders', () => {
+        it('should get providers successfully', async () => {
+            mockReq.query = { page: 1, limit: 12 };
 
-            const result = await cache.get('provider:test-id');
-
-            expect(result).toEqual(cachedData);
-        });
-
-        it('should fetch from database if not cached', async () => {
-            cache.get.mockResolvedValue(null);
-
-            const mockProvider = {
-                id: 'db-provider',
-                toJSON: () => ({ id: 'db-provider' })
-            };
-            Provider.findByPk.mockResolvedValue(mockProvider);
-
-            const provider = await Provider.findByPk('test-id');
-
-            expect(provider.id).toBe('db-provider');
-        });
-
-        it('should include related data in provider details', async () => {
-            const mockProvider = {
-                id: 'provider-id',
-                businessName: 'Test',
-                toJSON: function () { return { ...this }; }
+            const mockProviders = {
+                count: 5,
+                rows: [{ id: 'provider-1' }, { id: 'provider-2' }]
             };
 
-            const mockServices = [
-                { id: 'srv-1', name: 'Service 1' },
-                { id: 'srv-2', name: 'Service 2' }
-            ];
+            Provider.findAndCountAll.mockResolvedValue(mockProviders);
 
-            const mockReviews = [
-                { id: 'rev-1', rating: 5 }
-            ];
+            await getProviders(mockReq, mockRes, mockNext);
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
-            Service.findAll.mockResolvedValue(mockServices);
-            Review.findAll.mockResolvedValue(mockReviews);
-
-            const provider = await Provider.findByPk('provider-id');
-            const services = await Service.findAll({ where: { providerId: 'provider-id' } });
-            const reviews = await Review.findAll({ where: { providerId: 'provider-id' } });
-
-            expect(services).toHaveLength(2);
-            expect(reviews).toHaveLength(1);
-        });
-    });
-
-    describe('Subscription Status Check', () => {
-        it('should hide contact info when subscription expired', async () => {
-            Subscription.getStatus.mockResolvedValue({ isActive: false });
-
-            const status = await Subscription.getStatus('provider-id');
-
-            expect(status.isActive).toBe(false);
-        });
-
-        it('should show full data when subscription active', async () => {
-            Subscription.getStatus.mockResolvedValue({
-                isActive: true,
-                plan: 'monthly',
-                daysRemaining: 15
+            expect(Provider.findAndCountAll).toHaveBeenCalledWith({
+                where: { isVerified: true },
+                include: expect.any(Array),
+                order: [['createdAt', 'DESC']],
+                limit: 12,
+                offset: 0,
+                distinct: true
             });
-
-            const status = await Subscription.getStatus('provider-id');
-
-            expect(status.isActive).toBe(true);
-            expect(status.daysRemaining).toBe(15);
-        });
-
-        it('should apply shorter cache TTL for expired subscriptions', async () => {
-            const expiredTTL = 60;   // 1 minute
-            const activeTTL = 300;   // 5 minutes
-
-            // Expired subscription should cache for shorter time
-            expect(expiredTTL).toBeLessThan(activeTTL);
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.list', expect.any(Object));
         });
     });
 
-    describe('Provider Filters and Pagination', () => {
-        it('should apply location filter with case-insensitive search', () => {
-            const location = 'Douala';
-            const searchPattern = `%${location}%`;
+    describe('getProviderById', () => {
+        it('should get provider by id successfully', async () => {
+            mockReq.params = { id: 'provider-123' };
 
-            expect(searchPattern).toBe('%Douala%');
-        });
-
-        it('should apply minimum rating filter', () => {
-            const minRating = '4.0';
-            const parsed = parseFloat(minRating);
-
-            expect(parsed).toBe(4.0);
-            expect(parsed).toBeGreaterThanOrEqual(1);
-            expect(parsed).toBeLessThanOrEqual(5);
-        });
-
-        it('should apply category filter via service relation', () => {
-            const categorySlug = 'coiffure';
-            const includeCondition = {
-                model: 'Service',
-                required: true,
-                include: [{
-                    model: 'Category',
-                    where: { slug: categorySlug }
-                }]
+            const mockProvider = {
+                id: 'provider-123',
+                toJSON: jest.fn().mockReturnValue({ id: 'provider-123' }),
+                incrementViews: jest.fn().mockResolvedValue()
             };
 
-            expect(includeCondition.required).toBe(true);
-            expect(includeCondition.include[0].where.slug).toBe('coiffure');
+            Provider.findByPk.mockResolvedValue(mockProvider);
+            Service.findAll.mockResolvedValue([]);
+            Review.findAll.mockResolvedValue([]);
+
+            await getProviderById(mockReq, mockRes, mockNext);
+
+            expect(Provider.findByPk).toHaveBeenCalledWith('provider-123', expect.any(Object));
+            expect(Service.findAll).toHaveBeenCalled();
+            expect(Review.findAll).toHaveBeenCalled();
+            expect(Subscription.getStatus).toHaveBeenCalledWith('provider-123');
+            expect(mockProvider.incrementViews).toHaveBeenCalled();
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.details', expect.any(Object));
+        });
+
+        it('should throw error if provider not found', async () => {
+            mockReq.params = { id: 'nonexistent' };
+
+            Provider.findByPk.mockResolvedValue(null);
+
+            await expect(getProviderById(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
         });
     });
 
-    describe('Provider Dashboard Stats', () => {
-        it('should return correct stats structure', async () => {
+    describe('updateProvider', () => {
+        it('should update provider successfully', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { businessName: 'Updated Business' };
+
             const mockProvider = {
-                id: 'provider-id',
-                viewsCount: 1234,
-                contactsCount: 45,
-                totalReviews: 25,
-                averageRating: '4.8',
+                id: 'provider-123',
+                userId: 'user-123',
+                businessName: 'Old Business',
+                save: jest.fn().mockResolvedValue()
+            };
+
+            Provider.findByPk.mockResolvedValue(mockProvider);
+            cache.delByPattern.mockResolvedValue();
+
+            await updateProvider(mockReq, mockRes, mockNext);
+
+            expect(mockProvider.businessName).toBe('Updated Business');
+            expect(mockProvider.save).toHaveBeenCalled();
+            expect(cache.delByPattern).toHaveBeenCalledWith('route:/api/providers*');
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.updated', { provider: mockProvider });
+        });
+
+        it('should throw error if provider not found', async () => {
+            mockReq.params = { id: 'nonexistent' };
+
+            Provider.findByPk.mockResolvedValue(null);
+
+            await expect(updateProvider(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
+        });
+    });
+
+    describe('getMyDashboard', () => {
+        it('should get dashboard successfully', async () => {
+            const mockProvider = {
+                id: 'provider-123',
+                viewsCount: 100,
+                contactsCount: 50,
+                totalReviews: 10,
+                averageRating: 4.5,
                 isVerified: true,
-                isFeatured: false
+                isFeatured: false,
+                verificationStatus: 'approved'
             };
 
             Provider.findOne.mockResolvedValue(mockProvider);
+            Contact.findAll.mockResolvedValue([]);
+            Review.findAll.mockResolvedValue([]);
+            Contact.count.mockResolvedValue(5);
 
-            const provider = await Provider.findOne({ where: { userId: 'user-id' } });
+            await getMyDashboard(mockReq, mockRes, mockNext);
 
-            const stats = {
-                totalViews: provider.viewsCount,
-                totalContacts: provider.contactsCount,
-                totalReviews: provider.totalReviews,
-                averageRating: parseFloat(provider.averageRating),
-                isVerified: provider.isVerified,
-                isFeatured: provider.isFeatured
-            };
-
-            expect(stats.totalViews).toBe(1234);
-            expect(stats.totalContacts).toBe(45);
-            expect(stats.averageRating).toBe(4.8);
-            expect(stats.isVerified).toBe(true);
-        });
-    });
-
-    describe('Document Upload Validation', () => {
-        it('should validate allowed document types', () => {
-            const validTypes = ['cni', 'business_license', 'tax_certificate', 'proof_of_address', 'other'];
-
-            expect(validTypes.includes('cni')).toBe(true);
-            expect(validTypes.includes('business_license')).toBe(true);
-            expect(validTypes.includes('invalid_type')).toBe(false);
+            expect(Provider.findOne).toHaveBeenCalledWith({
+                where: { userId: 'user-123' }
+            });
+            expect(Contact.findAll).toHaveBeenCalled();
+            expect(Review.findAll).toHaveBeenCalled();
+            expect(Contact.count).toHaveBeenCalledWith({
+                where: { providerId: 'provider-123', status: 'pending' }
+            });
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.dashboard', expect.any(Object));
         });
 
-        it('should enforce max 5 documents limit', () => {
-            const currentDocs = [1, 2, 3, 4];
-            const newDocs = [5, 6];
-            const maxDocs = 5;
+        it('should throw error if user not authenticated', async () => {
+            mockReq.user = null;
 
-            const totalAfterUpload = currentDocs.length + newDocs.length;
-            const exceedsLimit = totalAfterUpload > maxDocs;
-
-            expect(exceedsLimit).toBe(true);
+            await expect(getMyDashboard(mockReq, mockRes, mockNext)).rejects.toThrow('Authentication required.');
         });
 
-        it('should prevent document deletion after verification', () => {
-            const isVerified = true;
-            const canDelete = !isVerified;
+        it('should throw error if user not provider', async () => {
+            mockReq.user.role = 'client';
 
-            expect(canDelete).toBe(false);
+            await expect(getMyDashboard(mockReq, mockRes, mockNext)).rejects.toThrow('Access denied. Provider role required.');
+        });
+
+        it('should throw error if provider not found', async () => {
+            Provider.findOne.mockResolvedValue(null);
+
+            await expect(getMyDashboard(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
         });
     });
 });
