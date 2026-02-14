@@ -280,7 +280,9 @@ const applicationUpload = multer({
 }).fields([
     { name: 'photos', maxCount: 5 },
     { name: 'documents', maxCount: 5 },
-    { name: 'cni', maxCount: 1 }
+    { name: 'cni', maxCount: 1 },
+    { name: 'imgcnirecto', maxCount: 1 },
+    { name: 'imgcniverso', maxCount: 1 }
 ]);
 
 /**
