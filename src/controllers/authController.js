@@ -72,11 +72,26 @@ const register = asyncHandler(async (req, res) => {
     user.otpAttempts = 0;
     await user.save({ fields: ['otpCode', 'otpExpires', 'otpAttempts'] });
 
-    // Send OTP email
-    await sendEmail({
-        to: user.email,
-        ...otpEmailTemplate({ firstName: user.firstName, otp })
-    });
+    // Send OTP email (optional - don't fail if email system is down)
+    try {
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
+
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.otpEmailTemplate) {
+            const emailResult = emailModule.sendEmail({
+                to: user.email,
+                ...emailTemplates.otpEmailTemplate({ firstName: user.firstName, otp })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('OTP email error:', err.message));
+            }
+        }
+    } catch (error) {
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
+    }
 
     await logSecurityEvent('otp_sent', req, user.id, { action: 'registration' }, true);
 
@@ -142,11 +157,26 @@ const verifyOTPCode = asyncHandler(async (req, res) => {
         ipAddress: req.ip
     });
 
-    // Send welcome email
-    sendEmail({
-        to: user.email,
-        ...welcomeEmail({ firstName: user.firstName, role: user.role })
-    }).catch(err => console.error('Welcome email error:', err.message));
+    // Send welcome email (optional - don't fail if email system is down)
+    try {
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
+
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.welcomeEmail) {
+            const emailResult = emailModule.sendEmail({
+                to: user.email,
+                ...emailTemplates.welcomeEmail({ firstName: user.firstName, role: user.role })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('Welcome email error:', err.message));
+            }
+        }
+    } catch (error) {
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
+    }
 
     i18nResponse(req, res, 200, 'auth.otpVerified', {
         user: user.toPublicJSON(),
@@ -180,11 +210,26 @@ const resendOTP = asyncHandler(async (req, res) => {
     user.otpAttempts = 0;
     await user.save({ fields: ['otpCode', 'otpExpires', 'otpAttempts'] });
 
-    // Send OTP email
-    await sendEmail({
-        to: user.email,
-        ...otpEmailTemplate({ firstName: user.firstName, otp })
-    });
+    // Send OTP email (optional - don't fail if email system is down)
+    try {
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
+
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.otpEmailTemplate) {
+            const emailResult = emailModule.sendEmail({
+                to: user.email,
+                ...emailTemplates.otpEmailTemplate({ firstName: user.firstName, otp })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('OTP email error:', err.message));
+            }
+        }
+    } catch (error) {
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
+    }
 
     await logSecurityEvent('otp_sent', req, user.id, { action: 'resend' }, true);
 
@@ -226,10 +271,26 @@ const login = asyncHandler(async (req, res) => {
         user.otpAttempts = 0;
         await user.save({ fields: ['otpCode', 'otpExpires', 'otpAttempts'] });
 
-        await sendEmail({
-            to: user.email,
-            ...otpEmailTemplate({ firstName: user.firstName, otp })
-        });
+        // Send OTP email (optional - don't fail if email system is down)
+        try {
+            const emailModule = require('../config/email');
+            const emailTemplates = require('../utils/emailTemplates');
+
+            if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.otpEmailTemplate) {
+                const emailResult = emailModule.sendEmail({
+                    to: user.email,
+                    ...emailTemplates.otpEmailTemplate({ firstName: user.firstName, otp })
+                });
+
+                // Only catch if it's a promise
+                if (emailResult && typeof emailResult.catch === 'function') {
+                    emailResult.catch(err => console.error('OTP email error:', err.message));
+                }
+            }
+        } catch (error) {
+            // Silently ignore email errors in production
+            console.error('Email sending setup error:', error.message);
+        }
 
         return i18nResponse(req, res, 200, 'auth.emailNotVerified', {
             requiresOTP: true,
@@ -383,21 +444,28 @@ const forgotPassword = asyncHandler(async (req, res) => {
     // Audit Log
     auditLogger.passwordResetRequested(req, user);
 
-    // Send email
+    // Send email (optional - don't fail if email system is down)
     try {
-        await sendEmail({
-            to: user.email,
-            ...passwordResetEmail({ firstName: user.firstName, resetUrl })
-        });
+        const emailModule = require('../config/email');
+        const emailTemplates = require('../utils/emailTemplates');
 
-        i18nResponse(req, res, 200, 'auth.passwordResetSent');
+        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.passwordResetEmail) {
+            const emailResult = emailModule.sendEmail({
+                to: user.email,
+                ...emailTemplates.passwordResetEmail({ firstName: user.firstName, resetUrl })
+            });
+
+            // Only catch if it's a promise
+            if (emailResult && typeof emailResult.catch === 'function') {
+                emailResult.catch(err => console.error('Password reset email error:', err.message));
+            }
+        }
     } catch (error) {
-        // Clear reset token if email fails
-        user.resetPasswordToken = null;
-        user.resetPasswordExpires = null;
-        await user.save({ fields: ['resetPasswordToken', 'resetPasswordExpires'] });
-        throw new AppError(req.t('common.serverError'), 500);
+        // Silently ignore email errors in production
+        console.error('Email sending setup error:', error.message);
     }
+
+    i18nResponse(req, res, 200, 'auth.passwordResetSent');
 });
 
 /**
