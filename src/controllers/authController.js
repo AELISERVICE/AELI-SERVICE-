@@ -13,6 +13,7 @@ const {
     handleSuccessfulOTP,
     logSecurityEvent
 } = require('../middlewares/security');
+const { auditLogger } = require('../middlewares/audit');
 
 /**
  * Generate access token (short-lived)
@@ -239,6 +240,9 @@ const login = asyncHandler(async (req, res) => {
     // Login successful
     await handleSuccessfulLogin(user, req);
 
+    // Audit Log
+    auditLogger.userLoggedIn(req, user);
+
     // Generate tokens
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken();
@@ -329,6 +333,9 @@ const logout = asyncHandler(async (req, res) => {
 
     await logSecurityEvent('logout', req, req.user.id, {}, true);
 
+    // Audit Log
+    auditLogger.userLoggedOut(req, req.user);
+
     i18nResponse(req, res, 200, 'auth.logoutSuccess');
 });
 
@@ -372,6 +379,9 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     await logSecurityEvent('password_reset_request', req, user.id, {}, true);
+
+    // Audit Log
+    auditLogger.passwordResetRequested(req, user);
 
     // Send email
     try {
@@ -425,6 +435,9 @@ const resetPassword = asyncHandler(async (req, res) => {
     await RefreshToken.revokeAllForUser(user.id);
 
     await logSecurityEvent('password_reset_success', req, user.id, {}, true);
+
+    // Audit Log
+    auditLogger.passwordChanged(req, user);
 
     // Generate new tokens
     const accessToken = generateAccessToken(user.id);

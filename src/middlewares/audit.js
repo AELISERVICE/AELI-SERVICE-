@@ -154,6 +154,7 @@ const auditLogger = {
         action: 'LOGIN',
         entityType: 'User',
         entityId: user.id,
+        userId: user.id,
         description: `Connexion de ${user.email}`
     }),
 
@@ -163,6 +164,22 @@ const auditLogger = {
         entityType: 'User',
         entityId: user.id,
         description: `Déconnexion de ${user.email}`
+    }),
+
+    passwordChanged: (req, user) => logAudit({
+        req,
+        action: 'UPDATE',
+        entityType: 'User',
+        entityId: user.id,
+        description: `Mot de passe changé pour ${user.email}`
+    }),
+
+    passwordResetRequested: (req, user) => logAudit({
+        req,
+        action: 'OTHER',
+        entityType: 'User',
+        entityId: user.id,
+        description: `Demande de réinitialisation de mot de passe pour ${user.email}`
     }),
 
     // Export operations

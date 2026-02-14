@@ -5,6 +5,7 @@ const { i18nResponse, getPaginationParams, getPaginationData } = require('../uti
 const { sendEmail } = require('../config/email');
 const { accountVerifiedEmail } = require('../utils/emailTemplates');
 const cache = require('../config/redis');
+const { auditLogger } = require('../middlewares/audit');
 
 /**
  * @desc    Get platform statistics (OPTIMIZED)
@@ -209,8 +210,12 @@ const verifyProvider = asyncHandler(async (req, res) => {
         throw new AppError(req.t('provider.notFound'), 404);
     }
 
+    const oldValues = { isVerified: provider.isVerified };
     provider.isVerified = isVerified;
     await provider.save({ fields: ['isVerified'] });
+
+    // Audit Log
+    auditLogger.providerVerified(req, provider, isVerified);
 
     // Send email notification if verified
     if (isVerified && provider.user) {
@@ -286,8 +291,12 @@ const updateUserStatus = asyncHandler(async (req, res) => {
         throw new AppError(req.t('admin.cannotDeactivateSelf'), 400);
     }
 
+    const oldValues = { isActive: user.isActive };
     user.isActive = isActive;
     await user.save({ fields: ['isActive'] });
+
+    // Audit Log
+    auditLogger.userStatusChanged(req, user, isActive);
 
     i18nResponse(req, res, 200, isActive ? 'admin.userActivated' : 'admin.userDeactivated', {
         user: user.toPublicJSON()
@@ -346,6 +355,9 @@ const updateReviewVisibility = asyncHandler(async (req, res) => {
     if (provider) {
         await provider.updateRating(null, false);
     }
+
+    // Audit Log
+    auditLogger.reviewModerated(req, review, isVisible);
 
     // Invalidate cache
     await cache.delByPattern('route:/api/providers*');
@@ -491,9 +503,15 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
         }
     }
 
+    const oldStatus = provider.verificationStatus;
+    const oldDocuments = JSON.parse(JSON.stringify(provider.documents || []));
+
     provider.documents = documents;
     provider.verificationNotes = notes || null;
     await provider.save();
+
+    // Audit Log
+    auditLogger.documentsReviewed(req, provider, decision, notes);
 
     // Invalidate cache
     await cache.delByPattern('route:/api/providers*');

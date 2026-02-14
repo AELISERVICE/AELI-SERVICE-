@@ -10,6 +10,7 @@ const { i18nResponse, extractPhotoUrls } = require('../utils/helpers');
 const { withTransaction } = require('../utils/dbHelpers');
 const { uploadImage, uploadDocument } = require('../config/cloudinary');
 const { sendEmail } = require('../config/email');
+const { auditLogger } = require('../middlewares/audit');
 const cache = require('../config/redis');
 
 /**
@@ -247,6 +248,9 @@ const reviewApplication = asyncHandler(async (req, res) => {
             application.adminNotes = adminNotes;
             await application.save({ transaction });
 
+            // Audit Log
+            auditLogger.documentsReviewed(req, newProvider, 'approved', adminNotes);
+
             return { provider: newProvider };
         });
 
@@ -281,6 +285,9 @@ const reviewApplication = asyncHandler(async (req, res) => {
         application.reviewedAt = new Date();
         application.adminNotes = adminNotes;
         await application.save();
+
+        // Audit Log
+        auditLogger.documentsReviewed(req, application, 'rejected', adminNotes);
 
         // Send rejection email
         try {

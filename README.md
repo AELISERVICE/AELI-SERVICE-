@@ -197,9 +197,34 @@ Les logs sont enregistrés dans :
 
 ## 🧪 Tests
 
+Le projet utilise **Jest** pour les tests unitaires et d'intégration.
+
 ```bash
+# Exécuter tous les tests
 npm test
+
+# Exécuter les tests avec rapport de couverture
+npm run test:coverage
 ```
+
+### 📊 Couverture de Tests (Résumé)
+
+| Catégorie | Pourcentage |
+|-----------|-------------|
+| **Lignes** | 44.95% |
+| **Statements** | 44.05% |
+| **Fonctions** | 29.05% |
+| **Branches** | 26.16% |
+
+**Points forts de la couverture :**
+- `src/utils/helpers.js` : 93.75%
+- `src/middlewares/auth.js` : 83.33%
+- `src/models/User.js` : 88.88%
+- `src/app.js` : 96.25%
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Veuillez consulter le [Guide de Contribution](CONTRIBUTING.md) pour plus de détails sur la manière de participer.
 
 ## 📄 License
 

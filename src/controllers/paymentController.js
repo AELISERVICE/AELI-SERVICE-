@@ -7,6 +7,7 @@ const { NOTCH_PAY_CONFIG, NOTCH_PAY_STATUS } = require('../config/notchpay');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const logger = require('../utils/logger');
+const { auditLogger } = require('../middlewares/audit');
 
 /**
  * Initialize a payment with CinetPay
@@ -378,6 +379,9 @@ const processPaymentSuccess = async (payment) => {
             logger.info(`Subscription activated for user ${payment.userId}`);
             break;
     }
+
+    // Audit Log
+    auditLogger.paymentCompleted(payment, 'ACCEPTED');
 
     // Send success email
     if (user) {
