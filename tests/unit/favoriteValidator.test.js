@@ -41,7 +41,7 @@ describe('Favorite Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array().some(error => error.param === 'providerId' && error.msg === 'L\'ID du prestataire est requis')).toBe(true);
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'L\'ID du prestataire est requis')).toBe(true);
         });
 
         it('should fail validation with invalid providerId', async () => {
@@ -55,7 +55,7 @@ describe('Favorite Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array().some(error => error.param === 'providerId' && error.msg === 'ID prestataire invalide')).toBe(true);
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'ID prestataire invalide')).toBe(true);
         });
     });
 
@@ -84,7 +84,7 @@ describe('Favorite Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array().some(error => error.param === 'providerId' && error.msg === 'ID prestataire invalide')).toBe(true);
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'ID prestataire invalide')).toBe(true);
         });
     });
 });

@@ -43,14 +43,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'id',
-                        msg: 'ID prestataire invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'id' && error.msg === 'ID prestataire invalide')).toBe(true);
         });
     });
 
@@ -86,14 +79,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'businessName',
-                        msg: 'Le nom de l\'entreprise est requis'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'businessName' && error.msg === 'Le nom de l\'entreprise est requis')).toBe(true);
         });
 
         it('should fail validation with businessName too short', async () => {
@@ -109,14 +95,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'businessName',
-                        msg: 'Le nom doit contenir entre 2 et 200 caractères'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'businessName' && error.msg === 'Le nom doit contenir entre 2 et 200 caractères')).toBe(true);
         });
 
         it('should fail validation with missing description', async () => {
@@ -131,14 +110,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'description',
-                        msg: 'La description est requise'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'description' && error.msg === 'La description est requise')).toBe(true);
         });
 
         it('should fail validation with description too short', async () => {
@@ -154,14 +126,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'description',
-                        msg: 'La description doit contenir entre 50 et 5000 caractères'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'description' && error.msg === 'La description doit contenir entre 50 et 5000 caractères')).toBe(true);
         });
 
         it('should fail validation with missing location', async () => {
@@ -176,14 +141,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'location',
-                        msg: 'La localisation est requise'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'location' && error.msg === 'La localisation est requise')).toBe(true);
         });
 
         it('should fail validation with invalid WhatsApp', async () => {
@@ -200,14 +158,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'whatsapp',
-                        msg: 'Numéro WhatsApp invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'whatsapp' && error.msg === 'Numéro WhatsApp invalide')).toBe(true);
         });
 
         it('should fail validation with invalid Facebook URL', async () => {
@@ -224,14 +175,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'facebook',
-                        msg: 'URL Facebook invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'facebook' && error.msg === 'URL Facebook invalide')).toBe(true);
         });
     });
 
@@ -263,14 +207,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'id',
-                        msg: 'ID prestataire invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'id' && error.msg === 'ID prestataire invalide')).toBe(true);
         });
     });
 
@@ -301,14 +238,7 @@ describe('Provider Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'photoIndex',
-                        msg: 'Index de photo invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'photoIndex' && error.msg === 'Index de photo invalide')).toBe(true);
         });
     });
 });

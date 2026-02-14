@@ -60,14 +60,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'providerId',
-                        msg: 'L\'ID du prestataire est requis'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'L\'ID du prestataire est requis')).toBe(true);
         });
 
         it('should fail validation with invalid providerId', async () => {
@@ -82,14 +75,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'providerId',
-                        msg: 'ID prestataire invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'ID prestataire invalide')).toBe(true);
         });
 
         it('should fail validation with missing rating', async () => {
@@ -104,14 +90,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'rating',
-                        msg: 'La note doit être entre 1 et 5'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'rating' && error.msg === 'La note doit être entre 1 et 5')).toBe(true);
         });
 
         it('should fail validation with rating too low', async () => {
@@ -126,14 +105,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'rating',
-                        msg: 'La note doit être entre 1 et 5'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'rating' && error.msg === 'La note doit être entre 1 et 5')).toBe(true);
         });
 
         it('should fail validation with rating too high', async () => {
@@ -148,14 +120,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'rating',
-                        msg: 'La note doit être entre 1 et 5'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'rating' && error.msg === 'La note doit être entre 1 et 5')).toBe(true);
         });
 
         it('should fail validation with comment too long', async () => {
@@ -171,14 +136,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'comment',
-                        msg: 'Le commentaire ne peut pas dépasser 1000 caractères'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'comment' && error.msg === 'Le commentaire ne peut pas dépasser 1000 caractères')).toBe(true);
         });
     });
 
@@ -224,14 +182,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'id',
-                        msg: 'ID avis invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'id' && error.msg === 'ID avis invalide')).toBe(true);
         });
 
         it('should fail validation with invalid rating', async () => {
@@ -246,14 +197,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'rating',
-                        msg: 'La note doit être entre 1 et 5'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'rating' && error.msg === 'La note doit être entre 1 et 5')).toBe(true);
         });
     });
 
@@ -282,14 +226,7 @@ describe('Review Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'id',
-                        msg: 'ID avis invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'id' && error.msg === 'ID avis invalide')).toBe(true);
         });
     });
 });

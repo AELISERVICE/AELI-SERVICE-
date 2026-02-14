@@ -49,14 +49,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'providerId',
-                        msg: 'L\'ID du prestataire est requis'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'L\'ID du prestataire est requis')).toBe(true);
         });
 
         it('should fail validation with invalid providerId', async () => {
@@ -73,14 +66,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'providerId',
-                        msg: 'ID invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'ID invalide')).toBe(true);
         });
 
         it('should fail validation with empty message', async () => {
@@ -97,14 +83,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'message',
-                        msg: 'Le message est requis'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'message' && error.msg === 'Le message est requis')).toBe(true);
         });
 
         it('should fail validation with message too short', async () => {
@@ -121,14 +100,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'message',
-                        msg: 'Le message doit contenir entre 10 et 2000 caractères'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'message' && error.msg === 'Le message doit contenir entre 10 et 2000 caractères')).toBe(true);
         });
 
         it('should fail validation with missing senderName', async () => {
@@ -144,14 +116,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'senderName',
-                        msg: 'Votre nom est requis'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'senderName' && error.msg === 'Votre nom est requis')).toBe(true);
         });
 
         it('should fail validation with invalid email', async () => {
@@ -168,14 +133,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'senderEmail',
-                        msg: 'Veuillez fournir un email valide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'senderEmail' && error.msg === 'Veuillez fournir un email valide')).toBe(true);
         });
     });
 
@@ -208,14 +166,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'rating',
-                        msg: 'La note doit être entre 1 et 5'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'rating' && error.msg === 'La note doit être entre 1 et 5')).toBe(true);
         });
 
         it('should fail validation with comment too long', async () => {
@@ -231,14 +182,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'comment',
-                        msg: 'Le commentaire ne peut pas dépasser 1000 caractères'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'comment' && error.msg === 'Le commentaire ne peut pas dépasser 1000 caractères')).toBe(true);
         });
     });
 
@@ -265,14 +209,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'providerId',
-                        msg: 'L\'ID du prestataire est requis'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'L\'ID du prestataire est requis')).toBe(true);
         });
 
         it('should fail validation with invalid providerId', async () => {
@@ -286,14 +223,7 @@ describe('Contact Validator', () => {
 
             const errors = validationResult(mockReq);
             expect(errors.isEmpty()).toBe(false);
-            expect(errors.array()).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({
-                        param: 'providerId',
-                        msg: 'ID invalide'
-                    })
-                ])
-            );
+            expect(errors.array().some(error => error.path === 'providerId' && error.msg === 'ID invalide')).toBe(true);
         });
     });
 });
