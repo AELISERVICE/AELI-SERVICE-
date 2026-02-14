@@ -53,6 +53,44 @@ router.post('/initialize',
 
 /**
  * @swagger
+ * /api/payments/notchpay/initialize:
+ *   post:
+ *     summary: Initialize a payment with NotchPay
+ *     tags: [Payments]
+ */
+router.post('/notchpay/initialize',
+    optionalAuth,
+    [
+        body('amount')
+            .isInt({ min: 100 })
+            .withMessage('Le montant minimum est 100 FCFA'),
+        body('type')
+            .isIn(['contact_premium', 'featured', 'boost', 'subscription', 'contact_unlock'])
+            .withMessage('Type de paiement invalide'),
+        body('providerId')
+            .optional()
+            .isUUID()
+            .withMessage('ID prestataire invalide'),
+        body('description')
+            .optional()
+            .isLength({ max: 255 })
+            .trim()
+    ],
+    handleValidation,
+    require('../controllers/paymentController').initializeNotchPayPayment
+);
+
+/**
+ * @swagger
+ * /api/payments/notchpay/webhook:
+ *   post:
+ *     summary: NotchPay webhook endpoint (called by NotchPay)
+ *     tags: [Payments]
+ */
+router.post('/notchpay/webhook', require('../controllers/paymentController').handleNotchPayWebhook);
+
+/**
+ * @swagger
  * /api/payments/webhook:
  *   post:
  *     summary: CinetPay webhook endpoint (called by CinetPay)

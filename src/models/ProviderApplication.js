@@ -22,6 +22,34 @@ const ProviderApplication = sequelize.define('ProviderApplication', {
             key: 'id'
         }
     },
+    // Person Info (Optional, falls back to User if empty)
+    firstName: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        field: 'first_name'
+    },
+    lastName: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        field: 'last_name'
+    },
+    gender: {
+        type: DataTypes.ENUM('male', 'female', 'other', 'prefer_not_to_say'),
+        allowNull: true
+    },
+    country: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
+    email: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        validate: { isEmail: true }
+    },
+    phone: {
+        type: DataTypes.STRING(20),
+        allowNull: true
+    },
     // Business Info
     businessName: {
         type: DataTypes.STRING(255),
@@ -65,6 +93,31 @@ const ProviderApplication = sequelize.define('ProviderApplication', {
     instagram: {
         type: DataTypes.STRING(255),
         allowNull: true
+    },
+    businessContact: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+        field: 'business_contact'
+    },
+    activities: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        comment: 'Array of activities/services offered'
+    },
+    // Geolocation
+    latitude: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: true
+    },
+    // CNI Info
+    cniNumber: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        field: 'cni_number'
     },
     // Photos of activity/work
     photos: {

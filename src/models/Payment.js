@@ -8,12 +8,18 @@ const Payment = sequelize.define('Payment', {
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
-    // CinetPay transaction reference
+    // Gateway transaction reference
     transactionId: {
         type: DataTypes.STRING(100),
         allowNull: false,
         unique: true,
         field: 'transaction_id'
+    },
+    // Payment gateway used
+    gateway: {
+        type: DataTypes.ENUM('CinetPay', 'NotchPay'),
+        allowNull: false,
+        defaultValue: 'CinetPay'
     },
     // User who made the payment
     userId: {
@@ -180,6 +186,24 @@ Payment.prototype.updateFromCinetPay = async function (cinetpayData) {
 
     if (cinetpayData.fund_availability_date) {
         this.fundAvailabilityDate = new Date(cinetpayData.fund_availability_date);
+    }
+
+    await this.save();
+    return this;
+};
+
+/**
+ * Update payment status from NotchPay response/webhook
+ */
+Payment.prototype.updateFromNotchPay = async function (notchpayData) {
+    const { NOTCH_PAY_STATUS } = require('../config/notchpay');
+
+    this.status = NOTCH_PAY_STATUS[notchpayData.status] || this.status;
+    this.operatorId = notchpayData.payment_method?.reference || this.operatorId;
+    this.paymentMethod = notchpayData.payment_method?.channel || this.paymentMethod;
+
+    if (notchpayData.status === 'complete') {
+        this.paidAt = notchpayData.completed_at ? new Date(notchpayData.completed_at) : new Date();
     }
 
     await this.save();

@@ -1,6 +1,6 @@
 # 💳 API Paiements - Documentation Complète
 
-Documentation détaillée des endpoints de paiement via CinetPay (Mobile Money Cameroun).
+Documentation détaillée des endpoints de paiement via **CinetPay** et **NotchPay** (Mobile Money Cameroun).
 
 ## Base URL
 ```
@@ -9,19 +9,17 @@ Documentation détaillée des endpoints de paiement via CinetPay (Mobile Money C
 
 ---
 
-## 🏦 Intégration CinetPay
+## 🏦 Passerelles de Paiement
 
-AELI Services utilise **CinetPay** comme passerelle de paiement pour :
-- **Orange Money** (OM)
-- **MTN Mobile Money** (MOMO)
-- **Visa/Mastercard** (optionnel)
+AELI Services supporte deux passerelles pour les paiements Mobile Money (Orange Money, MTN MoMo) et Cartes :
 
-### Devises supportées
-- **XAF** (Franc CFA - CEMAC) - Devise par défaut
+### 1. NotchPay (Recommandé)
+- **Avantages** : Plus rapide, authentification Webhook plus sécurisée (HMAC), API moderne.
+- **Endpoints** : `/notchpay/initialize`, `/notchpay/webhook`.
 
-### Montants
-- **Minimum** : 100 FCFA
-- **Multiple de** : 5 FCFA
+### 2. CinetPay (Hérité)
+- **Avantages** : Présent historiquement.
+- **Endpoints** : `/initialize`, `/webhook`.
 
 ---
 
@@ -110,8 +108,65 @@ const response = await fetch('/api/payments/initialize', {
 const { payment } = await response.json();
 
 // Ouvrir la page de paiement
+const { payment } = await response.json();
+
+// Ouvrir la page de paiement
 window.open(payment.paymentUrl, '_blank', 'width=500,height=600');
 ```
+
+---
+
+## 🚀 1b. INITIALISER UN PAIEMENT NOTCHPAY (Alternative)
+
+### `POST /notchpay/initialize` - Démarrer un paiement via NotchPay
+
+**🔓 Authentification optionnelle**
+
+**Description :**  
+Génère une session de paiement NotchPay.
+
+**Body :**
+```json
+{
+  "amount": 5000,
+  "type": "subscription",
+  "providerId": "uuid",
+  "description": "Premium AELI"
+}
+```
+
+**Réponse 201 :**
+```json
+{
+  "success": true,
+  "message": "Paiement initialisé",
+  "data": {
+    "paymentId": "uuid",
+    "transactionId": "AELI...",
+    "paymentUrl": "https://api.notchpay.co/checkout/...",
+    "amount": 5000,
+    "currency": "XAF"
+  }
+}
+```
+
+---
+
+## 🔔 2b. WEBHOOK NOTCHPAY
+
+### `POST /notchpay/webhook` - Notification NotchPay
+
+**🌐 Accessible publiquement**
+
+**Sécurité :**  
+Vérification via signature HMAC transmise dans le header `x-notch-signature`.
+
+**Ce qu'il fait :**
+1. Calcule le hash du body avec la `NOTCH_PAY_SECRET_KEY`
+2. Compare avec la signature reçue
+3. Met à jour le paiement via `updateFromNotchPay`
+4. Active le service en cas de statut `complete`
+
 
 ---
 

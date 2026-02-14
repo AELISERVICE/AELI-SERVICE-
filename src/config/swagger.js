@@ -234,7 +234,8 @@ L'API utilise des JWT tokens:
             { name: 'Abonnements', description: 'Gestion des abonnements prestataires' },
             { name: 'Admin', description: 'Administration (admin uniquement)' },
             { name: 'Admin - Sécurité', description: 'Gestion de la sécurité (admin uniquement)' },
-            { name: 'Banners', description: 'Gestion des bannières publicitaires' }
+            { name: 'Banners', description: 'Gestion des bannières publicitaires' },
+            { name: 'Payments', description: 'Gestion des paiements (CinetPay & NotchPay)' }
         ]
     },
     apis: ['./src/routes/*.js', './src/swagger/*.yaml']

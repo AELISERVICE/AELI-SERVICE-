@@ -77,6 +77,19 @@ const Provider = sequelize.define('Provider', {
             }
         }
     },
+    activities: {
+        type: DataTypes.JSONB,
+        defaultValue: [],
+        comment: 'Array of activities/services offered'
+    },
+    latitude: {
+        type: DataTypes.DECIMAL(10, 8),
+        allowNull: true
+    },
+    longitude: {
+        type: DataTypes.DECIMAL(11, 8),
+        allowNull: true
+    },
     isVerified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

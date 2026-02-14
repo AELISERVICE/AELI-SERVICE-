@@ -103,9 +103,40 @@ paths:
                     type: string
                     format: binary
                   maxItems: 5
+                imgcnirecto:
+                  type: string
+                  format: binary
+                imgcniverso:
+                  type: string
+                  format: binary
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                gender:
+                  type: string
+                  enum: [male, female, other, prefer_not_to_say]
+                country:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                phone:
+                  type: string
+                businessContact:
+                  type: string
+                activities:
+                  type: string
+                  description: JSON string array of activities
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                cniNumber:
+                  type: string
       responses:
         '201':
-          description: Profil créé
+          description: Candidature soumise avec succès
         '400':
           description: Profil déjà existant ou validation error
 

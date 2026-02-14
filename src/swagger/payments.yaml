@@ -1,0 +1,94 @@
+paths:
+  /payments/initialize:
+    post:
+      tags:
+        - Payments
+      summary: Initialiser un paiement (CinetPay)
+      description: Crée une session de paiement CinetPay
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - type
+              properties:
+                amount:
+                  type: integer
+                  minimum: 100
+                type:
+                  type: string
+                  enum: [contact_premium, featured, boost, subscription]
+                providerId:
+                  type: string
+                  format: uuid
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Paiement initialisé
+        '400':
+          description: Erreur de validation
+
+  /payments/notchpay/initialize:
+    post:
+      tags:
+        - Payments
+      summary: Initialiser un paiement (NotchPay)
+      description: Crée une session de paiement NotchPay
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - type
+              properties:
+                amount:
+                  type: integer
+                  minimum: 100
+                type:
+                  type: string
+                  enum: [contact_premium, featured, boost, subscription, contact_unlock]
+                providerId:
+                  type: string
+                  format: uuid
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Paiement initialisé
+
+  /payments/{transactionId}/status:
+    get:
+      tags:
+        - Payments
+      summary: Vérifier le statut d'une transaction
+      parameters:
+        - in: path
+          name: transactionId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statut actuel du paiement
+
+  /payments/history:
+    get:
+      tags:
+        - Payments
+      summary: Historique des paiements de l'utilisateur
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste des paiements

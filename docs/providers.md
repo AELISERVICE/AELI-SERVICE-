@@ -141,30 +141,42 @@ Récupère le profil complet d'un prestataire avec ses services, avis récents e
 **🔒 Authentification requise** | **Rôle : client uniquement**
 
 **Description :**  
-Permet à un client de soumettre une candidature pour devenir prestataire. Inclut l'upload de la CNI et des photos.
+Permet à un client de soumettre une candidature complète pour devenir prestataire. Inclut l'upload des pièces d'identité (Recto/Verso) et des photos de réalisations.
 
 **Ce qu'il fait :**
 1. Vérifie que l'utilisateur n'est pas déjà prestataire
 2. Vérifie qu'il n'y a pas de candidature en attente
 3. Vérifie qu'il n'y a pas eu de rejet récent (< 7 jours)
-4. Upload les documents vers Cloudinary
-5. Crée la candidature avec statut `pending`
+4. Upload les images (CNI + Photos) vers Cloudinary
+5. Crée la candidature avec toutes les infos personnelles et professionnelles
 6. Envoie un email de confirmation
 
 **Content-Type :** `multipart/form-data`
 
-**Body :**
+**Champs (Paramètres) :**
 | Champ | Type | Requis | Description |
 |-------|------|--------|-------------|
 | `businessName` | string | ✅ | Nom de l'activité (3-100 car.) |
-| `description` | string | ✅ | Description (50-2000 car.) |
-| `location` | string | ✅ | Ville |
-| `address` | string | ❌ | Adresse complète |
-| `whatsapp` | string | ❌ | Numéro WhatsApp |
-| `facebook` | string | ❌ | URL Facebook |
-| `instagram` | string | ❌ | Pseudo Instagram |
-| `photos` | files | ❌ | Photos de l'activité (max 5) |
-| `documents` | files | ✅ | **CNI obligatoire** (JPG/PNG/PDF) |
+| `description` | string | ✅ | Description (50-5000 car.) |
+| `location` | string | ✅ | Ville/Quartier |
+| `address` | string | ❌ | Adresse physique précise |
+| `whatsapp` | string | ❌ | Numéro WhatsApp (format international) |
+| `businessContact` | string | ❌ | Numéro pro alternatif |
+| `activities` | JSON string | ✅ | ex: `["Coiffure", "Maquillage"]` |
+| `latitude` | number | ❌ | Coordonnée géographique |
+| `longitude` | number | ❌ | Coordonnée géographique |
+| `cniNumber` | string | ❌ | Numéro de la CNI |
+| `firstName` | string | ❌ | Prénom (si différent du compte) |
+| `lastName` | string | ❌ | Nom (si différent du compte) |
+| `email` | string | ❌ | Email pro (si différent du compte) |
+| `phone` | string | ❌ | Téléphone pro (si différent du compte) |
+
+**Fichiers :**
+| Champ | Type | Requis | Description |
+|-------|------|--------|-------------|
+| `photos` | files | ❌ | Photos de réalisations (max 5) |
+| `imgcnirecto` | file | ✅ | Photo CNI Face avant |
+| `imgcniverso` | file | ✅ | Photo CNI Face arrière |
 
 **Réponse 201 :**
 ```json
@@ -175,7 +187,7 @@ Permet à un client de soumettre une candidature pour devenir prestataire. Inclu
     "id": "uuid",
     "businessName": "Salon Marie",
     "status": "pending",
-    "createdAt": "2026-01-15T19:00:00Z"
+    "createdAt": "2026-02-15T10:00:00Z"
   }
 }
 ```
@@ -183,10 +195,10 @@ Permet à un client de soumettre une candidature pour devenir prestataire. Inclu
 **Erreurs possibles :**
 | Code | Message | Cause |
 |------|---------|-------|
-| 400 | Vous êtes déjà prestataire | Role = provider |
-| 400 | Candidature en attente | Déjà une pending |
-| 400 | Délai de 7 jours requis | Rejet récent |
-| 400 | CNI requis | Document CNI manquant |
+| 400 | Vous êtes déjà prestataire | Déjà le rôle provider |
+| 400 | Candidature en attente | Une candidature PENDING existe déjà |
+| 400 | CNI requis | Fichiers CNI manquants |
+| 400 | Description trop courte | < 50 caractères |
 
 ---
 

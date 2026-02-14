@@ -18,7 +18,13 @@ const cache = require('../config/redis');
  * @access  Private (client only)
  */
 const applyToBeProvider = asyncHandler(async (req, res) => {
-    const { businessName, description, location, address, whatsapp, facebook, instagram } = req.body;
+    const {
+        firstName, lastName, gender, country, email, phone, // Individual info
+        businessName, description, location, address,
+        whatsapp, facebook, instagram,
+        businessContact, activities,
+        latitude, longitude, cniNumber
+    } = req.body;
 
     // Check if user is already a provider
     if (req.user.role === 'provider') {
@@ -48,23 +54,32 @@ const applyToBeProvider = asyncHandler(async (req, res) => {
     // Extract photos from uploaded files
     const photos = extractPhotoUrls(req.files?.photos || req.files);
 
-    // Process documents (CNI required)
+    // Process documents (CNI required - support imgcnirecto/imgcniverso from front)
     const documents = [];
-    if (req.files?.documents) {
-        for (const file of req.files.documents) {
-            const result = await uploadDocument(file.path, 'aeli-services/applications');
-            documents.push({
-                type: file.fieldname === 'cni' ? 'cni' : (req.body.documentType || 'cni'),
-                url: result.url,
-                publicId: result.publicId,
-                originalFilename: file.originalname,
-                uploadedAt: new Date()
-            });
-        }
+    const cniFiles = [];
+
+    if (req.files?.imgcnirecto) cniFiles.push(...req.files.imgcnirecto);
+    if (req.files?.imgcniverso) cniFiles.push(...req.files.imgcniverso);
+    if (req.files?.documents) cniFiles.push(...req.files.documents);
+    if (req.files?.cni) cniFiles.push(...req.files.cni);
+
+    for (const file of cniFiles) {
+        const result = await uploadDocument(file.path, 'aeli-services/applications');
+        let docType = 'cni';
+        if (file.fieldname === 'imgcnirecto') docType = 'cni_recto';
+        if (file.fieldname === 'imgcniverso') docType = 'cni_verso';
+
+        documents.push({
+            type: docType,
+            url: result.url,
+            publicId: result.publicId,
+            originalFilename: file.originalname,
+            uploadedAt: new Date()
+        });
     }
 
-    // Check CNI is present
-    const hasCNI = documents.some(doc => doc.type === 'cni');
+    // Check CNI is present (at least one CNI related doc)
+    const hasCNI = documents.some(doc => ['cni', 'cni_recto', 'cni_verso'].includes(doc.type));
     if (!hasCNI) {
         throw new AppError(req.t('documents.cniRequired'), 400);
     }
@@ -72,13 +87,12 @@ const applyToBeProvider = asyncHandler(async (req, res) => {
     // Create application
     const application = await ProviderApplication.create({
         userId: req.user.id,
-        businessName,
-        description,
-        location,
-        address,
-        whatsapp,
-        facebook,
-        instagram,
+        firstName, lastName, gender, country, email, phone,
+        businessName, description, location, address,
+        whatsapp, facebook, instagram,
+        businessContact,
+        activities: Array.isArray(activities) ? activities : (activities ? JSON.parse(activities) : []),
+        latitude, longitude, cniNumber,
         photos,
         documents,
         status: 'pending'
@@ -207,6 +221,9 @@ const reviewApplication = asyncHandler(async (req, res) => {
                 instagram: application.instagram,
                 photos: application.photos,
                 documents: application.documents,
+                activities: application.activities,
+                latitude: application.latitude,
+                longitude: application.longitude,
                 isVerified: true, // Auto-verified since admin approved
                 verifiedAt: new Date(),
                 verifiedBy: req.user.id,

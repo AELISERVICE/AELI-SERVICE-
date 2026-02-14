@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const Payment = require('../models/Payment');
 const { sequelize, User, Provider } = require('../models');
 const { CINETPAY_CONFIG, PAYMENT_STATUS, CINETPAY_CODES } = require('../config/cinetpay');
+const { NOTCH_PAY_CONFIG, NOTCH_PAY_STATUS } = require('../config/notchpay');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -119,6 +120,105 @@ const initializePayment = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Initialize a payment with NotchPay
+ * POST /api/payments/notchpay/initialize
+ */
+const initializeNotchPayPayment = asyncHandler(async (req, res) => {
+    const { amount, type, providerId, description } = req.body;
+    const userId = req.user?.id;
+
+    // Validate amount
+    if (!amount || amount < 100) {
+        throw new AppError(req.t('common.badRequest'), 400);
+    }
+
+    // Validate type
+    const validTypes = ['contact_premium', 'featured', 'boost', 'subscription', 'contact_unlock'];
+    if (!validTypes.includes(type)) {
+        throw new AppError(req.t('common.badRequest'), 400);
+    }
+
+    // Get user info
+    let user = null;
+    if (userId) {
+        user = await User.findByPk(userId);
+    }
+
+    // Generate unique transaction ID (reference)
+    const transactionId = Payment.generateTransactionId();
+
+    // Create payment record
+    const payment = await Payment.create({
+        transactionId,
+        userId,
+        providerId,
+        type,
+        amount,
+        currency: NOTCH_PAY_CONFIG.currency,
+        status: 'PENDING',
+        gateway: 'NotchPay',
+        description: description || `Paiement ${type} AELI Services (NotchPay)`,
+        metadata: { type, providerId }
+    });
+
+    // Prepare NotchPay request
+    const notchPayData = {
+        amount: amount,
+        currency: NOTCH_PAY_CONFIG.currency,
+        description: payment.description,
+        reference: transactionId,
+        callback: NOTCH_PAY_CONFIG.callbackUrl,
+        customer: {
+            name: user ? `${user.firstName} ${user.lastName}` : 'Client AELI',
+            email: user?.email,
+            phone: user?.phone
+        }
+    };
+
+    try {
+        // Call NotchPay API
+        const response = await axios.post(`${NOTCH_PAY_CONFIG.baseUrl}/payments/initialize`, notchPayData, {
+            headers: {
+                'Authorization': NOTCH_PAY_CONFIG.publicKey,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        const notchPayResponse = response.data;
+
+        if (notchPayResponse.status === 'Accepted' || notchPayResponse.authorization_url) {
+            // Update payment with URL
+            payment.paymentUrl = notchPayResponse.authorization_url;
+            await payment.save();
+
+            logger.info(`NotchPay payment initialized: ${transactionId}`);
+
+            i18nResponse(req, res, 201, 'payment.initialized', {
+                paymentId: payment.id,
+                transactionId: payment.transactionId,
+                paymentUrl: payment.paymentUrl,
+                amount: payment.amount,
+                currency: payment.currency
+            });
+        } else {
+            payment.status = 'REFUSED';
+            payment.errorMessage = notchPayResponse.message;
+            await payment.save();
+
+            throw new AppError(req.t('payment.failed'), 400);
+        }
+    } catch (error) {
+        if (error.response) {
+            logger.error('NotchPay API error:', error.response.data);
+            payment.errorMessage = JSON.stringify(error.response.data);
+            await payment.save();
+        }
+        throw error;
+    }
+});
+
+/**
  * CinetPay webhook handler
  * POST /api/payments/webhook
  */
@@ -189,6 +289,52 @@ const handleWebhook = asyncHandler(async (req, res) => {
     }
 
     // Always return 200 to CinetPay
+    res.status(200).send('OK');
+});
+
+/**
+ * NotchPay webhook handler
+ * POST /api/payments/notchpay/webhook
+ */
+const handleNotchPayWebhook = asyncHandler(async (req, res) => {
+    const signature = req.headers['x-notch-signature'];
+    const event = req.body;
+
+    logger.info(`NotchPay Webhook received: ${event.event} for ref ${event.data?.reference}`);
+
+    // Verify signature (Security best practice)
+    if (signature && NOTCH_PAY_CONFIG.secretKey) {
+        const hash = crypto.createHmac('sha256', NOTCH_PAY_CONFIG.secretKey)
+            .update(JSON.stringify(req.body))
+            .digest('hex');
+
+        if (hash !== signature) {
+            logger.warn('Invalid NotchPay signature');
+            return res.status(401).send('Invalid signature');
+        }
+    }
+
+    const { reference, status } = event.data || {};
+
+    if (!reference) return res.status(400).send('Missing reference');
+
+    const payment = await Payment.findByTransactionId(reference);
+    if (!payment) return res.status(404).send('Payment not found');
+
+    // If already processed, skip
+    if (payment.status === 'ACCEPTED' || payment.status === 'REFUSED') {
+        return res.status(200).send('OK');
+    }
+
+    // Update payment
+    await payment.updateFromNotchPay(event.data);
+
+    if (payment.status === 'ACCEPTED') {
+        await processPaymentSuccess(payment);
+    } else if (payment.status === 'REFUSED') {
+        await processPaymentFailure(payment, payment.errorMessage);
+    }
+
     res.status(200).send('OK');
 });
 
@@ -383,7 +529,9 @@ const getAllPayments = asyncHandler(async (req, res) => {
 
 module.exports = {
     initializePayment,
+    initializeNotchPayPayment,
     handleWebhook,
+    handleNotchPayWebhook,
     checkPaymentStatus,
     getPaymentHistory,
     getAllPayments
