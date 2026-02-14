@@ -3,200 +3,258 @@
  * Tests for pagination and response formatting utilities
  */
 
-const {
-    getPaginationParams,
-    getPaginationData,
-    buildSortOrder,
-    formatPrice,
-    extractPhotoUrls,
-    cleanPhoneNumber,
-    parseBoolean
-} = require('../../src/utils/helpers');
+const { parsePagination, buildPaginationInfo, successResponse, paginatedResponse, errorResponse } = require('../../src/utils/responseHelpers');
 
 describe('Response Helpers', () => {
-    describe('getPaginationParams', () => {
-        it('should return default values for page 1', () => {
-            const result = getPaginationParams(1, 10);
-            expect(result).toEqual({ limit: 10, offset: 0 });
+    let mockRes;
+
+    beforeEach(() => {
+        mockRes = {
+            status: jest.fn().mockReturnThis(),
+            json: jest.fn().mockReturnThis()
+        };
+    });
+
+    describe('parsePagination', () => {
+        it('should return default values for empty query', () => {
+            const result = parsePagination({});
+
+            expect(result).toEqual({
+                page: 1,
+                limit: 20,
+                offset: 0
+            });
         });
 
-        it('should calculate correct offset for page 2', () => {
-            const result = getPaginationParams(2, 10);
-            expect(result).toEqual({ limit: 10, offset: 10 });
-        });
+        it('should parse page and limit from query', () => {
+            const result = parsePagination({ page: '2', limit: '10' });
 
-        it('should calculate correct offset for page 3 with limit 20', () => {
-            const result = getPaginationParams(3, 20);
-            expect(result).toEqual({ limit: 20, offset: 40 });
+            expect(result).toEqual({
+                page: 2,
+                limit: 10,
+                offset: 10
+            });
         });
 
         it('should handle string inputs', () => {
-            const result = getPaginationParams('2', '15');
-            expect(result).toEqual({ limit: 15, offset: 15 });
+            const result = parsePagination({ page: '3', limit: '5' });
+
+            expect(result).toEqual({
+                page: 3,
+                limit: 5,
+                offset: 10
+            });
         });
 
-        it('should enforce maximum limit of 50', () => {
-            const result = getPaginationParams(1, 500);
-            expect(result.limit).toBe(50);
+        it('should enforce minimum values', () => {
+            const result = parsePagination({ page: '0', limit: '-5' });
+
+            expect(result).toEqual({
+                page: 1,
+                limit: 1,
+                offset: 0
+            });
         });
 
-        it('should enforce minimum limit of 1', () => {
-            const result = getPaginationParams(1, 0);
-            expect(result.limit).toBeGreaterThanOrEqual(1);
+        it('should enforce maximum limit', () => {
+            const result = parsePagination({ limit: '200' }, { maxLimit: 50 });
+
+            expect(result).toEqual({
+                page: 1,
+                limit: 50,
+                offset: 0
+            });
         });
 
-        it('should use default values when not provided', () => {
-            const result = getPaginationParams();
-            expect(result.limit).toBe(12);
-            expect(result.offset).toBe(0);
-        });
-    });
+        it('should use custom defaults', () => {
+            const result = parsePagination({}, { page: 2, limit: 15, maxLimit: 30 });
 
-    describe('getPaginationData', () => {
-        it('should calculate total pages correctly', () => {
-            const result = getPaginationData(1, 10, 45);
-            expect(result.totalPages).toBe(5);
-            expect(result.totalItems).toBe(45);
-            expect(result.currentPage).toBe(1);
-        });
-
-        it('should handle exact page divisions', () => {
-            const result = getPaginationData(1, 10, 30);
-            expect(result.totalPages).toBe(3);
-        });
-
-        it('should indicate hasNextPage correctly', () => {
-            const page1 = getPaginationData(1, 10, 25);
-            expect(page1.hasNextPage).toBe(true);
-
-            const lastPage = getPaginationData(3, 10, 25);
-            expect(lastPage.hasNextPage).toBe(false);
-        });
-
-        it('should indicate hasPrevPage correctly', () => {
-            const page1 = getPaginationData(1, 10, 25);
-            expect(page1.hasPrevPage).toBe(false);
-
-            const page2 = getPaginationData(2, 10, 25);
-            expect(page2.hasPrevPage).toBe(true);
-        });
-
-        it('should handle empty results', () => {
-            const result = getPaginationData(1, 10, 0);
-            expect(result.totalPages).toBe(0);
-            expect(result.totalItems).toBe(0);
-            expect(result.hasNextPage).toBe(false);
+            expect(result).toEqual({
+                page: 2,
+                limit: 15,
+                offset: 15
+            });
         });
     });
 
-    describe('buildSortOrder', () => {
-        it('should return recent sort (snake_case) by default', () => {
-            const result = buildSortOrder('recent');
-            expect(result).toEqual([['created_at', 'DESC']]);
+    describe('buildPaginationInfo', () => {
+        it('should calculate pagination info correctly', () => {
+            const result = buildPaginationInfo(100, 2, 10);
+
+            expect(result).toEqual({
+                currentPage: 2,
+                totalPages: 10,
+                totalItems: 100,
+                limit: 10,
+                hasNextPage: true,
+                hasPrevPage: true
+            });
         });
 
-        it('should handle rating sort', () => {
-            const result = buildSortOrder('rating');
-            expect(result).toEqual([['average_rating', 'DESC']]);
+        it('should handle first page', () => {
+            const result = buildPaginationInfo(50, 1, 10);
+
+            expect(result).toEqual({
+                currentPage: 1,
+                totalPages: 5,
+                totalItems: 50,
+                limit: 10,
+                hasNextPage: true,
+                hasPrevPage: false
+            });
         });
 
-        it('should handle views sort', () => {
-            const result = buildSortOrder('views');
-            expect(result).toEqual([['views_count', 'DESC']]);
+        it('should handle last page', () => {
+            const result = buildPaginationInfo(50, 5, 10);
+
+            expect(result).toEqual({
+                currentPage: 5,
+                totalPages: 5,
+                totalItems: 50,
+                limit: 10,
+                hasNextPage: false,
+                hasPrevPage: true
+            });
         });
 
-        it('should handle name sort', () => {
-            const result = buildSortOrder('name');
-            expect(result).toEqual([['business_name', 'ASC']]);
+        it('should handle single page', () => {
+            const result = buildPaginationInfo(5, 1, 10);
+
+            expect(result).toEqual({
+                currentPage: 1,
+                totalPages: 1,
+                totalItems: 5,
+                limit: 10,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
         });
 
-        it('should handle unknown sort with default', () => {
-            const result = buildSortOrder('unknown');
-            expect(result).toEqual([['created_at', 'DESC']]);
-        });
-    });
+        it('should handle zero items', () => {
+            const result = buildPaginationInfo(0, 1, 10);
 
-    describe('formatPrice', () => {
-        it('should format XAF currency', () => {
-            const result = formatPrice(5000);
-            expect(result).toContain('5');
-        });
-
-        it('should return "Sur demande" for zero/null', () => {
-            expect(formatPrice(0)).toBe('Sur demande');
-            expect(formatPrice(null)).toBe('Sur demande');
-        });
-
-        it('should handle large amounts', () => {
-            const result = formatPrice(1000000);
-            expect(result).toContain('1');
-        });
-    });
-
-    describe('extractPhotoUrls', () => {
-        it('should extract path from files array', () => {
-            const files = [
-                { path: 'https://cdn.com/photo1.jpg' },
-                { path: 'https://cdn.com/photo2.jpg' }
-            ];
-
-            const result = extractPhotoUrls(files);
-            expect(result).toEqual([
-                'https://cdn.com/photo1.jpg',
-                'https://cdn.com/photo2.jpg'
-            ]);
-        });
-
-        it('should handle empty files array', () => {
-            const result = extractPhotoUrls([]);
-            expect(result).toEqual([]);
-        });
-
-        it('should handle undefined files', () => {
-            const result = extractPhotoUrls(undefined);
-            expect(result).toEqual([]);
-        });
-
-        it('should fallback to secure_url if path missing', () => {
-            const files = [
-                { secure_url: 'https://cdn.com/photo1.jpg' }
-            ];
-
-            const result = extractPhotoUrls(files);
-            expect(result).toHaveLength(1);
+            expect(result).toEqual({
+                currentPage: 1,
+                totalPages: 0,
+                totalItems: 0,
+                limit: 10,
+                hasNextPage: false,
+                hasPrevPage: false
+            });
         });
     });
 
-    describe('cleanPhoneNumber', () => {
-        it('should remove spaces and dashes', () => {
-            expect(cleanPhoneNumber('+237 6 99 12 34 56')).toBe('+237699123456');
-            expect(cleanPhoneNumber('699-123-456')).toBe('699123456');
+    describe('successResponse', () => {
+        it('should return success response with data', () => {
+            const data = { user: { id: 1, name: 'Test' } };
+
+            const result = successResponse(mockRes, 200, 'Success message', data);
+
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Success message',
+                user: { id: 1, name: 'Test' }
+            });
+            expect(result).toBe(mockRes);
         });
 
-        it('should handle null/undefined', () => {
-            expect(cleanPhoneNumber(null)).toBe(null);
-            expect(cleanPhoneNumber(undefined)).toBe(null);
+        it('should return success response without data', () => {
+            const result = successResponse(mockRes, 201, 'Created');
+
+            expect(mockRes.status).toHaveBeenCalledWith(201);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Created'
+            });
+            expect(result).toBe(mockRes);
+        });
+
+        it('should include pagination when provided', () => {
+            const pagination = { currentPage: 1, totalPages: 5 };
+            const options = { pagination };
+
+            const result = successResponse(mockRes, 200, 'List retrieved', { items: [] }, options);
+
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'List retrieved',
+                items: [],
+                pagination
+            });
         });
     });
 
-    describe('parseBoolean', () => {
-        it('should parse truthy values', () => {
-            expect(parseBoolean(true)).toBe(true);
-            expect(parseBoolean('true')).toBe(true);
-            expect(parseBoolean('1')).toBe(true);
-            expect(parseBoolean(1)).toBe(true);
+    describe('paginatedResponse', () => {
+        it('should return paginated response with default items key', () => {
+            const items = [{ id: 1 }, { id: 2 }];
+            const totalCount = 50;
+            const page = 2;
+            const limit = 10;
+
+            const result = paginatedResponse(mockRes, 'Items retrieved', items, totalCount, page, limit);
+
+            expect(mockRes.status).toHaveBeenCalledWith(200);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Items retrieved',
+                items,
+                pagination: {
+                    currentPage: 2,
+                    totalPages: 5,
+                    totalItems: 50,
+                    limit: 10,
+                    hasNextPage: true,
+                    hasPrevPage: true
+                }
+            });
+            expect(result).toBe(mockRes);
         });
 
-        it('should parse falsy values', () => {
-            expect(parseBoolean(false)).toBe(false);
-            expect(parseBoolean('false')).toBe(false);
-            expect(parseBoolean('0')).toBe(false);
-            expect(parseBoolean(0)).toBe(false);
+        it('should use custom items key', () => {
+            const users = [{ id: 1 }];
+            const result = paginatedResponse(mockRes, 'Users retrieved', users, 10, 1, 5, 'users');
+
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Users retrieved',
+                users,
+                pagination: {
+                    currentPage: 1,
+                    totalPages: 2,
+                    totalItems: 10,
+                    limit: 5,
+                    hasNextPage: true,
+                    hasPrevPage: false
+                }
+            });
+        });
+    });
+
+    describe('errorResponse', () => {
+        it('should return error response without errors', () => {
+            const result = errorResponse(mockRes, 400, 'Bad request');
+
+            expect(mockRes.status).toHaveBeenCalledWith(400);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Bad request'
+            });
+            expect(result).toBe(mockRes);
         });
 
-        it('should return undefined for invalid values', () => {
-            expect(parseBoolean('maybe')).toBe(undefined);
-            expect(parseBoolean(null)).toBe(undefined);
+        it('should return error response with errors', () => {
+            const errors = { email: 'Invalid email format' };
+
+            const result = errorResponse(mockRes, 422, 'Validation failed', errors);
+
+            expect(mockRes.status).toHaveBeenCalledWith(422);
+            expect(mockRes.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Validation failed',
+                errors
+            });
+            expect(result).toBe(mockRes);
         });
     });
 });
