@@ -1,46 +1,46 @@
-# 🔐 Sécurité API
+# 🔐 API Security
 
-Gestion de la sécurité, logs, et protection contre les attaques.
+Security management, logs, and attack protection.
 
 ## Base URL (Admin)
 ```
 /api/admin
 ```
 
-> 💡 **i18n**: Ajoutez `?lang=en` pour les messages en anglais. Voir [README](./README.md#-internationalisation-i18n).
+> 💡 **i18n**: Add `?lang=en` for English messages. See [README](./README.md#-internationalization-i18n).
 
 ---
 
 ## Endpoints
 
-### GET `/security-logs` - Journaux de Sécurité 🔒
+### GET `/security-logs` - Security Logs 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Required Role:** `admin`
 
 **Query Params:**
 | Param | Type | Description |
 |-------|------|-------------|
-| `limit` | int | Nombre de logs (défaut: 100) |
-| `eventType` | string | Type d'événement |
+| `limit` | int | Number of logs (default: 100) |
+| `eventType` | string | Event type |
 | `riskLevel` | string | `low`, `medium`, `high` |
-| `userId` | uuid | Filtrer par utilisateur |
-| `success` | bool | Événements réussis/échoués |
-| `startDate` | date | Date de début |
-| `endDate` | date | Date de fin |
+| `userId` | uuid | Filter by user |
+| `success` | bool | Successful/failed events |
+| `startDate` | date | Start date |
+| `endDate` | date | End date |
 
-**Types d'événements:**
+**Event Types:**
 | Type | Description |
 |------|-------------|
-| `login_success` | Connexion réussie |
-| `login_failed` | Échec de connexion |
-| `account_locked` | Compte verrouillé |
-| `otp_verified` | OTP vérifié |
-| `otp_failed` | OTP échoué |
-| `honeypot_triggered` | Bot détecté |
-| `password_reset_request` | Demande reset mot de passe |
-| `session_expired` | Session expirée |
+| `login_success` | Successful login |
+| `login_failed` | Failed login |
+| `account_locked` | Account locked |
+| `otp_verified` | OTP verified |
+| `otp_failed` | OTP failed |
+| `honeypot_triggered` | Bot detected |
+| `password_reset_request` | Password reset request |
+| `session_expired` | Session expired |
 
-**Réponse 200:**
+**Response 200:**
 ```json
 {
   "success": true,
@@ -64,31 +64,31 @@ Gestion de la sécurité, logs, et protection contre les attaques.
 
 ---
 
-### GET `/security-logs/export` - Exporter en CSV 🔒
+### GET `/security-logs/export` - Export to CSV 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Required Role:** `admin`
 
-Télécharge les logs de sécurité au format CSV.
+Downloads security logs in CSV format.
 
 **Query Params:**
 | Param | Type | Description |
 |-------|------|-------------|
-| `startDate` | date | Date de début (défaut: -30 jours) |
-| `endDate` | date | Date de fin (défaut: aujourd'hui) |
-| `eventType` | string | Filtrer par type |
-| `riskLevel` | string | Filtrer par niveau de risque |
+| `startDate` | date | Start date (default: -30 days) |
+| `endDate` | date | End date (default: today) |
+| `eventType` | string | Filter by type |
+| `riskLevel` | string | Filter by risk level |
 
-**Réponse:** Fichier CSV téléchargé
+**Response:** Downloaded CSV file
 
 ---
 
-### GET `/security-stats` - Statistiques Sécurité 🔒
+### GET `/security-stats` - Security Statistics 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Required Role:** `admin`
 
-Dashboard temps réel des événements de sécurité.
+Real-time dashboard of security events.
 
-**Réponse 200:**
+**Response 200:**
 ```json
 {
   "success": true,
@@ -107,89 +107,89 @@ Dashboard temps réel des événements de sécurité.
 
 ---
 
-### GET `/banned-ips` - IPs Bannies 🔒
+### GET `/banned-ips` - Banned IPs 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Required Role:** `admin`
 
-Liste des IPs actuellement bannies.
+List of currently banned IPs.
 
 ---
 
-### POST `/banned-ips` - Bannir une IP 🔒
+### POST `/banned-ips` - Ban an IP 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Required Role:** `admin`
 
 **Body:**
 ```json
 {
   "ipAddress": "192.168.1.100",
-  "reason": "Attaque brute force",
+  "reason": "Brute force attack",
   "duration": 86400
 }
 ```
 
-| Champ | Description |
+| Field | Description |
 |-------|-------------|
-| `duration` | Durée en secondes (`null` = permanent) |
+| `duration` | Duration in seconds (`null` = permanent) |
 
 ---
 
-### DELETE `/banned-ips/:ip` - Débannir une IP 🔒
+### DELETE `/banned-ips/:ip` - Unban an IP 🔒
 
-⚠️ **Rôle requis:** `admin`
+⚠️ **Required Role:** `admin`
 
 ---
 
-## Protections Actives
+## Active Protections
 
-### 🛡️ Protection Brute Force
+### 🛡️ Brute Force Protection
 
 | Protection | Configuration |
 |------------|---------------|
-| Login | 5 tentatives / 15 min |
-| OTP | 3 tentatives / 10 min |
-| Password Reset | 3 / heure |
-| Registration | 5 / heure |
-| Contact | 10 / heure |
-| API général | 100 / minute |
+| Login | 5 attempts / 15 min |
+| OTP | 3 attempts / 10 min |
+| Password Reset | 3 / hour |
+| Registration | 5 / hour |
+| Contact | 10 / hour |
+| General API | 100 / minute |
 
-### 🔒 Verrouillage de Compte
-
-```
-Après 5 échecs de connexion:
-├── Compte verrouillé 30 minutes
-├── Event "account_locked" loggé
-└── Email notification (optionnel)
-```
-
-### 🤖 Détection de Bots (Honeypot)
+### 🔒 Account Lockout
 
 ```
-Champs honeypot dans les formulaires:
+After 5 failed login attempts:
+├── Account locked for 30 minutes
+├── "account_locked" event logged
+└── Email notification (optional)
+```
+
+### 🤖 Bot Detection (Honeypot)
+
+```
+Honeypot fields in forms:
 ├── website
 ├── hp_check  
 └── url2
 
-Si remplis:
-├── Requête rejetée (400)
-├── Event "honeypot_triggered" loggé (high risk)
-└── Auto-ban après 10+ événements suspects
+If filled:
+├── Request rejected (400)
+├── "honeypot_triggered" event logged (high risk)
+└── Auto-ban after 10+ suspicious events
 ```
 
 ### 🚫 Auto-Ban IP
 
 ```
-Si 10+ événements suspects en 1 heure:
-├── IP automatiquement bannie 24h
-├── Cache invalidé immédiatement
-└── Log dans security_logs
+If 10+ suspicious events in 1 hour:
+├── IP automatically banned for 24h
+├── Cache immediately invalidated
+└── Logged in security_logs
 ```
 
 ---
 
-## Headers de Sécurité
+## Security Headers
 
-| Header | Valeur |
+| Header | Value |
 |--------|--------|
 | X-Content-Type-Options | nosniff |
 | X-Frame-Options | DENY |
@@ -199,9 +199,9 @@ Si 10+ événements suspects en 1 heure:
 
 ---
 
-## Workflow Sécurité
+## Security Workflow
 
-### Connexion avec Protection
+### Login with Protection
 
 ```
 [User] POST /api/auth/login
@@ -209,17 +209,17 @@ Si 10+ événements suspects en 1 heure:
     │
     ▼
 ┌─────────────────────────┐
-│ IP Banlist Check        │ ── Bannie ──▶ 403 Accès refusé
+│ IP Banlist Check        │ ── Banned ──▶ 403 Access Denied
 └─────────┬───────────────┘
           │
           ▼
 ┌─────────────────────────┐
-│ Rate Limit (5/15min)    │ ── Dépassé ──▶ 429 Too Many Requests
+│ Rate Limit (5/15min)    │ ── Exceeded ──▶ 429 Too Many Requests
 └─────────┬───────────────┘
           │
           ▼
 ┌─────────────────────────┐
-│ Account Lock Check      │ ── Verrouillé ──▶ 423 Account Locked
+│ Account Lock Check      │ ── Locked ──▶ 423 Account Locked
 └─────────┬───────────────┘
           │
           ▼
@@ -229,20 +229,20 @@ Si 10+ événements suspects en 1 heure:
           │
     ┌─────┴─────┐
     │           │
-   OK         ÉCHEC
+   OK         FAILED
     │           │
     ▼           ▼
 ┌────────┐  ┌─────────────┐
-│ Login  │  │ Incrémente  │
+│ Login  │  │ Increment   │
 │ Success│  │ failedLogin │
 │ Log    │  │ attempts    │
 └────────┘  └──────┬──────┘
                    │
                    ▼
             ┌──────────────┐
-            │ 5 échecs ?   │
+            │ 5 failures?  │
             └──────┬───────┘
-                   │ Oui
+                   │ Yes
                    ▼
             ┌──────────────┐
             │ LOCK 30 min  │
@@ -252,10 +252,10 @@ Si 10+ événements suspects en 1 heure:
 
 ---
 
-## Emails Sécurité
+## Security Emails
 
-| Événement | Template |
-|-----------|----------|
-| Mot de passe modifié | `passwordChangedConfirmationEmail` |
-| Mot de passe oublié | `passwordResetEmail` |
-| Compte désactivé | `accountDeactivatedEmail` |
+| Event | Template |
+|-------|----------|
+| Password changed | `passwordChangedConfirmationEmail` |
+| Password forgotten | `passwordResetEmail` |
+| Account deactivated | `accountDeactivatedEmail` |
