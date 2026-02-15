@@ -50,7 +50,8 @@ jest.mock('../../src/middlewares/errorHandler', () => ({
 }));
 
 jest.mock('../../src/utils/helpers', () => ({
-    i18nResponse: jest.fn()
+    i18nResponse: jest.fn(),
+    sendEmailSafely: jest.fn()
 }));
 
 jest.mock('../../src/config/email', () => ({
@@ -62,7 +63,7 @@ jest.mock('../../src/utils/emailTemplates', () => ({
 }));
 
 const { Subscription, Provider, Payment } = require('../../src/models');
-const { i18nResponse } = require('../../src/utils/helpers');
+const { i18nResponse, sendEmailSafely } = require('../../src/utils/helpers');
 const { sendEmail } = require('../../src/config/email');
 
 describe('Subscription Controller', () => {
@@ -87,6 +88,7 @@ describe('Subscription Controller', () => {
 
         // Setup default mocks
         i18nResponse.mockImplementation(() => {});
+        sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         sendEmail.mockResolvedValue({});
     });
 

@@ -1,10 +1,29 @@
-const { Op, fn, col, literal } = require('sequelize');
-const { sequelize, User, Provider, Service, Category, Subscription, Review, Contact } = require('../models');
-const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { successResponse, i18nResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../utils/helpers');
-const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
-const cache = require('../config/redis');
-const { t } = require('../middlewares/i18n');
+const { Op, fn, col, literal } = require("sequelize");
+const {
+  sequelize,
+  User,
+  Provider,
+  Service,
+  Category,
+  Subscription,
+  Review,
+  Contact,
+} = require("../models");
+const { asyncHandler, AppError } = require("../middlewares/errorHandler");
+const {
+  successResponse,
+  i18nResponse,
+  getPaginationParams,
+  getPaginationData,
+  buildSortOrder,
+  extractPhotoUrls,
+  sendEmailSafely,
+} = require("../utils/helpers");
+const { deleteImage, getPublicIdFromUrl } = require("../config/cloudinary");
+const cache = require("../config/redis");
+const { t } = require("../middlewares/i18n");
+const logger = require("../utils/logger");
+const { documentsReceivedEmail } = require("../utils/emailTemplates");
 
 /**
  * @desc    Create provider profile
@@ -12,43 +31,53 @@ const { t } = require('../middlewares/i18n');
  * @access  Private (provider role)
  */
 const createProvider = asyncHandler(async (req, res) => {
-    const { businessName, description, location, address, whatsapp, facebook, instagram } = req.body;
+  const {
+    businessName,
+    description,
+    location,
+    address,
+    whatsapp,
+    facebook,
+    instagram,
+  } = req.body;
 
-    // Check if user already has a provider profile
-    const existingProvider = await Provider.findOne({ where: { userId: req.user.id } });
-    if (existingProvider) {
-        throw new AppError(req.t('provider.alreadyExists'), 400);
-    }
+  // Check if user already has a provider profile
+  const existingProvider = await Provider.findOne({
+    where: { userId: req.user.id },
+  });
+  if (existingProvider) {
+    throw new AppError(req.t("provider.alreadyExists"), 400);
+  }
 
-    // Extract photo URLs from uploaded files
-    const photos = extractPhotoUrls(req.files);
+  // Extract photo URLs from uploaded files
+  const photos = extractPhotoUrls(req.files);
 
-    // Create provider
-    const provider = await Provider.create({
-        userId: req.user.id,
-        businessName,
-        description,
-        location,
-        address,
-        whatsapp,
-        facebook,
-        instagram,
-        photos
-    });
+  // Create provider
+  const provider = await Provider.create({
+    userId: req.user.id,
+    businessName,
+    description,
+    location,
+    address,
+    whatsapp,
+    facebook,
+    instagram,
+    photos,
+  });
 
-    // Create FREE 30-day trial subscription
-    await Subscription.createTrial(provider.id);
+  // Create FREE 30-day trial subscription
+  await Subscription.createTrial(provider.id);
 
-    // Invalidate providers list cache
-    await cache.delByPattern('providers:list:*');
+  // Invalidate providers list cache
+  await cache.delByPattern("providers:list:*");
 
-    i18nResponse(req, res, 201, 'provider.created', {
-        provider,
-        trial: {
-            days: 30,
-            message: req.t('subscription.trialStarted')
-        }
-    });
+  i18nResponse(req, res, 201, "provider.created", {
+    provider,
+    trial: {
+      days: 30,
+      message: req.t("subscription.trialStarted"),
+    },
+  });
 });
 
 /**
@@ -57,63 +86,73 @@ const createProvider = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const getProviders = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 12, category, location, minRating, search, sort = 'recent' } = req.query;
+  const {
+    page = 1,
+    limit = 12,
+    category,
+    location,
+    minRating,
+    search,
+    sort = "recent",
+  } = req.query;
 
-    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
-    // Build where clause
-    const where = {
-        isVerified: true
-    };
+  // Build where clause
+  const where = {
+    isVerified: true,
+  };
 
-    if (location) {
-        where.location = { [Op.iLike]: `%${location}%` };
-    }
+  if (location) {
+    where.location = { [Op.iLike]: `%${location}%` };
+  }
 
-    if (minRating) {
-        where.averageRating = { [Op.gte]: parseFloat(minRating) };
-    }
+  if (minRating) {
+    where.averageRating = { [Op.gte]: parseFloat(minRating) };
+  }
 
-    if (search) {
-        where[Op.or] = [
-            { businessName: { [Op.iLike]: `%${search}%` } },
-            { description: { [Op.iLike]: `%${search}%` } }
-        ];
-    }
-
-    // Build include for category filter
-    const include = [
-        {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'firstName', 'lastName', 'profilePhoto']
-        }
+  if (search) {
+    where[Op.or] = [
+      { businessName: { [Op.iLike]: `%${search}%` } },
+      { description: { [Op.iLike]: `%${search}%` } },
     ];
+  }
 
-    // If category filter, add where condition for providers with services in that category
-    if (category) {
-        where[Op.and] = where[Op.and] || [];
-        where[Op.and].push({
-            id: {
-                [Op.in]: literal(`(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`)
-            }
-        });
-    }
+  // Build include for category filter
+  const include = [
+    {
+      model: User,
+      as: "user",
+      attributes: ["id", "firstName", "lastName", "profilePhoto"],
+    },
+  ];
 
-    const { count, rows: providers } = await Provider.findAndCountAll({
-        where,
-        include,
-        order: buildSortOrder(sort),
-        limit: queryLimit,
-        offset,
-        distinct: true
+  // If category filter, add where condition for providers with services in that category
+  if (category) {
+    where[Op.and] = where[Op.and] || [];
+    where[Op.and].push({
+      id: {
+        [Op.in]: literal(
+          `(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`
+        ),
+      },
     });
+  }
 
-    const pagination = getPaginationData(page, queryLimit, count);
+  const { count, rows: providers } = await Provider.findAndCountAll({
+    where,
+    include,
+    order: buildSortOrder(sort),
+    limit: queryLimit,
+    offset,
+    distinct: true,
+  });
 
-    const responseData = { providers, pagination };
+  const pagination = getPaginationData(page, queryLimit, count);
 
-    i18nResponse(req, res, 200, 'provider.list', responseData);
+  const responseData = { providers, pagination };
+
+  i18nResponse(req, res, 200, "provider.list", responseData);
 });
 
 /**
@@ -122,84 +161,104 @@ const getProviders = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const getProviderById = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    // Fetch provider with user info only (avoid deep nesting)
-    const provider = await Provider.findByPk(id, {
-        attributes: [
-            'id', 'businessName', 'description', 'location', 'address',
-            'whatsapp', 'facebook', 'instagram', 'photos',
-            'averageRating', 'totalReviews', 'viewsCount', 'contactsCount',
-            'isVerified', 'isFeatured', 'createdAt'
-        ],
-        include: [
-            {
-                model: User,
-                as: 'user',
-                attributes: ['id', 'firstName', 'lastName', 'profilePhoto', 'phone']
-            }
-        ]
-    });
+  // Fetch provider with user info only (avoid deep nesting)
+  const provider = await Provider.findByPk(id, {
+    attributes: [
+      "id",
+      "businessName",
+      "description",
+      "location",
+      "address",
+      "whatsapp",
+      "facebook",
+      "instagram",
+      "photos",
+      "averageRating",
+      "totalReviews",
+      "viewsCount",
+      "contactsCount",
+      "isVerified",
+      "isFeatured",
+      "createdAt",
+    ],
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "firstName", "lastName", "profilePhoto", "phone"],
+      },
+    ],
+  });
 
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
+
+  // Fetch services separately (optimized query)
+  const services = await Service.findAll({
+    where: { providerId: id, isActive: true },
+    attributes: ["id", "name", "description", "price", "priceType", "duration"],
+    include: [
+      {
+        model: Category,
+        as: "category",
+        attributes: ["id", "name", "slug"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  // Fetch reviews separately (optimized query with limit)
+  const reviews = await Review.findAll({
+    where: { providerId: id, isVisible: true },
+    attributes: ["id", "rating", "comment", "createdAt"],
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "firstName", "lastName", "profilePhoto"],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+    limit: 10,
+  });
+
+  // Combine results
+  const providerData = provider.toJSON();
+  providerData.services = services;
+  providerData.reviews = reviews;
+
+  // Check subscription status - hide contacts & images if expired
+  const subscriptionStatus = await Subscription.getStatus(provider.id);
+  providerData.subscriptionActive = subscriptionStatus.isActive;
+
+  if (!subscriptionStatus.isActive) {
+    // Expired: hide contact info and images
+    providerData.whatsapp = null;
+    providerData.facebook = null;
+    providerData.instagram = null;
+    providerData.photos = [];
+    if (providerData.user) {
+      providerData.user.phone = null;
     }
+    providerData.subscriptionExpired = true;
+    providerData.subscriptionMessage = req.t(
+      "provider.subscriptionExpiredMessage"
+    );
+  }
 
-    // Fetch services separately (optimized query)
-    const services = await Service.findAll({
-        where: { providerId: id, isActive: true },
-        attributes: ['id', 'name', 'description', 'price', 'priceType', 'duration'],
-        include: [
-            {
-                model: Category,
-                as: 'category',
-                attributes: ['id', 'name', 'slug']
-            }
-        ],
-        order: [['createdAt', 'DESC']]
+  // Increment view count (don't wait)
+  provider.incrementViews().catch((err) => {
+    logger.error("View increment error:", {
+      error: err.message,
+      stack: err.stack,
+      providerId: provider.id,
     });
+  });
 
-    // Fetch reviews separately (optimized query with limit)
-    const reviews = await Review.findAll({
-        where: { providerId: id, isVisible: true },
-        attributes: ['id', 'rating', 'comment', 'createdAt'],
-        include: [
-            {
-                model: User,
-                as: 'user',
-                attributes: ['id', 'firstName', 'lastName', 'profilePhoto']
-            }
-        ],
-        order: [['createdAt', 'DESC']],
-        limit: 10
-    });
-
-    // Combine results
-    const providerData = provider.toJSON();
-    providerData.services = services;
-    providerData.reviews = reviews;
-
-    // Check subscription status - hide contacts & images if expired
-    const subscriptionStatus = await Subscription.getStatus(provider.id);
-    providerData.subscriptionActive = subscriptionStatus.isActive;
-
-    if (!subscriptionStatus.isActive) {
-        // Expired: hide contact info and images
-        providerData.whatsapp = null;
-        providerData.facebook = null;
-        providerData.instagram = null;
-        providerData.photos = [];
-        if (providerData.user) {
-            providerData.user.phone = null;
-        }
-        providerData.subscriptionExpired = true;
-        providerData.subscriptionMessage = req.t('provider.subscriptionExpiredMessage');
-    }
-
-    // Increment view count (don't wait)
-    provider.incrementViews().catch(err => console.error('View increment error:', err.message));
-
-    i18nResponse(req, res, 200, 'provider.details', { provider: providerData });
+  i18nResponse(req, res, 200, "provider.details", { provider: providerData });
 });
 
 /**
@@ -208,47 +267,55 @@ const getProviderById = asyncHandler(async (req, res) => {
  * @access  Private (owner only)
  */
 const updateProvider = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { businessName, description, location, address, whatsapp, facebook, instagram } = req.body;
+  const { id } = req.params;
+  const {
+    businessName,
+    description,
+    location,
+    address,
+    whatsapp,
+    facebook,
+    instagram,
+  } = req.body;
 
-    const provider = await Provider.findByPk(id);
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
+  const provider = await Provider.findByPk(id);
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
+
+  // Check ownership
+  if (provider.userId !== req.user.id && req.user.role !== "admin") {
+    throw new AppError(req.t("provider.unauthorized"), 403);
+  }
+
+  // Update fields
+  if (businessName) provider.businessName = businessName;
+  if (description) provider.description = description;
+  if (location) provider.location = location;
+  if (address !== undefined) provider.address = address;
+  if (whatsapp !== undefined) provider.whatsapp = whatsapp;
+  if (facebook !== undefined) provider.facebook = facebook;
+  if (instagram !== undefined) provider.instagram = instagram;
+
+  // Handle new photos
+  if (req.files && req.files.length > 0) {
+    const newPhotos = extractPhotoUrls(req.files);
+    const currentPhotos = provider.photos || [];
+
+    // Check max photos limit
+    if (currentPhotos.length + newPhotos.length > 5) {
+      throw new AppError(req.t("documents.maxDocuments", { max: 5 }), 400);
     }
 
-    // Check ownership
-    if (provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError(req.t('provider.unauthorized'), 403);
-    }
+    provider.photos = [...currentPhotos, ...newPhotos];
+  }
 
-    // Update fields
-    if (businessName) provider.businessName = businessName;
-    if (description) provider.description = description;
-    if (location) provider.location = location;
-    if (address !== undefined) provider.address = address;
-    if (whatsapp !== undefined) provider.whatsapp = whatsapp;
-    if (facebook !== undefined) provider.facebook = facebook;
-    if (instagram !== undefined) provider.instagram = instagram;
+  await provider.save();
 
-    // Handle new photos
-    if (req.files && req.files.length > 0) {
-        const newPhotos = extractPhotoUrls(req.files);
-        const currentPhotos = provider.photos || [];
+  // Invalidate cache
+  await cache.delByPattern("route:/api/providers*");
 
-        // Check max photos limit
-        if (currentPhotos.length + newPhotos.length > 5) {
-            throw new AppError(req.t('documents.maxDocuments', { max: 5 }), 400);
-        }
-
-        provider.photos = [...currentPhotos, ...newPhotos];
-    }
-
-    await provider.save();
-
-    // Invalidate cache
-    await cache.delByPattern('route:/api/providers*');
-
-    i18nResponse(req, res, 200, 'provider.updated', { provider });
+  i18nResponse(req, res, 200, "provider.updated", { provider });
 });
 
 /**
@@ -257,43 +324,47 @@ const updateProvider = asyncHandler(async (req, res) => {
  * @access  Private (owner only)
  */
 const deleteProviderPhoto = asyncHandler(async (req, res) => {
-    const { id, photoIndex } = req.params;
+  const { id, photoIndex } = req.params;
 
-    const provider = await Provider.findByPk(id);
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  const provider = await Provider.findByPk(id);
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    // Check ownership
-    if (provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError(req.t('common.unauthorized'), 403);
-    }
+  // Check ownership
+  if (provider.userId !== req.user.id && req.user.role !== "admin") {
+    throw new AppError(req.t("common.unauthorized"), 403);
+  }
 
-    const photos = provider.photos || [];
-    const index = parseInt(photoIndex);
+  const photos = provider.photos || [];
+  const index = parseInt(photoIndex);
 
-    if (index < 0 || index >= photos.length) {
-        throw new AppError(req.t('common.notFound'), 404);
-    }
+  if (index < 0 || index >= photos.length) {
+    throw new AppError(req.t("common.notFound"), 404);
+  }
 
-    // Delete from Cloudinary
-    const photoUrl = photos[index];
-    const publicId = getPublicIdFromUrl(photoUrl);
-    if (publicId) {
-        await deleteImage(publicId).catch(err =>
-            console.error('Cloudinary delete error:', err.message)
-        );
-    }
+  // Delete from Cloudinary
+  const photoUrl = photos[index];
+  const publicId = getPublicIdFromUrl(photoUrl);
+  if (publicId) {
+    await deleteImage(publicId).catch((err) => {
+      logger.error("Cloudinary delete error:", {
+        error: err.message,
+        stack: err.stack,
+        publicId,
+      });
+    });
+  }
 
-    // Remove from array
-    photos.splice(index, 1);
-    provider.photos = photos;
-    await provider.save({ fields: ['photos'] });
+  // Remove from array
+  photos.splice(index, 1);
+  provider.photos = photos;
+  await provider.save({ fields: ["photos"] });
 
-    // Invalidate cache
-    await cache.delByPattern('route:/api/providers*');
+  // Invalidate cache
+  await cache.delByPattern("route:/api/providers*");
 
-    i18nResponse(req, res, 200, 'provider.photoDeleted', { provider });
+  i18nResponse(req, res, 200, "provider.photoDeleted", { provider });
 });
 
 /**
@@ -302,22 +373,22 @@ const deleteProviderPhoto = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const getMyProfile = asyncHandler(async (req, res) => {
-    const provider = await Provider.findOne({
-        where: { userId: req.user.id },
-        include: [
-            {
-                model: Service,
-                as: 'services',
-                include: [{ model: Category, as: 'category' }]
-            }
-        ]
-    });
+  const provider = await Provider.findOne({
+    where: { userId: req.user.id },
+    include: [
+      {
+        model: Service,
+        as: "services",
+        include: [{ model: Category, as: "category" }],
+      },
+    ],
+  });
 
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    i18nResponse(req, res, 200, 'user.profile', { provider });
+  i18nResponse(req, res, 200, "user.profile", { provider });
 });
 
 /**
@@ -326,100 +397,122 @@ const getMyProfile = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const getMyDashboard = asyncHandler(async (req, res) => {
-    console.log('getMyDashboard called with req.user:', req.user);
+  logger.debug("getMyDashboard called", {
+    userId: req.user?.id,
+    role: req.user?.role,
+  });
 
-    // Check if user is authenticated and has provider role
-    if (!req.user) {
-        console.log('No req.user found');
-        throw new AppError('Authentication required.', 401);
-    }
+  // Check if user is authenticated and has provider role
+  if (!req.user) {
+    throw new AppError("Authentication required.", 401);
+  }
 
-    if (req.user.role !== 'provider') {
-        console.log('User role is not provider:', req.user.role);
-        throw new AppError('Access denied. Provider role required.', 403);
-    }
+  if (req.user.role !== "provider") {
+    throw new AppError("Access denied. Provider role required.", 403);
+  }
 
-    console.log('Looking for provider with userId:', req.user.id);
+  const provider = await Provider.findOne({
+    where: { userId: req.user.id },
+  });
 
-    const provider = await Provider.findOne({
-        where: { userId: req.user.id }
+  if (!provider) {
+    throw new AppError(
+      req.t ? req.t("provider.notFound") : "Provider not found",
+      404
+    );
+  }
+
+  let recentContacts = [];
+  let recentReviews = [];
+  let pendingContactsCount = 0;
+
+  try {
+    // Get recent contacts
+    recentContacts = await Contact.findAll({
+      where: { providerId: provider.id },
+      order: [["createdAt", "DESC"]],
+      limit: 5,
     });
-
-    console.log('Provider found:', provider ? provider.id : 'null');
-
-    if (!provider) {
-        throw new AppError(req.t ? req.t('provider.notFound') : 'Provider not found', 404);
-    }
-
-    let recentContacts = [];
-    let recentReviews = [];
-    let pendingContactsCount = 0;
-
-    try {
-        // Get recent contacts
-        recentContacts = await Contact.findAll({
-            where: { providerId: provider.id },
-            order: [['createdAt', 'DESC']],
-            limit: 5
-        });
-        console.log('Recent contacts fetched:', recentContacts.length);
-    } catch (error) {
-        console.error('Error fetching recent contacts:', error.message);
-        recentContacts = [];
-    }
-
-    try {
-        // Get recent reviews
-        recentReviews = await Review.findAll({
-            where: { providerId: provider.id, isVisible: true },
-            order: [['createdAt', 'DESC']],
-            limit: 5,
-            include: [
-                {
-                    model: User,
-                    as: 'user',
-                    attributes: ['firstName', 'lastName', 'profilePhoto']
-                }
-            ]
-        });
-        console.log('Recent reviews fetched:', recentReviews.length);
-    } catch (error) {
-        console.error('Error fetching recent reviews:', error.message);
-        recentReviews = [];
-    }
-
-    try {
-        // Get pending contacts count
-        pendingContactsCount = await Contact.count({
-            where: { providerId: provider.id, status: 'pending' }
-        });
-        console.log('Pending contacts count:', pendingContactsCount);
-    } catch (error) {
-        console.error('Error counting pending contacts:', error.message);
-        pendingContactsCount = 0;
-    }
-
-    const stats = {
-        totalViews: provider.viewsCount || 0,
-        totalContacts: provider.contactsCount || 0,
-        totalReviews: provider.totalReviews || 0,
-        averageRating: provider.averageRating ? parseFloat(provider.averageRating) : 0,
-        pendingContacts: pendingContactsCount,
-        isVerified: provider.isVerified || false,
-        isFeatured: provider.isFeatured || false,
-        verificationStatus: provider.verificationStatus || 'pending'
-    };
-
-    console.log('Stats prepared:', stats);
-
-    console.log('Calling i18nResponse');
-    i18nResponse(req, res, 200, 'provider.dashboard', {
-        stats,
-        recentContacts,
-        recentReviews
+    logger.debug("Recent contacts fetched", {
+      count: recentContacts.length,
+      providerId: provider.id,
     });
+  } catch (error) {
+    logger.error("Error fetching recent contacts:", {
+      error: error.message,
+      stack: error.stack,
+      providerId: provider.id,
+    });
+    recentContacts = [];
+  }
 
-    console.log('getMyDashboard completed successfully');
+  try {
+    // Get recent reviews
+    recentReviews = await Review.findAll({
+      where: { providerId: provider.id, isVisible: true },
+      order: [["createdAt", "DESC"]],
+      limit: 5,
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["firstName", "lastName", "profilePhoto"],
+        },
+      ],
+    });
+    logger.debug("Recent reviews fetched", {
+      count: recentReviews.length,
+      providerId: provider.id,
+    });
+  } catch (error) {
+    logger.error("Error fetching recent reviews:", {
+      error: error.message,
+      stack: error.stack,
+      providerId: provider.id,
+    });
+    recentReviews = [];
+  }
+
+  try {
+    // Get pending contacts count
+    pendingContactsCount = await Contact.count({
+      where: { providerId: provider.id, status: "pending" },
+    });
+    logger.debug("Pending contacts count", {
+      count: pendingContactsCount,
+      providerId: provider.id,
+    });
+  } catch (error) {
+    logger.error("Error counting pending contacts:", {
+      error: error.message,
+      stack: error.stack,
+      providerId: provider.id,
+    });
+    pendingContactsCount = 0;
+  }
+
+  const stats = {
+    totalViews: provider.viewsCount || 0,
+    totalContacts: provider.contactsCount || 0,
+    totalReviews: provider.totalReviews || 0,
+    averageRating: provider.averageRating
+      ? parseFloat(provider.averageRating)
+      : 0,
+    pendingContacts: pendingContactsCount,
+    isVerified: provider.isVerified || false,
+    isFeatured: provider.isFeatured || false,
+    verificationStatus: provider.verificationStatus || "pending",
+  };
+
+  logger.debug("Stats prepared", { providerId: provider.id, stats });
+
+  i18nResponse(req, res, 200, "provider.dashboard", {
+    stats,
+    recentContacts,
+    recentReviews,
+  });
+
+  logger.debug("getMyDashboard completed", { providerId: provider.id });
 });
 
 /**
@@ -428,86 +521,93 @@ const getMyDashboard = asyncHandler(async (req, res) => {
  * @access  Private (owner only)
  */
 const uploadDocuments = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { documentType } = req.body; // cni, business_license, tax_certificate, other
+  const { id } = req.params;
+  const { documentType } = req.body; // cni, business_license, tax_certificate, other
 
-    const provider = await Provider.findByPk(id);
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  const provider = await Provider.findByPk(id);
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    // Check ownership
-    if (provider.userId !== req.user.id) {
-        throw new AppError(req.t('common.unauthorized'), 403);
-    }
+  // Check ownership
+  if (provider.userId !== req.user.id) {
+    throw new AppError(req.t("common.unauthorized"), 403);
+  }
 
-    // Check if already verified
-    if (provider.isVerified) {
-        throw new AppError(req.t('documents.alreadyVerified'), 400);
-    }
+  // Check if already verified
+  if (provider.isVerified) {
+    throw new AppError(req.t("documents.alreadyVerified"), 400);
+  }
 
-    // Validate document type
-    const validTypes = ['cni', 'business_license', 'tax_certificate', 'proof_of_address', 'other'];
-    if (!validTypes.includes(documentType)) {
-        throw new AppError(req.t('documents.invalidType'), 400);
-    }
+  // Validate document type
+  const validTypes = [
+    "cni",
+    "business_license",
+    "tax_certificate",
+    "proof_of_address",
+    "other",
+  ];
+  if (!validTypes.includes(documentType)) {
+    throw new AppError(req.t("documents.invalidType"), 400);
+  }
 
-    // Check if files uploaded
-    if (!req.files || req.files.length === 0) {
-        throw new AppError(req.t('documents.noDocuments'), 400);
-    }
+  // Check if files uploaded
+  if (!req.files || req.files.length === 0) {
+    throw new AppError(req.t("documents.noDocuments"), 400);
+  }
 
-    // Max 5 documents total
-    const currentDocs = provider.documents || [];
-    if (currentDocs.length + req.files.length > 5) {
-        throw new AppError(req.t('documents.maxDocuments', { max: 5 }), 400);
-    }
+  // Max 5 documents total
+  const currentDocs = provider.documents || [];
+  if (currentDocs.length + req.files.length > 5) {
+    throw new AppError(req.t("documents.maxDocuments", { max: 5 }), 400);
+  }
 
-    // Upload documents
-    const { uploadDocument } = require('../config/cloudinary');
-    const uploadedDocs = [];
+  // Upload documents
+  const { uploadDocument } = require("../config/cloudinary");
+  const uploadedDocs = [];
 
-    for (const file of req.files) {
-        const result = await uploadDocument(file.path, 'aeli-services/documents');
-        uploadedDocs.push({
-            type: documentType,
-            url: result.url,
-            publicId: result.publicId,
-            format: result.format,
-            originalFilename: result.originalFilename || file.originalname,
-            uploadedAt: new Date(),
-            status: 'pending' // pending, approved, rejected
-        });
-    }
-
-    // Add to existing documents
-    provider.documents = [...currentDocs, ...uploadedDocs];
-    provider.verificationStatus = 'under_review';
-    await provider.save();
-
-    // Send confirmation email
-    const { sendEmail } = require('../config/email');
-    const { documentsReceivedEmail } = require('../utils/emailTemplates');
-    const user = await User.findByPk(provider.userId);
-
-    if (user) {
-        sendEmail({
-            to: user.email,
-            ...documentsReceivedEmail({
-                firstName: user.firstName,
-                businessName: provider.businessName,
-                documentsCount: uploadedDocs.length
-            })
-        }).catch(err => console.error('Documents received email error:', err.message));
-    }
-
-    // Invalidate cache
-    await cache.delByPattern('route:/api/providers*');
-
-    i18nResponse(req, res, 201, 'documents.submitted', {
-        documents: provider.documents,
-        verificationStatus: provider.verificationStatus
+  for (const file of req.files) {
+    const result = await uploadDocument(file.path, "aeli-services/documents");
+    uploadedDocs.push({
+      type: documentType,
+      url: result.url,
+      publicId: result.publicId,
+      format: result.format,
+      originalFilename: result.originalFilename || file.originalname,
+      uploadedAt: new Date(),
+      status: "pending", // pending, approved, rejected
     });
+  }
+
+  // Add to existing documents
+  provider.documents = [...currentDocs, ...uploadedDocs];
+  provider.verificationStatus = "under_review";
+  await provider.save();
+
+  // Send confirmation email
+  const user = await User.findByPk(provider.userId);
+
+  if (user) {
+    await sendEmailSafely(
+      {
+        to: user.email,
+        ...documentsReceivedEmail({
+          firstName: user.firstName,
+          businessName: provider.businessName,
+          documentsCount: uploadedDocs.length,
+        }),
+      },
+      "Documents received"
+    );
+  }
+
+  // Invalidate cache
+  await cache.delByPattern("route:/api/providers*");
+
+  i18nResponse(req, res, 201, "documents.submitted", {
+    documents: provider.documents,
+    verificationStatus: provider.verificationStatus,
+  });
 });
 
 /**
@@ -516,32 +616,38 @@ const uploadDocuments = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const getDocuments = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    const provider = await Provider.findByPk(id, {
-        include: [{ model: User, as: 'user', attributes: ['id', 'email', 'firstName', 'lastName'] }]
-    });
+  const provider = await Provider.findByPk(id, {
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "email", "firstName", "lastName"],
+      },
+    ],
+  });
 
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    // Check if owner or admin
-    if (provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError(req.t('common.unauthorized'), 403);
-    }
+  // Check if owner or admin
+  if (provider.userId !== req.user.id && req.user.role !== "admin") {
+    throw new AppError(req.t("common.unauthorized"), 403);
+  }
 
-    i18nResponse(req, res, 200, 'documents.list', {
-        provider: {
-            id: provider.id,
-            businessName: provider.businessName,
-            user: provider.user
-        },
-        documents: provider.documents || [],
-        verificationStatus: provider.verificationStatus,
-        verificationNotes: provider.verificationNotes,
-        verifiedAt: provider.verifiedAt
-    });
+  i18nResponse(req, res, 200, "documents.list", {
+    provider: {
+      id: provider.id,
+      businessName: provider.businessName,
+      user: provider.user,
+    },
+    documents: provider.documents || [],
+    verificationStatus: provider.verificationStatus,
+    verificationNotes: provider.verificationNotes,
+    verifiedAt: provider.verifiedAt,
+  });
 });
 
 /**
@@ -550,58 +656,60 @@ const getDocuments = asyncHandler(async (req, res) => {
  * @access  Private (owner only, before verification)
  */
 const deleteDocument = asyncHandler(async (req, res) => {
-    const { id, docIndex } = req.params;
+  const { id, docIndex } = req.params;
 
-    const provider = await Provider.findByPk(id);
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  const provider = await Provider.findByPk(id);
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    if (provider.userId !== req.user.id) {
-        throw new AppError(req.t('common.unauthorized'), 403);
-    }
+  if (provider.userId !== req.user.id) {
+    throw new AppError(req.t("common.unauthorized"), 403);
+  }
 
-    if (provider.isVerified) {
-        throw new AppError(req.t('documents.cannotDeleteAfterVerification'), 400);
-    }
+  if (provider.isVerified) {
+    throw new AppError(req.t("documents.cannotDeleteAfterVerification"), 400);
+  }
 
-    const documents = provider.documents || [];
-    const index = parseInt(docIndex);
+  const documents = provider.documents || [];
+  const index = parseInt(docIndex);
 
-    if (index < 0 || index >= documents.length) {
-        throw new AppError(req.t('common.notFound'), 404);
-    }
+  if (index < 0 || index >= documents.length) {
+    throw new AppError(req.t("common.notFound"), 404);
+  }
 
-    // Delete from Cloudinary
-    const doc = documents[index];
-    if (doc.publicId) {
-        await deleteImage(doc.publicId);
-    }
+  // Delete from Cloudinary
+  const doc = documents[index];
+  if (doc.publicId) {
+    await deleteImage(doc.publicId);
+  }
 
-    // Remove from array
-    documents.splice(index, 1);
-    provider.documents = documents;
+  // Remove from array
+  documents.splice(index, 1);
+  provider.documents = documents;
 
-    // Reset status if no documents left
-    if (documents.length === 0) {
-        provider.verificationStatus = 'pending';
-    }
+  // Reset status if no documents left
+  if (documents.length === 0) {
+    provider.verificationStatus = "pending";
+  }
 
-    await provider.save();
-    await cache.delByPattern('route:/api/providers*');
+  await provider.save();
+  await cache.delByPattern("route:/api/providers*");
 
-    i18nResponse(req, res, 200, 'documents.deleted', { documents: provider.documents });
+  i18nResponse(req, res, 200, "documents.deleted", {
+    documents: provider.documents,
+  });
 });
 
 module.exports = {
-    createProvider,
-    getProviders,
-    getProviderById,
-    updateProvider,
-    deleteProviderPhoto,
-    getMyProfile,
-    getMyDashboard,
-    uploadDocuments,
-    getDocuments,
-    deleteDocument
+  createProvider,
+  getProviders,
+  getProviderById,
+  updateProvider,
+  deleteProviderPhoto,
+  getMyProfile,
+  getMyDashboard,
+  uploadDocuments,
+  getDocuments,
+  deleteDocument,
 };

@@ -31,7 +31,8 @@ jest.mock('../../src/middlewares/errorHandler', () => ({
 }));
 
 jest.mock('../../src/utils/helpers', () => ({
-    i18nResponse: jest.fn()
+    i18nResponse: jest.fn(),
+    sendEmailSafely: jest.fn()
 }));
 
 jest.mock('../../src/config/cloudinary', () => ({
@@ -48,7 +49,7 @@ jest.mock('../../src/utils/emailTemplates', () => ({
 }));
 
 const { User } = require('../../src/models');
-const { i18nResponse } = require('../../src/utils/helpers');
+const { i18nResponse, sendEmailSafely } = require('../../src/utils/helpers');
 const { deleteImage, getPublicIdFromUrl } = require('../../src/config/cloudinary');
 const { sendEmail } = require('../../src/config/email');
 
@@ -77,6 +78,7 @@ describe('User Controller', () => {
 
         // Setup default mocks
         i18nResponse.mockImplementation(() => {});
+        sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         deleteImage.mockResolvedValue('OK');
         getPublicIdFromUrl.mockReturnValue('old-public-id');
         sendEmail.mockResolvedValue({});

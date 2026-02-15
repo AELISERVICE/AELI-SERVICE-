@@ -4,7 +4,7 @@
  */
 
 const { emailQueue } = require('../config/queue');
-const { sendEmail } = require('../config/email');
+const { sendEmailSafely } = require('../utils/helpers');
 const logger = require('../utils/logger');
 
 /**
@@ -20,7 +20,7 @@ const initEmailWorker = () => {
         logger.debug(`[EMAIL] Processing job ${job.id} to ${to}`);
 
         try {
-            await sendEmail({ to, subject, html, text });
+            await sendEmailSafely({ to, subject, html, text }, `Email worker job ${job.id}`);
             logger.info(`[EMAIL] Sent to ${to}: ${subject}`);
             return { success: true, to, subject };
         } catch (error) {

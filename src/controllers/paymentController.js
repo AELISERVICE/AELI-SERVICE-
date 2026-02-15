@@ -1,124 +1,144 @@
-const axios = require('axios');
-const crypto = require('crypto');
-const Payment = require('../models/Payment');
-const { sequelize, User, Provider } = require('../models');
-const { CINETPAY_CONFIG, PAYMENT_STATUS, CINETPAY_CODES } = require('../config/cinetpay');
-const { NOTCH_PAY_CONFIG, NOTCH_PAY_STATUS } = require('../config/notchpay');
-const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
-const logger = require('../utils/logger');
-const { auditLogger } = require('../middlewares/audit');
-const { initializeCinetPayPayment, initializeNotchPayPayment: initNotchPay } = require('../utils/paymentGateway');
+const axios = require("axios");
+const crypto = require("crypto");
+const Payment = require("../models/Payment");
+const { sequelize, User, Provider } = require("../models");
+const {
+  CINETPAY_CONFIG,
+  PAYMENT_STATUS,
+  CINETPAY_CODES,
+} = require("../config/cinetpay");
+const { NOTCH_PAY_CONFIG, NOTCH_PAY_STATUS } = require("../config/notchpay");
+const { asyncHandler, AppError } = require("../middlewares/errorHandler");
+const {
+  i18nResponse,
+  getPaginationParams,
+  getPaginationData,
+  sendEmailSafely,
+} = require("../utils/helpers");
+const logger = require("../utils/logger");
+const { auditLogger } = require("../middlewares/audit");
+const {
+  paymentSuccessEmail,
+  paymentFailedEmail,
+} = require("../utils/emailTemplates");
+const {
+  initializeCinetPayPayment,
+  initializeNotchPayPayment: initNotchPay,
+} = require("../utils/paymentGateway");
 
 /**
  * Initialize a payment with CinetPay
  * POST /api/payments/initialize
  */
 const initializePayment = asyncHandler(async (req, res) => {
-    const { amount, type, providerId, description } = req.body;
-    const userId = req.user?.id;
+  const { amount, type, providerId, description } = req.body;
+  const userId = req.user?.id;
 
-    // Validate amount (must be multiple of 5)
-    if (!amount || amount < 100 || amount % 5 !== 0) {
-        throw new AppError(req.t('common.badRequest'), 400);
+  // Validate amount (must be multiple of 5)
+  if (!amount || amount < 100 || amount % 5 !== 0) {
+    throw new AppError(req.t("common.badRequest"), 400);
+  }
+
+  // Validate type
+  const validTypes = ["contact_premium", "featured", "boost", "subscription"];
+  if (!validTypes.includes(type)) {
+    throw new AppError(req.t("common.badRequest"), 400);
+  }
+
+  // Get user info for card payments
+  let user = null;
+  if (userId) {
+    user = await User.findByPk(userId);
+  }
+
+  // Generate unique transaction ID
+  const transactionId = Payment.generateTransactionId();
+
+  // Create payment record
+  const payment = await Payment.create({
+    transactionId,
+    userId,
+    providerId,
+    type,
+    amount,
+    currency: CINETPAY_CONFIG.currency,
+    status: "PENDING",
+    description: description || `Paiement ${type} AELI Services`,
+    metadata: { type, providerId },
+  });
+
+  // Prepare CinetPay request
+  const cinetpayData = {
+    apikey: CINETPAY_CONFIG.apiKey,
+    site_id: CINETPAY_CONFIG.siteId,
+    transaction_id: transactionId,
+    amount: amount,
+    currency: CINETPAY_CONFIG.currency,
+    description: payment.description,
+    notify_url: CINETPAY_CONFIG.notifyUrl,
+    return_url: `${CINETPAY_CONFIG.returnUrl}?transaction_id=${transactionId}`,
+    channels: CINETPAY_CONFIG.channels,
+    lang: CINETPAY_CONFIG.lang,
+    metadata: JSON.stringify({ paymentId: payment.id, type, userId }),
+  };
+
+  // Add customer info for card payments
+  if (user) {
+    cinetpayData.customer_id = user.id;
+    cinetpayData.customer_name = user.lastName || "Client";
+    cinetpayData.customer_surname = user.firstName || "AELI";
+    cinetpayData.customer_email = user.email;
+    cinetpayData.customer_phone_number = user.phone || "";
+    cinetpayData.customer_address = "Cameroun";
+    cinetpayData.customer_city = "Douala";
+    cinetpayData.customer_country = "CM";
+    cinetpayData.customer_state = "CM";
+    cinetpayData.customer_zip_code = "00237";
+  }
+
+  try {
+    // Call CinetPay API
+    const response = await axios.post(
+      CINETPAY_CONFIG.paymentUrl,
+      cinetpayData,
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    const cinetpayResponse = response.data;
+
+    if (cinetpayResponse.code === "201") {
+      // Update payment with token and URL
+      payment.paymentToken = cinetpayResponse.data.payment_token;
+      payment.paymentUrl = cinetpayResponse.data.payment_url;
+      await payment.save();
+
+      logger.info(`Payment initialized: ${transactionId}`);
+
+      i18nResponse(req, res, 201, "payment.initialized", {
+        paymentId: payment.id,
+        transactionId: payment.transactionId,
+        paymentUrl: payment.paymentUrl,
+        amount: payment.amount,
+        currency: payment.currency,
+      });
+    } else {
+      // Handle error
+      payment.status = "REFUSED";
+      payment.errorMessage = cinetpayResponse.message;
+      await payment.save();
+
+      throw new AppError(req.t("payment.failed"), 400);
     }
-
-    // Validate type
-    const validTypes = ['contact_premium', 'featured', 'boost', 'subscription'];
-    if (!validTypes.includes(type)) {
-        throw new AppError(req.t('common.badRequest'), 400);
+  } catch (error) {
+    if (error.response) {
+      logger.error("CinetPay API error:", error.response.data);
+      payment.errorMessage = JSON.stringify(error.response.data);
+      await payment.save();
     }
-
-    // Get user info for card payments
-    let user = null;
-    if (userId) {
-        user = await User.findByPk(userId);
-    }
-
-    // Generate unique transaction ID
-    const transactionId = Payment.generateTransactionId();
-
-    // Create payment record
-    const payment = await Payment.create({
-        transactionId,
-        userId,
-        providerId,
-        type,
-        amount,
-        currency: CINETPAY_CONFIG.currency,
-        status: 'PENDING',
-        description: description || `Paiement ${type} AELI Services`,
-        metadata: { type, providerId }
-    });
-
-    // Prepare CinetPay request
-    const cinetpayData = {
-        apikey: CINETPAY_CONFIG.apiKey,
-        site_id: CINETPAY_CONFIG.siteId,
-        transaction_id: transactionId,
-        amount: amount,
-        currency: CINETPAY_CONFIG.currency,
-        description: payment.description,
-        notify_url: CINETPAY_CONFIG.notifyUrl,
-        return_url: `${CINETPAY_CONFIG.returnUrl}?transaction_id=${transactionId}`,
-        channels: CINETPAY_CONFIG.channels,
-        lang: CINETPAY_CONFIG.lang,
-        metadata: JSON.stringify({ paymentId: payment.id, type, userId })
-    };
-
-    // Add customer info for card payments
-    if (user) {
-        cinetpayData.customer_id = user.id;
-        cinetpayData.customer_name = user.lastName || 'Client';
-        cinetpayData.customer_surname = user.firstName || 'AELI';
-        cinetpayData.customer_email = user.email;
-        cinetpayData.customer_phone_number = user.phone || '';
-        cinetpayData.customer_address = 'Cameroun';
-        cinetpayData.customer_city = 'Douala';
-        cinetpayData.customer_country = 'CM';
-        cinetpayData.customer_state = 'CM';
-        cinetpayData.customer_zip_code = '00237';
-    }
-
-    try {
-        // Call CinetPay API
-        const response = await axios.post(CINETPAY_CONFIG.paymentUrl, cinetpayData, {
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        const cinetpayResponse = response.data;
-
-        if (cinetpayResponse.code === '201') {
-            // Update payment with token and URL
-            payment.paymentToken = cinetpayResponse.data.payment_token;
-            payment.paymentUrl = cinetpayResponse.data.payment_url;
-            await payment.save();
-
-            logger.info(`Payment initialized: ${transactionId}`);
-
-            i18nResponse(req, res, 201, 'payment.initialized', {
-                paymentId: payment.id,
-                transactionId: payment.transactionId,
-                paymentUrl: payment.paymentUrl,
-                amount: payment.amount,
-                currency: payment.currency
-            });
-        } else {
-            // Handle error
-            payment.status = 'REFUSED';
-            payment.errorMessage = cinetpayResponse.message;
-            await payment.save();
-
-            throw new AppError(req.t('payment.failed'), 400);
-        }
-    } catch (error) {
-        if (error.response) {
-            logger.error('CinetPay API error:', error.response.data);
-            payment.errorMessage = JSON.stringify(error.response.data);
-            await payment.save();
-        }
-        throw error;
-    }
+    throw error;
+  }
 });
 
 /**
@@ -126,91 +146,100 @@ const initializePayment = asyncHandler(async (req, res) => {
  * POST /api/payments/notchpay/initialize
  */
 const initializeNotchPayPayment = asyncHandler(async (req, res, next) => {
-    const { amount, type, providerId, description } = req.body;
-    const userId = req.user?.id;
+  const { amount, type, providerId, description } = req.body;
+  const userId = req.user?.id;
 
-    // Validate amount
-    if (!amount || amount < 100) {
-        throw new AppError(req.t('common.badRequest'), 400);
-    }
+  // Validate amount
+  if (!amount || amount < 100) {
+    throw new AppError(req.t("common.badRequest"), 400);
+  }
 
-    // Validate type
-    const validTypes = ['contact_premium', 'featured', 'boost', 'subscription', 'contact_unlock'];
-    if (!validTypes.includes(type)) {
-        throw new AppError(req.t('common.badRequest'), 400);
-    }
+  // Validate type
+  const validTypes = [
+    "contact_premium",
+    "featured",
+    "boost",
+    "subscription",
+    "contact_unlock",
+  ];
+  if (!validTypes.includes(type)) {
+    throw new AppError(req.t("common.badRequest"), 400);
+  }
 
-    // Get user info
-    let user = null;
-    if (userId) {
-        user = await User.findByPk(userId);
-    }
+  // Get user info
+  let user = null;
+  if (userId) {
+    user = await User.findByPk(userId);
+  }
 
-    // Generate unique transaction ID (reference)
-    const transactionId = Payment.generateTransactionId();
+  // Generate unique transaction ID (reference)
+  const transactionId = Payment.generateTransactionId();
 
-    // Create payment record
-    const payment = await Payment.create({
-        transactionId,
-        userId,
-        providerId,
-        type,
-        amount,
-        currency: NOTCH_PAY_CONFIG.currency,
-        status: 'PENDING',
-        gateway: 'NotchPay',
-        description: description || `Paiement ${type} AELI Services (NotchPay)`,
-        metadata: { type, providerId }
+  // Create payment record
+  const payment = await Payment.create({
+    transactionId,
+    userId,
+    providerId,
+    type,
+    amount,
+    currency: NOTCH_PAY_CONFIG.currency,
+    status: "PENDING",
+    gateway: "NotchPay",
+    description: description || `Paiement ${type} AELI Services (NotchPay)`,
+    metadata: { type, providerId },
+  });
+
+  // Prepare NotchPay request
+  const notchPayData = {
+    amount: amount,
+    currency: NOTCH_PAY_CONFIG.currency,
+    description: payment.description,
+    reference: transactionId,
+    callback: NOTCH_PAY_CONFIG.callbackUrl,
+    customer: {
+      name: user ? `${user.firstName} ${user.lastName}` : "Client AELI",
+      email: user?.email,
+      phone: user?.phone,
+    },
+  };
+
+  try {
+    const notchpayResponse = await initNotchPay({
+      email: user?.email || "test@aeli.com",
+      amount: amount,
+      currency: payment.currency,
+      description: payment.description,
+      reference: transactionId,
+      callback: NOTCH_PAY_CONFIG.callbackUrl,
     });
 
-    // Prepare NotchPay request
-    const notchPayData = {
-        amount: amount,
-        currency: NOTCH_PAY_CONFIG.currency,
-        description: payment.description,
-        reference: transactionId,
-        callback: NOTCH_PAY_CONFIG.callbackUrl,
-        customer: {
-            name: user ? `${user.firstName} ${user.lastName}` : 'Client AELI',
-            email: user?.email,
-            phone: user?.phone
-        }
-    };
+    if (
+      notchpayResponse.status === "Accepted" ||
+      notchpayResponse.authorization_url
+    ) {
+      // Update payment with URL
+      payment.paymentUrl = notchpayResponse.authorization_url;
+      await payment.save();
 
-    try {
-        const notchpayResponse = await initNotchPay({
-            email: user?.email || 'test@aeli.com',
-            amount: amount,
-            currency: payment.currency,
-            description: payment.description,
-            reference: transactionId,
-            callback: NOTCH_PAY_CONFIG.callbackUrl
-        });
+      logger.info(`NotchPay payment initialized: ${transactionId}`);
 
-        if (notchpayResponse.status === 'Accepted' || notchpayResponse.authorization_url) {
-            // Update payment with URL
-            payment.paymentUrl = notchpayResponse.authorization_url;
-            await payment.save();
+      i18nResponse(req, res, 201, "payment.initialized", {
+        paymentId: payment.id,
+        transactionId: payment.transactionId,
+        paymentUrl: payment.paymentUrl,
+        amount: payment.amount,
+        currency: payment.currency,
+      });
+    } else {
+      payment.status = "REFUSED";
+      payment.errorMessage = notchpayResponse.message;
+      await payment.save();
 
-            logger.info(`NotchPay payment initialized: ${transactionId}`);
-
-            i18nResponse(req, res, 201, 'payment.initialized', {
-                paymentId: payment.id,
-                transactionId: payment.transactionId,
-                paymentUrl: payment.paymentUrl,
-                amount: payment.amount,
-                currency: payment.currency
-            });
-        } else {
-            payment.status = 'REFUSED';
-            payment.errorMessage = notchpayResponse.message;
-            await payment.save();
-
-            throw new AppError(req.t('payment.failed'), 400);
-        }
-    } catch (error) {
-        next(error);
+      throw new AppError(req.t("payment.failed"), 400);
     }
+  } catch (error) {
+    next(error);
+  }
 });
 
 /**
@@ -218,73 +247,77 @@ const initializeNotchPayPayment = asyncHandler(async (req, res, next) => {
  * POST /api/payments/webhook
  */
 const handleWebhook = asyncHandler(async (req, res) => {
-    const {
-        cpm_trans_id,
-        cpm_site_id,
-        cpm_amount,
-        cpm_currency,
-        cpm_error_message
-    } = req.body;
+  const {
+    cpm_trans_id,
+    cpm_site_id,
+    cpm_amount,
+    cpm_currency,
+    cpm_error_message,
+  } = req.body;
 
-    logger.info(`Webhook received for transaction: ${cpm_trans_id}`);
+  logger.info(`Webhook received for transaction: ${cpm_trans_id}`);
 
-    // Verify site_id
-    if (cpm_site_id !== CINETPAY_CONFIG.siteId) {
-        logger.warn(`Invalid site_id in webhook: ${cpm_site_id}`);
-        return res.status(400).send('Invalid site_id');
+  // Verify site_id
+  if (cpm_site_id !== CINETPAY_CONFIG.siteId) {
+    logger.warn(`Invalid site_id in webhook: ${cpm_site_id}`);
+    return res.status(400).send("Invalid site_id");
+  }
+
+  // Find payment
+  const payment = await Payment.findByTransactionId(cpm_trans_id);
+  if (!payment) {
+    logger.warn(`Payment not found for transaction: ${cpm_trans_id}`);
+    return res.status(404).send("Payment not found");
+  }
+
+  // If already processed, skip
+  if (payment.status === "ACCEPTED" || payment.status === "REFUSED") {
+    logger.info(`Payment ${cpm_trans_id} already processed`);
+    return res.status(200).send("OK");
+  }
+
+  // Verify transaction with CinetPay API
+  try {
+    const verifyResponse = await axios.post(
+      CINETPAY_CONFIG.checkUrl,
+      {
+        apikey: CINETPAY_CONFIG.apiKey,
+        site_id: CINETPAY_CONFIG.siteId,
+        transaction_id: cpm_trans_id,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    const verifyData = verifyResponse.data;
+
+    if (verifyData.code === "00" && verifyData.data.status === "ACCEPTED") {
+      // Payment successful
+      await payment.updateFromCinetPay(verifyData.data);
+
+      // Process business logic based on payment type
+      await processPaymentSuccess(payment);
+
+      logger.info(`Payment ${cpm_trans_id} verified and accepted`);
+    } else if (verifyData.data.status === "REFUSED") {
+      // Payment failed
+      payment.status = "REFUSED";
+      payment.errorMessage = cpm_error_message || verifyData.message;
+      await payment.save();
+
+      logger.info(`Payment ${cpm_trans_id} refused`);
+    } else {
+      // Still pending (WAITING_CUSTOMER)
+      payment.status = "WAITING_CUSTOMER";
+      await payment.save();
     }
+  } catch (error) {
+    logger.error(`Error verifying payment ${cpm_trans_id}:`, error.message);
+  }
 
-    // Find payment
-    const payment = await Payment.findByTransactionId(cpm_trans_id);
-    if (!payment) {
-        logger.warn(`Payment not found for transaction: ${cpm_trans_id}`);
-        return res.status(404).send('Payment not found');
-    }
-
-    // If already processed, skip
-    if (payment.status === 'ACCEPTED' || payment.status === 'REFUSED') {
-        logger.info(`Payment ${cpm_trans_id} already processed`);
-        return res.status(200).send('OK');
-    }
-
-    // Verify transaction with CinetPay API
-    try {
-        const verifyResponse = await axios.post(CINETPAY_CONFIG.checkUrl, {
-            apikey: CINETPAY_CONFIG.apiKey,
-            site_id: CINETPAY_CONFIG.siteId,
-            transaction_id: cpm_trans_id
-        }, {
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        const verifyData = verifyResponse.data;
-
-        if (verifyData.code === '00' && verifyData.data.status === 'ACCEPTED') {
-            // Payment successful
-            await payment.updateFromCinetPay(verifyData.data);
-
-            // Process business logic based on payment type
-            await processPaymentSuccess(payment);
-
-            logger.info(`Payment ${cpm_trans_id} verified and accepted`);
-        } else if (verifyData.data.status === 'REFUSED') {
-            // Payment failed
-            payment.status = 'REFUSED';
-            payment.errorMessage = cpm_error_message || verifyData.message;
-            await payment.save();
-
-            logger.info(`Payment ${cpm_trans_id} refused`);
-        } else {
-            // Still pending (WAITING_CUSTOMER)
-            payment.status = 'WAITING_CUSTOMER';
-            await payment.save();
-        }
-    } catch (error) {
-        logger.error(`Error verifying payment ${cpm_trans_id}:`, error.message);
-    }
-
-    // Always return 200 to CinetPay
-    res.status(200).send('OK');
+  // Always return 200 to CinetPay
+  res.status(200).send("OK");
 });
 
 /**
@@ -292,151 +325,131 @@ const handleWebhook = asyncHandler(async (req, res) => {
  * POST /api/payments/notchpay/webhook
  */
 const handleNotchPayWebhook = asyncHandler(async (req, res) => {
-    const signature = req.headers['x-notch-signature'];
-    const event = req.body;
+  const signature = req.headers["x-notch-signature"];
+  const event = req.body;
 
-    logger.info(`NotchPay Webhook received: ${event.event} for ref ${event.data?.reference}`);
+  logger.info(
+    `NotchPay Webhook received: ${event.event} for ref ${event.data?.reference}`
+  );
 
-    // Verify signature (Security best practice)
-    if (signature && NOTCH_PAY_CONFIG.secretKey) {
-        const hash = crypto.createHmac('sha256', NOTCH_PAY_CONFIG.secretKey)
-            .update(JSON.stringify(req.body))
-            .digest('hex');
+  // Verify signature (Security best practice)
+  if (signature && NOTCH_PAY_CONFIG.secretKey) {
+    const hash = crypto
+      .createHmac("sha256", NOTCH_PAY_CONFIG.secretKey)
+      .update(JSON.stringify(req.body))
+      .digest("hex");
 
-        if (hash !== signature) {
-            logger.warn('Invalid NotchPay signature');
-            return res.status(401).send('Invalid signature');
-        }
+    if (hash !== signature) {
+      logger.warn("Invalid NotchPay signature");
+      return res.status(401).send("Invalid signature");
     }
+  }
 
-    const { reference, status } = event.data || {};
+  const { reference, status } = event.data || {};
 
-    if (!reference) return res.status(400).send('Missing reference');
+  if (!reference) return res.status(400).send("Missing reference");
 
-    const payment = await Payment.findByTransactionId(reference);
-    if (!payment) return res.status(404).send('Payment not found');
+  const payment = await Payment.findByTransactionId(reference);
+  if (!payment) return res.status(404).send("Payment not found");
 
-    // If already processed, skip
-    if (payment.status === 'ACCEPTED' || payment.status === 'REFUSED') {
-        return res.status(200).send('OK');
-    }
+  // If already processed, skip
+  if (payment.status === "ACCEPTED" || payment.status === "REFUSED") {
+    return res.status(200).send("OK");
+  }
 
-    // Update payment
-    await payment.updateFromNotchPay(event.data);
+  // Update payment
+  await payment.updateFromNotchPay(event.data);
 
-    if (payment.status === 'ACCEPTED') {
-        await processPaymentSuccess(payment);
-    } else if (payment.status === 'REFUSED') {
-        await processPaymentFailure(payment, payment.errorMessage);
-    }
+  if (payment.status === "ACCEPTED") {
+    await processPaymentSuccess(payment);
+  } else if (payment.status === "REFUSED") {
+    await processPaymentFailure(payment, payment.errorMessage);
+  }
 
-    res.status(200).send('OK');
+  res.status(200).send("OK");
 });
 
 /**
  * Process successful payment
  */
 const processPaymentSuccess = async (payment) => {
-    const { sendEmail } = require('../config/email');
-    const { paymentSuccessEmail } = require('../utils/emailTemplates');
-    const { activateSubscription } = require('./subscriptionController');
+  const { paymentSuccessEmail } = require("../utils/emailTemplates");
+  const { activateSubscription } = require("./subscriptionController");
 
-    // Get user for email
-    const user = await User.findByPk(payment.userId);
+  // Get user for email
+  const user = await User.findByPk(payment.userId);
 
-    switch (payment.type) {
-        case 'featured':
-            // Make provider featured
-            if (payment.providerId) {
-                await Provider.update(
-                    { isFeatured: true },
-                    { where: { id: payment.providerId } }
-                );
-                logger.info(`Provider ${payment.providerId} is now featured`);
-            }
-            break;
+  switch (payment.type) {
+    case "featured":
+      // Make provider featured
+      if (payment.providerId) {
+        await Provider.update(
+          { isFeatured: true },
+          { where: { id: payment.providerId } }
+        );
+        logger.info(`Provider ${payment.providerId} is now featured`);
+      }
+      break;
 
-        case 'boost':
-            // Boost provider visibility
-            if (payment.providerId) {
-                await Provider.increment('viewsCount', {
-                    by: 100,
-                    where: { id: payment.providerId }
-                });
-                logger.info(`Provider ${payment.providerId} boosted`);
-            }
-            break;
+    case "boost":
+      // Boost provider visibility
+      if (payment.providerId) {
+        await Provider.increment("viewsCount", {
+          by: 100,
+          where: { id: payment.providerId },
+        });
+        logger.info(`Provider ${payment.providerId} boosted`);
+      }
+      break;
 
-        case 'subscription':
-            // Handle subscription activation
-            await activateSubscription(payment);
-            logger.info(`Subscription activated for user ${payment.userId}`);
-            break;
-    }
+    case "subscription":
+      // Handle subscription activation
+      await activateSubscription(payment);
+      logger.info(`Subscription activated for user ${payment.userId}`);
+      break;
+  }
 
-    // Audit Log
-    auditLogger.paymentCompleted(payment, 'ACCEPTED');
+  // Audit Log
+  auditLogger.paymentCompleted(payment, "ACCEPTED");
 
-    // Send success email (optional - don't fail if email system is down)
-    if (user) {
-        try {
-            const emailModule = require('../config/email');
-            const emailTemplates = require('../utils/emailTemplates');
-
-            if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.paymentSuccessEmail) {
-                const emailResult = emailModule.sendEmail({
-                    to: user.email,
-                    ...emailTemplates.paymentSuccessEmail({
-                        firstName: user.firstName,
-                        transactionId: payment.transactionId,
-                        amount: payment.amount,
-                        currency: payment.currency,
-                        type: payment.type,
-                        description: payment.description
-                    })
-                });
-
-                // Only catch if it's a promise
-                if (emailResult && typeof emailResult.catch === 'function') {
-                    emailResult.catch(err => console.error('Payment success email error:', err.message));
-                }
-            }
-        } catch (error) {
-            // Silently ignore email errors in production
-            console.error('Email sending setup error:', error.message);
-        }
-    }
+  // Send success email (optional - don't fail if email system is down)
+  if (user) {
+    await sendEmailSafely(
+      {
+        to: user.email,
+        ...paymentSuccessEmail({
+          firstName: user.firstName,
+          transactionId: payment.transactionId,
+          amount: payment.amount,
+          currency: payment.currency,
+          type: payment.type,
+          description: payment.description,
+        }),
+      },
+      "Payment success"
+    );
+  }
 };
 
 const processPaymentFailure = async (payment, errorMessage) => {
-    // Send failure email (optional - don't fail if email system is down)
-    try {
-        const emailModule = require('../config/email');
-        const emailTemplates = require('../utils/emailTemplates');
+  // Send failure email (optional - don't fail if email system is down)
+  const user = await User.findByPk(payment.userId);
 
-        const user = await User.findByPk(payment.userId);
-
-        if (user && emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.paymentFailedEmail) {
-            const emailResult = emailModule.sendEmail({
-                to: user.email,
-                ...emailTemplates.paymentFailedEmail({
-                    firstName: user.firstName,
-                    transactionId: payment.transactionId,
-                    amount: payment.amount,
-                    currency: payment.currency,
-                    errorMessage: errorMessage
-                })
-            });
-
-            // Only catch if it's a promise
-            if (emailResult && typeof emailResult.catch === 'function') {
-                emailResult.catch(err => console.error('Payment failed email error:', err.message));
-            }
-        }
-    } catch (error) {
-        // Silently ignore email errors in production
-        console.error('Email sending setup error:', error.message);
-    }
+  if (user) {
+    await sendEmailSafely(
+      {
+        to: user.email,
+        ...paymentFailedEmail({
+          firstName: user.firstName,
+          transactionId: payment.transactionId,
+          amount: payment.amount,
+          currency: payment.currency,
+          errorMessage: errorMessage,
+        }),
+      },
+      "Payment failed"
+    );
+  }
 };
 
 /**
@@ -444,45 +457,49 @@ const processPaymentFailure = async (payment, errorMessage) => {
  * GET /api/payments/:transactionId/status
  */
 const checkPaymentStatus = asyncHandler(async (req, res) => {
-    const { transactionId } = req.params;
+  const { transactionId } = req.params;
 
-    const payment = await Payment.findByTransactionId(transactionId);
-    if (!payment) {
-        throw new AppError(req.t('payment.notFound'), 404);
-    }
+  const payment = await Payment.findByTransactionId(transactionId);
+  if (!payment) {
+    throw new AppError(req.t("payment.notFound"), 404);
+  }
 
-    // If pending, check with CinetPay
-    if (payment.status === 'PENDING' || payment.status === 'WAITING_CUSTOMER') {
-        try {
-            const response = await axios.post(CINETPAY_CONFIG.checkUrl, {
-                apikey: CINETPAY_CONFIG.apiKey,
-                site_id: CINETPAY_CONFIG.siteId,
-                transaction_id: transactionId
-            }, {
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (response.data.code === '00') {
-                await payment.updateFromCinetPay(response.data.data);
-
-                if (response.data.data.status === 'ACCEPTED') {
-                    await processPaymentSuccess(payment);
-                }
-            }
-        } catch (error) {
-            logger.error(`Error checking payment status: ${error.message}`);
+  // If pending, check with CinetPay
+  if (payment.status === "PENDING" || payment.status === "WAITING_CUSTOMER") {
+    try {
+      const response = await axios.post(
+        CINETPAY_CONFIG.checkUrl,
+        {
+          apikey: CINETPAY_CONFIG.apiKey,
+          site_id: CINETPAY_CONFIG.siteId,
+          transaction_id: transactionId,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
         }
-    }
+      );
 
-    i18nResponse(req, res, 200, 'payment.status', {
-        transactionId: payment.transactionId,
-        status: payment.status,
-        amount: payment.amount,
-        currency: payment.currency,
-        type: payment.type,
-        paymentMethod: payment.paymentMethod,
-        paidAt: payment.paidAt
-    });
+      if (response.data.code === "00") {
+        await payment.updateFromCinetPay(response.data.data);
+
+        if (response.data.data.status === "ACCEPTED") {
+          await processPaymentSuccess(payment);
+        }
+      }
+    } catch (error) {
+      logger.error(`Error checking payment status: ${error.message}`);
+    }
+  }
+
+  i18nResponse(req, res, 200, "payment.status", {
+    transactionId: payment.transactionId,
+    status: payment.status,
+    amount: payment.amount,
+    currency: payment.currency,
+    type: payment.type,
+    paymentMethod: payment.paymentMethod,
+    paidAt: payment.paidAt,
+  });
 });
 
 /**
@@ -490,20 +507,20 @@ const checkPaymentStatus = asyncHandler(async (req, res) => {
  * GET /api/payments/history
  */
 const getPaymentHistory = asyncHandler(async (req, res) => {
-    const userId = req.user.id;
-    const { page = 1, limit = 10 } = req.query;
-    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+  const userId = req.user.id;
+  const { page = 1, limit = 10 } = req.query;
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
-    const { count, rows: payments } = await Payment.findAndCountAll({
-        where: { userId },
-        order: [['createdAt', 'DESC']],
-        limit: queryLimit,
-        offset
-    });
+  const { count, rows: payments } = await Payment.findAndCountAll({
+    where: { userId },
+    order: [["createdAt", "DESC"]],
+    limit: queryLimit,
+    offset,
+  });
 
-    const pagination = getPaginationData(page, queryLimit, count);
+  const pagination = getPaginationData(page, queryLimit, count);
 
-    i18nResponse(req, res, 200, 'payment.history', { payments, pagination });
+  i18nResponse(req, res, 200, "payment.history", { payments, pagination });
 });
 
 /**
@@ -511,49 +528,53 @@ const getPaymentHistory = asyncHandler(async (req, res) => {
  * GET /api/admin/payments
  */
 const getAllPayments = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 20, status, type } = req.query;
-    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
-    const where = {};
+  const { page = 1, limit = 20, status, type } = req.query;
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+  const where = {};
 
-    if (status) where.status = status;
-    if (type) where.type = type;
+  if (status) where.status = status;
+  if (type) where.type = type;
 
-    const { count, rows: payments } = await Payment.findAndCountAll({
-        where,
-        include: [
-            { model: User, as: 'user', attributes: ['id', 'firstName', 'lastName', 'email'] },
-            { model: Provider, as: 'provider', attributes: ['id', 'businessName'] }
-        ],
-        order: [['createdAt', 'DESC']],
-        limit: queryLimit,
-        offset
-    });
+  const { count, rows: payments } = await Payment.findAndCountAll({
+    where,
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "firstName", "lastName", "email"],
+      },
+      { model: Provider, as: "provider", attributes: ["id", "businessName"] },
+    ],
+    order: [["createdAt", "DESC"]],
+    limit: queryLimit,
+    offset,
+  });
 
-    const pagination = getPaginationData(page, queryLimit, count);
+  const pagination = getPaginationData(page, queryLimit, count);
 
-    // Calculate totals
-    const totals = await Payment.findAll({
-        where: { status: 'ACCEPTED' },
-        attributes: [
-            [sequelize.fn('SUM', sequelize.col('amount')), 'totalAmount'],
-            [sequelize.fn('COUNT', sequelize.col('id')), 'totalCount']
-        ],
-        raw: true
-    });
+  // Calculate totals
+  const totals = await Payment.findAll({
+    where: { status: "ACCEPTED" },
+    attributes: [
+      [sequelize.fn("SUM", sequelize.col("amount")), "totalAmount"],
+      [sequelize.fn("COUNT", sequelize.col("id")), "totalCount"],
+    ],
+    raw: true,
+  });
 
-    i18nResponse(req, res, 200, 'common.list', {
-        payments,
-        totals: totals[0],
-        pagination
-    });
+  i18nResponse(req, res, 200, "common.list", {
+    payments,
+    totals: totals[0],
+    pagination,
+  });
 });
 
 module.exports = {
-    initializePayment,
-    initializeNotchPayPayment,
-    handleWebhook,
-    handleNotchPayWebhook,
-    checkPaymentStatus,
-    getPaymentHistory,
-    getAllPayments
+  initializePayment,
+  initializeNotchPayPayment,
+  handleWebhook,
+  handleNotchPayWebhook,
+  checkPaymentStatus,
+  getPaymentHistory,
+  getAllPayments,
 };

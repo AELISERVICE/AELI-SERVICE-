@@ -44,7 +44,8 @@ jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn(),
     successResponse: jest.fn(),
     getPaginationParams: jest.fn(),
-    getPaginationData: jest.fn()
+    getPaginationData: jest.fn(),
+    sendEmailSafely: jest.fn()
 }));
 
 jest.mock('../../src/config/email', () => ({
@@ -71,7 +72,7 @@ jest.mock('../../src/config/socket', () => ({
 }));
 
 const { Review, Provider, Contact } = require('../../src/models');
-const { i18nResponse, successResponse, getPaginationParams, getPaginationData } = require('../../src/utils/helpers');
+const { i18nResponse, successResponse, getPaginationParams, getPaginationData, sendEmailSafely } = require('../../src/utils/helpers');
 const cache = require('../../src/config/redis');
 const { sendEmail } = require('../../src/config/email');
 const { emitNewReview } = require('../../src/config/socket');
@@ -102,6 +103,7 @@ describe('Review Controller', () => {
         successResponse.mockImplementation(() => {});
         getPaginationParams.mockReturnValue({ limit: 10, offset: 0 });
         getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
+        sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         cache.get.mockResolvedValue(null);
         cache.set.mockResolvedValue('OK');
         cache.del.mockResolvedValue(1);

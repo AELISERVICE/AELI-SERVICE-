@@ -3,434 +3,543 @@
  * Tests for authentication endpoints
  */
 
-const { register, verifyOTPCode, resendOTP, login, refreshAccessToken, logout, logoutAll, forgotPassword, resetPassword, getMe } = require('../../src/controllers/authController');
+const {
+  register,
+  verifyOTPCode,
+  resendOTP,
+  login,
+  refreshAccessToken,
+  logout,
+  logoutAll,
+  forgotPassword,
+  resetPassword,
+  getMe,
+} = require("../../src/controllers/authController");
 
 // Mock dependencies
-jest.mock('../../src/models', () => ({
-    User: {
-        findOne: jest.fn(),
-        findByPk: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn()
-    },
-    Provider: {
-        findOne: jest.fn()
-    },
-    RefreshToken: {
-        findOne: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        revokeAllForUser: jest.fn()
+jest.mock("../../src/models", () => ({
+  User: {
+    findOne: jest.fn(),
+    findByPk: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  },
+  Provider: {
+    findOne: jest.fn(),
+  },
+  RefreshToken: {
+    findOne: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    revokeAllForUser: jest.fn(),
+  },
+}));
+
+jest.mock("jsonwebtoken");
+jest.mock("crypto", () => ({
+  randomBytes: jest.fn(),
+}));
+
+jest.mock("../../src/middlewares/errorHandler", () => ({
+  asyncHandler: (fn) => (req, res, next) => fn(req, res, next),
+  AppError: class extends Error {
+    constructor(message, statusCode) {
+      super(message);
+      this.statusCode = statusCode;
     }
+  },
 }));
 
-jest.mock('jsonwebtoken');
-jest.mock('crypto', () => ({
-    randomBytes: jest.fn()
+jest.mock("../../src/config/email", () => ({
+  sendEmail: jest.fn(),
 }));
 
-jest.mock('../../src/middlewares/errorHandler', () => ({
-    asyncHandler: (fn) => (req, res, next) => fn(req, res, next),
-    AppError: class extends Error {
-        constructor(message, statusCode) {
-            super(message);
-            this.statusCode = statusCode;
+jest.mock("../../src/utils/emailTemplates", () => ({
+  welcomeEmail: jest.fn(),
+  passwordResetEmail: jest.fn(),
+  otpEmail: jest.fn(),
+}));
+
+jest.mock("../../src/utils/helpers", () => ({
+  generateResetToken: jest.fn(),
+  hashToken: jest.fn(),
+  i18nResponse: jest.fn(),
+  successResponse: jest.fn(),
+  sendEmailSafely: jest.fn(),
+}));
+
+jest.mock("../../src/utils/otp", () => ({
+  generateOTP: jest.fn(),
+  hashOTP: jest.fn(),
+  verifyOTP: jest.fn(),
+  getOTPExpiry: jest.fn(),
+  isOTPExpired: jest.fn(),
+}));
+
+jest.mock("../../src/middlewares/security", () => ({
+  handleFailedLogin: jest.fn(),
+  handleSuccessfulLogin: jest.fn(),
+  handleFailedOTP: jest.fn(),
+  handleSuccessfulOTP: jest.fn(),
+  logSecurityEvent: jest.fn(),
+}));
+
+jest.mock("../../src/middlewares/audit", () => ({
+  auditLogger: {
+    userLoggedIn: jest.fn(),
+    userLoggedOut: jest.fn(),
+    passwordResetRequested: jest.fn(),
+    passwordChanged: jest.fn(),
+  },
+}));
+
+const { User, Provider, RefreshToken } = require("../../src/models");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { i18nResponse } = require("../../src/utils/helpers");
+const {
+  generateOTP,
+  hashOTP,
+  verifyOTP,
+  getOTPExpiry,
+  isOTPExpired,
+} = require("../../src/utils/otp");
+const {
+  handleFailedLogin,
+  handleSuccessfulLogin,
+  handleFailedOTP,
+  handleSuccessfulOTP,
+  logSecurityEvent,
+} = require("../../src/middlewares/security");
+const { auditLogger } = require("../../src/middlewares/audit");
+const helpers = require("../../src/utils/helpers");
+
+describe("Auth Controller", () => {
+  let mockReq, mockRes, mockNext;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockReq = {
+      body: {},
+      params: {},
+      user: { id: "user-123" },
+      t: jest.fn((key) => key),
+      ip: "127.0.0.1",
+      get: jest.fn(),
+    };
+
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+
+    mockNext = jest.fn();
+
+    // Setup default mocks
+    jwt.sign.mockReturnValue("access-token");
+    crypto.randomBytes.mockReturnValue(Buffer.from("refresh-token"));
+    generateOTP.mockReturnValue("123456");
+    hashOTP.mockResolvedValue("hashed-otp");
+    getOTPExpiry.mockReturnValue(new Date(Date.now() + 10 * 60 * 1000));
+    isOTPExpired.mockReturnValue(false);
+    verifyOTP.mockResolvedValue(true);
+    i18nResponse.mockImplementation(() => {});
+    handleSuccessfulOTP.mockResolvedValue();
+    handleFailedOTP.mockResolvedValue(true);
+    logSecurityEvent.mockResolvedValue();
+  });
+
+  describe("register", () => {
+    it("should register a new user successfully", async () => {
+      const userData = {
+        email: "test@example.com",
+        password: "password123",
+        confirmPassword: "password123",
+        firstName: "John",
+        lastName: "Doe",
+        phone: "+237699123456",
+        country: "Cameroun",
+        gender: "male",
+      };
+      mockReq.body = userData;
+
+      const mockUser = {
+        id: "user-123",
+        email: userData.email,
+        firstName: userData.firstName,
+        role: "client",
+        save: jest.fn().mockResolvedValue(),
+      };
+
+      User.findOne.mockResolvedValue(null);
+      User.create.mockResolvedValue(mockUser);
+
+      await register(mockReq, mockRes, mockNext);
+
+      expect(User.findOne).toHaveBeenCalledWith({
+        where: { email: userData.email },
+      });
+      expect(User.create).toHaveBeenCalledWith({
+        email: userData.email,
+        password: userData.password,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone,
+        country: "Cameroun",
+        gender: "male",
+        role: "client",
+        isEmailVerified: false,
+      });
+      expect(mockUser.save).toHaveBeenCalledWith({
+        fields: ["otpCode", "otpExpires", "otpAttempts"],
+      });
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        201,
+        "auth.registered",
+        expect.objectContaining({
+          user: expect.objectContaining({
+            id: mockUser.id,
+            email: mockUser.email,
+            firstName: mockUser.firstName,
+            role: "client",
+            isEmailVerified: false,
+          }),
+          requiresOTP: true,
+        })
+      );
+    });
+
+    it("should throw error if passwords do not match", async () => {
+      mockReq.body = {
+        email: "test@example.com",
+        password: "password123",
+        confirmPassword: "different123",
+      };
+
+      await expect(register(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "validation.passwordMismatch"
+      );
+    });
+
+    it("should throw error if user already exists", async () => {
+      mockReq.body = {
+        email: "existing@example.com",
+        password: "password123",
+        confirmPassword: "password123",
+      };
+
+      User.findOne.mockResolvedValue({ id: "existing-user" });
+
+      await expect(register(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "validation.emailInUse"
+      );
+    });
+  });
+
+  describe("verifyOTPCode", () => {
+    it("should verify OTP successfully", async () => {
+      mockReq.body = { email: "test@example.com", otp: "123456" };
+
+      const mockUser = {
+        id: "user-123",
+        email: "test@example.com",
+        firstName: "John",
+        otpCode: "hashed-otp",
+        otpExpires: new Date(Date.now() + 10 * 60 * 1000),
+        isEmailVerified: false,
+        toPublicJSON: jest.fn().mockReturnValue({ id: "user-123" }),
+      };
+
+      User.findOne.mockResolvedValue(mockUser);
+      RefreshToken.create.mockResolvedValue();
+
+      await verifyOTPCode(mockReq, mockRes, mockNext);
+
+      expect(handleSuccessfulOTP).toHaveBeenCalledWith(mockUser, mockReq);
+      expect(RefreshToken.create).toHaveBeenCalled();
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.otpVerified",
+        expect.any(Object)
+      );
+    });
+
+    it("should throw error if user not found", async () => {
+      mockReq.body = { email: "nonexistent@example.com", otp: "123456" };
+
+      User.findOne.mockResolvedValue(null);
+
+      await expect(verifyOTPCode(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "user.notFound"
+      );
+    });
+
+    it("should throw error if user already verified", async () => {
+      mockReq.body = { email: "verified@example.com", otp: "123456" };
+
+      const mockUser = {
+        isEmailVerified: true,
+      };
+
+      User.findOne.mockResolvedValue(mockUser);
+
+      await expect(verifyOTPCode(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "auth.otpVerified"
+      );
+    });
+  });
+
+  describe("login", () => {
+    it("should login verified user successfully", async () => {
+      mockReq.body = { email: "test@example.com", password: "password123" };
+
+      const mockUser = {
+        id: "user-123",
+        email: "test@example.com",
+        role: "client",
+        isActive: true,
+        isEmailVerified: true,
+        comparePassword: jest.fn().mockResolvedValue(true),
+        toPublicJSON: jest.fn().mockReturnValue({ id: "user-123" }),
+      };
+
+      User.findOne.mockResolvedValue(mockUser);
+      RefreshToken.create.mockResolvedValue();
+
+      await login(mockReq, mockRes, mockNext);
+
+      expect(handleSuccessfulLogin).toHaveBeenCalledWith(mockUser, mockReq);
+      expect(auditLogger.userLoggedIn).toHaveBeenCalledWith(mockReq, mockUser);
+      expect(RefreshToken.create).toHaveBeenCalled();
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.loginSuccess",
+        expect.any(Object)
+      );
+    });
+
+    it("should handle unverified user login", async () => {
+      mockReq.body = {
+        email: "unverified@example.com",
+        password: "password123",
+      };
+
+      const mockUser = {
+        id: "user-123",
+        email: "unverified@example.com",
+        firstName: "John",
+        isActive: true,
+        isEmailVerified: false,
+        comparePassword: jest.fn().mockResolvedValue(true),
+        save: jest.fn().mockResolvedValue(),
+      };
+
+      User.findOne.mockResolvedValue(mockUser);
+
+      await login(mockReq, mockRes, mockNext);
+
+      expect(mockUser.save).toHaveBeenCalledWith({
+        fields: ["otpCode", "otpExpires", "otpAttempts"],
+      });
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.emailNotVerified",
+        {
+          requiresOTP: true,
+          email: mockUser.email,
         }
-    }
-}));
-
-jest.mock('../../src/config/email', () => ({
-    sendEmail: jest.fn()
-}));
-
-jest.mock('../../src/utils/emailTemplates', () => ({
-    welcomeEmail: jest.fn(),
-    passwordResetEmail: jest.fn(),
-    otpEmailTemplate: jest.fn()
-}));
-
-jest.mock('../../src/utils/helpers', () => ({
-    generateResetToken: jest.fn(),
-    hashToken: jest.fn(),
-    i18nResponse: jest.fn(),
-    successResponse: jest.fn()
-}));
-
-jest.mock('../../src/utils/otp', () => ({
-    generateOTP: jest.fn(),
-    hashOTP: jest.fn(),
-    verifyOTP: jest.fn(),
-    getOTPExpiry: jest.fn(),
-    isOTPExpired: jest.fn()
-}));
-
-jest.mock('../../src/middlewares/security', () => ({
-    handleFailedLogin: jest.fn(),
-    handleSuccessfulLogin: jest.fn(),
-    handleFailedOTP: jest.fn(),
-    handleSuccessfulOTP: jest.fn(),
-    logSecurityEvent: jest.fn()
-}));
-
-jest.mock('../../src/middlewares/audit', () => ({
-    auditLogger: {
-        userLoggedIn: jest.fn(),
-        userLoggedOut: jest.fn(),
-        passwordResetRequested: jest.fn(),
-        passwordChanged: jest.fn()
-    }
-}));
-
-const { User, Provider, RefreshToken } = require('../../src/models');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { i18nResponse } = require('../../src/utils/helpers');
-const { generateOTP, hashOTP, verifyOTP, getOTPExpiry, isOTPExpired } = require('../../src/utils/otp');
-const { handleFailedLogin, handleSuccessfulLogin, handleFailedOTP, handleSuccessfulOTP, logSecurityEvent } = require('../../src/middlewares/security');
-const { auditLogger } = require('../../src/middlewares/audit');
-const helpers = require('../../src/utils/helpers');
-
-describe('Auth Controller', () => {
-    let mockReq, mockRes, mockNext;
-
-    beforeEach(() => {
-        jest.clearAllMocks();
-
-        mockReq = {
-            body: {},
-            params: {},
-            user: { id: 'user-123' },
-            t: jest.fn((key) => key),
-            ip: '127.0.0.1',
-            get: jest.fn()
-        };
-
-        mockRes = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn().mockReturnThis()
-        };
-
-        mockNext = jest.fn();
-
-        // Setup default mocks
-        jwt.sign.mockReturnValue('access-token');
-        crypto.randomBytes.mockReturnValue(Buffer.from('refresh-token'));
-        generateOTP.mockReturnValue('123456');
-        hashOTP.mockResolvedValue('hashed-otp');
-        getOTPExpiry.mockReturnValue(new Date(Date.now() + 10 * 60 * 1000));
-        isOTPExpired.mockReturnValue(false);
-        verifyOTP.mockResolvedValue(true);
-        i18nResponse.mockImplementation(() => {});
-        handleSuccessfulOTP.mockResolvedValue();
-        handleFailedOTP.mockResolvedValue(true);
-        logSecurityEvent.mockResolvedValue();
+      );
     });
 
-    describe('register', () => {
-        it('should register a new user successfully', async () => {
-            const userData = {
-                email: 'test@example.com',
-                password: 'password123',
-                confirmPassword: 'password123',
-                firstName: 'John',
-                lastName: 'Doe',
-                phone: '+237699123456',
-                country: 'Cameroun',
-                gender: 'male'
-            };
-            mockReq.body = userData;
+    it("should throw error for invalid credentials", async () => {
+      mockReq.body = { email: "test@example.com", password: "wrongpassword" };
 
-            const mockUser = {
-                id: 'user-123',
-                email: userData.email,
-                firstName: userData.firstName,
-                role: 'client',
-                save: jest.fn().mockResolvedValue()
-            };
+      const mockUser = {
+        id: "user-123",
+        isActive: true,
+        comparePassword: jest.fn().mockResolvedValue(false),
+      };
 
-            User.findOne.mockResolvedValue(null);
-            User.create.mockResolvedValue(mockUser);
+      User.findOne.mockResolvedValue(mockUser);
+      handleFailedLogin.mockResolvedValue();
 
-            await register(mockReq, mockRes, mockNext);
+      await expect(login(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "auth.invalidCredentials"
+      );
+      expect(handleFailedLogin).toHaveBeenCalledWith(mockUser, mockReq);
+    });
+  });
 
-            expect(User.findOne).toHaveBeenCalledWith({ where: { email: userData.email } });
-            expect(User.create).toHaveBeenCalledWith({
-                email: userData.email,
-                password: userData.password,
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                phone: userData.phone,
-                country: 'Cameroun',
-                gender: 'male',
-                role: 'client',
-                isEmailVerified: false
-            });
-            expect(mockUser.save).toHaveBeenCalledWith({ fields: ['otpCode', 'otpExpires', 'otpAttempts'] });
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 201, 'auth.registered', expect.objectContaining({
-                user: expect.objectContaining({
-                    id: mockUser.id,
-                    email: mockUser.email,
-                    firstName: mockUser.firstName,
-                    role: 'client',
-                    isEmailVerified: false
-                }),
-                requiresOTP: true
-            }));
-        });
+  describe("refreshAccessToken", () => {
+    it("should refresh access token successfully", async () => {
+      mockReq.body = { refreshToken: "valid-refresh-token" };
 
-        it('should throw error if passwords do not match', async () => {
-            mockReq.body = {
-                email: 'test@example.com',
-                password: 'password123',
-                confirmPassword: 'different123'
-            };
+      const mockTokenRecord = {
+        userId: "user-123",
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        save: jest.fn().mockResolvedValue(),
+      };
 
-            await expect(register(mockReq, mockRes, mockNext)).rejects.toThrow('validation.passwordMismatch');
-        });
+      RefreshToken.findOne.mockResolvedValue(mockTokenRecord);
 
-        it('should throw error if user already exists', async () => {
-            mockReq.body = {
-                email: 'existing@example.com',
-                password: 'password123',
-                confirmPassword: 'password123'
-            };
+      await refreshAccessToken(mockReq, mockRes, mockNext);
 
-            User.findOne.mockResolvedValue({ id: 'existing-user' });
-
-            await expect(register(mockReq, mockRes, mockNext)).rejects.toThrow('validation.emailInUse');
-        });
+      expect(RefreshToken.findOne).toHaveBeenCalledWith({
+        where: { token: "valid-refresh-token", isRevoked: false },
+      });
+      expect(jwt.sign).toHaveBeenCalledWith(
+        { id: "user-123", type: "access" },
+        process.env.JWT_SECRET,
+        { expiresIn: expect.any(String) }
+      );
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.tokenRefreshed",
+        { accessToken: "access-token" }
+      );
     });
 
-    describe('verifyOTPCode', () => {
-        it('should verify OTP successfully', async () => {
-            mockReq.body = { email: 'test@example.com', otp: '123456' };
+    it("should throw error for invalid refresh token", async () => {
+      mockReq.body = { refreshToken: "invalid-token" };
 
-            const mockUser = {
-                id: 'user-123',
-                email: 'test@example.com',
-                firstName: 'John',
-                otpCode: 'hashed-otp',
-                otpExpires: new Date(Date.now() + 10 * 60 * 1000),
-                isEmailVerified: false,
-                toPublicJSON: jest.fn().mockReturnValue({ id: 'user-123' })
-            };
+      RefreshToken.findOne.mockResolvedValue(null);
 
-            User.findOne.mockResolvedValue(mockUser);
-            RefreshToken.create.mockResolvedValue();
+      await expect(
+        refreshAccessToken(mockReq, mockRes, mockNext)
+      ).rejects.toThrow("auth.refreshTokenInvalid");
+    });
+  });
 
-            await verifyOTPCode(mockReq, mockRes, mockNext);
+  describe("forgotPassword", () => {
+    it("should send reset email for existing user", async () => {
+      mockReq.body = { email: "test@example.com" };
 
-            expect(handleSuccessfulOTP).toHaveBeenCalledWith(mockUser, mockReq);
-            expect(RefreshToken.create).toHaveBeenCalled();
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.otpVerified', expect.any(Object));
-        });
+      const mockUser = {
+        id: "user-123",
+        email: "test@example.com",
+        firstName: "John",
+        save: jest.fn().mockResolvedValue(),
+      };
 
-        it('should throw error if user not found', async () => {
-            mockReq.body = { email: 'nonexistent@example.com', otp: '123456' };
+      User.findOne.mockResolvedValue(mockUser);
+      helpers.generateResetToken.mockReturnValue({
+        resetToken: "reset-token",
+        hashedToken: "hashed-token",
+      });
 
-            User.findOne.mockResolvedValue(null);
+      await forgotPassword(mockReq, mockRes, mockNext);
 
-            await expect(verifyOTPCode(mockReq, mockRes, mockNext)).rejects.toThrow('user.notFound');
-        });
-
-        it('should throw error if user already verified', async () => {
-            mockReq.body = { email: 'verified@example.com', otp: '123456' };
-
-            const mockUser = {
-                isEmailVerified: true
-            };
-
-            User.findOne.mockResolvedValue(mockUser);
-
-            await expect(verifyOTPCode(mockReq, mockRes, mockNext)).rejects.toThrow('auth.otpVerified');
-        });
+      expect(mockUser.save).toHaveBeenCalledWith({
+        fields: ["resetPasswordToken", "resetPasswordExpires"],
+      });
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.passwordResetSent"
+      );
     });
 
-    describe('login', () => {
-        it('should login verified user successfully', async () => {
-            mockReq.body = { email: 'test@example.com', password: 'password123' };
+    it("should not reveal if user does not exist", async () => {
+      mockReq.body = { email: "nonexistent@example.com" };
 
-            const mockUser = {
-                id: 'user-123',
-                email: 'test@example.com',
-                role: 'client',
-                isActive: true,
-                isEmailVerified: true,
-                comparePassword: jest.fn().mockResolvedValue(true),
-                toPublicJSON: jest.fn().mockReturnValue({ id: 'user-123' })
-            };
+      User.findOne.mockResolvedValue(null);
 
-            User.findOne.mockResolvedValue(mockUser);
-            RefreshToken.create.mockResolvedValue();
+      await forgotPassword(mockReq, mockRes, mockNext);
 
-            await login(mockReq, mockRes, mockNext);
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.passwordResetSent"
+      );
+    });
+  });
 
-            expect(handleSuccessfulLogin).toHaveBeenCalledWith(mockUser, mockReq);
-            expect(auditLogger.userLoggedIn).toHaveBeenCalledWith(mockReq, mockUser);
-            expect(RefreshToken.create).toHaveBeenCalled();
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.loginSuccess', expect.any(Object));
-        });
+  describe("resetPassword", () => {
+    it("should reset password successfully", async () => {
+      mockReq.params = { token: "reset-token" };
+      mockReq.body = { password: "newpassword123" };
 
-        it('should handle unverified user login', async () => {
-            mockReq.body = { email: 'unverified@example.com', password: 'password123' };
+      const mockUser = {
+        id: "user-123",
+        save: jest.fn().mockResolvedValue(),
+      };
 
-            const mockUser = {
-                id: 'user-123',
-                email: 'unverified@example.com',
-                firstName: 'John',
-                isActive: true,
-                isEmailVerified: false,
-                comparePassword: jest.fn().mockResolvedValue(true),
-                save: jest.fn().mockResolvedValue()
-            };
+      User.findOne.mockResolvedValue(mockUser);
+      RefreshToken.revokeAllForUser.mockResolvedValue();
+      RefreshToken.create.mockResolvedValue();
 
-            User.findOne.mockResolvedValue(mockUser);
+      await resetPassword(mockReq, mockRes, mockNext);
 
-            await login(mockReq, mockRes, mockNext);
-
-            expect(mockUser.save).toHaveBeenCalledWith({ fields: ['otpCode', 'otpExpires', 'otpAttempts'] });
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.emailNotVerified', {
-                requiresOTP: true,
-                email: mockUser.email
-            });
-        });
-
-        it('should throw error for invalid credentials', async () => {
-            mockReq.body = { email: 'test@example.com', password: 'wrongpassword' };
-
-            const mockUser = {
-                id: 'user-123',
-                isActive: true,
-                comparePassword: jest.fn().mockResolvedValue(false)
-            };
-
-            User.findOne.mockResolvedValue(mockUser);
-            handleFailedLogin.mockResolvedValue();
-
-            await expect(login(mockReq, mockRes, mockNext)).rejects.toThrow('auth.invalidCredentials');
-            expect(handleFailedLogin).toHaveBeenCalledWith(mockUser, mockReq);
-        });
+      expect(mockUser.save).toHaveBeenCalled();
+      expect(RefreshToken.revokeAllForUser).toHaveBeenCalledWith("user-123");
+      expect(RefreshToken.create).toHaveBeenCalled();
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "auth.passwordResetSuccess",
+        expect.any(Object)
+      );
     });
 
-    describe('refreshAccessToken', () => {
-        it('should refresh access token successfully', async () => {
-            mockReq.body = { refreshToken: 'valid-refresh-token' };
+    it("should throw error for invalid token", async () => {
+      mockReq.params = { token: "invalid-token" };
 
-            const mockTokenRecord = {
-                userId: 'user-123',
-                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-                save: jest.fn().mockResolvedValue()
-            };
+      User.findOne.mockResolvedValue(null);
 
-            RefreshToken.findOne.mockResolvedValue(mockTokenRecord);
+      await expect(resetPassword(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "auth.tokenInvalid"
+      );
+    });
+  });
 
-            await refreshAccessToken(mockReq, mockRes, mockNext);
+  describe("getMe", () => {
+    it("should return current user profile", async () => {
+      const mockUser = {
+        id: "user-123",
+        toPublicJSON: jest.fn().mockReturnValue({ id: "user-123" }),
+        provider: null,
+      };
 
-            expect(RefreshToken.findOne).toHaveBeenCalledWith({
-                where: { token: 'valid-refresh-token', isRevoked: false }
-            });
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { id: 'user-123', type: 'access' },
-                process.env.JWT_SECRET,
-                { expiresIn: expect.any(String) }
-            );
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.tokenRefreshed', { accessToken: 'access-token' });
-        });
+      User.findByPk.mockResolvedValue(mockUser);
 
-        it('should throw error for invalid refresh token', async () => {
-            mockReq.body = { refreshToken: 'invalid-token' };
+      await getMe(mockReq, mockRes, mockNext);
 
-            RefreshToken.findOne.mockResolvedValue(null);
-
-            await expect(refreshAccessToken(mockReq, mockRes, mockNext)).rejects.toThrow('auth.refreshTokenInvalid');
-        });
+      expect(User.findByPk).toHaveBeenCalledWith(
+        "user-123",
+        expect.any(Object)
+      );
+      expect(i18nResponse).toHaveBeenCalledWith(
+        mockReq,
+        mockRes,
+        200,
+        "user.profile",
+        {
+          user: { id: "user-123" },
+          provider: null,
+        }
+      );
     });
 
-    describe('forgotPassword', () => {
-        it('should send reset email for existing user', async () => {
-            mockReq.body = { email: 'test@example.com' };
+    it("should throw error if user not found", async () => {
+      User.findByPk.mockResolvedValue(null);
 
-            const mockUser = {
-                id: 'user-123',
-                email: 'test@example.com',
-                firstName: 'John',
-                save: jest.fn().mockResolvedValue()
-            };
-
-            User.findOne.mockResolvedValue(mockUser);
-            helpers.generateResetToken.mockReturnValue({ resetToken: 'reset-token', hashedToken: 'hashed-token' });
-
-            await forgotPassword(mockReq, mockRes, mockNext);
-
-            expect(mockUser.save).toHaveBeenCalledWith({ fields: ['resetPasswordToken', 'resetPasswordExpires'] });
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.passwordResetSent');
-        });
-
-        it('should not reveal if user does not exist', async () => {
-            mockReq.body = { email: 'nonexistent@example.com' };
-
-            User.findOne.mockResolvedValue(null);
-
-            await forgotPassword(mockReq, mockRes, mockNext);
-
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.passwordResetSent');
-        });
+      await expect(getMe(mockReq, mockRes, mockNext)).rejects.toThrow(
+        "user.notFound"
+      );
     });
-
-    describe('resetPassword', () => {
-        it('should reset password successfully', async () => {
-            mockReq.params = { token: 'reset-token' };
-            mockReq.body = { password: 'newpassword123' };
-
-            const mockUser = {
-                id: 'user-123',
-                save: jest.fn().mockResolvedValue()
-            };
-
-            User.findOne.mockResolvedValue(mockUser);
-            RefreshToken.revokeAllForUser.mockResolvedValue();
-            RefreshToken.create.mockResolvedValue();
-
-            await resetPassword(mockReq, mockRes, mockNext);
-
-            expect(mockUser.save).toHaveBeenCalled();
-            expect(RefreshToken.revokeAllForUser).toHaveBeenCalledWith('user-123');
-            expect(RefreshToken.create).toHaveBeenCalled();
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'auth.passwordResetSuccess', expect.any(Object));
-        });
-
-        it('should throw error for invalid token', async () => {
-            mockReq.params = { token: 'invalid-token' };
-
-            User.findOne.mockResolvedValue(null);
-
-            await expect(resetPassword(mockReq, mockRes, mockNext)).rejects.toThrow('auth.tokenInvalid');
-        });
-    });
-
-    describe('getMe', () => {
-        it('should return current user profile', async () => {
-            const mockUser = {
-                id: 'user-123',
-                toPublicJSON: jest.fn().mockReturnValue({ id: 'user-123' }),
-                provider: null
-            };
-
-            User.findByPk.mockResolvedValue(mockUser);
-
-            await getMe(mockReq, mockRes, mockNext);
-
-            expect(User.findByPk).toHaveBeenCalledWith('user-123', expect.any(Object));
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'user.profile', {
-                user: { id: 'user-123' },
-                provider: null
-            });
-        });
-
-        it('should throw error if user not found', async () => {
-            User.findByPk.mockResolvedValue(null);
-
-            await expect(getMe(mockReq, mockRes, mockNext)).rejects.toThrow('user.notFound');
-        });
-    });
+  });
 });

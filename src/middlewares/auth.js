@@ -76,7 +76,11 @@ const protect = async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.error('Auth middleware error:', error.message);
+        const logger = require('../utils/logger');
+        logger.error('Auth middleware error:', {
+            error: error.message,
+            stack: error.stack
+        });
 
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({

@@ -1,8 +1,9 @@
-const { User, Provider } = require('../models');
-const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { i18nResponse } = require('../utils/helpers');
-const { deleteImage, getPublicIdFromUrl } = require('../config/cloudinary');
-const { sendEmail } = require('../config/email');
+const { User, Provider } = require("../models");
+const { asyncHandler, AppError } = require("../middlewares/errorHandler");
+const { i18nResponse, sendEmailSafely } = require("../utils/helpers");
+const { deleteImage, getPublicIdFromUrl } = require("../config/cloudinary");
+const { passwordChangedConfirmationEmail } = require("../utils/emailTemplates");
+const logger = require("../utils/logger");
 
 /**
  * @desc    Get user profile
@@ -10,25 +11,27 @@ const { sendEmail } = require('../config/email');
  * @access  Private
  */
 const getProfile = asyncHandler(async (req, res) => {
-    const user = await User.findByPk(req.user.id, {
-        attributes: { exclude: ['password', 'resetPasswordToken', 'resetPasswordExpires'] },
-        include: [
-            {
-                model: Provider,
-                as: 'provider',
-                required: false
-            }
-        ]
-    });
+  const user = await User.findByPk(req.user.id, {
+    attributes: {
+      exclude: ["password", "resetPasswordToken", "resetPasswordExpires"],
+    },
+    include: [
+      {
+        model: Provider,
+        as: "provider",
+        required: false,
+      },
+    ],
+  });
 
-    if (!user) {
-        throw new AppError(req.t('user.notFound'), 404);
-    }
+  if (!user) {
+    throw new AppError(req.t("user.notFound"), 404);
+  }
 
-    i18nResponse(req, res, 200, 'user.profile', {
-        user: user.toPublicJSON(),
-        provider: user.provider || null
-    });
+  i18nResponse(req, res, 200, "user.profile", {
+    user: user.toPublicJSON(),
+    provider: user.provider || null,
+  });
 });
 
 /**
@@ -37,37 +40,41 @@ const getProfile = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const updateProfile = asyncHandler(async (req, res) => {
-    const { firstName, lastName, phone } = req.body;
+  const { firstName, lastName, phone } = req.body;
 
-    const user = await User.findByPk(req.user.id);
-    if (!user) {
-        throw new AppError(req.t('user.notFound'), 404);
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    throw new AppError(req.t("user.notFound"), 404);
+  }
+
+  // Update fields
+  if (firstName) user.firstName = firstName;
+  if (lastName) user.lastName = lastName;
+  if (phone !== undefined) user.phone = phone;
+
+  // Handle profile photo upload
+  if (req.file) {
+    // Delete old photo if exists
+    if (user.profilePhoto) {
+      const oldPublicId = getPublicIdFromUrl(user.profilePhoto);
+      if (oldPublicId) {
+        await deleteImage(oldPublicId).catch((err) => {
+          logger.error("Error deleting old photo:", {
+            error: err.message,
+            stack: err.stack,
+            publicId: oldPublicId,
+          });
+        });
+      }
     }
+    user.profilePhoto = req.file.path;
+  }
 
-    // Update fields
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (phone !== undefined) user.phone = phone;
+  await user.save();
 
-    // Handle profile photo upload
-    if (req.file) {
-        // Delete old photo if exists
-        if (user.profilePhoto) {
-            const oldPublicId = getPublicIdFromUrl(user.profilePhoto);
-            if (oldPublicId) {
-                await deleteImage(oldPublicId).catch(err =>
-                    console.error('Error deleting old photo:', err.message)
-                );
-            }
-        }
-        user.profilePhoto = req.file.path;
-    }
-
-    await user.save();
-
-    i18nResponse(req, res, 200, 'user.profileUpdated', {
-        user: user.toPublicJSON()
-    });
+  i18nResponse(req, res, 200, "user.profileUpdated", {
+    user: user.toPublicJSON(),
+  });
 });
 
 /**
@@ -76,45 +83,33 @@ const updateProfile = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const changePassword = asyncHandler(async (req, res) => {
-    const { currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findByPk(req.user.id);
-    if (!user) {
-        throw new AppError(req.t('user.notFound'), 404);
-    }
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    throw new AppError(req.t("user.notFound"), 404);
+  }
 
-    // Verify current password
-    const isMatch = await user.comparePassword(currentPassword);
-    if (!isMatch) {
-        throw new AppError(req.t('user.incorrectPassword'), 401);
-    }
+  // Verify current password
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) {
+    throw new AppError(req.t("user.incorrectPassword"), 401);
+  }
 
-    // Update password
-    user.password = newPassword;
-    await user.save();
+  // Update password
+  user.password = newPassword;
+  await user.save();
 
-    // Send confirmation email (optional - don't fail if email system is down)
-    try {
-        const emailModule = require('../config/email');
-        const emailTemplates = require('../utils/emailTemplates');
+  // Send confirmation email (optional - don't fail if email system is down)
+  await sendEmailSafely(
+    {
+      to: user.email,
+      ...passwordChangedConfirmationEmail({ firstName: user.firstName }),
+    },
+    "Password changed confirmation"
+  );
 
-        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.passwordChangedConfirmationEmail) {
-            const emailResult = emailModule.sendEmail({
-                to: user.email,
-                ...emailTemplates.passwordChangedConfirmationEmail({ firstName: user.firstName })
-            });
-
-            // Only catch if it's a promise
-            if (emailResult && typeof emailResult.catch === 'function') {
-                emailResult.catch(err => console.error('Password change email error:', err.message));
-            }
-        }
-    } catch (error) {
-        // Silently ignore email errors in production
-        console.error('Email sending setup error:', error.message);
-    }
-
-    i18nResponse(req, res, 200, 'user.passwordChanged');
+  i18nResponse(req, res, 200, "user.passwordChanged");
 });
 
 /**
@@ -123,21 +118,21 @@ const changePassword = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const deactivateAccount = asyncHandler(async (req, res) => {
-    const user = await User.findByPk(req.user.id);
-    if (!user) {
-        throw new AppError(req.t('user.notFound'), 404);
-    }
+  const user = await User.findByPk(req.user.id);
+  if (!user) {
+    throw new AppError(req.t("user.notFound"), 404);
+  }
 
-    // Soft delete - just deactivate
-    user.isActive = false;
-    await user.save({ fields: ['isActive'] });
+  // Soft delete - just deactivate
+  user.isActive = false;
+  await user.save({ fields: ["isActive"] });
 
-    i18nResponse(req, res, 200, 'user.accountDeactivated');
+  i18nResponse(req, res, 200, "user.accountDeactivated");
 });
 
 module.exports = {
-    getProfile,
-    updateProfile,
-    changePassword,
-    deactivateAccount
+  getProfile,
+  updateProfile,
+  changePassword,
+  deactivateAccount,
 };

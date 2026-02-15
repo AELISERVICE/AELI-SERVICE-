@@ -70,7 +70,8 @@ jest.mock('../../src/middlewares/audit', () => ({
 jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn(),
     getPaginationParams: jest.fn(),
-    getPaginationData: jest.fn()
+    getPaginationData: jest.fn(),
+    sendEmailSafely: jest.fn()
 }));
 
 jest.mock('../../src/config/email', () => ({
@@ -88,7 +89,7 @@ jest.mock('../../src/config/redis', () => ({
 }));
 
 const { User, Provider, Service, Review, Contact, Payment } = require('../../src/models');
-const { i18nResponse, getPaginationParams, getPaginationData } = require('../../src/utils/helpers');
+const { i18nResponse, getPaginationParams, getPaginationData, sendEmailSafely } = require('../../src/utils/helpers');
 const { sendEmail } = require('../../src/config/email');
 const { delByPattern } = require('../../src/config/redis');
 
@@ -117,6 +118,7 @@ describe('Admin Controller', () => {
         i18nResponse.mockImplementation(() => {});
         getPaginationParams.mockReturnValue({ limit: 10, offset: 0 });
         getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
+        sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         sendEmail.mockResolvedValue({});
         delByPattern.mockResolvedValue(1);
     });

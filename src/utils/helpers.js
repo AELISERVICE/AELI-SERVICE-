@@ -1,4 +1,6 @@
 const crypto = require('crypto');
+const logger = require('./logger');
+const { sendEmail: sendEmailService } = require('../config/email');
 
 /**
  * Generate pagination metadata
@@ -190,6 +192,48 @@ const parseBoolean = (value) => {
     return undefined;
 };
 
+/**
+ * Send email safely with proper error handling
+ * This function centralizes email sending logic and handles errors gracefully
+ * without blocking the main flow (emails are non-critical)
+ * @param {Object} emailData - Email data { to, subject, html, text }
+ * @param {string} emailType - Type of email (for logging purposes)
+ * @returns {Promise<Object|null>} Email info or null if failed
+ */
+const sendEmailSafely = async (emailData, emailType = 'email') => {
+    try {
+        if (!sendEmailService || typeof sendEmailService !== 'function') {
+            logger.warn(`Email service not available. Cannot send ${emailType} to ${emailData.to}`);
+            return null;
+        }
+
+        const emailResult = sendEmailService(emailData);
+
+        // Handle both promise and non-promise returns
+        if (emailResult && typeof emailResult.catch === 'function') {
+            emailResult.catch(err => {
+                logger.error(`Failed to send ${emailType} to ${emailData.to}:`, {
+                    error: err.message,
+                    stack: err.stack,
+                    emailType,
+                    recipient: emailData.to
+                });
+            });
+        }
+
+        logger.info(`Email queued: ${emailType} to ${emailData.to}`);
+        return emailResult;
+    } catch (error) {
+        logger.error(`Error setting up ${emailType} email:`, {
+            error: error.message,
+            stack: error.stack,
+            emailType,
+            recipient: emailData.to
+        });
+        return null;
+    }
+};
+
 module.exports = {
     getPaginationData,
     getPaginationParams,
@@ -202,6 +246,7 @@ module.exports = {
     extractPhotoUrls,
     successResponse,
     i18nResponse,
-    parseBoolean
+    parseBoolean,
+    sendEmailSafely
 };
 

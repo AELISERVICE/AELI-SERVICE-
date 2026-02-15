@@ -54,7 +54,8 @@ jest.mock('../../src/middlewares/errorHandler', () => ({
 jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn(),
     getPaginationParams: jest.fn(),
-    getPaginationData: jest.fn()
+    getPaginationData: jest.fn(),
+    sendEmailSafely: jest.fn()
 }));
 
 jest.mock('../../src/config/email', () => ({
@@ -64,6 +65,12 @@ jest.mock('../../src/config/email', () => ({
 jest.mock('../../src/utils/emailTemplates', () => ({
     newContactEmail: jest.fn(),
     contactStatusChangedEmail: jest.fn()
+}));
+
+jest.mock('../../src/utils/logger', () => ({
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn()
 }));
 
 jest.mock('../../src/config/socket', () => ({

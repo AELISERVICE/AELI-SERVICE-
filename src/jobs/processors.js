@@ -1,7 +1,7 @@
-const { sendEmail } = require('../config/email');
 const { RefreshToken, SecurityLog, AuditLog } = require('../models');
 const { Op } = require('sequelize');
 const logger = require('../utils/logger');
+const { sendEmailSafely } = require('../utils/helpers');
 const axios = require('axios');
 
 /**
@@ -13,7 +13,7 @@ const emailProcessor = async (job) => {
     logger.debug(`Processing email job ${job.id} to ${to}`);
 
     try {
-        await sendEmail({ to, subject, html, text });
+        await sendEmailSafely({ to, subject, html, text }, `Email job ${job.id}`);
         return { success: true, to, subject };
     } catch (error) {
         logger.error(`Email job ${job.id} failed:`, error.message);

@@ -50,7 +50,8 @@ jest.mock('../../src/middlewares/audit', () => ({
 
 jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn(),
-    extractPhotoUrls: jest.fn()
+    extractPhotoUrls: jest.fn(),
+    sendEmailSafely: jest.fn()
 }));
 
 jest.mock('../../src/utils/dbHelpers', () => ({
@@ -77,7 +78,7 @@ jest.mock('../../src/config/redis', () => ({
 }));
 
 const { ProviderApplication, User, Provider, Subscription } = require('../../src/models');
-const { i18nResponse, extractPhotoUrls } = require('../../src/utils/helpers');
+const { i18nResponse, extractPhotoUrls, sendEmailSafely } = require('../../src/utils/helpers');
 const { withTransaction } = require('../../src/utils/dbHelpers');
 const { uploadDocument } = require('../../src/config/cloudinary');
 const { sendEmail } = require('../../src/config/email');
@@ -108,6 +109,7 @@ describe('Provider Application Controller', () => {
         // Setup default mocks
         i18nResponse.mockImplementation(() => {});
         extractPhotoUrls.mockReturnValue([]);
+        sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         uploadDocument.mockResolvedValue({ url: 'doc-url', publicId: 'doc-public-id' });
         sendEmail.mockResolvedValue({});
         cache.delByPattern.mockResolvedValue(1);

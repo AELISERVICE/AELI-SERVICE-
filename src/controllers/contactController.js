@@ -1,9 +1,17 @@
-const { Contact, Provider, User } = require('../models');
-const { asyncHandler, AppError } = require('../middlewares/errorHandler');
-const { i18nResponse, getPaginationParams, getPaginationData } = require('../utils/helpers');
-const { sendEmail } = require('../config/email');
-const { newContactEmail } = require('../utils/emailTemplates');
-const { emitNewContact, emitContactStatusChange } = require('../config/socket');
+const { Contact, Provider, User } = require("../models");
+const { asyncHandler, AppError } = require("../middlewares/errorHandler");
+const {
+  i18nResponse,
+  getPaginationParams,
+  getPaginationData,
+  sendEmailSafely,
+} = require("../utils/helpers");
+const {
+  newContactEmail,
+  contactStatusChangedEmail,
+} = require("../utils/emailTemplates");
+const { emitNewContact, emitContactStatusChange } = require("../config/socket");
+const logger = require("../utils/logger");
 
 /**
  * @desc    Send a contact request to a provider
@@ -11,76 +19,65 @@ const { emitNewContact, emitContactStatusChange } = require('../config/socket');
  * @access  Public (can be authenticated or not)
  */
 const createContact = asyncHandler(async (req, res) => {
-    const { providerId, message, senderName, senderEmail, senderPhone } = req.body;
+  const { providerId, message, senderName, senderEmail, senderPhone } =
+    req.body;
 
-    // Check if provider exists
-    const provider = await Provider.findByPk(providerId, {
-        include: [{ model: User, as: 'user' }]
-    });
+  // Check if provider exists
+  const provider = await Provider.findByPk(providerId, {
+    include: [{ model: User, as: "user" }],
+  });
 
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    // Create contact request
-    const contact = await Contact.create({
-        userId: req.user ? req.user.id : null,
-        providerId,
-        message,
+  // Create contact request
+  const contact = await Contact.create({
+    userId: req.user ? req.user.id : null,
+    providerId,
+    message,
+    senderName,
+    senderEmail,
+    senderPhone,
+    isUnlocked: false, // Par défaut verrouillé
+  });
+
+  // Auto-unlock if provider has active subscription
+  const { Subscription } = require("../models");
+  const subscription = await Subscription.findOne({ where: { providerId } });
+  if (subscription && subscription.isActive()) {
+    contact.isUnlocked = true;
+    contact.unlockedAt = new Date();
+    await contact.save();
+  }
+
+  // Increment provider's contact count
+  await provider.incrementContacts();
+
+  // Send WebSocket notification to provider
+  emitNewContact(providerId, {
+    id: contact.id,
+    senderName,
+    senderEmail,
+    message: message.substring(0, 100) + (message.length > 100 ? "..." : ""),
+  });
+
+  // Send email notification to provider (optional - don't fail if email system is down)
+  await sendEmailSafely(
+    {
+      to: provider.user.email,
+      ...newContactEmail({
+        providerName: provider.businessName,
         senderName,
         senderEmail,
         senderPhone,
-        isUnlocked: false // Par défaut verrouillé
-    });
+        message,
+      }),
+    },
+    "New contact notification"
+  );
 
-    // Auto-unlock if provider has active subscription
-    const { Subscription } = require('../models');
-    const subscription = await Subscription.findOne({ where: { providerId } });
-    if (subscription && subscription.isActive()) {
-        contact.isUnlocked = true;
-        contact.unlockedAt = new Date();
-        await contact.save();
-    }
-
-    // Increment provider's contact count
-    await provider.incrementContacts();
-
-    // Send WebSocket notification to provider
-    emitNewContact(providerId, {
-        id: contact.id,
-        senderName,
-        senderEmail,
-        message: message.substring(0, 100) + (message.length > 100 ? '...' : '')
-    });
-
-    // Send email notification to provider (optional - don't fail if email system is down)
-    try {
-        const emailModule = require('../config/email');
-        const emailTemplates = require('../utils/emailTemplates');
-
-        if (emailModule && typeof emailModule.sendEmail === 'function' && emailTemplates.newContactEmail) {
-            const emailResult = emailModule.sendEmail({
-                to: provider.user.email,
-                ...emailTemplates.newContactEmail({
-                    providerName: provider.businessName,
-                    senderName,
-                    senderEmail,
-                    senderPhone,
-                    message
-                })
-            });
-
-            // Only catch if it's a promise
-            if (emailResult && typeof emailResult.catch === 'function') {
-                emailResult.catch(err => console.error('Contact notification email error:', err.message));
-            }
-        }
-    } catch (error) {
-        // Silently ignore email errors in production
-        console.error('Email sending setup error:', error.message);
-    }
-
-    i18nResponse(req, res, 201, 'contact.sent', { contact });
+  i18nResponse(req, res, 201, "contact.sent", { contact });
 });
 
 /**
@@ -89,51 +86,54 @@ const createContact = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const getReceivedContacts = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, status } = req.query;
+  const { page = 1, limit = 10, status } = req.query;
 
-    // Get provider for current user
-    const provider = await Provider.findOne({ where: { userId: req.user.id } });
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  // Get provider for current user
+  const provider = await Provider.findOne({ where: { userId: req.user.id } });
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
-    const where = { providerId: provider.id };
-    if (status) {
-        where.status = status;
-    }
+  const where = { providerId: provider.id };
+  if (status) {
+    where.status = status;
+  }
 
-    const { count, rows: contacts } = await Contact.findAndCountAll({
-        where,
-        include: [
-            {
-                model: User,
-                as: 'sender',
-                attributes: ['id', 'firstName', 'lastName', 'profilePhoto'],
-                required: false
-            }
-        ],
-        order: [['createdAt', 'DESC']],
-        limit: queryLimit,
-        offset
-    });
+  const { count, rows: contacts } = await Contact.findAndCountAll({
+    where,
+    include: [
+      {
+        model: User,
+        as: "sender",
+        attributes: ["id", "firstName", "lastName", "profilePhoto"],
+        required: false,
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+    limit: queryLimit,
+    offset,
+  });
 
-    const pagination = getPaginationData(page, queryLimit, count);
+  const pagination = getPaginationData(page, queryLimit, count);
 
-    // Check unlock status and mask data if needed
-    const processedContacts = await Promise.all(
-        contacts.map(async (contact) => {
-            const canView = await contact.canBeViewedBy(req.user);
-            if (canView) {
-                return contact;
-            } else {
-                return contact.getMaskedData();
-            }
-        })
-    );
+  // Check unlock status and mask data if needed
+  const processedContacts = await Promise.all(
+    contacts.map(async (contact) => {
+      const canView = await contact.canBeViewedBy(req.user);
+      if (canView) {
+        return contact;
+      } else {
+        return contact.getMaskedData();
+      }
+    })
+  );
 
-    i18nResponse(req, res, 200, 'contact.list', { contacts: processedContacts, pagination });
+  i18nResponse(req, res, 200, "contact.list", {
+    contacts: processedContacts,
+    pagination,
+  });
 });
 
 /**
@@ -142,34 +142,34 @@ const getReceivedContacts = asyncHandler(async (req, res) => {
  * @access  Private
  */
 const getSentContacts = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10 } = req.query;
 
-    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
-    const { count, rows: contacts } = await Contact.findAndCountAll({
-        where: { userId: req.user.id },
+  const { count, rows: contacts } = await Contact.findAndCountAll({
+    where: { userId: req.user.id },
+    include: [
+      {
+        model: Provider,
+        as: "provider",
+        attributes: ["id", "businessName", "location"],
         include: [
-            {
-                model: Provider,
-                as: 'provider',
-                attributes: ['id', 'businessName', 'location'],
-                include: [
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['firstName', 'lastName', 'profilePhoto']
-                    }
-                ]
-            }
+          {
+            model: User,
+            as: "user",
+            attributes: ["firstName", "lastName", "profilePhoto"],
+          },
         ],
-        order: [['createdAt', 'DESC']],
-        limit: queryLimit,
-        offset
-    });
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+    limit: queryLimit,
+    offset,
+  });
 
-    const pagination = getPaginationData(page, queryLimit, count);
+  const pagination = getPaginationData(page, queryLimit, count);
 
-    i18nResponse(req, res, 200, 'contact.list', { contacts, pagination });
+  i18nResponse(req, res, 200, "contact.list", { contacts, pagination });
 });
 
 /**
@@ -178,52 +178,54 @@ const getSentContacts = asyncHandler(async (req, res) => {
  * @access  Private (provider - owner)
  */
 const updateContactStatus = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
+  const { id } = req.params;
+  const { status } = req.body;
 
-    if (!['pending', 'read', 'replied'].includes(status)) {
-        throw new AppError(req.t('common.badRequest'), 400);
-    }
+  if (!["pending", "read", "replied"].includes(status)) {
+    throw new AppError(req.t("common.badRequest"), 400);
+  }
 
-    const contact = await Contact.findByPk(id, {
-        include: [{ model: Provider, as: 'provider' }]
+  const contact = await Contact.findByPk(id, {
+    include: [{ model: Provider, as: "provider" }],
+  });
+
+  if (!contact) {
+    throw new AppError(req.t("contact.notFound"), 404);
+  }
+
+  // Check ownership (provider must be owner)
+  if (contact.provider.userId !== req.user.id && req.user.role !== "admin") {
+    throw new AppError(req.t("common.unauthorized"), 403);
+  }
+
+  contact.status = status;
+  await contact.save({ fields: ["status"] });
+
+  // Notify sender via WebSocket if they were authenticated
+  if (contact.userId) {
+    emitContactStatusChange(contact.userId, {
+      id: contact.id,
+      status,
+      providerId: contact.providerId,
     });
+  }
 
-    if (!contact) {
-        throw new AppError(req.t('contact.notFound'), 404);
-    }
+  // Send email notification to sender
+  if (contact.senderEmail) {
+    await sendEmailSafely(
+      {
+        to: contact.senderEmail,
+        ...contactStatusChangedEmail({
+          firstName: contact.senderName.split(" ")[0],
+          providerName: contact.provider.businessName,
+          status,
+        }),
+      },
+      "Contact status changed"
+    );
+  }
 
-    // Check ownership (provider must be owner)
-    if (contact.provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError(req.t('common.unauthorized'), 403);
-    }
-
-    contact.status = status;
-    await contact.save({ fields: ['status'] });
-
-    // Notify sender via WebSocket if they were authenticated
-    if (contact.userId) {
-        emitContactStatusChange(contact.userId, {
-            id: contact.id,
-            status,
-            providerId: contact.providerId
-        });
-    }
-
-    // Send email notification to sender
-    if (contact.senderEmail) {
-        const { contactStatusChangedEmail } = require('../utils/emailTemplates');
-        sendEmail({
-            to: contact.senderEmail,
-            ...contactStatusChangedEmail({
-                firstName: contact.senderName.split(' ')[0],
-                providerName: contact.provider.businessName,
-                status
-            })
-        }).catch(err => console.error('Contact status email error:', err.message));
-    }
-
-    i18nResponse(req, res, 200, 'contact.statusUpdated', { contact });
+  i18nResponse(req, res, 200, "contact.statusUpdated", { contact });
 });
 
 /**
@@ -232,43 +234,48 @@ const updateContactStatus = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const getDailyContactStats = asyncHandler(async (req, res) => {
-    const { startDate, endDate } = req.query;
-    const { Op, fn, col, literal } = require('sequelize');
+  const { startDate, endDate } = req.query;
+  const { Op, fn, col, literal } = require("sequelize");
 
-    // Get provider for current user
-    const provider = await Provider.findOne({ where: { userId: req.user.id } });
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  // Get provider for current user
+  const provider = await Provider.findOne({ where: { userId: req.user.id } });
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    // Default to last 30 days
-    const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const end = endDate ? new Date(endDate) : new Date();
-    end.setHours(23, 59, 59, 999);
+  // Default to last 30 days
+  const start = startDate
+    ? new Date(startDate)
+    : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const end = endDate ? new Date(endDate) : new Date();
+  end.setHours(23, 59, 59, 999);
 
-    // Get contacts grouped by date
-    const dailyStats = await Contact.findAll({
-        where: {
-            providerId: provider.id,
-            createdAt: { [Op.between]: [start, end] }
-        },
-        attributes: [
-            [fn('DATE', col('created_at')), 'date'],
-            [fn('COUNT', col('id')), 'count']
-        ],
-        group: [fn('DATE', col('created_at'))],
-        order: [[fn('DATE', col('created_at')), 'DESC']],
-        raw: true
-    });
+  // Get contacts grouped by date
+  const dailyStats = await Contact.findAll({
+    where: {
+      providerId: provider.id,
+      createdAt: { [Op.between]: [start, end] },
+    },
+    attributes: [
+      [fn("DATE", col("created_at")), "date"],
+      [fn("COUNT", col("id")), "count"],
+    ],
+    group: [fn("DATE", col("created_at"))],
+    order: [[fn("DATE", col("created_at")), "DESC"]],
+    raw: true,
+  });
 
-    // Get total for period
-    const totalContacts = dailyStats.reduce((sum, day) => sum + parseInt(day.count), 0);
+  // Get total for period
+  const totalContacts = dailyStats.reduce(
+    (sum, day) => sum + parseInt(day.count),
+    0
+  );
 
-    i18nResponse(req, res, 200, 'contact.list', {
-        period: { start, end },
-        totalContacts,
-        dailyStats
-    });
+  i18nResponse(req, res, 200, "contact.list", {
+    period: { start, end },
+    totalContacts,
+    dailyStats,
+  });
 });
 
 /**
@@ -277,48 +284,48 @@ const getDailyContactStats = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const getContactsByDate = asyncHandler(async (req, res) => {
-    const { date } = req.params;
-    const { page = 1, limit = 20 } = req.query;
-    const { Op } = require('sequelize');
+  const { date } = req.params;
+  const { page = 1, limit = 20 } = req.query;
+  const { Op } = require("sequelize");
 
-    // Get provider for current user
-    const provider = await Provider.findOne({ where: { userId: req.user.id } });
-    if (!provider) {
-        throw new AppError(req.t('provider.notFound'), 404);
-    }
+  // Get provider for current user
+  const provider = await Provider.findOne({ where: { userId: req.user.id } });
+  if (!provider) {
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
 
-    // Parse date
-    const targetDate = new Date(date);
-    const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
+  // Parse date
+  const targetDate = new Date(date);
+  const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0));
+  const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999));
 
-    const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
-    const { count, rows: contacts } = await Contact.findAndCountAll({
-        where: {
-            providerId: provider.id,
-            createdAt: { [Op.between]: [startOfDay, endOfDay] }
-        },
-        include: [
-            {
-                model: User,
-                as: 'sender',
-                attributes: ['id', 'firstName', 'lastName', 'profilePhoto', 'phone'],
-                required: false
-            }
-        ],
-        order: [['createdAt', 'DESC']],
-        limit: queryLimit,
-        offset
-    });
+  const { count, rows: contacts } = await Contact.findAndCountAll({
+    where: {
+      providerId: provider.id,
+      createdAt: { [Op.between]: [startOfDay, endOfDay] },
+    },
+    include: [
+      {
+        model: User,
+        as: "sender",
+        attributes: ["id", "firstName", "lastName", "profilePhoto", "phone"],
+        required: false,
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+    limit: queryLimit,
+    offset,
+  });
 
-    const pagination = getPaginationData(page, queryLimit, count);
+  const pagination = getPaginationData(page, queryLimit, count);
 
-    i18nResponse(req, res, 200, 'contact.list', {
-        date: date,
-        contacts,
-        pagination
-    });
+  i18nResponse(req, res, 200, "contact.list", {
+    date: date,
+    contacts,
+    pagination,
+  });
 });
 
 /**
@@ -327,67 +334,67 @@ const getContactsByDate = asyncHandler(async (req, res) => {
  * @access  Private (provider - owner)
  */
 const initiateContactUnlock = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { Payment } = require('../models');
-    const { initializeCinetPayPayment } = require('../utils/paymentGateway');
+  const { id } = req.params;
+  const { Payment } = require("../models");
+  const { initializeCinetPayPayment } = require("../utils/paymentGateway");
 
-    const contact = await Contact.findByPk(id, {
-        include: [{ model: Provider, as: 'provider' }]
-    });
+  const contact = await Contact.findByPk(id, {
+    include: [{ model: Provider, as: "provider" }],
+  });
 
-    if (!contact) {
-        throw new AppError(req.t('contact.notFound'), 404);
-    }
+  if (!contact) {
+    throw new AppError(req.t("contact.notFound"), 404);
+  }
 
-    // Check ownership (provider must be owner)
-    if (contact.provider.userId !== req.user.id && req.user.role !== 'admin') {
-        throw new AppError(req.t('common.unauthorized'), 403);
-    }
+  // Check ownership (provider must be owner)
+  if (contact.provider.userId !== req.user.id && req.user.role !== "admin") {
+    throw new AppError(req.t("common.unauthorized"), 403);
+  }
 
-    // Already unlocked?
-    const canView = await contact.canBeViewedBy(req.user);
-    if (canView) {
-        throw new AppError(req.t('contact.alreadyUnlocked'), 400);
-    }
+  // Already unlocked?
+  const canView = await contact.canBeViewedBy(req.user);
+  if (canView) {
+    throw new AppError(req.t("contact.alreadyUnlocked"), 400);
+  }
 
-    // Create payment 500 FCFA
-    const transactionId = Payment.generateTransactionId();
-    const payment = await Payment.create({
-        transactionId,
-        userId: req.user.id,
-        providerId: contact.providerId,
-        amount: 500,
-        currency: 'XAF',
-        type: 'contact_unlock',
-        description: `Débloquage message de ${contact.senderName}`,
-        metadata: {
-            contactId: contact.id,
-            providerId: contact.providerId,
-            senderName: contact.senderName
-        }
-    });
+  // Create payment 500 FCFA
+  const transactionId = Payment.generateTransactionId();
+  const payment = await Payment.create({
+    transactionId,
+    userId: req.user.id,
+    providerId: contact.providerId,
+    amount: 500,
+    currency: "XAF",
+    type: "contact_unlock",
+    description: `Débloquage message de ${contact.senderName}`,
+    metadata: {
+      contactId: contact.id,
+      providerId: contact.providerId,
+      senderName: contact.senderName,
+    },
+  });
 
-    // Initialize CinetPay payment
-    const cinetpayResponse = await initializeCinetPayPayment({
-        transactionId: payment.transactionId,
-        amount: 500,
-        description: `Débloquer message de ${contact.senderName}`,
-        returnUrl: `${process.env.FRONTEND_URL}/provider/contacts/unlock-success`,
-        notifyUrl: `${process.env.API_URL}/api/contacts/${id}/unlock/callback`
-    });
+  // Initialize CinetPay payment
+  const cinetpayResponse = await initializeCinetPayPayment({
+    transactionId: payment.transactionId,
+    amount: 500,
+    description: `Débloquer message de ${contact.senderName}`,
+    returnUrl: `${process.env.FRONTEND_URL}/provider/contacts/unlock-success`,
+    notifyUrl: `${process.env.API_URL}/api/contacts/${id}/unlock/callback`,
+  });
 
-    // Update payment with CinetPay data
-    payment.paymentUrl = cinetpayResponse.data.payment_url;
-    payment.paymentToken = cinetpayResponse.data.payment_token;
-    payment.status = 'PENDING';
-    await payment.save();
+  // Update payment with CinetPay data
+  payment.paymentUrl = cinetpayResponse.data.payment_url;
+  payment.paymentToken = cinetpayResponse.data.payment_token;
+  payment.status = "PENDING";
+  await payment.save();
 
-    i18nResponse(req, res, 200, 'payment.initialized', {
-        paymentUrl: cinetpayResponse.data.payment_url,
-        paymentId: payment.id,
-        transactionId: payment.transactionId,
-        amount: 500
-    });
+  i18nResponse(req, res, 200, "payment.initialized", {
+    paymentUrl: cinetpayResponse.data.payment_url,
+    paymentId: payment.id,
+    transactionId: payment.transactionId,
+    amount: 500,
+  });
 });
 
 /**
@@ -396,54 +403,54 @@ const initiateContactUnlock = asyncHandler(async (req, res) => {
  * @access  Private (provider - owner)
  */
 const confirmContactUnlock = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { transactionId } = req.body;
-    const { Payment } = require('../models');
+  const { id } = req.params;
+  const { transactionId } = req.body;
+  const { Payment } = require("../models");
 
-    const payment = await Payment.findByTransactionId(transactionId);
+  const payment = await Payment.findByTransactionId(transactionId);
 
-    if (!payment) {
-        throw new AppError(req.t('payment.notFound'), 404);
-    }
+  if (!payment) {
+    throw new AppError(req.t("payment.notFound"), 404);
+  }
 
-    if (payment.status !== 'ACCEPTED') {
-        throw new AppError(req.t('payment.notConfirmed'), 400);
-    }
+  if (payment.status !== "ACCEPTED") {
+    throw new AppError(req.t("payment.notConfirmed"), 400);
+  }
 
-    const contact = await Contact.findByPk(id);
+  const contact = await Contact.findByPk(id);
 
-    if (!contact) {
-        throw new AppError(req.t('contact.notFound'), 404);
-    }
+  if (!contact) {
+    throw new AppError(req.t("contact.notFound"), 404);
+  }
 
-    // Unlock the contact
-    contact.isUnlocked = true;
-    contact.unlockedAt = new Date();
-    contact.unlockPaymentId = payment.id;
-    await contact.save();
+  // Unlock the contact
+  contact.isUnlocked = true;
+  contact.unlockedAt = new Date();
+  contact.unlockPaymentId = payment.id;
+  await contact.save();
 
-    // Reload with fresh data to decrypt
-    const unlockedContact = await Contact.findByPk(id, {
-        include: [
-            {
-                model: User,
-                as: 'sender',
-                attributes: ['id', 'firstName', 'lastName', 'profilePhoto'],
-                required: false
-            }
-        ]
-    });
+  // Reload with fresh data to decrypt
+  const unlockedContact = await Contact.findByPk(id, {
+    include: [
+      {
+        model: User,
+        as: "sender",
+        attributes: ["id", "firstName", "lastName", "profilePhoto"],
+        required: false,
+      },
+    ],
+  });
 
-    i18nResponse(req, res, 200, 'contact.unlocked', { contact: unlockedContact });
+  i18nResponse(req, res, 200, "contact.unlocked", { contact: unlockedContact });
 });
 
 module.exports = {
-    createContact,
-    getReceivedContacts,
-    getSentContacts,
-    updateContactStatus,
-    getDailyContactStats,
-    getContactsByDate,
-    initiateContactUnlock,
-    confirmContactUnlock
+  createContact,
+  getReceivedContacts,
+  getSentContacts,
+  updateContactStatus,
+  getDailyContactStats,
+  getContactsByDate,
+  initiateContactUnlock,
+  confirmContactUnlock,
 };

@@ -4,6 +4,7 @@
  */
 
 const crypto = require('crypto');
+const logger = require('./logger');
 
 // Encryption configuration
 const ALGORITHM = 'aes-256-gcm';
@@ -57,7 +58,10 @@ const encrypt = (text) => {
         // Format: iv:authTag:ciphertext
         return `${iv.toString(ENCODING)}:${authTag.toString(ENCODING)}:${encrypted}`;
     } catch (error) {
-        console.error('Encryption error:', error.message);
+        logger.error('Encryption error:', {
+            error: error.message,
+            stack: error.stack
+        });
         throw new Error('Failed to encrypt data');
     }
 };
@@ -97,7 +101,10 @@ const decrypt = (encryptedText) => {
 
         return decrypted;
     } catch (error) {
-        console.error('Decryption error:', error.message);
+        logger.error('Decryption error:', {
+            error: error.message,
+            stack: error.stack
+        });
         // Return original if decryption fails (might be plain text)
         return encryptedText;
     }
@@ -120,7 +127,10 @@ const createBlindIndex = (text) => {
         hmac.update(text.toLowerCase().trim());
         return hmac.digest('hex');
     } catch (error) {
-        console.error('Blind index error:', error.message);
+        logger.error('Blind index error:', {
+            error: error.message,
+            stack: error.stack
+        });
         return null;
     }
 };

@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+const logger = require('../utils/logger');
 require('dotenv').config();
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -78,12 +79,17 @@ const testConnection = async (retries = 3) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             await sequelize.authenticate();
-            console.log(`✅ Database connection established (pool: max=${currentPool.max}, min=${currentPool.min})`);
+            logger.info(`✅ Database connection established (pool: max=${currentPool.max}, min=${currentPool.min})`);
             return true;
         } catch (error) {
-            console.error(`❌ Connection attempt ${attempt}/${retries} failed:`, error.message);
+            logger.error(`❌ Connection attempt ${attempt}/${retries} failed:`, {
+                error: error.message,
+                stack: error.stack,
+                attempt,
+                retries
+            });
             if (attempt === retries) {
-                console.error('❌ Unable to connect to the database after retries');
+                logger.error('❌ Unable to connect to the database after retries');
                 if (!isTest) process.exit(1);
                 return false;
             }

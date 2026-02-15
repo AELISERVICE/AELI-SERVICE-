@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const logger = require('../utils/logger');
 require('dotenv').config();
 
 // Create Mailtrap transporter
@@ -15,9 +16,12 @@ const transporter = nodemailer.createTransport({
 const verifyTransporter = async () => {
     try {
         await transporter.verify();
-        console.log('✅ Email transporter is ready');
+        logger.info('✅ Email transporter is ready');
     } catch (error) {
-        console.error('❌ Email transporter error:', error.message);
+        logger.error('❌ Email transporter error:', {
+            error: error.message,
+            stack: error.stack
+        });
     }
 };
 
@@ -33,10 +37,15 @@ const sendEmail = async ({ to, subject, html, text }) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`📧 Email sent: ${info.messageId}`);
+        logger.info(`📧 Email sent: ${info.messageId}`);
         return info;
     } catch (error) {
-        console.error('❌ Email sending failed:', error.message);
+        logger.error('❌ Email sending failed:', {
+            error: error.message,
+            stack: error.stack,
+            to: mailOptions.to,
+            subject: mailOptions.subject
+        });
         throw error;
     }
 };
