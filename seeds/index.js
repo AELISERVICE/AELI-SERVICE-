@@ -1,5 +1,6 @@
 const { sequelize } = require('../src/config/database');
 const { User, Provider, Category, Service, Review } = require('../src/models');
+const bcrypt = require('bcryptjs');
 const {
     categories,
     generateUser,
@@ -30,12 +31,30 @@ const seed = async () => {
 
         // 2. Create Admin user
         console.log('👤 Creating admin user...');
-        const adminData = generateUser(0, 'admin');
-        adminData.email = 'admin@aeli.cm';
-        let [admin] = await User.findOrCreate({
-            where: { email: adminData.email },
-            defaults: adminData
-        });
+        
+        // Supprimer d'abord l'admin existant
+        await User.destroy({ where: { email: 'admin@aeli.cm' } });
+        
+        // Créer l'admin avec le mot de passe en clair (les hooks vont le hasher)
+        const adminData = {
+            id: require('uuid').v4(),
+            email: 'admin@aeli.cm',
+            password: 'Password123!', // En clair, les hooks vont le hasher
+            firstName: 'Admin',
+            lastName: 'User',
+            phone: '+237612345678',
+            country: 'Cameroun',
+            gender: 'prefer_not_to_say',
+            role: 'admin',
+            isActive: true,
+            isEmailVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        // Créer AVEC les hooks de sécurité activés
+        const admin = await User.create(adminData);
+        
         console.log(`   ✅ Admin: admin@aeli.cm / Password123!\n`);
 
         // 3. Create regular users
