@@ -1,59 +1,59 @@
 # AELI Services Backend API
 
-Backend API pour la plateforme AELI Services - une plateforme connectant des clientes avec des femmes entrepreneures et prestataires de services au Cameroun.
+Backend API for the AELI Services platform - a platform connecting clients with female entrepreneurs and service providers in Cameroon.
 
-## ✨ Fonctionnalités Principales
+## ✨ Key Features
 
-### 👥 Gestion des Utilisateurs
-- **Inscription** avec validation OTP par email
-- **Authentification** JWT avec rafraîchissement automatique
-- **Profils** clients et prestataires avec photos multiples
-- **Système de réputation** avec avis et notes
-- **Sécurité** avancée (rate limiting, audit logs)
+### 👥 User Management
+- **Registration** with email OTP validation
+- **Authentication** JWT with automatic refresh
+- **Profiles** for clients and providers with multiple photos
+- **Reputation system** with reviews and ratings
+- **Advanced security** (rate limiting, audit logs)
 
-### 🏢 Gestion des Prestataires
-- **Candidatures** pour devenir prestataire avec validation admin
-- **Profils détaillés** avec services, photos, localisation
-- **Tableau de bord** avec statistiques (vues, contacts, revenus)
-- **Abonnements** mensuels/trimestriels/annuels avec auto-renouvellement
-- **Visibilité** avec système de mise en avant
+### 🏢 Provider Management
+- **Applications** to become a provider with admin validation
+- **Detailed profiles** with services, photos, location
+- **Dashboard** with statistics (views, contacts, revenue)
+- **Subscriptions** monthly/quarterly/yearly with auto-renewal
+- **Visibility** with featuring system
 
-### 💰 Système de Monétisation
-- **Pay-per-view** pour débloquer les coordonnées des contacts
-- **Abonnements** premium pour accès illimité aux contacts
-- **Paiements** intégrés (CinetPay, NotchPay)
-- **Commission** automatique sur les transactions
-- **Export** des données comptables (CSV, PDF)
+### 💰 Monetization System
+- **Pay-per-view** to unlock contact information
+- **Premium subscriptions** for unlimited contact access
+- **Integrated payments** (CinetPay, NotchPay)
+- **Automatic commission** on transactions
+- **Accounting data export** (CSV, PDF)
 
-### 📞 Gestion des Contacts
-- **Messages** chiffrés entre clientes et prestataires
-- **Statuts** (pending, read, replied) avec notifications
-- **Déblocage** par paiement ou abonnement
-- **Historique** complet avec recherche et filtrage
+### 📞 Contact Management
+- **Encrypted messages** between clients and providers
+- **Status tracking** (pending, read, replied) with notifications
+- **Unlocking** by payment or subscription
+- **Complete history** with search and filtering
 
-### 🌐 Internationalisation
-- **Support multilingue** (Français/Anglais)
-- **Localisation** automatique selon préférence
-- **Templates email** localisés
-- **Messages d'erreur** traduits
+### 🌐 Internationalization
+- **Multilingual support** (French/English)
+- **Automatic localization** based on preferences
+- **Localized email templates**
+- **Translated error messages**
 
 ### 📊 Administration
-- **Tableau de bord** admin avec statistiques en temps réel
-- **Gestion** des utilisateurs et prestataires
-- **Modération** des avis et contenus
-- **Audit logs** complet de toutes les actions
-- **Export** des données administratives
+- **Admin dashboard** with real-time statistics
+- **User and provider management**
+- **Content and review moderation**
+- **Complete audit logs** of all actions
+- **Administrative data export**
 
-## 🚀 Stack Technologique
+## 🚀 Tech Stack
 
 - **Runtime**: Node.js 18+
 - **Framework**: Express.js
-- **Base de données**: PostgreSQL + Sequelize ORM
-- **Authentification**: JWT (JSON Web Tokens) + OTP
-- **Upload d'images**: Cloudinary
+- **Database**: PostgreSQL + Sequelize ORM
+- **Authentication**: JWT (JSON Web Tokens) + OTP
+- **Image Upload**: Cloudinary
 - **Email**: Nodemailer (Mailtrap SMTP)
-- **Sécurité**: Helmet, CORS, Rate Limiting, CSRF Protection
-- **Internationalisation**: i18n (Français/Anglais)
+- **Security**: Helmet, CORS, Rate Limiting, CSRF Protection
+- **Internationalization**: i18n (French/English)
 - **Payments**: CinetPay, NotchPay
 - **File Processing**: Multer, PDFKit, json2csv
 - **Logging**: Winston
@@ -61,107 +61,107 @@ Backend API pour la plateforme AELI Services - une plateforme connectant des cli
 - **Testing**: Jest + Supertest
 - **Real-time**: Socket.io
 
-## 📁 Structure du Projet
+## 📁 Project Structure
 
 ```
 backend/
 ├── src/
 │   ├── config/          # Configurations (DB, Cloudinary, Email, CORS)
-│   ├── controllers/     # Logique métier (11 controllers)
-│   ├── middlewares/     # Auth, validation, erreurs, upload, i18n
-│   ├── models/          # Modèles Sequelize (13 modèles avec hooks)
-│   ├── routes/          # Routes Express (10 fichiers)
-│   ├── utils/           # Logger, templates email, helpers, encryption
-│   ├── validators/      # Règles de validation (10 validateurs)
-│   ├── jobs/            # Tâches cron et processeurs
-│   ├── locales/         # Fichiers i18n (fr, en)
-│   └── app.js           # Configuration Express
-├── tests/               # Tests unitaires et d'intégration
-│   ├── unit/           # Tests unitaires (32 fichiers)
-│   ├── integration/    # Tests d'intégration (13 fichiers)
-│   ├── fixtures/       # Données de test
-│   └── setup.js        # Configuration des tests
-├── database/           # Migrations et seeds
-├── docs/               # Documentation API
-├── logs/               # Fichiers de log
-├── migrations/         # Scripts de migration
-├── seeds/              # Données de test
-├── .env.example        # Template variables d'environnement
+│   ├── controllers/     # Business logic (11 controllers)
+│   ├── middlewares/     # Auth, validation, errors, upload, i18n
+│   ├── models/          # Sequelize models (13 models with hooks)
+│   ├── routes/          # Express routes (10 files)
+│   ├── utils/           # Logger, email templates, helpers, encryption
+│   ├── validators/      # Validation rules (10 validators)
+│   ├── jobs/            # Cron tasks and processors
+│   ├── locales/         # i18n files (fr, en)
+│   └── app.js           # Express configuration
+├── tests/               # Unit and integration tests
+│   ├── unit/           # Unit tests (32 files)
+│   ├── integration/    # Integration tests (13 files)
+│   ├── fixtures/       # Test data
+│   └── setup.js        # Test configuration
+├── database/           # Migrations and seeds
+├── docs/               # API documentation
+├── logs/               # Log files
+├── migrations/         # Migration scripts
+├── seeds/              # Test data
+├── .env.example        # Environment variables template
 ├── package.json
-├── server.js           # Point d'entrée
+├── server.js           # Entry point
 └── README.md
 ```
 
 ## ⚙️ Installation
 
-### 1. Cloner et installer les dépendances
+### 1. Clone and install dependencies
 
 ```bash
 cd aeli_service_backend
 npm install
 ```
 
-### 2. Configurer les variables d'environnement
+### 2. Configure environment variables
 
-Copier `.env.example` vers `.env` et remplir les valeurs :
+Copy `.env.example` to `.env` and fill in the values:
 
 ```bash
 cp .env.example .env
 ```
 
-Configuration requise :
-- **Base de données PostgreSQL** : Créer une base `aeli_services`
-- **Cloudinary** : Créer un compte et récupérer les clés API
-- **Mailtrap** : Créer un compte et récupérer les identifiants SMTP
+Required configuration:
+- **PostgreSQL Database**: Create `aeli_services` database
+- **Cloudinary**: Create account and get API keys
+- **Mailtrap**: Create account and get SMTP credentials
 
-### 3. Créer la base de données PostgreSQL
+### 3. Create PostgreSQL database
 
 ```sql
 CREATE DATABASE aeli_services;
 ```
 
-### 4. Lancer le serveur
+### 4. Start the server
 
 ```bash
-# Mode développement (avec nodemon)
+# Development mode (with nodemon)
 npm run dev
 
-# Mode production
+# Production mode
 npm start
 ```
 
-Le serveur démarrera sur `http://localhost:5000`
+The server will start on `http://localhost:5000`
 
-## � Docker
+## 🐳 Docker
 
-Le projet inclut une configuration Docker complète :
+The project includes a complete Docker configuration:
 
 ```bash
-# Construire les images
+# Build images
 npm run docker:build
 
-# Lancer les services
+# Start services
 npm run docker:up
 
-# Voir les logs
+# View logs
 npm run docker:logs
 
-# Arrêter les services
+# Stop services
 npm run docker:down
 ```
 
-Services Docker inclus :
-- **API** : Node.js + Express
-- **PostgreSQL** : Base de données
-- **Redis** : Cache et queue de tâches
-- **Nginx** : Reverse proxy (optionnel)
+Included Docker services:
+- **API**: Node.js + Express
+- **PostgreSQL**: Database
+- **Redis**: Cache and job queue
+- **Nginx**: Reverse proxy (optional)
 
-## 🚀 Déploiement
+## 🚀 Deployment
 
-### Variables d'environnement requises
+### Required Environment Variables
 
 ```bash
-# Base de données
+# Database
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=aeli_services
@@ -184,7 +184,7 @@ EMAIL_PORT=2525
 EMAIL_USER=your_email_user
 EMAIL_PASS=your_email_password
 
-# Redis (optionnel)
+# Redis (optional)
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
@@ -197,107 +197,107 @@ CORS_ORIGIN=http://localhost:3000
 ### Health Checks
 
 ```bash
-# Vérifier le statut de l'API
+# Check API status
 curl http://localhost:5000/api/health
 
-# Vérifier la connectivité DB
+# Check DB connectivity
 curl http://localhost:5000/api/health/db
 ```
 
-## �🔗 Endpoints API
+## � API Endpoints
 
-### Authentification (`/api/auth`)
-| Méthode | Endpoint | Description |
+### Authentication (`/api/auth`)
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/register` | Inscription |
-| POST | `/login` | Connexion |
-| POST | `/forgot-password` | Mot de passe oublié |
-| POST | `/reset-password/:token` | Réinitialisation |
-| GET | `/me` | Profil utilisateur connecté |
+| POST | `/register` | Registration |
+| POST | `/login` | Login |
+| POST | `/forgot-password` | Forgot password |
+| POST | `/reset-password/:token` | Password reset |
+| GET | `/me` | Current user profile |
 
-### Utilisateurs (`/api/users`)
-| Méthode | Endpoint | Description |
+### Users (`/api/users`)
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/profile` | Obtenir profil |
-| PUT | `/profile` | Mettre à jour profil |
-| PUT | `/password` | Changer mot de passe |
-| DELETE | `/account` | Désactiver compte |
+| GET | `/profile` | Get profile |
+| PUT | `/profile` | Update profile |
+| PUT | `/password` | Change password |
+| DELETE | `/account` | Deactivate account |
 
-### Prestataires (`/api/providers`)
-| Méthode | Endpoint | Description |
+### Providers (`/api/providers`)
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/` | Liste (paginée, filtrable) |
-| GET | `/:id` | Détails d'un prestataire |
-| POST | `/apply` | Candidature prestataire (client→provider) |
-| GET | `/my-application` | Statut de ma candidature |
-| PUT | `/:id` | Modifier profil |
-| DELETE | `/:id/photos/:index` | Supprimer photo |
-| GET | `/my-profile` | Mon profil |
-| GET | `/my-dashboard` | Tableau de bord |
+| GET | `/` | List (paginated, filterable) |
+| GET | `/:id` | Provider details |
+| POST | `/apply` | Provider application (client→provider) |
+| GET | `/my-application` | My application status |
+| PUT | `/:id` | Edit profile |
+| DELETE | `/:id/photos/:index` | Delete photo |
+| GET | `/my-profile` | My profile |
+| GET | `/my-dashboard` | Dashboard |
 
 ### Services (`/api/services`)
-| Méthode | Endpoint | Description |
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/categories` | Liste des catégories |
-| POST | `/categories` | Créer catégorie (admin) |
-| GET | `/provider/:id` | Services d'un prestataire |
-| POST | `/` | Créer service |
-| PUT | `/:id` | Modifier service |
-| DELETE | `/:id` | Supprimer service |
+| GET | `/categories` | Categories list |
+| POST | `/categories` | Create category (admin) |
+| GET | `/provider/:id` | Provider's services |
+| POST | `/` | Create service |
+| PUT | `/:id` | Update service |
+| DELETE | `/:id` | Delete service |
 
-### Avis (`/api/reviews`)
-| Méthode | Endpoint | Description |
+### Reviews (`/api/reviews`)
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/provider/:id` | Avis d'un prestataire |
-| POST | `/` | Créer avis |
-| PUT | `/:id` | Modifier avis |
-| DELETE | `/:id` | Supprimer avis |
+| GET | `/provider/:id` | Provider's reviews |
+| POST | `/` | Create review |
+| PUT | `/:id` | Update review |
+| DELETE | `/:id` | Delete review |
 
-### Favoris (`/api/favorites`)
-| Méthode | Endpoint | Description |
+### Favorites (`/api/favorites`)
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/` | Mes favoris |
-| POST | `/` | Ajouter favori |
-| DELETE | `/:providerId` | Retirer favori |
-| GET | `/check/:providerId` | Vérifier si favori |
+| GET | `/` | My favorites |
+| POST | `/` | Add favorite |
+| DELETE | `/:providerId` | Remove favorite |
+| GET | `/check/:providerId` | Check if favorite |
 
 ### Contacts (`/api/contacts`)
-| Méthode | Endpoint | Description |
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/` | Envoyer message |
-| GET | `/received` | Messages reçus (provider) |
-| GET | `/sent` | Messages envoyés |
-| PUT | `/:id/status` | Mettre à jour statut |
+| POST | `/` | Send message |
+| GET | `/received` | Received messages (provider) |
+| GET | `/sent` | Sent messages |
+| PUT | `/:id/status` | Update status |
 
 ### Administration (`/api/admin`)
-| Méthode | Endpoint | Description |
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/stats` | Statistiques plateforme |
-| GET | `/users` | Liste utilisateurs |
-| PUT | `/users/:id/status` | Activer/désactiver |
-| GET | `/providers/pending` | Prestataires en attente |
-| PUT | `/providers/:id/verify` | Valider prestataire |
-| PUT | `/providers/:id/feature` | Mettre en avant |
-| GET | `/reviews` | Tous les avis |
-| PUT | `/reviews/:id/visibility` | Modérer avis |
+| GET | `/stats` | Platform statistics |
+| GET | `/users` | Users list |
+| PUT | `/users/:id/status` | Activate/deactivate |
+| GET | `/providers/pending` | Pending providers |
+| PUT | `/providers/:id/verify` | Verify provider |
+| PUT | `/providers/:id/feature` | Feature provider |
+| GET | `/reviews` | All reviews |
+| PUT | `/reviews/:id/visibility` | Moderate review |
 
-### Recherche (`/api/search`)
-| Méthode | Endpoint | Description |
+### Search (`/api/search`)
+| Method | Endpoint | Description |
 |---------|----------|-------------|
-| GET | `/` | Recherche globale |
+| GET | `/` | Global search |
 
-**Paramètres de recherche** :
-- `q` : Terme de recherche
-- `category` : Slug catégorie
-- `location` : Ville/quartier
-- `minRating` : Note minimum (1-5)
-- `sort` : Tri (rating, recent, views)
-- `page` : Page
-- `limit` : Éléments par page
+**Search parameters**:
+- `q`: Search term
+- `category`: Category slug
+- `location`: City/neighborhood
+- `minRating`: Minimum rating (1-5)
+- `sort`: Sort (rating, recent, views)
+- `page`: Page
+- `limit`: Items per page
 
-## 🔐 Authentification
+## 🔐 Authentication
 
-Toutes les routes protégées nécessitent un token JWT dans l'en-tête :
+All protected routes require a JWT token in the header:
 
 ```
 Authorization: Bearer <token>
@@ -305,108 +305,108 @@ Authorization: Bearer <token>
 
 ## 📧 Emails
 
-5 templates email sont configurés :
-- Email de bienvenue
-- Notification nouvelle demande de contact
-- Validation compte prestataire
-- Notification nouvel avis
-- Réinitialisation mot de passe
+5 email templates are configured:
+- Welcome email
+- New contact request notification
+- Provider account validation
+- New review notification
+- Password reset
 
-## 🛡️ Sécurité et Conformité
+## 🛡️ Security and Compliance
 
-### 🔐 Sécurité des Données
-- **Chiffrement** des données sensibles (emails, téléphones) avec AES-256
-- **Hashage** bcrypt des mots de passe avec salt
-- **Tokens** JWT avec expiration configurable
-- **OTP** à usage unique pour validation email
-- **CSRF** protection pour les formulaires
-- **Rate limiting** configurable par endpoint
+### 🔐 Data Security
+- **Encryption** of sensitive data (emails, phones) with AES-256
+- **bcrypt hashing** of passwords with salt
+- **JWT tokens** with configurable expiration
+- **One-time OTP** for email validation
+- **CSRF protection** for forms
+- **Configurable rate limiting** per endpoint
 
-### 🛡️ Protection des Attaques
-- **Rate limiting** sur login (5 tentatives/15 min)
-- **Rate limiting** général (100 req/min)
-- **Protection** XSS avec nettoyage automatique
-- **Protection** SQL injection via Sequelize ORM
-- **Headers sécurité** (Helmet) avec configuration stricte
-- **Validation** stricte des entrées utilisateur
+### 🛡️ Attack Protection
+- **Rate limiting** on login (5 attempts/15 min)
+- **General rate limiting** (100 req/min)
+- **XSS protection** with automatic cleaning
+- **SQL injection protection** via Sequelize ORM
+- **Security headers** (Helmet) with strict configuration
+- **Strict input validation**
 
-### 📋 Audit et Conformité
-- **Audit logs** complets de toutes les actions sensibles
-- **Logs de sécurité** pour tentatives d'intrusion
-- **Gestion** des consentements RGPD
-- **Anonymisation** des données personnelles sur demande
-- **Export** des données personnelles (RGPD)
-- **Suppression** complète des comptes utilisateur
+### 📋 Audit and Compliance
+- **Complete audit logs** of all sensitive actions
+- **Security logs** for intrusion attempts
+- **GDPR consent management**
+- **Personal data anonymization** on request
+- **Personal data export** (GDPR)
+- **Complete user account deletion**
 
 ### 🔍 Monitoring
-- **Logs structurés** avec Winston
-- **Alertes** sur activités suspectes
-- **Métriques** de performance et erreurs
-- **Health checks** automatiques des services
-- **Monitoring** des tentatives de fraude
+- **Structured logs** with Winston
+- **Alerts** on suspicious activities
+- **Performance and error metrics**
+- **Automatic service health checks**
+- **Fraud attempt monitoring**
 
 ## 📝 Logs
 
-Les logs sont enregistrés dans :
-- `logs/error.log` : Erreurs uniquement
-- `logs/combined.log` : Tous les logs
+Logs are saved in:
+- `logs/error.log`: Errors only
+- `logs/combined.log`: All logs
 
-## 🧪 Tests
+## 🧪 Testing
 
-Le projet utilise **Jest** pour les tests unitaires et d'intégration avec une couverture complète de l'API.
+The project uses **Jest** for unit and integration tests with complete API coverage.
 
-### Scripts de test disponibles
+### Available Test Scripts
 
 ```bash
-# Exécuter tous les tests
+# Run all tests
 npm test
 
-# Exécuter les tests avec rapport de couverture détaillé
+# Run tests with detailed coverage report
 npm run test:coverage
 
-# Exécuter les tests en mode watch (re-lance automatiquement)
+# Run tests in watch mode (auto-restart)
 npm run test:watch
 
-# Exécuter un fichier de test spécifique
+# Run specific test file
 npm test -- tests/unit/User.test.js
 
-# Exécuter les tests par pattern
+# Run tests by pattern
 npm test -- tests/unit/
 npm test -- tests/integration/
 
-# Exécuter les tests avec sortie détaillée
+# Run tests with verbose output
 npm test -- --verbose
 ```
 
-### Structure des tests
+### Test Structure
 
-- **Tests unitaires** (`tests/unit/`) : 32 fichiers testant les modèles, contrôleurs, utilitaires et validateurs isolément
-- **Tests d'intégration** (`tests/integration/`) : 13 fichiers testant les flux API complets avec base de données
-- **Fixtures** (`tests/fixtures/`) : Données de test réutilisables
-- **Setup** (`tests/setup.js`) : Configuration de la base de données de test et nettoyage
+- **Unit tests** (`tests/unit/`): 32 files testing models, controllers, utilities, and validators in isolation
+- **Integration tests** (`tests/integration/`): 13 files testing complete API flows with database
+- **Fixtures** (`tests/fixtures/`): Reusable test data
+- **Setup** (`tests/setup.js`): Test database configuration and cleanup
 
-### Types de tests couverts
+### Covered Test Types
 
-✅ **Modèles Sequelize** : Hooks, méthodes d'instance, validation, relations  
-✅ **Contrôleurs** : Logique métier, gestion d'erreurs, validation  
-✅ **Middlewares** : Authentification, validation, rate limiting  
-✅ **Routes API** : Endpoints REST, gestion des requêtes/réponses  
-✅ **Utilitaires** : Encryption, helpers, templates email  
-✅ **Validateurs** : Règles de validation des entrées  
-✅ **Intégration** : Flux utilisateur complets, base de données réelle
+✅ **Sequelize Models**: Hooks, instance methods, validation, relationships  
+✅ **Controllers**: Business logic, error handling, validation  
+✅ **Middlewares**: Authentication, validation, rate limiting  
+✅ **API Routes**: REST endpoints, request/response handling  
+✅ **Utilities**: Encryption, helpers, email templates  
+✅ **Validators**: Input validation rules  
+✅ **Integration**: Complete user flows, real database
 
-### 📊 Couverture de Tests (Rapport Actuel)
+### 📊 Test Coverage (Current Report)
 
-**Statistiques globales :**
-- **Tests** : 596 tests passants sur 51 suites
-- **Lignes** : 82.37%
-- **Statements** : 74.45%
-- **Fonctions** : 71.14%
-- **Branches** : 76.47%
+**Global Statistics:**
+- **Tests**: 596 passing tests on 51 suites
+- **Lines**: 82.37%
+- **Statements**: 74.45%
+- **Functions**: 71.14%
+- **Branches**: 76.47%
 
-**Couverture par module principal :**
+**Coverage by main module:**
 
-| Module | Lignes | Statements | Fonctions | Branches |
+| Module | Lines | Statements | Functions | Branches |
 |--------|--------|------------|-----------|----------|
 | **src/models/** | | | | |
 | Contact.js | 87.23% | 69.23% | 100% | 90.9% |
@@ -419,7 +419,7 @@ npm test -- --verbose
 | Service.js | 100% | 100% | 100% | 100% |
 
 | **src/controllers/** | | | | |
-| Tous les controllers | ~85% | ~80% | ~85% | ~82% |
+| All controllers | ~85% | ~80% | ~85% | ~82% |
 
 | **src/utils/** | | | | |
 | encryption.js | 90.41% | 88.23% | 100% | 90.27% |
@@ -427,20 +427,20 @@ npm test -- --verbose
 | dbHelpers.js | 94.73% | 76.47% | 100% | 94.28% |
 | responseHelpers.js | 100% | 100% | 100% | 100% |
 
-**Points forts de la couverture :**
-- Tests unitaires complets pour tous les modèles
-- Couverture élevée pour les utilitaires critiques (encryption, helpers)
-- Tests d'intégration pour toutes les routes API
-- Validation complète des middlewares d'authentification
+**Coverage highlights:**
+- Complete unit tests for all models
+- High coverage for critical utilities (encryption, helpers)
+- Integration tests for all API routes
+- Complete authentication middleware validation
 
-**Axes d'amélioration :**
-- Augmenter la couverture des routes admin (45.45%)
-- Améliorer la couverture des workers et webhooks
-- Ajouter des tests pour les cas d'erreur complexes
+**Areas for improvement:**
+- Increase admin routes coverage (45.45%)
+- Improve worker and webhook coverage
+- Add tests for complex error scenarios
 
 ## 🤝 Contribution
 
-Les contributions sont les bienvenues ! Veuillez consulter le [Guide de Contribution](CONTRIBUTING.md) pour plus de détails sur la manière de participer.
+Contributions are welcome! Please check the [Contributing Guide](CONTRIBUTING.md) for details on how to participate.
 
 ## 📄 License
 
@@ -448,4 +448,4 @@ ISC
 
 ---
 
-Développé par NGOUE DAVID pour AELI Services - Cameroun avec beaucoup de fatigue de flemme et de maladie
+Developed by NGOUE DAVID for AELI Services - Cameroon with a lot of fatigue, laziness, and sickness
