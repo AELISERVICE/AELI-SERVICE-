@@ -1,9 +1,13 @@
-import React from 'react'
-import { RegisterForm } from '../components/auth/RegisterForm'
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import { RegisterForm } from '../components/auth/RegisterForm';
 
 
 export function RegisterScreen() {
   return (
-    <RegisterForm />
+    <>
+      <RegisterForm />
+      <ToastContainer position="bottom-center" />
+    </>
   )
 }

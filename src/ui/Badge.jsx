@@ -10,6 +10,7 @@ export function Badge({
     warning: 'bg-amber-100 text-amber-700 border border-amber-200',
     neutral: 'bg-gray-100 text-gray-700 border border-gray-200',
     purple: 'bg-purple-100 text-purple-700 border border-purple-200',
+    danger: 'bg-red-100 text-red-700 border border-red-200'
   }
   return (
     <span

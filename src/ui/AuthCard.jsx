@@ -13,7 +13,7 @@ export function AuthCard({
         <div className="min-h-screen w-full bg-slate-50 font-sans text-slate-900 selection:bg-purple-100 selection:text-purple-900">
             <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-purple-100 via-slate-50 to-white opacity-60"></div>
 
-            <div className="flex flex-col items-center justify-center min-h-screen w-full">
+            <div className="flex flex-col items-center  min-h-screen w-full">
                 <main className="w-full px-4 py-4 flex flex-col items-center ">
                     {/* Header Section */}
                     <div className="w-full bg-slate-700 rounded-3xl min-h-[400px] p-8 pb-32 md:pb-48 text-center relative overflow-hidden shadow-lg">

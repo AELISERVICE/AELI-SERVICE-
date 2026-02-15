@@ -9,6 +9,7 @@ export function Input({
   type = 'text',
   options = [],
   required,
+  isreadOnly,
   value,
   onChange,
   placeholder, // Assure-toi que cette prop est bien reçue
@@ -16,9 +17,10 @@ export function Input({
   ...props
 }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [filePreview, setFilePreview] = useState(null)
   const containerRef = useRef(null)
 
-  const baseInputStyles = `w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent transition-all outline-none text-slate-800 placeholder:text-slate-400`
+  const baseInputStyles = `w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 ${isreadOnly ? "cursor-default" : "focus:bg-white focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent transition-all"} outline-none text-slate-800 placeholder:text-slate-400`
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -31,6 +33,19 @@ export function Input({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [type])
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result); // Stocke l'URL base64 pour l'affichage
+      };
+      reader.readAsDataURL(file);
+    }
+    // On appelle toujours le onChange parent pour mettre à jour le formulaire
+    if (onChange) onChange(e);
+  };
 
   return (
     <div ref={containerRef} className={`w-full ${type === 'textarea' ? 'col-span-1 sm:col-span-2' : ''}`}>
@@ -90,34 +105,51 @@ export function Input({
           />
         ) : type === 'file' ? (
           /* CAS 3 : FILE */
-          <div className={`group relative flex min-h-[138px] ${className} cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white`}>
-            <div className="flex flex-col items-center justify-center space-y-2 text-center">
+          <div className={`group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white overflow-hidden ${className}`}>
+
+            {/* AFFICHAGE DE LA PREVIEW SI ELLE EXISTE */}
+            {filePreview ? (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={filePreview}
+                  alt="Preview"
+                  className="h-full w-full object-cover opacity-40 group-hover:opacity-20 transition-opacity"
+                />
+                <div className="absolute inset-0 bg-white/20 group-hover:bg-transparent transition-colors" />
+              </div>
+            ) : null}
+
+            {/* CONTENU DE L'INPUT (Icône + Texte) */}
+            <div className="relative z-10 flex flex-col items-center justify-center space-y-2 text-center pointer-events-none">
               <div className="rounded-full bg-white p-2 shadow-sm group-hover:bg-purple-50">
                 <UploadCloud className="h-6 w-6 text-gray-400 group-hover:text-[#FCE0D6]" />
               </div>
               <div className="text-xs text-gray-500">
-                <span className="font-medium text-[#E8524D]">Click to upload</span> or drag and drop
+                <span className="font-medium text-[#E8524D]">
+                  {filePreview ? "Changer la photo" : "Click to upload"}
+                </span> or drag and drop
               </div>
               <p className="text-[10px] text-gray-400 uppercase">PNG, JPG up to 5MB</p>
             </div>
-            <input 
-              type="file" 
+
+            <input
+              type="file"
               name={name}
-              className="absolute inset-0 cursor-pointer opacity-0" 
-              onChange={onChange}
-              {...props} 
+              className="absolute inset-0 z-20 cursor-pointer opacity-0"
+              onChange={handleFileChange} // Utilise la fonction locale
+              {...props}
             />
           </div>
         ) : (
           /* CAS PAR DÉFAUT (Ajout explicatif du placeholder) */
-          <input 
-            type={type} 
+          <input
+            type={type}
             name={name}
-            className={`${baseInputStyles} ${className}`} 
+            className={`${baseInputStyles} ${className}`}
             value={value}
             onChange={onChange}
             placeholder={placeholder} // Ajouté ici
-            {...props} 
+            {...props}
           />
         )}
       </div>

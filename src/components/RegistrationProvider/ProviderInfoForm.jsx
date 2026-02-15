@@ -1,11 +1,15 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { User, Briefcase, X, Check } from 'lucide-react'
-import { SectionHeader } from '../../ui/SectionHeader'
-import { Input } from '../../ui/Input'
-import { Button } from '../../ui/Button'
-import { FormCard } from '../../ui/FormCard'
-import { TermsSection } from "./TermsSection"
+import React, { useState, useEffect } from 'react';
+import { toast } from "react-toastify";
+import { useNavigate } from 'react-router-dom';
+import { User, Briefcase, X, Check, MapPin, Loader2 } from 'lucide-react';
+import { SectionHeader } from '../../ui/SectionHeader';
+import { Input } from '../../ui/Input';
+import { Button } from '../../ui/Button';
+import { FormCard } from '../../ui/FormCard';
+import { TermsSection } from "./TermsSection";
+import { MapPicker } from '../global/MapPicker';
+import { useInfoUserConnected } from '../../hooks/useUser';
+import { useApplyProvider } from '../../hooks/useProvider';
 
 
 const availableActivities = [
@@ -13,25 +17,69 @@ const availableActivities = [
     "Coiffure", "Esthétique", "Mécanique", "Cours d'appui"
 ]
 
+
 export function ProviderInfoForm() {
     const navigate = useNavigate()
     const [agreed, setAgreed] = useState(false)
+    const [showMapModal, setShowMapModal] = useState(false)
+    const { data: userData } = useInfoUserConnected();
+    const { mutate, isPending, isError, error, isSuccess, data } = useApplyProvider();
+    const user = userData?.data?.user;
+
     const [formData, setFormData] = useState({
-        name: '',
-        surname: '',
-        gender: '',
-        country: '',
-        email: '',
-        phone: '',
-        idNumber: '',
-        imgcnirecto: '',
-        imgcniverso: '',
+        firstName: user?.firstName,
+        lastName: user?.lastName,
+        gender: user?.gender,
+        country: user?.country,
+        email: user?.email,
+        phone: user?.phone,
+        cniNumber: '',
+        imgcnirecto: null,
+        imgcniverso: null,
+        photos: null,
         businessContact: '',
+        whatsapp: '',
         businessName: '',
         location: '',
+        address: '',
+        latitude: '',
+        longitude: '',
         description: '',
         activities: []
     })
+
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                gender: user.gender || '',
+                country: user.country || '',
+                email: user.email || '',
+                phone: user.phone || ''
+            }));
+        }
+    }, [user]);
+
+    const isInvalid = [
+        formData.firstName,
+        formData.lastName,
+        formData.gender,
+        formData.country,
+        formData.email,
+        formData.phone,
+        formData.cniNumber,
+        formData.imgcnirecto,
+        formData.imgcniverso,
+        formData.photos,
+        formData.businessContact,
+        formData.businessName,
+        formData.location,
+        formData.latitude,
+        formData.longitude,
+        formData.description
+    ].some(value => !value) || formData.activities.length === 0;
 
     // Ajouter une activité
     const handleAddActivity = (e) => {
@@ -54,29 +102,83 @@ export function ProviderInfoForm() {
         }))
     }
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
+    const handleConfirmLocation = (mapData) => {
         setFormData(prev => ({
             ...prev,
-            [name]: value
+            location: mapData.address,
+            latitude: mapData.lat,
+            longitude: mapData.lon
         }))
+        setShowMapModal(false)
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        if (!agreed) {
-            alert("Veuillez accepter les conditions")
-            return
+    const handleChange = (e) => {
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            setFormData(prev => ({ ...prev, [name]: files[0] }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
         }
-        console.log("Données envoyées au serveur :", formData)
-    }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const dataToSend = new FormData();
+
+        Object.keys(formData).forEach(key => {
+            if (key === 'activities') {
+                dataToSend.append(key, JSON.stringify(formData[key]));
+            } else if (['imgcnirecto', 'imgcniverso', 'photos'].includes(key)) {
+                if (formData[key]) dataToSend.append(key, formData[key]);
+            } else {
+                dataToSend.append(key, formData[key]);
+            }
+        });
+
+
+        // --- AFFICHAGE EN CONSOLE ---
+        console.log("--- Contenu du FormData envoyé ---");
+        for (let [key, value] of dataToSend.entries()) {
+            // Si c'est un fichier, on affiche son nom pour plus de clarté
+            if (value instanceof File) {
+                console.log(`${key}: [Fichier] ${value.name} (${value.size} octets)`);
+            } else {
+                console.log(`${key}:`, value);
+            }
+        }
+
+        mutate(dataToSend);
+    };
+
+    useEffect(() => {
+        if (isSuccess && data?.success) {
+            toast.success(data.message);
+            navigate(-1);
+        }
+
+        if (isError) {
+            const mainMessage = error?.message;
+            toast.error(mainMessage);
+
+            const backendErrors = error?.response?.errors;
+            if (Array.isArray(backendErrors)) {
+                backendErrors.forEach((err) => {
+                    toast.info(err.message);
+                });
+            }
+        }
+
+    }, [isSuccess, isError, data, error]);
 
     return (
         <FormCard
             title="Inscription Prestataire"
             subtitle="Veuillez remplir toutes les informations requises pour compléter votre inscription"
         >
-            <form className="space-y-10" onSubmit={handleSubmit}>
+            <form
+                onSubmit={handleSubmit}
+                className="space-y-10"
+            >
                 <section>
                     <SectionHeader
                         icon={User}
@@ -85,45 +187,56 @@ export function ProviderInfoForm() {
                     />
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <Input
-                            name="name"
+                            name="firstName"
                             label="Nom"
                             placeholder="Nom"
+                            value={formData.firstName}
                             onChange={handleChange}
+                            isreadOnly={true}
                             required
+                            readOnly
                         />
                         <Input
-                            name="surname"
+                            name="lastName"
                             label="Prénom"
                             placeholder="Prénom"
+                            value={formData.lastName}
                             onChange={handleChange}
+                            isreadOnly={true}
                             required
+                            readOnly
                         />
                         <Input
                             name="gender"
                             label="Genre"
-                            type="select"
+                            placeholder="Femme"
+                            value={formData.gender}
                             onChange={handleChange}
+                            isreadOnly={true}
                             required
-                            options={[
-                                { value: 'male', label: 'Homme' },
-                                { value: 'female', label: 'Femme' }
-                            ]}
+                            readOnly
                         />
                         <Input
                             name="email"
                             label="Adresse E-mail"
                             type="email"
                             placeholder="email@exemple.com"
+                            value={formData.email}
                             onChange={handleChange}
+                            isreadOnly={true}
                             required
+                            readOnly
                         />
                         <Input
                             name="phone"
                             label="Téléphone"
                             type="tel"
                             placeholder="6xx xxx xxx"
+                            value={formData.phone}
                             onChange={handleChange}
+                            isreadOnly={true}
                             required
+                            readOnly
                         />
                     </div>
                 </section>
@@ -136,7 +249,7 @@ export function ProviderInfoForm() {
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                         <div className="flex flex-col gap-6">
                             <Input
-                                name="idNumber"
+                                name="cniNumber"
                                 label="Numéro CNI"
                                 placeholder="CNI"
                                 onChange={handleChange}
@@ -162,7 +275,7 @@ export function ProviderInfoForm() {
                             </div>
                         </div>
                         <Input
-                            name="photo"
+                            name="photos"
                             label="Photo / Logo"
                             type="file"
                             onChange={handleChange}
@@ -179,20 +292,58 @@ export function ProviderInfoForm() {
                         <Input
                             name="businessContact"
                             label="Contact Pro"
-                            placeholder="Contact"
+                            type="number"
+                            placeholder="6xx xxx xxx"
                             onChange={handleChange}
                             required
                         />
                         <Input
-                            name="location"
-                            label="Localisation"
-                            placeholder="Yaounde, nkolbisson"
+                            name="whatsapp"
+                            label="Contact whatsapp"
+                            type="number"
+                            placeholder="6xx xxx xxx"
                             onChange={handleChange}
                             required
                         />
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-700">Localisation <span className="text-red-500">*</span></label>
+                            <div className="flex gap-2">
+                                <Input
+                                    name="location"
+                                    placeholder="Choisissez sur la carte..."
+                                    value={formData.location}
+                                    isreadOnly={true}
+                                    readOnly // Empêche la saisie manuelle pour forcer la précision carte
+                                    className="flex-1"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="softRed"
+                                    onClick={() => setShowMapModal(true)}
+                                    className="h-[49px]"
+                                >
+                                    <MapPin size={18} />
+                                    Carte
+                                </Button>
+                            </div>
+                        </div>
+                        {/* --- MODAL DE LA CARTE --- */}
+                        {showMapModal && (
+                            <MapPicker
+                                onClose={() => setShowMapModal(false)}
+                                onConfirm={handleConfirmLocation}
+                            />
+                        )}
+                        <Input
+                            name="address"
+                            label="Address (optionel)"
+                            placeholder="6xx xxx xxx"
+                            onChange={handleChange}
+                            className="flex-1"
+                        />
                         <div className="space-y-3">
                             <Input
-                                name="activitySelect"
+                                name="activities"
                                 label="Sélectionner vos activités"
                                 type="select"
                                 onChange={handleAddActivity}
@@ -254,10 +405,19 @@ export function ProviderInfoForm() {
                         variant="gradient"
                         type="submit"
                         className="w-full sm:w-auto gap-2 py-3"
-                        disabled={!agreed}
+                        disabled={!agreed || isInvalid || isPending}
                     >
-                        <Check className="w-4 h-4" />
-                        Soumettre
+                        {isPending ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" size={18} />
+                                <span>Envoi...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Check className="w-4 h-4" />
+                                <span>Soumettre</span>
+                            </>
+                        )}
                     </Button>
                 </div>
             </form>

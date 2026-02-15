@@ -1,47 +1,146 @@
-import React, { use } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Card } from '../../ui/Card'
-import { Button } from '../../ui/Button'
-import { Input } from '../../ui/Input'
-import { Badge } from '../../ui/Badge'
-import { Mail, CheckCircle2 } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
+import { Card } from '../../ui/Card';
+import { Button } from '../../ui/Button';
+import { Input } from '../../ui/Input';
+import { Badge } from '../../ui/Badge';
+import { Mail, CheckCircle2, Save, X } from 'lucide-react'; 
+import { useInfoUserConnected, useUpdateProfile } from '../../hooks/useUser';
 
 
-export function ProfileSection() {
-    const navigate = useNavigate()
+export function ProfileSection({ setIsRole }) {
+    const navigate = useNavigate();
+    const [isEditing, setIsEditing] = useState(false);
+    const { data, refetch } = useInfoUserConnected();
+    const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProfile();
+    const user = data?.data?.user;
 
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        phone: "",
+        profilePhoto: null
+    });
+
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                firstName: user.firstName || "",
+                lastName: user.lastName || "",
+                phone: user.phone || ""
+            });
+        }
+        setIsRole(user?.role)
+    }, [user]);
+
+    const handleChange = (e) => {
+        const { name, value, type, files } = e.target;
+
+        if (type === 'file') {
+            const file = files[0];
+            if (file) {
+                setFormData(prev => ({ ...prev, profilePhoto: file }));
+            }
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+
+    const handleSave = () => {
+        const dataToSend = new FormData();
+        dataToSend.append("firstName", formData.firstName);
+        dataToSend.append("lastName", formData.lastName);
+        dataToSend.append("phone", formData.phone);
+
+        if (formData.profilePhoto) {
+            dataToSend.append("profilePhoto", formData.profilePhoto);
+        }
+
+        mutateUpdate(dataToSend);
+    };
+
+    useEffect(() => {
+        if (isSuccessUpdate && dataUpdate?.success) {
+            toast.success(dataUpdate.message);
+        }
+
+        if (isErrorUpdate) {
+            const mainMessage = errorUpdate?.message;
+            toast.error(mainMessage);
+
+            const backendErrors = errorUpdate?.response?.errors;
+            if (Array.isArray(backendErrors)) {
+                backendErrors.forEach((err) => {
+                    toast.info(err.message);
+                });
+            }
+        }
+
+    }, [isSuccessUpdate, isErrorUpdate, dataUpdate, errorUpdate]);
 
     return (
         <div className="space-y-6">
-            {/* Profile Header Card */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600  to-[#FCE0D6] p-6 text-white shadow-lg">
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
-                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-black opacity-10 rounded-full blur-2xl"></div>
-
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-[#FCE0D6] p-6 text-white shadow-lg">
                 <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
                     <div className="relative">
-                        <img
-                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80"
-                            alt="profile"
-                            className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-xl"
-                        />
-                        <div className="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-purple-600 rounded-full"></div>
+                        {!isEditing &&
+                            <img
+                                src={user?.profilePhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+                                alt="profile"
+                                className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-xl mb-2"
+                            />
+                        }
+                        {isEditing && (
+                            <Input
+                                name="profilePhoto"
+                                type="file"
+                                onChange={handleChange}
+                                accept="image/*"
+                                className="w-20 h-20 !rounded-full !overflow-hidden min-h-auto" />
+                        )}
+
+                        {user?.isActive && !isEditing && (
+                            <div className="absolute top-14 left-14 w-4 h-4 bg-green-400 border-2 border-purple-600 rounded-full"></div>
+                        )}
                     </div>
 
                     <div className="flex-1 text-center sm:text-left">
-                        <h2 className="text-xl font-bold">Amanda Atangana</h2>
-                        <p className="text-purple-100 text-sm mb-4">
-                            amandaatangana@gmail.com
-                        </p>
+                        <h2 className="text-xl font-bold">{user?.lastName} {user?.firstName}</h2>
+                        <p className="text-purple-100 text-sm mb-4">{user?.email}</p>
                     </div>
 
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
-                    >
-                        Modifier
-                    </Button>
+                    {!isEditing ? (
+                        <Button
+                            onClick={() => setIsEditing(true)}
+                            variant="secondary"
+                            size="sm"
+                            className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+                        >
+                            Modifier
+                        </Button>
+                    ) : (
+                        <div className="flex gap-2">
+                            <Button
+                                onClick={() => setIsEditing(false)}
+                                variant="secondary"
+                                size="sm"
+                                className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
+                            >
+                                <X size={16} className="mr-1" /> Annuler
+                            </Button>
+                            <Button
+                                onClick={handleSave}
+                                disabled={isPendingUpdate}
+                                variant=""
+                                size="sm"
+                                className="bg-green-600/20 border-green-600/10"
+                            >
+                                <Save size={16} className="mr-1" /> {isPendingUpdate ? "..." : "Enregistrer"}
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -50,114 +149,98 @@ export function ProfileSection() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <Input
                         label="Nom"
-                        placeholder="Votre nom"
-                        defaultValue="Atangana"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        disabled={!isEditing}
                     />
                     <Input
                         label="Prenom"
-                        placeholder="Votre prenom"
-                        defaultValue="Amanda"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleChange}
+                        disabled={!isEditing}
                     />
 
                     <Input
                         label="Genre"
                         type="select"
+                        value={user?.gender}
+                        disabled={true} // Non éditable selon votre doc API
                         options={[
-                            {
-                                value: 'female',
-                                label: 'Femme',
-                            },
-                            {
-                                value: 'male',
-                                label: 'Homme',
-                            },
-                            {
-                                value: 'other',
-                                label: 'Autre',
-                            },
+                            { value: 'female', label: 'Femme' },
+                            { value: 'male', label: 'Homme' }
                         ]}
                     />
 
                     <Input
                         label="Pays"
-                        type="select"
-                        options={[
-                            {
-                                value: 'CMR',
-                                label: 'Cameroun',
-                            },
-                            {
-                                value: 'us',
-                                label: 'United States',
-                            },
-                            {
-                                value: 'uk',
-                                label: 'United Kingdom',
-                            },
-                        ]}
+                        value={user?.country}
+                        disabled={true}
                     />
 
                     <Input
                         label="Email"
                         type="email"
-                        placeholder="exemple@gmail.com"
-                        defaultValue="alexarawles@gmail.com"
+                        value={user?.email}
+                        disabled={true}
                     />
                     <Input
                         label="Telephone"
-                        type="tel"
-                        placeholder="+33 6 00 00 00 00"
-                        defaultValue="+237 692074533"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        disabled={!isEditing}
                     />
                 </div>
 
+                {/* Status Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Mon adresse email
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Mon adresse email</label>
                         <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                                <Mail className="w-5 h-5" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">
-                                    amandaatangana@gmail.com
-                                </p>
-                                <p className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
-                                    <CheckCircle2 className="w-3 h-3" />
-                                    Verifier
-                                </p>
+                            <Mail className="w-5 h-5 text-blue-600" />
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">{user?.email}</p>
+                                {user?.isEmailVerified && (
+                                    <p className="text-xs text-green-600 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3" /> Vérifié
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Status
-                        </label>
-                        <div>
-                            <Badge variant="success" className="px-3 py-1.5 text-sm">
-                                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                                Actif
-                            </Badge>
-                        </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+                        <Badge variant={user?.isActive ? "success" : "neutral"} className="px-3 py-1.5 text-sm">
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                            {user?.isActive ? "Actif" : "Inactif"}
+                        </Badge>
                     </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
-                    <Button
-                        onClick={() => navigate("/become-service-provider")}
-                        variant="gradient" className="w-full sm:w-auto py-3">
-                        Devenir prestataire
-                    </Button>
-                    <Button
-                        onClick={() => navigate("/subscription")}
-                        variant="softRed" className="w-full sm:w-auto py-3">
-                        Souscrire a un plan
-                    </Button>
+                    {user?.role !== "provider" && (
+                        <Button
+                            onClick={() => navigate("/become-service-provider")}
+                            variant="gradient"
+                            className="py-3 w-full sm:w-auto"
+                        >
+                            Devenir prestataire
+                        </Button>
+                    )}
+                    {user?.role === "provider" && (
+                        <Button
+                            onClick={() => navigate("/subscription")}
+                            variant="softRed"
+                            className="py-3 w-full sm:w-auto"
+                        >
+                            Souscrire à un plan
+                        </Button>
+                    )}
                 </div>
             </Card>
         </div>
-    )
+    );
 }

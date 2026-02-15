@@ -1,11 +1,11 @@
 import React from 'react';
 import { ToastContainer } from 'react-toastify';
-import { OtpForm } from '../components/auth/OtpForm';
+import { ForgotPasswordForm } from '../components/auth/FogotPasswordForm';
 
-export function OtpScreen() {
+export function ForgotPasswordScreen() {
     return (
         <>
-            <OtpForm />
+            <ForgotPasswordForm />
             <ToastContainer position="bottom-center" />
         </>
     )

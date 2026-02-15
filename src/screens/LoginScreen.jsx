@@ -1,8 +1,12 @@
-import React from 'react'
-import { LoginForm } from '../components/auth/LoginForm'
+import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import { LoginForm } from '../components/auth/LoginForm';
 
 export function LoginScreen() {
   return (
-    <LoginForm />
+    <>
+      <LoginForm />
+      <ToastContainer position="bottom-center" />
+    </>
   )
 }
