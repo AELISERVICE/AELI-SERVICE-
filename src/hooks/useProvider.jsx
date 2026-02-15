@@ -19,7 +19,7 @@ export const useProviderApplicationsDetail = (id) => {
         queryFn: () => request(`/api/admin/provider-applications/${id}`, "GET"),
         refetchOnWindowFocus: false,
     });
-}
+};
 
 // Prestataires non vérifiés
 export const useProviderPending = () => {

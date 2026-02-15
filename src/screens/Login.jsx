@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToastContainer } from 'react-toastify';
 import { LoginForm } from '../components/auth/LoginForm';
 import { Footer } from '../components/global/Footer';
 
@@ -45,6 +46,7 @@ export function LoginScreen() {
                     <Footer />
                 </main>
             </div>
+            <ToastContainer position="bottom-center" />
         </div>
     )
 }
