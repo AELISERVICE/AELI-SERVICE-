@@ -146,8 +146,14 @@ const User = sequelize.define('User', {
     hooks: {
         beforeCreate: async (user) => {
             if (user.password) {
-                const salt = await bcrypt.genSalt(10);
-                user.password = await bcrypt.hash(user.password, salt);
+                // Vérifier si le mot de passe est déjà un hash bcrypt
+                const isAlreadyHashed = user.password.startsWith('$2a$') || user.password.startsWith('$2b$');
+                
+                if (!isAlreadyHashed) {
+                    // Hasher seulement si ce n'est pas déjà un hash
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(user.password, salt);
+                }
             }
             // Encrypt phone
             if (user.phone) {

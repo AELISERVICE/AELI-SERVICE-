@@ -35,11 +35,11 @@ const seed = async () => {
         // Supprimer d'abord l'admin existant
         await User.destroy({ where: { email: 'admin@aeli.cm' } });
         
-        // Créer l'admin avec le mot de passe en clair (les hooks vont le hasher)
+        // Créer l'admin avec les hooks de sécurité activés
         const adminData = {
             id: require('uuid').v4(),
             email: 'admin@aeli.cm',
-            password: 'Password123!', // En clair, les hooks vont le hasher
+            password: 'Password123!', // En clair, le hook corrigé va le hasher
             firstName: 'Admin',
             lastName: 'User',
             phone: '+237612345678',
@@ -52,7 +52,7 @@ const seed = async () => {
             updatedAt: new Date()
         };
         
-        // Créer AVEC les hooks de sécurité activés
+        // Créer AVEC les hooks de sécurité corrigés
         const admin = await User.create(adminData);
         
         console.log(`   ✅ Admin: admin@aeli.cm / Password123!\n`);
