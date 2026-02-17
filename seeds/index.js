@@ -13,9 +13,9 @@ const seed = async () => {
     console.log('🌱 Starting database seeding...\n');
 
     try {
-        // Sync database
-        await sequelize.sync({ alter: true });
-        console.log('✅ Database synced\n');
+        // Test database connection instead of destructive sync
+        await sequelize.authenticate();
+        console.log('✅ Database connection established\n');
 
         // 1. Seed Categories
         console.log('📁 Seeding categories...');
@@ -52,8 +52,12 @@ const seed = async () => {
             updatedAt: new Date()
         };
         
+        console.log('   🔐 Creating admin with password:', adminData.password);
+        
         // Créer AVEC les hooks de sécurité corrigés
         const admin = await User.create(adminData);
+        
+        console.log('   ✅ Admin created with hashed password starting with:', admin.password.substring(0, 10) + '...');
         
         console.log(`   ✅ Admin: admin@aeli.cm / Password123!\n`);
 

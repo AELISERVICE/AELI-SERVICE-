@@ -102,18 +102,36 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
     "recentProviders": [
       {
         "id": "uuid",
+        "userId": "uuid-user",
         "businessName": "Salon Marie Coiffure",
         "description": "Salon de coiffure professionnel pour femmes",
         "location": "Yaoundé, Centre-ville",
-        "phone": "+237 6XX XXX XXX",
-        "email": "marie.salon@example.com",
-        "website": "https://salon-marie.com",
+        "address": "Rue de la Paix, Quartier Bastos",
+        "whatsapp": "+237 6XX XXX XXX",
+        "facebook": "https://facebook.com/salonmarie",
+        "instagram": "@salonmarie_cm",
+        "photos": ["url1.jpg", "url2.jpg"],
+        "activities": ["coiffure", "maquillage", "manucure"],
+        "latitude": 3.8667,
+        "longitude": 11.5167,
         "isVerified": true,
         "isFeatured": false,
-        "verificationStatus": "approved",
-        "averageRating": 4.5,
         "viewsCount": 1250,
+        "contactsCount": 89,
+        "averageRating": 4.5,
         "totalReviews": 23,
+        "documents": [
+          {
+            "type": "cni",
+            "url": "https://cloudinary.com/cni.jpg",
+            "uploadedAt": "2026-02-15T10:30:00Z",
+            "status": "approved"
+          }
+        ],
+        "verificationStatus": "approved",
+        "verificationNotes": "Documents validés",
+        "verifiedAt": "2026-02-15T14:20:00Z",
+        "verifiedBy": "admin-uuid",
         "createdAt": "2026-02-17T08:30:00Z",
         "updatedAt": "2026-02-17T09:15:00Z",
         "user": {
@@ -121,7 +139,7 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
           "firstName": "Marie",
           "lastName": "Ndiaye",
           "email": "marie.ndiaye@example.com",
-          "phoneNumber": "+237 6XX XXX XXX",
+          "phone": "+237 6XX XXX XXX",
           "country": "Cameroun",
           "gender": "female",
           "isEmailVerified": true,
@@ -131,7 +149,7 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
           "updatedAt": "2026-02-17T09:15:00Z"
         }
       }
-    ]  // 5 derniers prestataires (toutes les infos complètes)
+    ]  // 5 derniers prestataires (TOUTES les infos complètes)
   }
 }
 ```
