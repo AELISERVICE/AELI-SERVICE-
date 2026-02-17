@@ -108,20 +108,64 @@ const getStats = asyncHandler(async (req, res) => {
       raw: true,
     }),
 
-    // 7. Recent users
+    // 7. Recent users (last 5) - include all user info like registration response
     User.findAll({
-      attributes: ["id", "firstName", "lastName", "email", "role", "createdAt"],
+      attributes: [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "role",
+        "phoneNumber",
+        "country",
+        "gender",
+        "isEmailVerified",
+        "isActive",
+        "lastLoginAt",
+        "createdAt",
+        "updatedAt",
+      ],
       order: [["createdAt", "DESC"]],
       limit: 5,
     }),
 
-    // 8. Recent providers (with eager loading)
+    // 8. Recent providers (with complete information)
     Provider.findAll({
+      attributes: [
+        "id",
+        "businessName",
+        "description",
+        "location",
+        "phone",
+        "email",
+        "website",
+        "isVerified",
+        "isFeatured",
+        "verificationStatus",
+        "rating",
+        "views",
+        "totalReviews",
+        "createdAt",
+        "updatedAt",
+      ],
       include: [
         {
           model: User,
           as: "user",
-          attributes: ["firstName", "lastName", "email"],
+          attributes: [
+            "id",
+            "firstName",
+            "lastName",
+            "email",
+            "phoneNumber",
+            "country",
+            "gender",
+            "isEmailVerified",
+            "isActive",
+            "lastLoginAt",
+            "createdAt",
+            "updatedAt",
+          ],
         },
       ],
       order: [["createdAt", "DESC"]],

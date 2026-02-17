@@ -67,8 +67,71 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
       "refused": 10,          // Paiements refusés
       "cancelled": 5          // Paiements annulés
     },
-    "recentUsers": [...],     // 5 derniers inscrits
-    "recentProviders": [...]  // 5 derniers prestataires
+    "recentUsers": [
+      {
+        "id": "8c43c085-0088-4037-94f1-e30d841b01c5",
+        "firstName": "Fatou",
+        "lastName": "Onana",
+        "email": "fatou.onana104@example.com",
+        "role": "provider",
+        "phoneNumber": "+237 6XX XXX XXX",
+        "country": "Cameroun",
+        "gender": "female",
+        "isEmailVerified": true,
+        "isActive": true,
+        "lastLoginAt": "2026-02-17T09:45:00Z",
+        "createdAt": "2026-02-17T01:01:25.181Z",
+        "updatedAt": "2026-02-17T09:45:00Z"
+      },
+      {
+        "id": "6c78d566-7b3b-4990-9d72-3df52738fc21",
+        "firstName": "Jean",
+        "lastName": "Fokou",
+        "email": "jean.fokou103@example.com",
+        "role": "client",
+        "phoneNumber": "+237 6XX XXX XXX",
+        "country": "Cameroun",
+        "gender": "male",
+        "isEmailVerified": false,
+        "isActive": true,
+        "lastLoginAt": null,
+        "createdAt": "2026-02-17T01:01:25.077Z",
+        "updatedAt": "2026-02-17T01:01:25.077Z"
+      }
+    ],     // 5 derniers inscrits (toutes les infos comme lors de l'inscription)
+    "recentProviders": [
+      {
+        "id": "uuid",
+        "businessName": "Salon Marie Coiffure",
+        "description": "Salon de coiffure professionnel pour femmes",
+        "location": "Yaoundé, Centre-ville",
+        "phone": "+237 6XX XXX XXX",
+        "email": "marie.salon@example.com",
+        "website": "https://salon-marie.com",
+        "isVerified": true,
+        "isFeatured": false,
+        "verificationStatus": "approved",
+        "rating": 4.5,
+        "views": 1250,
+        "totalReviews": 23,
+        "createdAt": "2026-02-17T08:30:00Z",
+        "updatedAt": "2026-02-17T09:15:00Z",
+        "user": {
+          "id": "uuid-user",
+          "firstName": "Marie",
+          "lastName": "Ndiaye",
+          "email": "marie.ndiaye@example.com",
+          "phoneNumber": "+237 6XX XXX XXX",
+          "country": "Cameroun",
+          "gender": "female",
+          "isEmailVerified": true,
+          "isActive": true,
+          "lastLoginAt": "2026-02-17T09:15:00Z",
+          "createdAt": "2026-02-17T08:30:00Z",
+          "updatedAt": "2026-02-17T09:15:00Z"
+        }
+      }
+    ]  // 5 derniers prestataires (toutes les infos complètes)
   }
 }
 ```
