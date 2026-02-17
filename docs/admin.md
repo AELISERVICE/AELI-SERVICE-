@@ -79,7 +79,7 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
         "gender": "female",
         "isEmailVerified": true,
         "isActive": true,
-        "lastLoginAt": "2026-02-17T09:45:00Z",
+        "lastLogin": "2026-02-17T09:45:00Z",
         "createdAt": "2026-02-17T01:01:25.181Z",
         "updatedAt": "2026-02-17T09:45:00Z"
       },
@@ -94,7 +94,7 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
         "gender": "male",
         "isEmailVerified": false,
         "isActive": true,
-        "lastLoginAt": null,
+        "lastLogin": null,
         "createdAt": "2026-02-17T01:01:25.077Z",
         "updatedAt": "2026-02-17T01:01:25.077Z"
       }
@@ -111,8 +111,8 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
         "isVerified": true,
         "isFeatured": false,
         "verificationStatus": "approved",
-        "rating": 4.5,
-        "views": 1250,
+        "averageRating": 4.5,
+        "viewsCount": 1250,
         "totalReviews": 23,
         "createdAt": "2026-02-17T08:30:00Z",
         "updatedAt": "2026-02-17T09:15:00Z",
@@ -126,7 +126,7 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
           "gender": "female",
           "isEmailVerified": true,
           "isActive": true,
-          "lastLoginAt": "2026-02-17T09:15:00Z",
+          "lastLogin": "2026-02-17T09:15:00Z",
           "createdAt": "2026-02-17T08:30:00Z",
           "updatedAt": "2026-02-17T09:15:00Z"
         }
