@@ -18,6 +18,7 @@ const {
 const {
   accountVerifiedEmail,
   providerFeaturedEmail,
+  providerVerificationRevokedEmail,
 } = require("../utils/emailTemplates");
 const cache = require("../config/redis");
 const { auditLogger } = require("../middlewares/audit");
@@ -305,7 +306,7 @@ const getPendingProviders = asyncHandler(async (req, res) => {
  */
 const verifyProvider = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { isVerified } = req.body;
+  const { isVerified, rejectionReason } = req.body;
 
   const provider = await Provider.findByPk(id, {
     include: [{ model: User, as: "user" }],
@@ -315,6 +316,11 @@ const verifyProvider = asyncHandler(async (req, res) => {
     throw new AppError(req.t("provider.notFound"), 404);
   }
 
+  // Require rejection reason when rejecting
+  if (!isVerified && !rejectionReason) {
+    throw new AppError(req.t("admin.rejectionReasonRequired"), 400);
+  }
+
   const oldValues = { isVerified: provider.isVerified };
   provider.isVerified = isVerified;
   await provider.save({ fields: ["isVerified"] });
@@ -322,7 +328,7 @@ const verifyProvider = asyncHandler(async (req, res) => {
   // Audit Log
   auditLogger.providerVerified(req, provider, isVerified);
 
-  // Send email notification if verified (optional - don't fail if email system is down)
+  // Send email notification (optional - don't fail if email system is down)
   if (isVerified && provider.user) {
     await sendEmailSafely(
       {
@@ -333,6 +339,14 @@ const verifyProvider = asyncHandler(async (req, res) => {
         }),
       },
       "Provider verification"
+    );
+  } else if (!isVerified && provider.user) {
+    await sendEmailSafely(
+      {
+        to: provider.user.email,
+        ...providerVerificationRevokedEmail(provider.user.firstName, provider.businessName, rejectionReason),
+      },
+      "Provider verification revoked"
     );
   }
 
@@ -509,7 +523,8 @@ const getAllUsers = asyncHandler(async (req, res) => {
   const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
   const where = {};
-  if (role) where.role = role;
+  // Filter by role if specified, otherwise exclude admins
+  where.role = role ? role : { [Op.ne]: 'admin' };
   if (search) {
     where[Op.or] = [
       { firstName: { [Op.iLike]: `%${search}%` } },

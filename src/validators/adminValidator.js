@@ -21,7 +21,13 @@ const verifyProviderValidation = [
         .withMessage('ID prestataire invalide'),
     body('isVerified')
         .isBoolean()
-        .withMessage('isVerified doit être un booléen')
+        .withMessage('isVerified doit être un booléen'),
+    body('rejectionReason')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({ min: 5, max: 500 })
+        .withMessage('Le motif de rejet doit contenir entre 5 et 500 caractères')
 ];
 
 /**

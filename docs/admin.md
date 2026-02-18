@@ -222,11 +222,12 @@ Trafic API heure par heure pour une date donnée.
 ### `GET /users` - Liste des utilisateurs
 
 **Description :**  
-Récupère la liste paginée de tous les utilisateurs avec filtres.
+Récupère la liste paginée des utilisateurs avec filtres. **Les administrateurs sont exclus par défaut.**
 
 **Ce qu'il fait :**
 - Recherche par nom, prénom ou email
-- Filtre par rôle (client, provider, admin)
+- Filtre par rôle (client, provider)
+- **Exclut automatiquement les admins** (sauf si `role` est explicitement spécifié)
 - Pagination côté serveur
 - Exclut les champs sensibles (password, tokens)
 
@@ -235,12 +236,12 @@ Récupère la liste paginée de tous les utilisateurs avec filtres.
 |-------|------|--------|-------------|
 | `page` | int | 1 | Numéro de page |
 | `limit` | int | 20 | Éléments par page (max 100) |
-| `role` | string | - | `client`, `provider`, `admin` |
+| `role` | string | - | `client`, `provider` (admins exclus par défaut) |
 | `search` | string | - | Recherche nom/email |
 
 **Exemple :**
 ```
-GET /api/admin/users?page=1&limit=10&role=provider&search=marie
+GET /api/admin/users?page=1&limit=10&search=marie
 ```
 
 ---
@@ -378,12 +379,25 @@ Valide ou rejette un prestataire existant.
 
 **Ce qu'il fait :**
 - Met à jour `isVerified` du prestataire
-- Envoie un email de notification si validé
+- Envoie un email de notification (validation ou rejet)
+- **⚠️ Le motif de rejet (`rejectionReason`) est obligatoire** lors d'un rejet
+- Le motif est envoyé par email au prestataire
 
-**Body :**
+**Body (validation) :**
 ```json
 { "isVerified": true }
 ```
+
+**Body (rejet) :**
+```json
+{
+  "isVerified": false,
+  "rejectionReason": "Vos documents ne sont pas conformes aux exigences de la plateforme"
+}
+```
+
+**⚠️ Contrainte :**  
+`rejectionReason` est **obligatoire** quand `isVerified: false` (5-500 caractères). Un rejet sans motif retournera une erreur 400.
 
 ---
 

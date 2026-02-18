@@ -66,6 +66,10 @@ paths:
       tags:
         - Admin
       summary: Liste des utilisateurs
+      description: |
+        Récupère la liste paginée des utilisateurs.
+        **Les administrateurs sont exclus par défaut.**
+        Si un rôle spécifique est précisé via le paramètre `role`, seuls les utilisateurs de ce rôle sont retournés.
       security:
         - bearerAuth: []
       parameters:
@@ -81,14 +85,16 @@ paths:
           name: role
           schema:
             type: string
-            enum: [client, provider, admin]
+            enum: [client, provider]
+          description: Filtre par rôle (admins exclus par défaut)
         - in: query
           name: search
           schema:
             type: string
+          description: Recherche par nom, prénom ou email
       responses:
         '200':
-          description: Liste des utilisateurs
+          description: Liste des utilisateurs (sans les admins par défaut)
 
   /admin/users/{id}/status:
     put:
@@ -144,6 +150,10 @@ paths:
       tags:
         - Admin
       summary: Valider/rejeter un prestataire
+      description: |
+        Valide ou retire le statut vérifié d'un prestataire existant.
+        - Si `isVerified: true` → le prestataire reçoit le badge vérifié + email de confirmation
+        - Si `isVerified: false` → le champ `rejectionReason` est **obligatoire** (5-500 caractères) + email de notification avec le motif
       security:
         - bearerAuth: []
       parameters:
@@ -164,9 +174,27 @@ paths:
               properties:
                 isVerified:
                   type: boolean
+                  description: true pour valider, false pour rejeter
+                rejectionReason:
+                  type: string
+                  minLength: 5
+                  maxLength: 500
+                  description: Motif du retrait de vérification (obligatoire si isVerified=false)
+            examples:
+              approval:
+                summary: Validation du prestataire
+                value:
+                  isVerified: true
+              rejection:
+                summary: Rejet du prestataire
+                value:
+                  isVerified: false
+                  rejectionReason: "Vos documents ne sont pas conformes aux exigences de la plateforme"
       responses:
         '200':
           description: Prestataire validé/rejeté
+        '400':
+          description: Motif de rejet manquant (si isVerified=false sans rejectionReason)
 
   /admin/providers/{id}/feature:
     put:

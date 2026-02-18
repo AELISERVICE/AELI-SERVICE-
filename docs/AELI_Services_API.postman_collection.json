@@ -1357,7 +1357,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{baseUrl}}/api/admin/users?page=1&limit=20&role=client",
+                  "raw": "{{baseUrl}}/api/admin/users?page=1&limit=20",
                   "host": [
                     "{{baseUrl}}"
                   ],
@@ -1378,11 +1378,18 @@
                     {
                       "key": "role",
                       "value": "client",
-                      "description": "client, provider, admin"
+                      "description": "client, provider (admins exclus par défaut)",
+                      "disabled": true
+                    },
+                    {
+                      "key": "search",
+                      "value": "",
+                      "description": "Recherche par nom, prénom ou email",
+                      "disabled": true
                     }
                   ]
                 },
-                "description": "Liste tous les utilisateurs avec filtres."
+                "description": "Liste les utilisateurs avec filtres.\n\n**⚠️ Les administrateurs sont exclus par défaut.**\nSi un rôle est précisé (`role=client` ou `role=provider`), seuls les utilisateurs de ce rôle sont retournés."
               }
             },
             {
@@ -1432,7 +1439,7 @@
               }
             },
             {
-              "name": "Review Application - Valider/Rejeter",
+              "name": "Review Application - Approuver",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -1443,7 +1450,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"status\": \"approved\"\n}",
+                  "raw": "{\n    \"decision\": \"approved\",\n    \"adminNotes\": \"Dossier complet, profil vérifié\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1451,7 +1458,30 @@
                   }
                 },
                 "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
-                "description": "Valider ou rejeter une candidature.\n\n**Status**: `approved` ou `rejected`\n**Body si rejet**: `{ \"status\": \"rejected\", \"rejectionReason\": \"CNI illisible\" }`"
+                "description": "Approuver une candidature prestataire.\n\n**⚠️ Ce qu'il fait (transaction atomique) :**\n1. Change le rôle : `client` → `provider`\n2. Crée le profil Provider\n3. Crée un abonnement d'essai 30 jours\n4. Envoie un email de félicitations\n5. Invalide le cache"
+              }
+            },
+            {
+              "name": "Review Application - Rejeter",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"decision\": \"rejected\",\n    \"rejectionReason\": \"CNI illisible, veuillez resoumettre une photo claire\",\n    \"adminNotes\": \"Photo floue, demander un scan\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
+                "description": "Rejeter une candidature prestataire.\n\n⚠️ `rejectionReason` est **obligatoire**.\nUn email de rejet est envoyé au candidat avec le motif.\nLe candidat peut resoumettre après 7 jours."
               }
             }
           ]
@@ -1459,414 +1489,487 @@
         {
           "name": "🏪 Providers",
           "item": [
-            {
-              "name": "Pending Providers - En attente",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/providers/pending",
-                "description": "Prestataires en attente de vérification."
-              }
-            },
-            {
-              "name": "Under Review - En cours de review",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/providers/under-review",
-                "description": "Prestataires avec documents soumis en attente de review."
-              }
-            },
-            {
-              "name": "Verify Provider - Vérifier",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"isVerified\": true\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
-                "description": "Accorde le badge vérifié à un prestataire."
-              }
-            },
-            {
-              "name": "Feature Provider - Mettre en avant",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"isFeatured\": true\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/api/admin/providers/:providerId/feature",
-                "description": "Met en avant un prestataire sur la page d'accueil."
-              }
-            },
-            {
-              "name": "Review Documents - Valider KYC",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"status\": \"approved\",\n    \"notes\": \"Documents conformes. CNI et registre de commerce valides.\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/api/admin/providers/:providerId/review-documents",
-                "description": "Valide ou rejette les documents KYC.\n\n**Status**: `approved`, `rejected`"
+            "raw": "{\n    \"decision\": \"approved\",\n    \"adminNotes\": \"Dossier complet, profil vérifié\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
               }
             }
-          ]
+          },
+          "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
+          "description": "Approuver une candidature prestataire.\n\n**⚠️ Ce qu'il fait (transaction atomique) :**\n1. Change le rôle : `client` → `provider`\n2. Crée le profil Provider\n3. Crée un abonnement d'essai 30 jours\n4. Envoie un email de félicitations\n5. Invalide le cache"
+        }
+      },
+      {
+        "name": "Review Application - Rejeter",
+        "request": {
+          "method": "PUT",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"decision\": \"rejected\",\n    \"rejectionReason\": \"CNI illisible, veuillez resoumettre une photo claire\",\n    \"adminNotes\": \"Photo floue, demander un scan\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
+          "description": "Rejeter une candidature prestataire.\n\n⚠️ `rejectionReason` est **obligatoire**.\nUn email de rejet est envoyé au candidat avec le motif.\nLe candidat peut resoumettre après 7 jours."
+        }
+      }
+                  "raw": "{\n    \"status\": \"approved\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
+    "description": "Valider ou rejeter une candidature.\n\n**Status**: `approved` ou `rejected`\n**Body si rejet**: `{ \"status\": \"rejected\", \"rejectionReason\": \"CNI illisible\" }`"
+  }
+}
+]
+},
+{
+"name": "🏪 Providers",
+"item": [
+{
+  "name": "Pending Providers - En attente",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/providers/pending",
+    "description": "Prestataires en attente de vérification."
+  }
+},
+{
+  "name": "Under Review - En cours de review",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/providers/under-review",
+    "description": "Prestataires avec documents soumis en attente de review."
+  }
+},
+{
+  "name": "Verify Provider - Valider",
+  "request": {
+    "method": "PUT",
+    "header": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"isVerified\": true\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
+    "description": "Accorde le badge vérifié à un prestataire.\n\n**Validation**: `{ \"isVerified\": true }`\n**Rejet**: `{ \"isVerified\": false, \"rejectionReason\": \"Motif du retrait\" }`\n\n⚠️ `rejectionReason` est **obligatoire** quand `isVerified: false` (5-500 caractères).\nUn email est envoyé au prestataire avec le motif."
+  }
+},
+{
+  "name": "Reject Provider - Retirer vérification",
+  "request": {
+    "method": "PUT",
+    "header": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"isVerified\": false,\n    \"rejectionReason\": \"Vos documents ne sont pas conformes aux exigences de la plateforme\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
+    "description": "Retire le statut vérifié d'un prestataire existant.\n\n⚠️ `rejectionReason` est **obligatoire** (5-500 caractères).\nUn email de notification est envoyé au prestataire avec :\n- Le motif du retrait\n- Les conséquences\n- Les actions à entreprendre"
+  }
+},
+{
+  "name": "Feature Provider - Mettre en avant",
+  "request": {
+    "method": "PUT",
+    "header": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"isFeatured\": true\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/providers/:providerId/feature",
+    "description": "Met en avant un prestataire sur la page d'accueil."
+  }
+},
+{
+  "name": "Review Documents - Valider KYC",
+  "request": {
+    "method": "PUT",
+    "header": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"status\": \"approved\",\n    \"notes\": \"Documents conformes. CNI et registre de commerce valides.\"\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/providers/:providerId/review-documents",
+    "description": "Valide ou rejette les documents KYC.\n\n**Status**: `approved`, `rejected`"
+  }
+}
+]
+},
+{
+"name": "⭐ Reviews",
+"item": [
+{
+  "name": "Get All Reviews - Tous les avis",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/reviews",
+    "description": "Liste tous les avis pour modération."
+  }
+},
+{
+  "name": "Update Visibility - Masquer/Afficher",
+  "request": {
+    "method": "PUT",
+    "header": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"isVisible\": false\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/reviews/:reviewId/visibility",
+    "description": "Masque ou affiche un avis."
+  }
+}
+]
+},
+{
+"name": "💳 Payments",
+"item": [
+{
+  "name": "Get All Payments - Tous les paiements",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/payments",
+    "description": "Liste tous les paiements de la plateforme."
+  }
+}
+]
+},
+{
+"name": "🔒 Security",
+"item": [
+{
+  "name": "Get Banned IPs - IPs bannies",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/banned-ips",
+    "description": "Liste les adresses IP bannies."
+  }
+},
+{
+  "name": "Ban IP - Bannir une IP",
+  "request": {
+    "method": "POST",
+    "header": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "body": {
+      "mode": "raw",
+      "raw": "{\n    \"ipAddress\": \"192.168.1.100\",\n    \"reason\": \"Tentatives de connexion suspectes répétées\",\n    \"duration\": 24\n}",
+      "options": {
+        "raw": {
+          "language": "json"
+        }
+      }
+    },
+    "url": "{{baseUrl}}/api/admin/banned-ips",
+    "description": "Bannit une adresse IP.\n\n**duration**: Heures (null = permanent)"
+  }
+},
+{
+  "name": "Unban IP - Débannir",
+  "request": {
+    "method": "DELETE",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/banned-ips/192.168.1.100",
+    "description": "Lève le ban d'une IP."
+  }
+},
+{
+  "name": "Security Logs - Logs de sécurité",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": {
+      "raw": "{{baseUrl}}/api/admin/security-logs?limit=50&eventType=login_failed&riskLevel=high",
+      "host": [
+        "{{baseUrl}}"
+      ],
+      "path": [
+        "api",
+        "admin",
+        "security-logs"
+      ],
+      "query": [
+        {
+          "key": "limit",
+          "value": "50"
         },
         {
-          "name": "⭐ Reviews",
-          "item": [
-            {
-              "name": "Get All Reviews - Tous les avis",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/reviews",
-                "description": "Liste tous les avis pour modération."
-              }
-            },
-            {
-              "name": "Update Visibility - Masquer/Afficher",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"isVisible\": false\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/api/admin/reviews/:reviewId/visibility",
-                "description": "Masque ou affiche un avis."
-              }
-            }
-          ]
+          "key": "eventType",
+          "value": "login_failed",
+          "description": "login_failed, suspicious_activity, bot_detected"
         },
         {
-          "name": "💳 Payments",
-          "item": [
-            {
-              "name": "Get All Payments - Tous les paiements",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/payments",
-                "description": "Liste tous les paiements de la plateforme."
-              }
-            }
-          ]
-        },
-        {
-          "name": "🔒 Security",
-          "item": [
-            {
-              "name": "Get Banned IPs - IPs bannies",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/banned-ips",
-                "description": "Liste les adresses IP bannies."
-              }
-            },
-            {
-              "name": "Ban IP - Bannir une IP",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"ipAddress\": \"192.168.1.100\",\n    \"reason\": \"Tentatives de connexion suspectes répétées\",\n    \"duration\": 24\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/api/admin/banned-ips",
-                "description": "Bannit une adresse IP.\n\n**duration**: Heures (null = permanent)"
-              }
-            },
-            {
-              "name": "Unban IP - Débannir",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/banned-ips/192.168.1.100",
-                "description": "Lève le ban d'une IP."
-              }
-            },
-            {
-              "name": "Security Logs - Logs de sécurité",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/admin/security-logs?limit=50&eventType=login_failed&riskLevel=high",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "admin",
-                    "security-logs"
-                  ],
-                  "query": [
-                    {
-                      "key": "limit",
-                      "value": "50"
-                    },
-                    {
-                      "key": "eventType",
-                      "value": "login_failed",
-                      "description": "login_failed, suspicious_activity, bot_detected"
-                    },
-                    {
-                      "key": "riskLevel",
-                      "value": "high",
-                      "description": "low, medium, high"
-                    }
-                  ]
-                },
-                "description": "Logs d'activités suspectes."
-              }
-            },
-            {
-              "name": "Export Security Logs - Export CSV",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/security-logs/export?startDate=2026-01-01&endDate=2026-01-31",
-                "description": "Exporte les logs de sécurité en CSV."
-              }
-            },
-            {
-              "name": "Security Stats - Statistiques sécurité",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/security-stats",
-                "description": "Statistiques de sécurité:\n- Tentatives échouées (1h/24h)\n- Événements high risk\n- IPs bannies actives\n- Top IPs suspectes"
-              }
-            }
-          ]
-        },
-        {
-          "name": "📋 Audit",
-          "item": [
-            {
-              "name": "Audit Logs - Journal d'audit",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/audit-logs?limit=100&entityType=User",
-                "description": "Journal des actions admin."
-              }
-            }
-          ]
-        },
-        {
-          "name": "📤 Exports",
-          "item": [
-            {
-              "name": "Export Users CSV",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/export/users",
-                "description": "Exporte tous les utilisateurs en CSV."
-              }
-            },
-            {
-              "name": "Export Providers CSV",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/export/providers",
-                "description": "Exporte tous les prestataires en CSV."
-              }
-            },
-            {
-              "name": "Export Reviews CSV",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/export/reviews",
-                "description": "Exporte tous les avis en CSV."
-              }
-            },
-            {
-              "name": "Export Contacts CSV",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/export/contacts",
-                "description": "Exporte tous les contacts en CSV."
-              }
-            },
-            {
-              "name": "Export Report PDF",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": "{{baseUrl}}/api/admin/export/report",
-                "description": "Génère un rapport PDF complet."
-              }
-            }
-          ]
+          "key": "riskLevel",
+          "value": "high",
+          "description": "low, medium, high"
         }
       ]
     },
+    "description": "Logs d'activités suspectes."
+  }
+},
+{
+  "name": "Export Security Logs - Export CSV",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/security-logs/export?startDate=2026-01-01&endDate=2026-01-31",
+    "description": "Exporte les logs de sécurité en CSV."
+  }
+},
+{
+  "name": "Security Stats - Statistiques sécurité",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/security-stats",
+    "description": "Statistiques de sécurité:\n- Tentatives échouées (1h/24h)\n- Événements high risk\n- IPs bannies actives\n- Top IPs suspectes"
+  }
+}
+]
+},
+{
+"name": "📋 Audit",
+"item": [
+{
+  "name": "Audit Logs - Journal d'audit",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/audit-logs?limit=100&entityType=User",
+    "description": "Journal des actions admin."
+  }
+}
+]
+},
+{
+"name": "📤 Exports",
+"item": [
+{
+  "name": "Export Users CSV",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/export/users",
+    "description": "Exporte tous les utilisateurs en CSV."
+  }
+},
+{
+  "name": "Export Providers CSV",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/export/providers",
+    "description": "Exporte tous les prestataires en CSV."
+  }
+},
+{
+  "name": "Export Reviews CSV",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/export/reviews",
+    "description": "Exporte tous les avis en CSV."
+  }
+},
+{
+  "name": "Export Contacts CSV",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/export/contacts",
+    "description": "Exporte tous les contacts en CSV."
+  }
+},
+{
+  "name": "Export Report PDF",
+  "request": {
+    "method": "GET",
+    "header": [],
+    "url": "{{baseUrl}}/api/admin/export/report",
+    "description": "Génère un rapport PDF complet."
+  }
+}
+]
+}
+]
+},
+{
+"name": "📢 Banners - Publicités",
+"description": "## Gestion des Bannières\n\nPermet à l'admin de gérer les bannières publicitaires et aux utilisateurs de les voir.",
+"item": [
+{
+"name": "Get Active Banners - Liste publique",
+"request": {
+"auth": {
+  "type": "noauth"
+},
+"method": "GET",
+"header": [],
+"url": "{{baseUrl}}/api/banners",
+"description": "Récupère les bannières actives en fonction de la date actuelle."
+}
+},
+{
+"name": "Admin - Get All Banners",
+"request": {
+"method": "GET",
+"header": [],
+"url": "{{baseUrl}}/api/banners/admin",
+"description": "Liste toutes les bannières (y compris inactives)."
+}
+},
+{
+"name": "Create Banner - Créer",
+"request": {
+"method": "POST",
+"header": [],
+"body": {
+  "mode": "formdata",
+  "formdata": [
     {
-      "name": "📢 Banners - Publicités",
-      "description": "## Gestion des Bannières\n\nPermet à l'admin de gérer les bannières publicitaires et aux utilisateurs de les voir.",
-      "item": [
-        {
-          "name": "Get Active Banners - Liste publique",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/banners",
-            "description": "Récupère les bannières actives en fonction de la date actuelle."
-          }
-        },
-        {
-          "name": "Admin - Get All Banners",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/banners/admin",
-            "description": "Liste toutes les bannières (y compris inactives)."
-          }
-        },
-        {
-          "name": "Create Banner - Créer",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "title",
-                  "value": "Offre Saint-Valentin",
-                  "type": "text"
-                },
-                {
-                  "key": "type",
-                  "value": "main_home",
-                  "type": "text"
-                },
-                {
-                  "key": "bannerImage",
-                  "type": "file",
-                  "src": ""
-                },
-                {
-                  "key": "linkUrl",
-                  "value": "https://aeli-services.cm/promo",
-                  "type": "text"
-                }
-              ]
-            },
-            "url": "{{baseUrl}}/api/banners"
-          }
-        },
-        {
-          "name": "Update Banner - Modifier",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "title",
-                  "value": "Offre mise à jour",
-                  "type": "text"
-                }
-              ]
-            },
-            "url": "{{baseUrl}}/api/banners/:id"
-          }
-        },
-        {
-          "name": "Delete Banner - Supprimer",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": "{{baseUrl}}/api/banners/:id"
-          }
-        }
-      ]
+      "key": "title",
+      "value": "Offre Saint-Valentin",
+      "type": "text"
     },
     {
-      "name": "🏥 Health",
-      "description": "## Vérification de santé\n\nEndpoint pour vérifier que l'API fonctionne.",
-      "item": [
-        {
-          "name": "Health Check - Statut API",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": "{{baseUrl}}/api/health",
-            "description": "Vérifie que l'API est opérationnelle.\n\n**Réponse attendue**:\n```json\n{\n    \"status\": \"ok\",\n    \"timestamp\": \"2026-01-15T12:00:00Z\",\n    \"uptime\": 3600\n}\n```"
-          }
-        }
-      ]
+      "key": "type",
+      "value": "main_home",
+      "type": "text"
+    },
+    {
+      "key": "bannerImage",
+      "type": "file",
+      "src": ""
+    },
+    {
+      "key": "linkUrl",
+      "value": "https://aeli-services.cm/promo",
+      "type": "text"
     }
   ]
+},
+"url": "{{baseUrl}}/api/banners"
+}
+},
+{
+"name": "Update Banner - Modifier",
+"request": {
+"method": "PUT",
+"header": [],
+"body": {
+  "mode": "formdata",
+  "formdata": [
+    {
+      "key": "title",
+      "value": "Offre mise à jour",
+      "type": "text"
+    }
+  ]
+},
+"url": "{{baseUrl}}/api/banners/:id"
+}
+},
+{
+"name": "Delete Banner - Supprimer",
+"request": {
+"method": "DELETE",
+"header": [],
+"url": "{{baseUrl}}/api/banners/:id"
+}
+}
+]
+},
+{
+"name": "🏥 Health",
+"description": "## Vérification de santé\n\nEndpoint pour vérifier que l'API fonctionne.",
+"item": [
+{
+"name": "Health Check - Statut API",
+"request": {
+"auth": {
+  "type": "noauth"
+},
+"method": "GET",
+"header": [],
+"url": "{{baseUrl}}/api/health",
+"description": "Vérifie que l'API est opérationnelle.\n\n**Réponse attendue**:\n```json\n{\n    \"status\": \"ok\",\n    \"timestamp\": \"2026-01-15T12:00:00Z\",\n    \"uptime\": 3600\n}\n```"
+}
+}
+]
+}
+]
 }

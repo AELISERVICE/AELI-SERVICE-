@@ -749,6 +749,41 @@ const applicationReceivedEmail = (firstName, businessName) => {
   };
 };
 
+/**
+ * Provider verification revoked email (sent when admin revokes verified status of an existing provider)
+ */
+const providerVerificationRevokedEmail = (firstName, businessName, reason) => {
+  return {
+    subject: '⚠️ Statut de vérification retiré - AELI Services',
+    html: baseTemplate(`
+      <h2>Bonjour ${firstName},</h2>
+      <p>Nous vous informons que le statut de vérification de votre profil prestataire <strong>"${businessName}"</strong> a été <strong>retiré</strong>.</p>
+      <div class="info-box" style="border-left-color: #f44336;">
+        <p><strong>Motif :</strong></p>
+        <p>${reason}</p>
+      </div>
+      <h3>Conséquences :</h3>
+      <ul>
+        <li>❌ Votre profil n'apparaît plus comme vérifié auprès des clients</li>
+        <li>❌ Votre visibilité dans les recherches est réduite</li>
+        <li>Votre compte reste actif et vos données sont conservées</li>
+      </ul>
+      <h3>Que faire ?</h3>
+      <ul>
+        <li>Corrigez les points mentionnés dans le motif ci-dessus</li>
+        <li>Soumettez à nouveau vos documents pour une nouvelle vérification</li>
+        <li>Contactez notre support si vous avez des questions</li>
+      </ul>
+      <p style="text-align: center; margin-top: 30px;">
+        <a href="${process.env.FRONTEND_URL}/dashboard/documents" class="button">Soumettre mes documents</a>
+      </p>
+      <p style="color: #666; font-size: 14px;">
+        Des questions ? Contactez-nous : support@aeli-services.cm
+      </p>
+    `)
+  };
+};
+
 module.exports = {
   welcomeEmail,
   newContactEmail,
@@ -769,5 +804,6 @@ module.exports = {
   passwordChangedConfirmationEmail,
   providerApprovedEmail,
   providerRejectedEmail,
-  applicationReceivedEmail
+  applicationReceivedEmail,
+  providerVerificationRevokedEmail
 };

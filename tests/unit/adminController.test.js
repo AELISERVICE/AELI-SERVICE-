@@ -81,7 +81,8 @@ jest.mock('../../src/config/email', () => ({
 jest.mock('../../src/utils/emailTemplates', () => ({
     accountVerifiedEmail: jest.fn(),
     providerFeaturedEmail: jest.fn(),
-    documentsRejectedEmail: jest.fn()
+    documentsRejectedEmail: jest.fn(),
+    providerVerificationRevokedEmail: jest.fn()
 }));
 
 jest.mock('../../src/config/redis', () => ({
@@ -115,7 +116,7 @@ describe('Admin Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
         getPaginationParams.mockReturnValue({ limit: 10, offset: 0 });
         getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
         sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
@@ -219,6 +220,45 @@ describe('Admin Controller', () => {
             Provider.findByPk.mockResolvedValue(null);
 
             await expect(verifyProvider(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
+        });
+
+        it('should reject provider with reason and send email', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { isVerified: false, rejectionReason: 'Documents non conformes' };
+
+            const mockProvider = {
+                id: 'provider-123',
+                businessName: 'Test Provider',
+                isVerified: true,
+                save: jest.fn().mockResolvedValue(),
+                user: { email: 'provider@example.com', firstName: 'John' }
+            };
+
+            Provider.findByPk.mockResolvedValue(mockProvider);
+
+            await verifyProvider(mockReq, mockRes, mockNext);
+
+            expect(mockProvider.isVerified).toBe(false);
+            expect(mockProvider.save).toHaveBeenCalledWith({ fields: ['isVerified'] });
+            expect(sendEmailSafely).toHaveBeenCalled();
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.rejected', { provider: mockProvider });
+        });
+
+        it('should throw error when rejecting without reason', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { isVerified: false };
+
+            const mockProvider = {
+                id: 'provider-123',
+                businessName: 'Test Provider',
+                isVerified: true,
+                save: jest.fn().mockResolvedValue(),
+                user: { email: 'provider@example.com', firstName: 'John' }
+            };
+
+            Provider.findByPk.mockResolvedValue(mockProvider);
+
+            await expect(verifyProvider(mockReq, mockRes, mockNext)).rejects.toThrow('admin.rejectionReasonRequired');
         });
     });
 
@@ -347,8 +387,8 @@ describe('Admin Controller', () => {
     });
 
     describe('getAllUsers', () => {
-        it('should get all users successfully', async () => {
-            mockReq.query = { page: 1, limit: 20, role: 'client', search: 'john' };
+        it('should get all users successfully (excluding admins)', async () => {
+            mockReq.query = { page: 1, limit: 20, search: 'john' };
 
             const mockUsers = {
                 count: 50,
@@ -359,6 +399,35 @@ describe('Admin Controller', () => {
 
             await getAllUsers(mockReq, mockRes, mockNext);
 
+            expect(User.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: expect.objectContaining({
+                        role: { [Symbol.for('ne')]: 'admin' }
+                    })
+                })
+            );
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'common.list', expect.any(Object));
+        });
+
+        it('should filter by specific role when provided', async () => {
+            mockReq.query = { page: 1, limit: 20, role: 'client' };
+
+            const mockUsers = {
+                count: 30,
+                rows: [{ id: 'user-1', firstName: 'John', role: 'client' }]
+            };
+
+            User.findAndCountAll.mockResolvedValue(mockUsers);
+
+            await getAllUsers(mockReq, mockRes, mockNext);
+
+            expect(User.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: expect.objectContaining({
+                        role: 'client'
+                    })
+                })
+            );
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'common.list', expect.any(Object));
         });
     });
