@@ -125,6 +125,106 @@ paths:
         '200':
           description: Statut mis à jour
 
+  /admin/provider-applications:
+    get:
+      tags:
+        - Admin
+      summary: Liste des candidatures prestataires
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+          description: Filtrer par statut
+      responses:
+        '200':
+          description: Liste des candidatures
+
+  /admin/provider-applications/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Détail d'une candidature
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Détails de la candidature
+        '404':
+          description: Candidature non trouvée
+
+  /admin/provider-applications/{id}/review:
+    put:
+      tags:
+        - Admin
+      summary: Approuver/Rejeter une candidature
+      description: |
+        Décision finale sur une candidature prestataire.
+        - Si `decision: approved` → change le rôle client→provider, crée le profil, abonnement d'essai 30j, email de félicitations (transaction atomique)
+        - Si `decision: rejected` → `rejectionReason` est **obligatoire**, email de rejet envoyé
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - decision
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, rejected]
+                rejectionReason:
+                  type: string
+                  description: Obligatoire si decision=rejected
+                adminNotes:
+                  type: string
+                  description: Notes internes de l'admin
+            examples:
+              approval:
+                summary: Approbation
+                value:
+                  decision: approved
+                  adminNotes: "Dossier complet, profil vérifié"
+              rejection:
+                summary: Rejet
+                value:
+                  decision: rejected
+                  rejectionReason: "CNI illisible, veuillez resoumettre une photo claire"
+                  adminNotes: "Photo floue, demander un scan"
+      responses:
+        '200':
+          description: Candidature traitée
+        '400':
+          description: Décision invalide ou motif de rejet manquant
+
   /admin/providers/pending:
     get:
       tags:

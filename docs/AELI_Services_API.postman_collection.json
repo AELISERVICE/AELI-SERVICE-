@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "aeli-services-api-v1",
-    "name": "🌸 AELI Services API v1.1",
-    "description": "# AELI Services API\n\n**Plateforme de mise en relation entre clients et prestataires de services au Cameroun.**\n\n## 🔐 Authentification\nL'API utilise JWT (JSON Web Tokens). Après connexion, utilisez le `accessToken` dans le header `Authorization: Bearer <token>`.\n\n## 🌍 Internationalisation\nAjoutez `?lang=en` ou `?lang=fr` pour changer la langue des réponses.\n\n## 📊 Pagination\nLes listes supportent `page` et `limit` (max 50).\n\n## 🔗 Base URL\n- **Dev**: `http://localhost:5000`\n- **Prod**: `https://api.aeli-services.cm`\n\n## 👤 Comptes de test\n- **Admin**: admin@aeli.cm / Admin123!\n- **Provider**: provider@test.cm / Provider123!\n- **Client**: client@test.cm / Client123!\n\n---\n\nDéveloppé par **NGOUE DAVID** pour AELI Services 🇨🇲",
+    "name": "???? AELI Services API v1.1",
+    "description": "# AELI Services API\n\n**Plateforme de mise en relation entre clients et prestataires de services au Cameroun.**\n\n## ???? Authentification\nL'API utilise JWT (JSON Web Tokens). Apr??s connexion, utilisez le `accessToken` dans le header `Authorization: Bearer <token>`.\n\n## ???? Internationalisation\nAjoutez `?lang=en` ou `?lang=fr` pour changer la langue des r??ponses.\n\n## ???? Pagination\nLes listes supportent `page` et `limit` (max 50).\n\n## ???? Base URL\n- **Dev**: `http://localhost:5000`\n- **Prod**: `https://api.aeli-services.cm`\n\n## ???? Comptes de test\n- **Admin**: admin@aeli.cm / Admin123!\n- **Provider**: provider@test.cm / Provider123!\n- **Client**: client@test.cm / Client123!\n\n---\n\nD??velopp?? par **NGOUE DAVID** pour AELI Services ????????",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -64,8 +64,8 @@
   },
   "item": [
     {
-      "name": "🔐 Auth - Authentification",
-      "description": "## Module d'Authentification\n\nGère l'inscription, la connexion, la vérification OTP et la réinitialisation de mot de passe.\n\n### Flux d'inscription\n1. `POST /register` → Envoie un OTP par email\n2. `POST /verify-otp` → Valide le code OTP\n3. `POST /login` → Obtient les tokens JWT\n\n### Sécurité\n- Rate limiting sur login (5 tentatives/15min)\n- Verrouillage compte après 5 échecs\n- OTP expire après 10 minutes\n- Refresh token valide 7 jours",
+      "name": "???? Auth - Authentification",
+      "description": "## Module d'Authentification\n\nG??re l'inscription, la connexion, la v??rification OTP et la r??initialisation de mot de passe.\n\n### Flux d'inscription\n1. `POST /register` ??? Envoie un OTP par email\n2. `POST /verify-otp` ??? Valide le code OTP\n3. `POST /login` ??? Obtient les tokens JWT\n\n### S??curit??\n- Rate limiting sur login (5 tentatives/15min)\n- Verrouillage compte apr??s 5 ??checs\n- OTP expire apr??s 10 minutes\n- Refresh token valide 7 jours",
       "item": [
         {
           "name": "Register - Inscription",
@@ -101,11 +101,11 @@
               }
             },
             "url": "{{baseUrl}}/api/auth/register",
-            "description": "Crée un nouveau compte utilisateur.\n\n**Rôles disponibles**:\n- `client` - Utilisateur recherchant des services\n- `provider` - Prestataire de services\n\n**Après inscription**: Un code OTP est envoyé par email pour vérification."
+            "description": "Cr??e un nouveau compte utilisateur.\n\n**R??les disponibles**:\n- `client` - Utilisateur recherchant des services\n- `provider` - Prestataire de services\n\n**Apr??s inscription**: Un code OTP est envoy?? par email pour v??rification."
           }
         },
         {
-          "name": "Verify OTP - Vérifier le code",
+          "name": "Verify OTP - V??rifier le code",
           "request": {
             "auth": {
               "type": "noauth"
@@ -127,7 +127,7 @@
               }
             },
             "url": "{{baseUrl}}/api/auth/verify-otp",
-            "description": "Vérifie le code OTP reçu par email.\n\n**Note**: Le code OTP expire après 10 minutes. Max 3 tentatives."
+            "description": "V??rifie le code OTP re??u par email.\n\n**Note**: Le code OTP expire apr??s 10 minutes. Max 3 tentatives."
           }
         },
         {
@@ -198,7 +198,7 @@
               }
             },
             "url": "{{baseUrl}}/api/auth/login",
-            "description": "Authentifie un utilisateur et retourne les tokens JWT.\n\n**Comptes de test**:\n- Admin: `admin@aeli.cm` / `Admin123!`\n- Provider: `provider@test.cm` / `Provider123!`\n- Client: `client@test.cm` / `Client123!`\n\n**Réponse**: `accessToken` (15min) + `refreshToken` (7 jours)"
+            "description": "Authentifie un utilisateur et retourne les tokens JWT.\n\n**Comptes de test**:\n- Admin: `admin@aeli.cm` / `Admin123!`\n- Provider: `provider@test.cm` / `Provider123!`\n- Client: `client@test.cm` / `Client123!`\n\n**R??ponse**: `accessToken` (15min) + `refreshToken` (7 jours)"
           }
         },
         {
@@ -240,7 +240,7 @@
               }
             },
             "url": "{{baseUrl}}/api/auth/login",
-            "description": "Connexion avec un compte prestataire pour tester les fonctionnalités provider."
+            "description": "Connexion avec un compte prestataire pour tester les fonctionnalit??s provider."
           }
         },
         {
@@ -284,7 +284,7 @@
           }
         },
         {
-          "name": "Forgot Password - Mot de passe oublié",
+          "name": "Forgot Password - Mot de passe oubli??",
           "request": {
             "auth": {
               "type": "noauth"
@@ -306,11 +306,11 @@
               }
             },
             "url": "{{baseUrl}}/api/auth/forgot-password",
-            "description": "Envoie un email avec un lien de réinitialisation de mot de passe.\n\n**Note**: Le lien expire après 1 heure."
+            "description": "Envoie un email avec un lien de r??initialisation de mot de passe.\n\n**Note**: Le lien expire apr??s 1 heure."
           }
         },
         {
-          "name": "Reset Password - Réinitialiser le mot de passe",
+          "name": "Reset Password - R??initialiser le mot de passe",
           "request": {
             "auth": {
               "type": "noauth"
@@ -332,41 +332,41 @@
               }
             },
             "url": "{{baseUrl}}/api/auth/reset-password/TOKEN_FROM_EMAIL",
-            "description": "Réinitialise le mot de passe avec le token reçu par email.\n\n**Remplacer**: `TOKEN_FROM_EMAIL` par le token reçu dans l'URL du mail."
+            "description": "R??initialise le mot de passe avec le token re??u par email.\n\n**Remplacer**: `TOKEN_FROM_EMAIL` par le token re??u dans l'URL du mail."
           }
         },
         {
-          "name": "Get Me - Utilisateur connecté",
+          "name": "Get Me - Utilisateur connect??",
           "request": {
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/auth/me",
-            "description": "Retourne les informations de l'utilisateur actuellement connecté."
+            "description": "Retourne les informations de l'utilisateur actuellement connect??."
           }
         },
         {
-          "name": "Logout - Déconnexion",
+          "name": "Logout - D??connexion",
           "request": {
             "method": "POST",
             "header": [],
             "url": "{{baseUrl}}/api/auth/logout",
-            "description": "Déconnecte l'utilisateur et invalide le refresh token actuel."
+            "description": "D??connecte l'utilisateur et invalide le refresh token actuel."
           }
         },
         {
-          "name": "Logout All - Déconnexion tous appareils",
+          "name": "Logout All - D??connexion tous appareils",
           "request": {
             "method": "POST",
             "header": [],
             "url": "{{baseUrl}}/api/auth/logout-all",
-            "description": "Déconnecte l'utilisateur de tous ses appareils en invalidant tous ses refresh tokens."
+            "description": "D??connecte l'utilisateur de tous ses appareils en invalidant tous ses refresh tokens."
           }
         }
       ]
     },
     {
-      "name": "👤 Users - Profil Utilisateur",
-      "description": "## Gestion du Profil Utilisateur\n\nPermet aux utilisateurs connectés de gérer leur profil, changer leur mot de passe et désactiver leur compte.\n\n### Fonctionnalités\n- Voir son profil\n- Mettre à jour ses informations\n- Changer de mot de passe\n- Désactiver son compte\n\n**Authentification requise**: Oui (Bearer Token)",
+      "name": "???? Users - Profil Utilisateur",
+      "description": "## Gestion du Profil Utilisateur\n\nPermet aux utilisateurs connect??s de g??rer leur profil, changer leur mot de passe et d??sactiver leur compte.\n\n### Fonctionnalit??s\n- Voir son profil\n- Mettre ?? jour ses informations\n- Changer de mot de passe\n- D??sactiver son compte\n\n**Authentification requise**: Oui (Bearer Token)",
       "item": [
         {
           "name": "Get Profile - Mon profil",
@@ -374,7 +374,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/users/profile",
-            "description": "Retourne le profil complet de l'utilisateur connecté."
+            "description": "Retourne le profil complet de l'utilisateur connect??."
           }
         },
         {
@@ -389,7 +389,7 @@
                   "key": "firstName",
                   "value": "Marie",
                   "type": "text",
-                  "description": "Prénom"
+                  "description": "Pr??nom"
                 },
                 {
                   "key": "lastName",
@@ -401,7 +401,7 @@
                   "key": "phone",
                   "value": "+237699887766",
                   "type": "text",
-                  "description": "Téléphone"
+                  "description": "T??l??phone"
                 },
                 {
                   "key": "profilePhoto",
@@ -412,7 +412,7 @@
               ]
             },
             "url": "{{baseUrl}}/api/users/profile",
-            "description": "Met à jour les informations du profil.\n\n**Upload photo**: Formats acceptés: JPG, PNG, WebP (max 5MB)"
+            "description": "Met ?? jour les informations du profil.\n\n**Upload photo**: Formats accept??s: JPG, PNG, WebP (max 5MB)"
           }
         },
         {
@@ -435,23 +435,23 @@
               }
             },
             "url": "{{baseUrl}}/api/users/password",
-            "description": "Change le mot de passe de l'utilisateur.\n\n**Exigences mot de passe**:\n- Min 8 caractères\n- 1 majuscule, 1 minuscule, 1 chiffre"
+            "description": "Change le mot de passe de l'utilisateur.\n\n**Exigences mot de passe**:\n- Min 8 caract??res\n- 1 majuscule, 1 minuscule, 1 chiffre"
           }
         },
         {
-          "name": "Deactivate Account - Désactiver compte",
+          "name": "Deactivate Account - D??sactiver compte",
           "request": {
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/api/users/account",
-            "description": "Désactive le compte utilisateur.\n\n**⚠️ Attention**: Cette action est irréversible sans intervention admin."
+            "description": "D??sactive le compte utilisateur.\n\n**?????? Attention**: Cette action est irr??versible sans intervention admin."
           }
         }
       ]
     },
     {
-      "name": "🏪 Providers - Prestataires",
-      "description": "## Gestion des Prestataires\n\nLes prestataires sont des femmes entrepreneures offrant leurs services sur la plateforme.\n\n### Fonctionnalités\n- Listing public (filtres, recherche, tri)\n- Création de profil prestataire\n- Upload de photos (max 5)\n- Vérification KYC (documents)\n- Dashboard avec statistiques\n\n### Vérification KYC\n1. Upload CNI + document professionnel\n2. Admin review\n3. Badge \"Vérifié\" si approuvé\n\n### Abonnement\n- Essai gratuit 30 jours\n- Après expiration: contacts masqués",
+      "name": "???? Providers - Prestataires",
+      "description": "## Gestion des Prestataires\n\nLes prestataires sont des femmes entrepreneures offrant leurs services sur la plateforme.\n\n### Fonctionnalit??s\n- Listing public (filtres, recherche, tri)\n- Cr??ation de profil prestataire\n- Upload de photos (max 5)\n- V??rification KYC (documents)\n- Dashboard avec statistiques\n\n### V??rification KYC\n1. Upload CNI + document professionnel\n2. Admin review\n3. Badge \"V??rifi??\" si approuv??\n\n### Abonnement\n- Essai gratuit 30 jours\n- Apr??s expiration: contacts masqu??s",
       "item": [
         {
           "name": "Apply - Devenir prestataire",
@@ -468,7 +468,7 @@
                 },
                 {
                   "key": "description",
-                  "value": "Description de mon activité...",
+                  "value": "Description de mon activit??...",
                   "type": "text"
                 },
                 {
@@ -484,7 +484,7 @@
                 {
                   "key": "photos",
                   "type": "file",
-                  "description": "Photos d'activité (Max 5)"
+                  "description": "Photos d'activit?? (Max 5)"
                 }
               ]
             },
@@ -522,7 +522,7 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "description": "Page (défaut: 1)"
+                  "description": "Page (d??faut: 1)"
                 },
                 {
                   "key": "limit",
@@ -532,12 +532,12 @@
                 {
                   "key": "location",
                   "value": "Douala",
-                  "description": "Ville: Douala, Yaoundé, Bafoussam..."
+                  "description": "Ville: Douala, Yaound??, Bafoussam..."
                 },
                 {
                   "key": "category",
                   "value": "",
-                  "description": "ID catégorie",
+                  "description": "ID cat??gorie",
                   "disabled": true
                 },
                 {
@@ -554,7 +554,7 @@
                 {
                   "key": "verified",
                   "value": "true",
-                  "description": "Uniquement vérifiés"
+                  "description": "Uniquement v??rifi??s"
                 },
                 {
                   "key": "featured",
@@ -564,11 +564,11 @@
                 }
               ]
             },
-            "description": "Liste les prestataires avec filtres et pagination.\n\n**Tri disponible**:\n- `rating` - Par note moyenne\n- `recent` - Plus récents\n- `views` - Plus consultés\n- `contacts` - Plus contactés"
+            "description": "Liste les prestataires avec filtres et pagination.\n\n**Tri disponible**:\n- `rating` - Par note moyenne\n- `recent` - Plus r??cents\n- `views` - Plus consult??s\n- `contacts` - Plus contact??s"
           }
         },
         {
-          "name": "Get Provider by ID - Détail prestataire",
+          "name": "Get Provider by ID - D??tail prestataire",
           "request": {
             "auth": {
               "type": "noauth"
@@ -576,11 +576,11 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/providers/{{providerId}}",
-            "description": "Retourne le profil complet d'un prestataire.\n\n**Note**: Si l'abonnement est expiré, les contacts (whatsapp, phone) sont masqués."
+            "description": "Retourne le profil complet d'un prestataire.\n\n**Note**: Si l'abonnement est expir??, les contacts (whatsapp, phone) sont masqu??s."
           }
         },
         {
-          "name": "Create Provider - Créer profil prestataire",
+          "name": "Create Provider - Cr??er profil prestataire",
           "event": [
             {
               "listen": "test",
@@ -609,7 +609,7 @@
                 },
                 {
                   "key": "description",
-                  "value": "Salon de coiffure professionnel avec plus de 10 ans d'expérience. Spécialisée en tresses, tissages, lissage brésilien et soins capillaires. Nous utilisons uniquement des produits de qualité premium.",
+                  "value": "Salon de coiffure professionnel avec plus de 10 ans d'exp??rience. Sp??cialis??e en tresses, tissages, lissage br??silien et soins capillaires. Nous utilisons uniquement des produits de qualit?? premium.",
                   "type": "text",
                   "description": "Description (50-5000 car.)"
                 },
@@ -623,13 +623,13 @@
                   "key": "address",
                   "value": "Rue de la Joie, Akwa, Douala",
                   "type": "text",
-                  "description": "Adresse complète"
+                  "description": "Adresse compl??te"
                 },
                 {
                   "key": "whatsapp",
                   "value": "+237691234567",
                   "type": "text",
-                  "description": "Numéro WhatsApp"
+                  "description": "Num??ro WhatsApp"
                 },
                 {
                   "key": "facebook",
@@ -652,7 +652,7 @@
               ]
             },
             "url": "{{baseUrl}}/api/providers/create",
-            "description": "Crée un profil prestataire.\n\n**Prérequis**: Être connecté avec rôle `provider`\n\n**Après création**: Essai gratuit 30 jours activé automatiquement"
+            "description": "Cr??e un profil prestataire.\n\n**Pr??requis**: ??tre connect?? avec r??le `provider`\n\n**Apr??s cr??ation**: Essai gratuit 30 jours activ?? automatiquement"
           }
         },
         {
@@ -661,7 +661,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/providers/my-profile",
-            "description": "Retourne le profil prestataire de l'utilisateur connecté.\n\n**Rôle requis**: `provider`"
+            "description": "Retourne le profil prestataire de l'utilisateur connect??.\n\n**R??le requis**: `provider`"
           }
         },
         {
@@ -670,7 +670,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/providers/my-dashboard",
-            "description": "Retourne les statistiques du prestataire:\n- Nombre de vues\n- Nombre de contacts\n- Note moyenne\n- Évolution mensuelle"
+            "description": "Retourne les statistiques du prestataire:\n- Nombre de vues\n- Nombre de contacts\n- Note moyenne\n- ??volution mensuelle"
           }
         },
         {
@@ -683,12 +683,12 @@
               "formdata": [
                 {
                   "key": "businessName",
-                  "value": "Salon Belle Coiffure & Beauté",
+                  "value": "Salon Belle Coiffure & Beaut??",
                   "type": "text"
                 },
                 {
                   "key": "description",
-                  "value": "Description mise à jour avec nouveaux services...",
+                  "value": "Description mise ?? jour avec nouveaux services...",
                   "type": "text"
                 },
                 {
@@ -700,12 +700,12 @@
                   "key": "photos",
                   "type": "file",
                   "src": "",
-                  "description": "Nouvelles photos à ajouter"
+                  "description": "Nouvelles photos ?? ajouter"
                 }
               ]
             },
             "url": "{{baseUrl}}/api/providers/{{providerId}}",
-            "description": "Met à jour le profil prestataire."
+            "description": "Met ?? jour le profil prestataire."
           }
         },
         {
@@ -714,7 +714,7 @@
             "method": "DELETE",
             "header": [],
             "url": "{{baseUrl}}/api/providers/{{providerId}}/photos/0",
-            "description": "Supprime une photo du profil.\n\n**Index**: 0 = première photo, 1 = deuxième, etc."
+            "description": "Supprime une photo du profil.\n\n**Index**: 0 = premi??re photo, 1 = deuxi??me, etc."
           }
         },
         {
@@ -729,12 +729,12 @@
                   "key": "documents",
                   "type": "file",
                   "src": "",
-                  "description": "CNI, registre commerce, diplôme..."
+                  "description": "CNI, registre commerce, dipl??me..."
                 }
               ]
             },
             "url": "{{baseUrl}}/api/providers/{{providerId}}/documents",
-            "description": "Upload des documents pour vérification KYC.\n\n**Documents acceptés**:\n- Carte Nationale d'Identité\n- Registre de commerce\n- Diplôme/Certificat professionnel\n\n**Formats**: PDF, JPG, PNG (max 10MB)"
+            "description": "Upload des documents pour v??rification KYC.\n\n**Documents accept??s**:\n- Carte Nationale d'Identit??\n- Registre de commerce\n- Dipl??me/Certificat professionnel\n\n**Formats**: PDF, JPG, PNG (max 10MB)"
           }
         },
         {
@@ -743,7 +743,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/providers/{{providerId}}/documents",
-            "description": "Liste les documents uploadés pour la vérification."
+            "description": "Liste les documents upload??s pour la v??rification."
           }
         },
         {
@@ -758,11 +758,11 @@
       ]
     },
     {
-      "name": "📂 Services - Catégories & Services",
-      "description": "## Gestion des Services et Catégories\n\nLes prestataires peuvent créer des services dans des catégories prédéfinies.\n\n### Catégories\n- Coiffure & Beauté\n- Couture & Mode\n- Restauration\n- Événementiel\n- Santé & Bien-être\n- Formation\n- etc.\n\n### Services\nChaque prestataire peut créer plusieurs services avec:\n- Nom et description\n- Prix (FCFA)\n- Durée estimée\n- Catégorie associée",
+      "name": "???? Services - Cat??gories & Services",
+      "description": "## Gestion des Services et Cat??gories\n\nLes prestataires peuvent cr??er des services dans des cat??gories pr??d??finies.\n\n### Cat??gories\n- Coiffure & Beaut??\n- Couture & Mode\n- Restauration\n- ??v??nementiel\n- Sant?? & Bien-??tre\n- Formation\n- etc.\n\n### Services\nChaque prestataire peut cr??er plusieurs services avec:\n- Nom et description\n- Prix (FCFA)\n- Dur??e estim??e\n- Cat??gorie associ??e",
       "item": [
         {
-          "name": "Get Categories - Liste catégories",
+          "name": "Get Categories - Liste cat??gories",
           "request": {
             "auth": {
               "type": "noauth"
@@ -770,11 +770,11 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/services/categories",
-            "description": "Liste toutes les catégories de services disponibles.\n\n**Public**: Pas d'authentification requise"
+            "description": "Liste toutes les cat??gories de services disponibles.\n\n**Public**: Pas d'authentification requise"
           }
         },
         {
-          "name": "Create Category - Nouvelle catégorie",
+          "name": "Create Category - Nouvelle cat??gorie",
           "request": {
             "method": "POST",
             "header": [
@@ -785,7 +785,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Décoration d'intérieur\",\n    \"icon\": \"home\"\n}",
+              "raw": "{\n    \"name\": \"D??coration d'int??rieur\",\n    \"icon\": \"home\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -793,11 +793,11 @@
               }
             },
             "url": "{{baseUrl}}/api/services/categories",
-            "description": "Crée une nouvelle catégorie.\n\n**Rôle requis**: `admin` ou `provider`"
+            "description": "Cr??e une nouvelle cat??gorie.\n\n**R??le requis**: `admin` ou `provider`"
           }
         },
         {
-          "name": "Update Category - Modifier catégorie",
+          "name": "Update Category - Modifier cat??gorie",
           "request": {
             "method": "PUT",
             "header": [
@@ -808,7 +808,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Décoration & Design\",\n    \"icon\": \"palette\"\n}",
+              "raw": "{\n    \"name\": \"D??coration & Design\",\n    \"icon\": \"palette\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -816,7 +816,7 @@
               }
             },
             "url": "{{baseUrl}}/api/services/categories/:categoryId",
-            "description": "Modifie une catégorie.\n\n**Rôle requis**: `admin`"
+            "description": "Modifie une cat??gorie.\n\n**R??le requis**: `admin`"
           }
         },
         {
@@ -851,7 +851,7 @@
               }
             },
             "url": "{{baseUrl}}/api/services",
-            "description": "Crée un nouveau service.\n\n**Champs**:\n- `price`: Prix en FCFA\n- `duration`: Durée en minutes\n- `categoryId`: UUID de la catégorie"
+            "description": "Cr??e un nouveau service.\n\n**Champs**:\n- `price`: Prix en FCFA\n- `duration`: Dur??e en minutes\n- `categoryId`: UUID de la cat??gorie"
           }
         },
         {
@@ -889,8 +889,8 @@
       ]
     },
     {
-      "name": "📧 Contacts - Messages",
-      "description": "## Système de Contact\n\nPermet aux clients de contacter les prestataires.\n\n### Flux\n1. Client envoie un message (public ou connecté)\n2. Prestataire reçoit notification email\n3. Prestataire lit et répond (statut: read → replied)\n\n### Statuts\n- `pending`: Non lu\n- `read`: Lu\n- `replied`: Répondu\n\n### Protection\n- Rate limiting: 5 contacts/prestataire/jour\n- Honeypot anti-bot",
+      "name": "???? Contacts - Messages",
+      "description": "## Syst??me de Contact\n\nPermet aux clients de contacter les prestataires.\n\n### Flux\n1. Client envoie un message (public ou connect??)\n2. Prestataire re??oit notification email\n3. Prestataire lit et r??pond (statut: read ??? replied)\n\n### Statuts\n- `pending`: Non lu\n- `read`: Lu\n- `replied`: R??pondu\n\n### Protection\n- Rate limiting: 5 contacts/prestataire/jour\n- Honeypot anti-bot",
       "item": [
         {
           "name": "Send Contact - Envoyer message",
@@ -907,7 +907,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"providerId\": \"{{providerId}}\",\n    \"message\": \"Bonjour, je suis intéressée par vos services de coiffure. Êtes-vous disponible ce samedi pour des tresses africaines ? Merci de me recontacter.\",\n    \"senderName\": \"Jeanne Kamga\",\n    \"senderEmail\": \"jeanne.kamga@gmail.com\",\n    \"senderPhone\": \"+237677889900\"\n}",
+              "raw": "{\n    \"providerId\": \"{{providerId}}\",\n    \"message\": \"Bonjour, je suis int??ress??e par vos services de coiffure. ??tes-vous disponible ce samedi pour des tresses africaines ? Merci de me recontacter.\",\n    \"senderName\": \"Jeanne Kamga\",\n    \"senderEmail\": \"jeanne.kamga@gmail.com\",\n    \"senderPhone\": \"+237677889900\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -915,11 +915,11 @@
               }
             },
             "url": "{{baseUrl}}/api/contacts",
-            "description": "Envoie un message de contact à un prestataire.\n\n**Public**: Pas d'authentification requise\n\n**Email envoyé**: Le prestataire reçoit un email de notification"
+            "description": "Envoie un message de contact ?? un prestataire.\n\n**Public**: Pas d'authentification requise\n\n**Email envoy??**: Le prestataire re??oit un email de notification"
           }
         },
         {
-          "name": "Get Received Contacts - Messages reçus (Provider)",
+          "name": "Get Received Contacts - Messages re??us (Provider)",
           "request": {
             "method": "GET",
             "header": [],
@@ -949,20 +949,20 @@
                 }
               ]
             },
-            "description": "Liste les messages reçus par le prestataire.\n\n**Rôle requis**: `provider`"
+            "description": "Liste les messages re??us par le prestataire.\n\n**R??le requis**: `provider`"
           }
         },
         {
-          "name": "Get Sent Contacts - Messages envoyés",
+          "name": "Get Sent Contacts - Messages envoy??s",
           "request": {
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/contacts/sent",
-            "description": "Liste les messages envoyés par l'utilisateur connecté."
+            "description": "Liste les messages envoy??s par l'utilisateur connect??."
           }
         },
         {
-          "name": "Update Status - Marquer lu/répondu",
+          "name": "Update Status - Marquer lu/r??pondu",
           "request": {
             "method": "PUT",
             "header": [
@@ -981,7 +981,7 @@
               }
             },
             "url": "{{baseUrl}}/api/contacts/:contactId/status",
-            "description": "Met à jour le statut d'un contact.\n\n**Statuts**: `read`, `replied`"
+            "description": "Met ?? jour le statut d'un contact.\n\n**Statuts**: `read`, `replied`"
           }
         },
         {
@@ -990,7 +990,16 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/contacts/stats/daily",
-            "description": "Statistiques des contacts des 30 derniers jours.\n\n**Rôle requis**: `provider`"
+            "description": "Statistiques des contacts des 30 derniers jours.\n\n**R??le requis**: `provider`"
+          }
+        },
+        {
+          "name": "Get Contacts By Date - Contacts par date",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/contacts/by-date/2026-01-15",
+            "description": "Récupère les contacts reçus pour une date spécifique.\n\n**Rôle requis**: `provider`\n**Format date**: `YYYY-MM-DD`"
           }
         },
         {
@@ -999,11 +1008,11 @@
             "method": "POST",
             "header": [],
             "url": "{{baseUrl}}/api/contacts/:contactId/unlock",
-            "description": "Initie le paiement pour débloquer un message (500 FCFA)."
+            "description": "Initie le paiement pour d??bloquer un message (500 FCFA)."
           }
         },
         {
-          "name": "Confirm Unlock - Après paiement",
+          "name": "Confirm Unlock - Apr??s paiement",
           "request": {
             "method": "POST",
             "header": [
@@ -1022,14 +1031,14 @@
               }
             },
             "url": "{{baseUrl}}/api/contacts/:contactId/unlock/confirm",
-            "description": "Confirme le débloquage après paiement réussi."
+            "description": "Confirme le d??bloquage apr??s paiement r??ussi."
           }
         }
       ]
     },
     {
-      "name": "⭐ Reviews - Avis",
-      "description": "## Système d'Avis\n\nLes clients peuvent laisser des avis sur les prestataires.\n\n### Règles\n- Note de 1 à 5 étoiles\n- Commentaire optionnel (max 1000 car.)\n- Un seul avis par prestataire par utilisateur\n- **Prérequis**: Avoir contacté le prestataire (statut read/replied)\n\n### Modération\nL'admin peut masquer les avis inappropriés.",
+      "name": "??? Reviews - Avis",
+      "description": "## Syst??me d'Avis\n\nLes clients peuvent laisser des avis sur les prestataires.\n\n### R??gles\n- Note de 1 ?? 5 ??toiles\n- Commentaire optionnel (max 1000 car.)\n- Un seul avis par prestataire par utilisateur\n- **Pr??requis**: Avoir contact?? le prestataire (statut read/replied)\n\n### Mod??ration\nL'admin peut masquer les avis inappropri??s.",
       "item": [
         {
           "name": "Get Provider Reviews - Avis d'un prestataire",
@@ -1076,7 +1085,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"providerId\": \"{{providerId}}\",\n    \"rating\": 5,\n    \"comment\": \"Excellent service ! Marie est très professionnelle et à l'écoute. Mes tresses sont magnifiques, je reviendrai sans hésiter. Je recommande vivement !\"\n}",
+              "raw": "{\n    \"providerId\": \"{{providerId}}\",\n    \"rating\": 5,\n    \"comment\": \"Excellent service ! Marie est tr??s professionnelle et ?? l'??coute. Mes tresses sont magnifiques, je reviendrai sans h??siter. Je recommande vivement !\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1084,7 +1093,7 @@
               }
             },
             "url": "{{baseUrl}}/api/reviews",
-            "description": "Crée un avis pour un prestataire.\n\n**Prérequis**: Avoir contacté le prestataire avec un statut `read` ou `replied`\n\n**Rating**: 1 à 5"
+            "description": "Cr??e un avis pour un prestataire.\n\n**Pr??requis**: Avoir contact?? le prestataire avec un statut `read` ou `replied`\n\n**Rating**: 1 ?? 5"
           }
         },
         {
@@ -1122,8 +1131,8 @@
       ]
     },
     {
-      "name": "❤️ Favorites - Favoris",
-      "description": "## Gestion des Favoris\n\nLes utilisateurs connectés peuvent sauvegarder leurs prestataires favoris.\n\n**Authentification requise**: Oui",
+      "name": "?????? Favorites - Favoris",
+      "description": "## Gestion des Favoris\n\nLes utilisateurs connect??s peuvent sauvegarder leurs prestataires favoris.\n\n**Authentification requise**: Oui",
       "item": [
         {
           "name": "Get Favorites - Mes favoris",
@@ -1167,22 +1176,22 @@
           }
         },
         {
-          "name": "Check Favorite - Vérifier si favori",
+          "name": "Check Favorite - V??rifier si favori",
           "request": {
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/favorites/check/{{providerId}}",
-            "description": "Vérifie si un prestataire est dans les favoris."
+            "description": "V??rifie si un prestataire est dans les favoris."
           }
         }
       ]
     },
     {
-      "name": "💳 Payments - Paiements",
-      "description": "## Système de Paiement (CinetPay)\n\nIntégration Mobile Money via CinetPay.\n\n### Moyens de paiement\n- Orange Money\n- MTN Mobile Money\n- Carte bancaire\n\n### Types de paiement\n- `subscription`: Abonnement prestataire\n- `featured`: Mise en avant\n- `boost`: Boost de visibilité\n\n### Flux\n1. `POST /initialize` → URL de paiement CinetPay\n2. Utilisateur paie sur CinetPay\n3. Webhook notifie le backend\n4. `GET /status` pour vérifier",
+      "name": "???? Payments - Paiements",
+      "description": "## Syst??me de Paiement (CinetPay)\n\nInt??gration Mobile Money via CinetPay.\n\n### Moyens de paiement\n- Orange Money\n- MTN Mobile Money\n- Carte bancaire\n\n### Types de paiement\n- `subscription`: Abonnement prestataire\n- `featured`: Mise en avant\n- `boost`: Boost de visibilit??\n\n### Flux\n1. `POST /initialize` ??? URL de paiement CinetPay\n2. Utilisateur paie sur CinetPay\n3. Webhook notifie le backend\n4. `GET /status` pour v??rifier",
       "item": [
         {
-          "name": "Initialize Payment - Créer paiement",
+          "name": "Initialize Payment - Cr??er paiement",
           "request": {
             "method": "POST",
             "header": [
@@ -1201,16 +1210,62 @@
               }
             },
             "url": "{{baseUrl}}/api/payments/initialize",
-            "description": "Initialise un paiement CinetPay.\n\n**Montants abonnement**:\n- Mensuel: 5000 FCFA\n- Trimestriel: 12000 FCFA\n- Annuel: 15000 FCFA\n\n**Réponse**: URL de paiement CinetPay"
+            "description": "Initialise un paiement CinetPay.\n\n**Montants abonnement**:\n- Mensuel: 5000 FCFA\n- Trimestriel: 12000 FCFA\n- Annuel: 15000 FCFA\n\n**R??ponse**: URL de paiement CinetPay"
           }
         },
         {
-          "name": "Check Status - Vérifier statut",
+          "name": "Initialize NotchPay - Paiement NotchPay",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 5000,\n    \"type\": \"subscription\",\n    \"providerId\": \"{{providerId}}\",\n    \"description\": \"Abonnement mensuel\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/payments/notchpay/initialize",
+            "description": "Initialise un paiement via NotchPay.\n\n**Types**: `contact_premium`, `featured`, `boost`, `subscription`, `contact_unlock`\n**Montant min**: 100 FCFA"
+          }
+        },
+        {
+          "name": "NotchPay Webhook (Internal)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"event\": \"payment.complete\",\n    \"data\": {\n        \"reference\": \"trx_xxx\",\n        \"status\": \"complete\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/payments/notchpay/webhook",
+            "description": "Endpoint appelé par NotchPay pour notifier le statut d'un paiement.\n\n⚠️ **Usage interne** — Ne pas appeler manuellement."
+          }
+        },
+        {
+          "name": "Check Status - V??rifier statut",
           "request": {
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/payments/:transactionId/status",
-            "description": "Vérifie le statut d'un paiement.\n\n**Statuts**: `pending`, `success`, `failed`"
+            "description": "V??rifie le statut d'un paiement.\n\n**Statuts**: `pending`, `success`, `failed`"
           }
         },
         {
@@ -1219,7 +1274,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/payments/history",
-            "description": "Historique des paiements de l'utilisateur connecté."
+            "description": "Historique des paiements de l'utilisateur connect??."
           }
         },
         {
@@ -1245,14 +1300,14 @@
               }
             },
             "url": "{{baseUrl}}/api/payments/webhook",
-            "description": "**⚠️ INTERNE**: Endpoint appelé par CinetPay pour notifier les paiements.\n\nNe pas appeler manuellement."
+            "description": "**?????? INTERNE**: Endpoint appel?? par CinetPay pour notifier les paiements.\n\nNe pas appeler manuellement."
           }
         }
       ]
     },
     {
-      "name": "📦 Subscriptions - Abonnements",
-      "description": "## Système d'Abonnement\n\nLes prestataires ont besoin d'un abonnement actif pour afficher leurs coordonnées.\n\n### Plans\n| Plan | Prix | Durée |\n|------|------|-------|\n| Essai | Gratuit | 30 jours |\n| Mensuel | 5 000 FCFA | 30 jours |\n| Trimestriel | 12 000 FCFA | 90 jours |\n| Annuel | 15 000 FCFA | 365 jours |\n\n### Si expiré\n- Profil reste visible (SEO)\n- Contacts masqués (whatsapp, phone)\n- Photos masquées",
+      "name": "???? Subscriptions - Abonnements",
+      "description": "## Syst??me d'Abonnement\n\nLes prestataires ont besoin d'un abonnement actif pour afficher leurs coordonn??es.\n\n### Plans\n| Plan | Prix | Dur??e |\n|------|------|-------|\n| Essai | Gratuit | 30 jours |\n| Mensuel | 5 000 FCFA | 30 jours |\n| Trimestriel | 12 000 FCFA | 90 jours |\n| Annuel | 15 000 FCFA | 365 jours |\n\n### Si expir??\n- Profil reste visible (SEO)\n- Contacts masqu??s (whatsapp, phone)\n- Photos masqu??es",
       "item": [
         {
           "name": "Get Plans - Liste des plans",
@@ -1263,7 +1318,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/subscriptions/plans",
-            "description": "Liste tous les plans d'abonnement avec prix et durées."
+            "description": "Liste tous les plans d'abonnement avec prix et dur??es."
           }
         },
         {
@@ -1275,7 +1330,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/subscriptions/provider/{{providerId}}/status",
-            "description": "Vérifie si l'abonnement d'un prestataire est actif.\n\n**Réponse**:\n```json\n{\n    \"isActive\": true,\n    \"plan\": \"monthly\",\n    \"expiresAt\": \"2026-02-15\"\n}\n```"
+            "description": "V??rifie si l'abonnement d'un prestataire est actif.\n\n**R??ponse**:\n```json\n{\n    \"isActive\": true,\n    \"plan\": \"monthly\",\n    \"expiresAt\": \"2026-02-15\"\n}\n```"
           }
         },
         {
@@ -1284,7 +1339,7 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/api/subscriptions/my",
-            "description": "Retourne l'abonnement du prestataire connecté."
+            "description": "Retourne l'abonnement du prestataire connect??."
           }
         },
         {
@@ -1307,17 +1362,17 @@
               }
             },
             "url": "{{baseUrl}}/api/subscriptions/subscribe",
-            "description": "Initie un paiement d'abonnement.\n\n**Plans**: `monthly`, `quarterly`, `yearly`\n\n**Réponse**: URL de paiement CinetPay"
+            "description": "Initie un paiement d'abonnement.\n\n**Plans**: `monthly`, `quarterly`, `yearly`\n\n**R??ponse**: URL de paiement CinetPay"
           }
         }
       ]
     },
     {
-      "name": "🛡️ Admin",
-      "description": "## Panel d'Administration\n\n**Rôle requis**: `admin`\n\nFonctionnalités:\n- Dashboard et statistiques\n- Gestion utilisateurs\n- Vérification prestataires (KYC)\n- Modération avis\n- Sécurité (IP ban, logs)\n- Exports données",
+      "name": "??????? Admin",
+      "description": "## Panel d'Administration\n\n**R??le requis**: `admin`\n\nFonctionnalit??s:\n- Dashboard et statistiques\n- Gestion utilisateurs\n- V??rification prestataires (KYC)\n- Mod??ration avis\n- S??curit?? (IP ban, logs)\n- Exports donn??es",
       "item": [
         {
-          "name": "📊 Dashboard",
+          "name": "???? Dashboard",
           "item": [
             {
               "name": "Get Stats - Statistiques globales",
@@ -1325,7 +1380,7 @@
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/api/admin/stats",
-                "description": "Statistiques globales de la plateforme:\n- Total utilisateurs, prestataires, avis\n- Inscriptions récentes\n- Revenus"
+                "description": "Statistiques globales de la plateforme:\n- Total utilisateurs, prestataires, avis\n- Inscriptions r??centes\n- Revenus"
               }
             },
             {
@@ -1343,13 +1398,13 @@
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/api/admin/analytics/hourly?date=2026-01-15",
-                "description": "Répartition horaire des requêtes API."
+                "description": "R??partition horaire des requ??tes API."
               }
             }
           ]
         },
         {
-          "name": "👥 Users",
+          "name": "???? Users",
           "item": [
             {
               "name": "Get All Users - Liste utilisateurs",
@@ -1393,7 +1448,7 @@
               }
             },
             {
-              "name": "Update User Status - Activer/Désactiver",
+              "name": "Update User Status - Activer/D??sactiver",
               "request": {
                 "method": "PUT",
                 "header": [
@@ -1412,13 +1467,13 @@
                   }
                 },
                 "url": "{{baseUrl}}/api/admin/users/:userId/status",
-                "description": "Active ou désactive un compte utilisateur."
+                "description": "Active ou d??sactive un compte utilisateur."
               }
             }
           ]
         },
         {
-          "name": "📄 Applications",
+          "name": "???? Applications",
           "item": [
             {
               "name": "List Applications - Candidatures",
@@ -1430,12 +1485,12 @@
               }
             },
             {
-              "name": "Get Application - Détail candidature",
+              "name": "Get Application - D??tail candidature",
               "request": {
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId",
-                "description": "Détails d'une candidature spécifique."
+                "description": "D??tails d'une candidature sp??cifique."
               }
             },
             {
@@ -1487,489 +1542,439 @@
           ]
         },
         {
-          "name": "🏪 Providers",
+          "name": "???? Providers",
           "item": [
-            "raw": "{\n    \"decision\": \"approved\",\n    \"adminNotes\": \"Dossier complet, profil vérifié\"\n}",
-            "options": {
-              "raw": {
-                "language": "json"
-              }
-            }
-          },
-          "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
-          "description": "Approuver une candidature prestataire.\n\n**⚠️ Ce qu'il fait (transaction atomique) :**\n1. Change le rôle : `client` → `provider`\n2. Crée le profil Provider\n3. Crée un abonnement d'essai 30 jours\n4. Envoie un email de félicitations\n5. Invalide le cache"
-        }
-      },
-      {
-        "name": "Review Application - Rejeter",
-        "request": {
-          "method": "PUT",
-          "header": [
             {
-              "key": "Content-Type",
-              "value": "application/json"
-            }
-          ],
-          "body": {
-            "mode": "raw",
-            "raw": "{\n    \"decision\": \"rejected\",\n    \"rejectionReason\": \"CNI illisible, veuillez resoumettre une photo claire\",\n    \"adminNotes\": \"Photo floue, demander un scan\"\n}",
-            "options": {
-              "raw": {
-                "language": "json"
+              "name": "Pending Providers - En attente",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/providers/pending",
+                "description": "Prestataires en attente de v??rification."
+              }
+            },
+            {
+              "name": "Under Review - En cours de review",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/providers/under-review",
+                "description": "Prestataires avec documents soumis en attente de review."
+              }
+            },
+            {
+              "name": "Verify Provider - V??rifier",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"isVerified\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
+                "description": "Accorde le badge vérifié à un prestataire.\n\n**Validation**: `{ \"isVerified\": true }`\n**Rejet**: `{ \"isVerified\": false, \"rejectionReason\": \"Motif du retrait\" }`\n\n⚠️ `rejectionReason` est **obligatoire** quand `isVerified: false` (5-500 caractères).\nUn email est envoyé au prestataire avec le motif."
+              }
+            },
+            {
+              "name": "Reject Provider - Retirer vérification",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"isVerified\": false,\n    \"rejectionReason\": \"Vos documents ne sont pas conformes aux exigences de la plateforme\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
+                "description": "Retire le statut vérifié d'un prestataire existant.\n\n⚠️ `rejectionReason` est **obligatoire** (5-500 caractères).\nUn email de notification est envoyé au prestataire avec :\n- Le motif du retrait\n- Les conséquences\n- Les actions à entreprendre"
+              }
+            },
+            {
+              "name": "Feature Provider - Mettre en avant",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"isFeatured\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/providers/:providerId/feature",
+                "description": "Met en avant un prestataire sur la page d'accueil."
+              }
+            },
+            {
+              "name": "Review Documents - Valider KYC",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"status\": \"approved\",\n    \"notes\": \"Documents conformes. CNI et registre de commerce valides.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/providers/:providerId/review-documents",
+                "description": "Valide ou rejette les documents KYC.\n\n**Status**: `approved`, `rejected`"
               }
             }
-          },
-          "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
-          "description": "Rejeter une candidature prestataire.\n\n⚠️ `rejectionReason` est **obligatoire**.\nUn email de rejet est envoyé au candidat avec le motif.\nLe candidat peut resoumettre après 7 jours."
-        }
-      }
-                  "raw": "{\n    \"status\": \"approved\"\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/provider-applications/:applicationId/review",
-    "description": "Valider ou rejeter une candidature.\n\n**Status**: `approved` ou `rejected`\n**Body si rejet**: `{ \"status\": \"rejected\", \"rejectionReason\": \"CNI illisible\" }`"
-  }
-}
-]
-},
-{
-"name": "🏪 Providers",
-"item": [
-{
-  "name": "Pending Providers - En attente",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/providers/pending",
-    "description": "Prestataires en attente de vérification."
-  }
-},
-{
-  "name": "Under Review - En cours de review",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/providers/under-review",
-    "description": "Prestataires avec documents soumis en attente de review."
-  }
-},
-{
-  "name": "Verify Provider - Valider",
-  "request": {
-    "method": "PUT",
-    "header": [
-      {
-        "key": "Content-Type",
-        "value": "application/json"
-      }
-    ],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"isVerified\": true\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
-    "description": "Accorde le badge vérifié à un prestataire.\n\n**Validation**: `{ \"isVerified\": true }`\n**Rejet**: `{ \"isVerified\": false, \"rejectionReason\": \"Motif du retrait\" }`\n\n⚠️ `rejectionReason` est **obligatoire** quand `isVerified: false` (5-500 caractères).\nUn email est envoyé au prestataire avec le motif."
-  }
-},
-{
-  "name": "Reject Provider - Retirer vérification",
-  "request": {
-    "method": "PUT",
-    "header": [
-      {
-        "key": "Content-Type",
-        "value": "application/json"
-      }
-    ],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"isVerified\": false,\n    \"rejectionReason\": \"Vos documents ne sont pas conformes aux exigences de la plateforme\"\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/providers/:providerId/verify",
-    "description": "Retire le statut vérifié d'un prestataire existant.\n\n⚠️ `rejectionReason` est **obligatoire** (5-500 caractères).\nUn email de notification est envoyé au prestataire avec :\n- Le motif du retrait\n- Les conséquences\n- Les actions à entreprendre"
-  }
-},
-{
-  "name": "Feature Provider - Mettre en avant",
-  "request": {
-    "method": "PUT",
-    "header": [
-      {
-        "key": "Content-Type",
-        "value": "application/json"
-      }
-    ],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"isFeatured\": true\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/providers/:providerId/feature",
-    "description": "Met en avant un prestataire sur la page d'accueil."
-  }
-},
-{
-  "name": "Review Documents - Valider KYC",
-  "request": {
-    "method": "PUT",
-    "header": [
-      {
-        "key": "Content-Type",
-        "value": "application/json"
-      }
-    ],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"status\": \"approved\",\n    \"notes\": \"Documents conformes. CNI et registre de commerce valides.\"\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/providers/:providerId/review-documents",
-    "description": "Valide ou rejette les documents KYC.\n\n**Status**: `approved`, `rejected`"
-  }
-}
-]
-},
-{
-"name": "⭐ Reviews",
-"item": [
-{
-  "name": "Get All Reviews - Tous les avis",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/reviews",
-    "description": "Liste tous les avis pour modération."
-  }
-},
-{
-  "name": "Update Visibility - Masquer/Afficher",
-  "request": {
-    "method": "PUT",
-    "header": [
-      {
-        "key": "Content-Type",
-        "value": "application/json"
-      }
-    ],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"isVisible\": false\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/reviews/:reviewId/visibility",
-    "description": "Masque ou affiche un avis."
-  }
-}
-]
-},
-{
-"name": "💳 Payments",
-"item": [
-{
-  "name": "Get All Payments - Tous les paiements",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/payments",
-    "description": "Liste tous les paiements de la plateforme."
-  }
-}
-]
-},
-{
-"name": "🔒 Security",
-"item": [
-{
-  "name": "Get Banned IPs - IPs bannies",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/banned-ips",
-    "description": "Liste les adresses IP bannies."
-  }
-},
-{
-  "name": "Ban IP - Bannir une IP",
-  "request": {
-    "method": "POST",
-    "header": [
-      {
-        "key": "Content-Type",
-        "value": "application/json"
-      }
-    ],
-    "body": {
-      "mode": "raw",
-      "raw": "{\n    \"ipAddress\": \"192.168.1.100\",\n    \"reason\": \"Tentatives de connexion suspectes répétées\",\n    \"duration\": 24\n}",
-      "options": {
-        "raw": {
-          "language": "json"
-        }
-      }
-    },
-    "url": "{{baseUrl}}/api/admin/banned-ips",
-    "description": "Bannit une adresse IP.\n\n**duration**: Heures (null = permanent)"
-  }
-},
-{
-  "name": "Unban IP - Débannir",
-  "request": {
-    "method": "DELETE",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/banned-ips/192.168.1.100",
-    "description": "Lève le ban d'une IP."
-  }
-},
-{
-  "name": "Security Logs - Logs de sécurité",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": {
-      "raw": "{{baseUrl}}/api/admin/security-logs?limit=50&eventType=login_failed&riskLevel=high",
-      "host": [
-        "{{baseUrl}}"
-      ],
-      "path": [
-        "api",
-        "admin",
-        "security-logs"
-      ],
-      "query": [
-        {
-          "key": "limit",
-          "value": "50"
+          ]
         },
         {
-          "key": "eventType",
-          "value": "login_failed",
-          "description": "login_failed, suspicious_activity, bot_detected"
+          "name": "??? Reviews",
+          "item": [
+            {
+              "name": "Get All Reviews - Tous les avis",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/reviews",
+                "description": "Liste tous les avis pour mod??ration."
+              }
+            },
+            {
+              "name": "Update Visibility - Masquer/Afficher",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"isVisible\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/reviews/:reviewId/visibility",
+                "description": "Masque ou affiche un avis."
+              }
+            }
+          ]
         },
         {
-          "key": "riskLevel",
-          "value": "high",
-          "description": "low, medium, high"
+          "name": "???? Payments",
+          "item": [
+            {
+              "name": "Get All Payments - Tous les paiements",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/payments",
+                "description": "Liste tous les paiements de la plateforme."
+              }
+            }
+          ]
+        },
+        {
+          "name": "???? Security",
+          "item": [
+            {
+              "name": "Get Banned IPs - IPs bannies",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banned-ips",
+                "description": "Liste les adresses IP bannies."
+              }
+            },
+            {
+              "name": "Ban IP - Bannir une IP",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"ipAddress\": \"192.168.1.100\",\n    \"reason\": \"Tentatives de connexion suspectes r??p??t??es\",\n    \"duration\": 24\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/api/admin/banned-ips",
+                "description": "Bannit une adresse IP.\n\n**duration**: Heures (null = permanent)"
+              }
+            },
+            {
+              "name": "Unban IP - D??bannir",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/banned-ips/192.168.1.100",
+                "description": "L??ve le ban d'une IP."
+              }
+            },
+            {
+              "name": "Security Logs - Logs de s??curit??",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/security-logs?limit=50&eventType=login_failed&riskLevel=high",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "security-logs"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "eventType",
+                      "value": "login_failed",
+                      "description": "login_failed, suspicious_activity, bot_detected"
+                    },
+                    {
+                      "key": "riskLevel",
+                      "value": "high",
+                      "description": "low, medium, high"
+                    }
+                  ]
+                },
+                "description": "Logs d'activit??s suspectes."
+              }
+            },
+            {
+              "name": "Export Security Logs - Export CSV",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/security-logs/export?startDate=2026-01-01&endDate=2026-01-31",
+                "description": "Exporte les logs de s??curit?? en CSV."
+              }
+            },
+            {
+              "name": "Security Stats - Statistiques s??curit??",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/security-stats",
+                "description": "Statistiques de s??curit??:\n- Tentatives ??chou??es (1h/24h)\n- ??v??nements high risk\n- IPs bannies actives\n- Top IPs suspectes"
+              }
+            }
+          ]
+        },
+        {
+          "name": "???? Audit",
+          "item": [
+            {
+              "name": "Audit Logs - Journal d'audit",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/audit-logs?limit=100&entityType=User",
+                "description": "Journal des actions admin."
+              }
+            }
+          ]
+        },
+        {
+          "name": "???? Exports",
+          "item": [
+            {
+              "name": "Export Users CSV",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/export/users",
+                "description": "Exporte tous les utilisateurs en CSV."
+              }
+            },
+            {
+              "name": "Export Providers CSV",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/export/providers",
+                "description": "Exporte tous les prestataires en CSV."
+              }
+            },
+            {
+              "name": "Export Reviews CSV",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/export/reviews",
+                "description": "Exporte tous les avis en CSV."
+              }
+            },
+            {
+              "name": "Export Contacts CSV",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/export/contacts",
+                "description": "Exporte tous les contacts en CSV."
+              }
+            },
+            {
+              "name": "Export Report PDF",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/admin/export/report",
+                "description": "G??n??re un rapport PDF complet."
+              }
+            }
+          ]
         }
       ]
     },
-    "description": "Logs d'activités suspectes."
-  }
-},
-{
-  "name": "Export Security Logs - Export CSV",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/security-logs/export?startDate=2026-01-01&endDate=2026-01-31",
-    "description": "Exporte les logs de sécurité en CSV."
-  }
-},
-{
-  "name": "Security Stats - Statistiques sécurité",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/security-stats",
-    "description": "Statistiques de sécurité:\n- Tentatives échouées (1h/24h)\n- Événements high risk\n- IPs bannies actives\n- Top IPs suspectes"
-  }
-}
-]
-},
-{
-"name": "📋 Audit",
-"item": [
-{
-  "name": "Audit Logs - Journal d'audit",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/audit-logs?limit=100&entityType=User",
-    "description": "Journal des actions admin."
-  }
-}
-]
-},
-{
-"name": "📤 Exports",
-"item": [
-{
-  "name": "Export Users CSV",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/export/users",
-    "description": "Exporte tous les utilisateurs en CSV."
-  }
-},
-{
-  "name": "Export Providers CSV",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/export/providers",
-    "description": "Exporte tous les prestataires en CSV."
-  }
-},
-{
-  "name": "Export Reviews CSV",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/export/reviews",
-    "description": "Exporte tous les avis en CSV."
-  }
-},
-{
-  "name": "Export Contacts CSV",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/export/contacts",
-    "description": "Exporte tous les contacts en CSV."
-  }
-},
-{
-  "name": "Export Report PDF",
-  "request": {
-    "method": "GET",
-    "header": [],
-    "url": "{{baseUrl}}/api/admin/export/report",
-    "description": "Génère un rapport PDF complet."
-  }
-}
-]
-}
-]
-},
-{
-"name": "📢 Banners - Publicités",
-"description": "## Gestion des Bannières\n\nPermet à l'admin de gérer les bannières publicitaires et aux utilisateurs de les voir.",
-"item": [
-{
-"name": "Get Active Banners - Liste publique",
-"request": {
-"auth": {
-  "type": "noauth"
-},
-"method": "GET",
-"header": [],
-"url": "{{baseUrl}}/api/banners",
-"description": "Récupère les bannières actives en fonction de la date actuelle."
-}
-},
-{
-"name": "Admin - Get All Banners",
-"request": {
-"method": "GET",
-"header": [],
-"url": "{{baseUrl}}/api/banners/admin",
-"description": "Liste toutes les bannières (y compris inactives)."
-}
-},
-{
-"name": "Create Banner - Créer",
-"request": {
-"method": "POST",
-"header": [],
-"body": {
-  "mode": "formdata",
-  "formdata": [
     {
-      "key": "title",
-      "value": "Offre Saint-Valentin",
-      "type": "text"
+      "name": "???? Banners - Publicit??s",
+      "description": "## Gestion des Banni??res\n\nPermet ?? l'admin de g??rer les banni??res publicitaires et aux utilisateurs de les voir.",
+      "item": [
+        {
+          "name": "Get Active Banners - Liste publique",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/banners",
+            "description": "R??cup??re les banni??res actives en fonction de la date actuelle."
+          }
+        },
+        {
+          "name": "Admin - Get All Banners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/banners/admin",
+            "description": "Liste toutes les banni??res (y compris inactives)."
+          }
+        },
+        {
+          "name": "Create Banner - Cr??er",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Offre Saint-Valentin",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "main_home",
+                  "type": "text"
+                },
+                {
+                  "key": "bannerImage",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "linkUrl",
+                  "value": "https://aeli-services.cm/promo",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/banners"
+          }
+        },
+        {
+          "name": "Update Banner - Modifier",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Offre mise ?? jour",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/banners/:id"
+          }
+        },
+        {
+          "name": "Delete Banner - Supprimer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/banners/:id"
+          }
+        }
+      ]
     },
     {
-      "key": "type",
-      "value": "main_home",
-      "type": "text"
-    },
-    {
-      "key": "bannerImage",
-      "type": "file",
-      "src": ""
-    },
-    {
-      "key": "linkUrl",
-      "value": "https://aeli-services.cm/promo",
-      "type": "text"
+      "name": "???? Health",
+      "description": "## V??rification de sant??\n\nEndpoint pour v??rifier que l'API fonctionne.",
+      "item": [
+        {
+          "name": "Health Check - Statut API",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/health",
+            "description": "V??rifie que l'API est op??rationnelle.\n\n**R??ponse attendue**:\n```json\n{\n    \"status\": \"ok\",\n    \"timestamp\": \"2026-01-15T12:00:00Z\",\n    \"uptime\": 3600\n}\n```"
+          }
+        }
+      ]
     }
   ]
-},
-"url": "{{baseUrl}}/api/banners"
-}
-},
-{
-"name": "Update Banner - Modifier",
-"request": {
-"method": "PUT",
-"header": [],
-"body": {
-  "mode": "formdata",
-  "formdata": [
-    {
-      "key": "title",
-      "value": "Offre mise à jour",
-      "type": "text"
-    }
-  ]
-},
-"url": "{{baseUrl}}/api/banners/:id"
-}
-},
-{
-"name": "Delete Banner - Supprimer",
-"request": {
-"method": "DELETE",
-"header": [],
-"url": "{{baseUrl}}/api/banners/:id"
-}
-}
-]
-},
-{
-"name": "🏥 Health",
-"description": "## Vérification de santé\n\nEndpoint pour vérifier que l'API fonctionne.",
-"item": [
-{
-"name": "Health Check - Statut API",
-"request": {
-"auth": {
-  "type": "noauth"
-},
-"method": "GET",
-"header": [],
-"url": "{{baseUrl}}/api/health",
-"description": "Vérifie que l'API est opérationnelle.\n\n**Réponse attendue**:\n```json\n{\n    \"status\": \"ok\",\n    \"timestamp\": \"2026-01-15T12:00:00Z\",\n    \"uptime\": 3600\n}\n```"
-}
-}
-]
-}
-]
 }
