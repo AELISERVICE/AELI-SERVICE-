@@ -21,6 +21,32 @@ export const useSecurityStats = () => {
     });
 };
 
+// Logs de sécurité récents
+export const useSecurityLogs = () => {
+    return useQuery({
+        queryKey: ["useSecurityLogs"],
+        queryFn: () => request("/api/admin/security-logs", "GET"),
+        refetchOnWindowFocus: false,
+    });
+};
+
+// Liste des IP bannies
+export const usebannedIps = () => {
+    return useQuery({
+        queryKey: ["usebannedIps"],
+        queryFn: () => request("/api/admin/banned-ips", "GET"),
+        refetchOnWindowFocus: false,
+    });
+};
+
+// Débloquer une IP bannie
+export const useUnbanIP = () => {
+    return useMutation({
+        mutationKey: ["useUnbanIP"],
+        mutationFn: (ip) => request(`/api/admin/banned-ips/${ip}`, "DELETE")
+    });
+};
+
 // Statistiques d'utilisation de l'API
 export const useAnalyticsStatistiquesAPI = () => {
     return useQuery({

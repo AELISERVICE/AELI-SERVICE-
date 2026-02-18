@@ -3,36 +3,30 @@ import { useLocation } from 'react-router-dom';
 import { Trash2, Eye, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
+
 export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete, onStatusChange, initialStatus = false }) {
-    const menuRef = useRef(null)
-    const location = useLocation()
-    const isUsers = location.pathname.startsWith('/users')
-    const [isBlocked, setIsBlocked] = useState(initialStatus)
+    const menuRef = useRef(null);
+    const location = useLocation();
+    const isUsers = location.pathname.startsWith('/users');
 
+    // État local pour l'animation du switch
+    const [isBlocked, setIsBlocked] = useState(initialStatus);
+
+    // IMPORTANT : Synchronise le switch quand on ouvre le menu
     useEffect(() => {
-        if (!isOpen) return;
-
-        function handleClickOutside(event) {
-            if (
-                menuRef.current && !menuRef.current.contains(event.target) &&
-                triggerRef?.current && !triggerRef.current.contains(event.target)
-            ) {
-                onClose()
-            }
+        if (isOpen) {
+            setIsBlocked(initialStatus);
         }
-
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [isOpen, onClose, triggerRef])
+    }, [isOpen, initialStatus]);
 
     const handleToggle = (e) => {
         e.stopPropagation();
-        const newStatus = !isBlocked;
-        setIsBlocked(newStatus);
-        onStatusChange?.(newStatus);
+        // On informe le parent qu'il faut changer le statut
+        onStatusChange?.();
+        onClose();
     };
 
-    if (!isOpen) return null
+    if (!isOpen) return null;
 
     return (
         <div
@@ -54,6 +48,7 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete, onSt
                     </div>
                 }
                 {/* --- OPTION : BLOQUER (SWITCH) --- */}
+                {/* --- OPTION : BLOQUER (SWITCH) --- */}
                 <div
                     className="flex items-center justify-between px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer group"
                     onClick={handleToggle}
@@ -68,7 +63,7 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete, onSt
                         </span>
                     </div>
 
-                    {/* Le Switch Coulissant */}
+                    {/* Le Switch : Rouge si bloqué, Gris si actif */}
                     <div className={`
                         relative w-8 h-4.5 rounded-full transition-colors duration-300
                         ${isBlocked ? 'bg-rose-600' : 'bg-zinc-200'}

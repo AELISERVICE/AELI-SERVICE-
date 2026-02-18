@@ -34,6 +34,6 @@ export const useProviderPending = () => {
 export const useProvidersVerify = () => {
     return useMutation({
         mutationKey: ["useProvidersVerify"],
-        mutationFn: (formData) => request(`/providers/:id/verify`, "PUT", formData),
+        mutationFn: ({ id }) => request(`/providers/${id}/verify`, "PUT")
     });
 };

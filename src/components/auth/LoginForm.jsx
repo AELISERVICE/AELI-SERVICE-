@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from "react-toastify";
 import { Loader2 } from 'lucide-react';
-import { Input } from '../../ui/Input'
-import { Button } from '../../ui/Button'
+import { Input } from '../../ui/Input';
+import { Button } from '../../ui/Button';
 import { useLogin } from '../../hooks/useAuth';
 
 export function LoginForm() {
@@ -37,7 +37,7 @@ export function LoginForm() {
             localStorage.setItem('refreshToken', data.data.refreshToken);
             localStorage.setItem('user', JSON.stringify(data.data.user));
             toast.success(data.message);
-            // navigate("/home");
+            navigate("/dashboard");
         }
 
         if (isError) {
@@ -84,11 +84,15 @@ export function LoginForm() {
                             className="w-full"
                         >
                             {isPending ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" size={18} />
-                                    <span>Verification...</span>
-                                </>
-                            ) : "Se connecter"}
+                                // Utiliser une clé unique pour l'état de chargement
+                                <span key="loading-state" className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Verification...
+                                </span>
+                            ) : (
+                                // Utiliser une clé unique pour l'état initial
+                                <span key="idle-state">Se connecter</span>
+                            )}
                         </Button>
                         <div className="flex justify-end mt-2">
                             <button

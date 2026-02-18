@@ -1,55 +1,60 @@
 import React from 'react'
-import { StatsCard } from '../../ui/StatsCard'
-import { Users, Briefcase, ShoppingBag, Star } from 'lucide-react'
-
-const KpiData = [
-    {
-        title: "Utilisateurs",
-        value: "150",
-        subtitle: "120 Clients",
-        icon: Users,
-        iconColor: "text-blue-500",
-        iconBg: "bg-blue-100",
-        footerText: "30 Providers",
-        trend: "Total",
-    },
-    {
-        title: "Prestataires actifs",
-        value: "25",
-        subtitle: "5 En attente",
-        icon: Briefcase,
-        iconColor: "text-purple-500",
-        iconBg: "bg-purple-100",
-        footerText: "3 Featured",
-        trend: "Active",
-    },
-    {
-        title: "Services disponibles",
-        value: "85",
-        subtitle: "Services actifs uniquement",
-        icon: ShoppingBag,
-        iconColor: "text-indigo-500",
-        iconBg: "bg-indigo-100",
-        trend: "Actifs",
-    },
-    {
-        title: "Avis clients",
-        value: "200",
-        subtitle: "Note moyenne",
-        icon: Star,
-        iconColor: "text-yellow-500",
-        iconBg: "bg-yellow-100",
-        rating: 4.35,
-        trend: "4.35%",
-    },
-];
+import { StatsCard } from '../../ui/StatsCard';
+import { Users, Briefcase, ShoppingBag, Star, Loader2 } from 'lucide-react';
+import { useStats } from '../../hooks/useStats';
 
 export function KpiCount() {
+    const { data: statsResponse, isLoading, isError } = useStats();
+    const stats = statsResponse?.data;
+
+    const kpiCards = [
+        {
+            title: "Utilisateurs",
+            value: stats?.users?.total?.toString() || "0",
+            subtitle: `${stats?.users?.clients || 0} Clients`,
+            icon: Users,
+            iconColor: "text-blue-500",
+            iconBg: "bg-blue-100",
+            footerText: `${stats?.users?.providers || 0} Providers`,
+            trend: "Total",
+        },
+        {
+            title: "Prestataires actifs",
+            value: stats?.providers?.active?.toString() || "0",
+            subtitle: `${stats?.providers?.pending || 0} En attente`,
+            icon: Briefcase,
+            iconColor: "text-purple-500",
+            iconBg: "bg-purple-100",
+            footerText: `${stats?.providers?.featured || 0} Mis en avant`,
+            trend: "Vérifiés",
+        },
+        {
+            title: "Services disponibles",
+            value: stats?.services?.total?.toString() || "0",
+            subtitle: "Services en ligne",
+            icon: ShoppingBag,
+            iconColor: "text-indigo-500",
+            iconBg: "bg-indigo-100",
+            footerText: "Actifs sur la plateforme",
+            trend: "Live",
+        },
+        {
+            title: "Avis clients",
+            value: stats?.reviews?.total?.toString() || "0",
+            subtitle: "Note moyenne globale",
+            icon: Star,
+            iconColor: "text-yellow-500",
+            iconBg: "bg-yellow-100",
+            rating: parseFloat(stats?.reviews?.averageRating || 0),
+            trend: `${stats?.reviews?.averageRating || 0}/5`,
+        },
+    ];
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {KpiData.map((kpi, index) => (
+            {kpiCards.map((kpi, index) => (
                 <StatsCard
-                    key={index} // Indispensable pour React
+                    key={index}
                     title={kpi.title}
                     value={kpi.value}
                     subtitle={kpi.subtitle}
@@ -58,8 +63,8 @@ export function KpiCount() {
                     iconBg={kpi.iconBg}
                     footerText={kpi.footerText}
                     trend={kpi.trend}
-                    trendUp={true} // Puisque toutes tes cartes sont à true ici
-                    rating={kpi.rating} // Passera 'undefined' s'il n'existe pas, ce qui est géré par le composant
+                    trendUp={true}
+                    rating={kpi.rating}
                 />
             ))}
         </div>

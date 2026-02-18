@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToastContainer } from 'react-toastify';
 import { Kpicount } from '../components/Security/KpiCount';
 import { SecurPeriodeAnalytics } from '../components/Security/SecurPeriodeAnalytics';
 import { RiskLevelDistribution } from '../components/Security/RiskLevelDistribution';
@@ -32,9 +33,8 @@ export function SecurityScreen() {
                     <BannedIPList />
                     <ProtectionList />
                 </div>
-
-
             </div>
+            <ToastContainer position="bottom-center" />
         </div>
     );
 };

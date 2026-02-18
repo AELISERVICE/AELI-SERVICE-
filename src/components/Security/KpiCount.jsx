@@ -1,73 +1,67 @@
-import React from 'react'
-import { AlertTriangle, Shield, Ban, Bot } from 'lucide-react'
-import { StatsCard } from '../../ui/StatsCard'
-
-
-
-const stats = [
-    {
-        id: 1,
-        title: 'Failed Attempts (24h)',
-        value: '47',
-        subtitle: '+12 this hour',
-        icon: AlertTriangle,
-        valueCol: 'text-red-600',
-        iconColor: 'text-red-600',
-        iconBg: 'bg-red-50',
-    },
-    {
-        id: 2,
-        title: 'High Risk Events',
-        value: '3',
-        subtitle: 'Last 24 hours',
-        icon: Shield,
-        valueCol: 'text-orange-500',
-        iconColor: 'text-orange-500',
-        iconBg: 'bg-orange-50',
-    },
-    {
-        id: 3,
-        title: 'Banned IPs',
-        value: '5',
-        subtitle: 'Currently active',
-        icon: Ban,
-        valueCol: 'text-purple-600',
-        iconColor: 'text-purple-600',
-        iconBg: 'bg-purple-50',
-    },
-    {
-        id: 4,
-        title: 'Bot Detections',
-        value: '23',
-        subtitle: 'Honeypot triggered',
-        icon: Bot,
-        valueCol: 'text-green-600',
-        iconColor: 'text-green-600',
-        iconBg: 'bg-green-50',
-    },
-]
-
+import React from 'react';
+import { AlertTriangle, Shield, Ban, Activity } from 'lucide-react';
+import { StatsCard } from '../../ui/StatsCard';
+import { useSecurityStats } from '../../hooks/useStats';
 
 export function Kpicount() {
+    const { data: securityStatsResponse, isLoading, isError } = useSecurityStats();
+    const statsData = securityStatsResponse?.data;
+
+    // Configuration des KPIs basée sur les données réelles de l'API
+    const securityKpis = [
+        {
+            title: 'Tentatives échouées (24h)',
+            value: statsData?.dailyFailedAttempts ?? 0,
+            subtitle: `${statsData?.hourlyFailedAttempts ?? 0} cette heure`,
+            icon: AlertTriangle,
+            valueCol: 'text-red-600',
+            iconColor: 'text-red-600',
+            iconBg: 'bg-red-50',
+        },
+        {
+            title: 'Événements à haut risque',
+            value: statsData?.highRiskEvents24h ?? 0,
+            subtitle: 'Dernières 24 heures',
+            icon: Shield,
+            valueCol: 'text-orange-500',
+            iconColor: 'text-orange-500',
+            iconBg: 'bg-orange-50',
+        },
+        {
+            title: 'IP bannies',
+            value: statsData?.activeBannedIPs ?? 0,
+            subtitle: 'Actuellement actives',
+            icon: Ban,
+            valueCol: 'text-purple-600',
+            iconColor: 'text-purple-600',
+            iconBg: 'bg-purple-50',
+        },
+        {
+            title: 'IP suspectes',
+            value: statsData?.topSuspiciousIPs?.length ?? 0,
+            subtitle: 'Détectées sur le réseau',
+            icon: Activity,
+            valueCol: 'text-blue-600',
+            iconColor: 'text-blue-600',
+            iconBg: 'bg-blue-50',
+        },
+    ];
+
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {
-                stats.map((kpi, index) => (
-                    <StatsCard
-                        key={index}
-                        icon={kpi.icon}
-                        title={kpi.title}
-                        value={kpi.value}
-                        valueCol={kpi.valueCol}
-                        subtitle={kpi.subtitle}
-                        iconColor={kpi.iconColor}
-                        iconBg={kpi.iconBg}
-                    />
-                )
-                )
-            }
+            {securityKpis.map((kpi, index) => (
+                <StatsCard
+                    key={index}
+                    icon={kpi.icon}
+                    title={kpi.title}
+                    value={kpi.value.toString()} // On s'assure que c'est une string
+                    valueCol={kpi.valueCol}
+                    subtitle={kpi.subtitle}
+                    iconColor={kpi.iconColor}
+                    iconBg={kpi.iconBg}
+                />
+            ))}
         </div>
-
-    )
+    );
 }

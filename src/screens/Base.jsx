@@ -29,21 +29,26 @@ export function Base() {
                     <div className="max-w-7xl mx-auto  lg:p-8">
                         <Outlet
                             context={{
-                                onActiveModal: (type) => setActiveModal(type),
-
+                                onActiveModal: (type, data = null) => setActiveModal({ type, data }),
                             }}
                         />
                     </div>
                 </div>
             </main>
-            {(activeModal === MODALS.CONFIRM || activeModal === MODALS.RECOVERY) && (
+            {/* Modales de confirmation */}
+            {(activeModal?.type === MODALS.CONFIRM || activeModal?.type === MODALS.RECOVERY) && (
                 <Confirmation
                     closeConfirm={closeModal}
-                    activeModal={activeModal}
+                    activeModal={activeModal.type} // On passe le type pour que Confirmation sache quoi afficher
                 />
             )}
-            {activeModal === MODALS.VIEWINFOPROVIDER &&
-                <ViewInfoProvider closeView={closeModal} />
+
+            {/* Modale de détails - On vérifie le .type */}
+            {activeModal?.type === MODALS.VIEWINFOPROVIDER &&
+                <ViewInfoProvider
+                    closeView={closeModal}
+                    providerData={activeModal.data}
+                />
             }
         </div>
     )

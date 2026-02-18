@@ -1,13 +1,13 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { LoginScreen } from './screens/Login'
-import { Base } from './screens/Base'
-import { Dashboard } from './screens/Dashboard'
-import { Provider } from './screens/Provider'
-import { SubscriptionsScreen } from './screens/SubscriptionsScreen'
-import { ReviewsScreen } from './screens/ReviewScreen'
-import { FeatureProviderScreen } from './screens/FeatureProviderScreen'
-import { SecurityScreen } from './screens/SecurityScreen'
-import { Users } from './screens/Users'
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { LoginScreen } from './screens/Login';
+import { Base } from './screens/Base';
+import { Dashboard } from './screens/Dashboard';
+import { Provider } from './screens/Provider';
+import { SubscriptionsScreen } from './screens/SubscriptionsScreen';
+import { ReviewsScreen } from './screens/ReviewScreen';
+import { FeatureProviderScreen } from './screens/FeatureProviderScreen';
+import { SecurityScreen } from './screens/SecurityScreen';
+import { Users } from './screens/Users';
 
 function App() {
   return (

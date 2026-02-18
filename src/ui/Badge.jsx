@@ -5,12 +5,14 @@ export const Badge = ({ status, variant }) => {
     const styles = {
         green: "bg-green-50 text-green-700",
         red: "bg-red-50 text-red-700",
-        gray: "bg-slate-100 text-slate-700"
+        gray: "bg-slate-100 text-slate-700",
+        yellow: "bg-yellow-100 text-yellow-700"
     };
     const dotStyles = {
         green: "bg-green-500",
         red: "bg-red-500",
-        gray: "bg-slate-400"
+        gray: "bg-slate-400",
+        yellow: "bg-yellow-400"
     };
 
     return (
