@@ -1959,6 +1959,67 @@
       ]
     },
     {
+      "name": "Admin - Gestion Utilisateurs & Prestataires",
+      "description": "Endpoints pour la suppression de comptes utilisateurs et la desactivation/reactivation de prestataires.\n\nAuthentification admin requise.",
+      "item": [
+        {
+          "name": "Delete User - Supprimer un utilisateur",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/api/admin/users/:id",
+            "description": "Supprime definitivement un utilisateur et toutes ses donnees associees (prestataire, avis, favoris, contacts, etc.).\n\nContraintes:\n- Impossible de supprimer son propre compte\n- Impossible de supprimer un autre admin\n- Action irreversible"
+          }
+        },
+        {
+          "name": "Deactivate Provider - Desactiver un prestataire",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isActive\": false,\n    \"reason\": \"Non-respect des conditions d'utilisation de la plateforme\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/admin/providers/:id/status",
+            "description": "Desactive un prestataire (masque des resultats publics). Un email est envoye avec la raison et un lien pour contacter le service client.\n\nLe champ reason est obligatoire (5-500 caracteres).\nLe compte utilisateur reste actif."
+          }
+        },
+        {
+          "name": "Reactivate Provider - Reactiver un prestataire",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/admin/providers/:id/status",
+            "description": "Reactive un prestataire precedemment desactive. Un email de confirmation est envoye."
+          }
+        }
+      ]
+    },
+    {
       "name": "???? Health",
       "description": "## V??rification de sant??\n\nEndpoint pour v??rifier que l'API fonctionne.",
       "item": [

@@ -101,6 +101,7 @@ const getProviders = asyncHandler(async (req, res) => {
   // Build where clause
   const where = {
     isVerified: true,
+    isActive: true,
   };
 
   if (location) {

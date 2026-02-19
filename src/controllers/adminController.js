@@ -19,6 +19,8 @@ const {
   accountVerifiedEmail,
   providerFeaturedEmail,
   providerVerificationRevokedEmail,
+  providerDeactivatedEmail,
+  providerReactivatedEmail,
 } = require("../utils/emailTemplates");
 const cache = require("../config/redis");
 const { auditLogger } = require("../middlewares/audit");
@@ -308,11 +310,22 @@ const verifyProvider = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { isVerified, rejectionReason } = req.body;
 
-  const provider = await Provider.findByPk(id, {
+  const provider = await Provider.findOne({
+    where: {
+      [Op.or]: [
+        { id: id },
+        { userId: id }
+      ]
+    },
     include: [{ model: User, as: "user" }],
   });
 
   if (!provider) {
+    // Check if it's an application ID to provide better feedback
+    const application = await ProviderApplication.findByPk(id);
+    if (application) {
+      throw new AppError(req.t("provider.applicationIDProvided") || "Cet ID correspond à une candidature. Utilisez l'endpoint /api/admin/provider-applications/:id/review", 404);
+    }
     throw new AppError(req.t("provider.notFound"), 404);
   }
 
@@ -371,10 +384,22 @@ const featureProvider = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { isFeatured } = req.body;
 
-  const provider = await Provider.findByPk(id, {
+  const provider = await Provider.findOne({
+    where: {
+      [Op.or]: [
+        { id: id },
+        { userId: id }
+      ]
+    },
     include: [{ model: User, as: "user" }],
   });
+
   if (!provider) {
+    // Check if it's an application ID
+    const application = await ProviderApplication.findByPk(id);
+    if (application) {
+      throw new AppError(req.t("provider.applicationIDProvided") || "Cet ID correspond à une candidature. Utilisez l'endpoint /api/admin/provider-applications/:id/review", 404);
+    }
     throw new AppError(req.t("provider.notFound"), 404);
   }
 
@@ -591,11 +616,22 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
   // approvedDocuments: [indexes of approved docs]
   // rejectedDocuments: [indexes of rejected docs with reasons]
 
-  const provider = await Provider.findByPk(id, {
+  const provider = await Provider.findOne({
+    where: {
+      [Op.or]: [
+        { id: id },
+        { userId: id }
+      ]
+    },
     include: [{ model: User, as: "user" }],
   });
 
   if (!provider) {
+    // Check if it's an application ID
+    const application = await ProviderApplication.findByPk(id);
+    if (application) {
+      throw new AppError(req.t("provider.applicationIDProvided") || "Cet ID correspond à une candidature. Utilisez l'endpoint /api/admin/provider-applications/:id/review", 404);
+    }
     throw new AppError(req.t("provider.notFound"), 404);
   }
 
@@ -701,6 +737,142 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
   );
 });
 
+/**
+ * @desc    Delete a user account (cascade delete associated provider and data)
+ * @route   DELETE /api/admin/users/:id
+ * @access  Private (admin)
+ */
+const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const user = await User.findByPk(id, {
+    include: [{ model: Provider, as: 'provider' }]
+  });
+
+  if (!user) {
+    throw new AppError(req.t('user.notFound'), 404);
+  }
+
+  // Prevent admin from deleting themselves
+  if (user.id === req.user.id) {
+    throw new AppError(req.t('admin.cannotDeleteSelf'), 400);
+  }
+
+  // Prevent deleting other admins
+  if (user.role === 'admin') {
+    throw new AppError(req.t('admin.cannotDeleteAdmin'), 400);
+  }
+
+  const userInfo = {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    hadProvider: !!user.provider,
+    providerBusinessName: user.provider?.businessName || null
+  };
+
+  // Delete user (CASCADE will handle provider, reviews, favorites, tokens, etc.)
+  await user.destroy();
+
+  // Audit Log
+  auditLogger.adminAction(req, 'USER_DELETED', 'User', id, userInfo, null);
+
+  // Invalidate cache if user had a provider
+  if (userInfo.hadProvider) {
+    await cache.delByPattern('route:/api/providers*');
+  }
+
+  i18nResponse(req, res, 200, 'admin.userDeleted', { deletedUser: userInfo });
+});
+
+/**
+ * @desc    Activate/deactivate a provider (hide/show from public listings)
+ * @route   PUT /api/admin/providers/:id/status
+ * @access  Private (admin)
+ */
+const toggleProviderStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { isActive, reason } = req.body;
+
+  // Reason is required when deactivating
+  if (!isActive && (!reason || reason.trim().length < 5)) {
+    throw new AppError(req.t('admin.reasonRequired') || 'La raison de désactivation est requise (min. 5 caractères)', 400);
+  }
+
+  const provider = await Provider.findOne({
+    where: {
+      [Op.or]: [
+        { id: id },
+        { userId: id }
+      ]
+    },
+    include: [{ model: User, as: "user" }]
+  });
+
+  if (!provider) {
+    // Check if it's an application ID
+    const application = await ProviderApplication.findByPk(id);
+    if (application) {
+      throw new AppError(req.t("provider.applicationIDProvided") || "Cet ID correspond à une candidature. Utilisez l'endpoint /api/admin/provider-applications/:id/review", 404);
+    }
+    throw new AppError(req.t("provider.notFound"), 404);
+  }
+
+  const oldStatus = provider.isActive;
+  provider.isActive = isActive;
+  await provider.save({ fields: ['isActive'] });
+
+  // Audit Log
+  auditLogger.adminAction(req, 'PROVIDER_STATUS_CHANGED', 'Provider', id,
+    { isActive: oldStatus }, { isActive, reason: reason || null });
+
+  // Send email notification
+  if (provider.user && provider.user.email) {
+    if (!isActive) {
+      // Send deactivation email with reason
+      await sendEmailSafely({
+        to: provider.user.email,
+        ...providerDeactivatedEmail({
+          firstName: provider.user.firstName,
+          businessName: provider.businessName,
+          reason: reason.trim()
+        })
+      }, 'Provider deactivation notification');
+    } else {
+      // Send reactivation email
+      await sendEmailSafely({
+        to: provider.user.email,
+        ...providerReactivatedEmail({
+          firstName: provider.user.firstName,
+          businessName: provider.businessName
+        })
+      }, 'Provider reactivation notification');
+    }
+  }
+
+  // Invalidate cache
+  await cache.delByPattern('route:/api/providers*');
+
+  i18nResponse(req, res, 200,
+    isActive ? 'admin.providerActivated' : 'admin.providerDeactivated',
+    {
+      provider: {
+        id: provider.id,
+        businessName: provider.businessName,
+        isActive: provider.isActive,
+        user: provider.user ? {
+          id: provider.user.id,
+          email: provider.user.email,
+          firstName: provider.user.firstName,
+          lastName: provider.user.lastName
+        } : null
+      }
+    }
+  );
+});
+
 module.exports = {
   getStats,
   getPendingProviders,
@@ -712,4 +884,6 @@ module.exports = {
   getAllUsers,
   getProvidersUnderReview,
   reviewProviderDocuments,
+  deleteUser,
+  toggleProviderStatus,
 };

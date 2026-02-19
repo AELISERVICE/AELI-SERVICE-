@@ -266,6 +266,46 @@ Un admin ne peut PAS se désactiver lui-même (erreur 400).
 
 ---
 
+### `DELETE /users/:id` - Supprimer un compte
+
+**Description :**  
+Supprime définitivement un compte utilisateur et **toutes ses données associées** (prestataire, avis, favoris, contacts, tokens, paiements, etc.).
+
+**Ce qu'il fait :**
+- Supprime l'utilisateur de la base de données
+- **CASCADE** : supprime automatiquement le prestataire associé et toutes les données liées
+- Crée un audit log de l'action
+- Invalide le cache des prestataires si l'utilisateur avait un profil prestataire
+
+**⚠️ Contraintes :**
+- Un admin ne peut PAS se supprimer lui-même (erreur 400)
+- Un admin ne peut PAS supprimer un autre admin (erreur 400)
+- **Action irréversible** — toutes les données sont perdues
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Utilisateur supprimé",
+  "data": {
+    "deletedUser": {
+      "id": "uuid",
+      "email": "marie@example.com",
+      "firstName": "Marie",
+      "lastName": "Ndiaye",
+      "role": "provider",
+      "hadProvider": true,
+      "providerBusinessName": "Salon Marie Coiffure"
+    }
+  }
+}
+```
+
+**Utilisation frontend :**  
+Afficher une modale de confirmation avec le nom et l'email de l'utilisateur avant de supprimer. Mentionner que la suppression est **irréversible** et que le prestataire associé sera aussi supprimé.
+
+---
+
 ## 📋 3. CANDIDATURES PRESTATAIRES
 
 ### `GET /provider-applications` - Liste des candidatures
@@ -418,6 +458,67 @@ Met un prestataire "en vedette" pour qu'il apparaisse en priorité dans les rech
 
 ---
 
+### `PUT /providers/:id/status` - Activer/Désactiver un prestataire
+
+**Description :**  
+Active ou désactive un prestataire **indépendamment du compte utilisateur**. Un prestataire désactivé n'apparaît plus dans les résultats de recherche publics, mais son compte utilisateur reste fonctionnel.
+
+**Différence avec la désactivation du user :**
+| Action | Résultat |
+|--------|----------|
+| `PUT /users/:id/status` `{isActive: false}` | L'utilisateur **ne peut plus se connecter** |
+| `PUT /providers/:id/status` `{isActive: false}` | Le prestataire **est masqué** des listes publiques, mais le user peut toujours se connecter |
+| `DELETE /users/:id` | Le user **et** le prestataire sont **définitivement supprimés** |
+
+**Ce qu'il fait :**
+- Met à jour `isActive` du prestataire
+- Les prestataires avec `isActive: false` sont automatiquement exclus des résultats publics (`GET /api/providers`)
+- Crée un audit log de l'action
+- Invalide le cache des prestataires
+
+**Body (désactiver) :**
+```json
+{
+  "isActive": false,
+  "reason": "Non-respect des conditions d'utilisation de la plateforme"
+}
+```
+
+> ⚠️ Le champ `reason` est **obligatoire** lors de la désactivation (5-500 caractères). Un email sera envoyé au prestataire avec la raison et un lien pour contacter le service client.
+
+**Body (réactiver) :**
+```json
+{ "isActive": true }
+```
+
+> Un email de confirmation sera envoyé au prestataire pour l'informer que son profil est de nouveau visible.
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Prestataire désactivé",
+  "data": {
+    "provider": {
+      "id": "uuid",
+      "businessName": "Salon Marie Coiffure",
+      "isActive": false,
+      "user": {
+        "id": "user-uuid",
+        "email": "marie@example.com",
+        "firstName": "Marie",
+        "lastName": "Ndiaye"
+      }
+    }
+  }
+}
+```
+
+**Utilisation frontend :**  
+Afficher un toggle ON/OFF dans la fiche prestataire côté admin. Préciser que le prestataire ne sera plus visible publiquement mais pourra toujours accéder à son compte.
+
+---
+
 ### `PUT /providers/:id/review-documents` - Réviser documents
 
 **Description :**  
@@ -431,7 +532,7 @@ Validation détaillée des documents soumis par un prestataire (CNI, licence com
 **Body :**
 ```json
 {
-  "decision": "approved",  // ou "rejected"
+  "decision": "approved",  // "approved", "rejected" ou "under_review"
   "notes": "Commentaire admin",
   "approvedDocuments": [0, 1],  // Index des documents approuvés
   "rejectedDocuments": [

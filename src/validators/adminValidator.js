@@ -110,11 +110,40 @@ const updateCategoryValidation = [
         .isBoolean()
 ];
 
+/**
+ * Validate user deletion
+ */
+const deleteUserValidation = [
+    param('id')
+        .isUUID()
+        .withMessage('ID utilisateur invalide')
+];
+
+/**
+ * Validate provider status toggle
+ */
+const toggleProviderStatusValidation = [
+    param('id')
+        .isUUID()
+        .withMessage('ID prestataire invalide'),
+    body('isActive')
+        .isBoolean()
+        .withMessage('isActive doit être un booléen'),
+    body('reason')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({ min: 5, max: 500 })
+        .withMessage('La raison doit contenir entre 5 et 500 caractères')
+];
+
 module.exports = {
     updateUserStatusValidation,
     verifyProviderValidation,
     featureProviderValidation,
     updateReviewVisibilityValidation,
     categoryValidation,
-    updateCategoryValidation
+    updateCategoryValidation,
+    deleteUserValidation,
+    toggleProviderStatusValidation
 };

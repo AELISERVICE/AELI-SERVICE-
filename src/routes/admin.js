@@ -10,13 +10,17 @@ const {
     updateReviewVisibility,
     getAllUsers,
     getProvidersUnderReview,
-    reviewProviderDocuments
+    reviewProviderDocuments,
+    deleteUser,
+    toggleProviderStatus
 } = require('../controllers/adminController');
 const {
     updateUserStatusValidation,
     verifyProviderValidation,
     featureProviderValidation,
-    updateReviewVisibilityValidation
+    updateReviewVisibilityValidation,
+    deleteUserValidation,
+    toggleProviderStatusValidation
 } = require('../validators/adminValidator');
 const { validate } = require('../middlewares/validation');
 const {
@@ -46,6 +50,7 @@ router.get('/stats', getStats);
 // Users management
 router.get('/users', getAllUsers);
 router.put('/users/:id/status', updateUserStatusValidation, validate, updateUserStatus);
+router.delete('/users/:id', deleteUserValidation, validate, deleteUser);
 
 // ============ PROVIDER APPLICATIONS ============
 router.get('/provider-applications', getApplications);
@@ -57,6 +62,7 @@ router.get('/providers/pending', getPendingProviders);
 router.get('/providers/under-review', getProvidersUnderReview);
 router.put('/providers/:id/verify', verifyProviderValidation, validate, verifyProvider);
 router.put('/providers/:id/feature', featureProviderValidation, validate, featureProvider);
+router.put('/providers/:id/status', toggleProviderStatusValidation, validate, toggleProviderStatus);
 router.put('/providers/:id/review-documents', reviewProviderDocuments);
 
 // Reviews moderation

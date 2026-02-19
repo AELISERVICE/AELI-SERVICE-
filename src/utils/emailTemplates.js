@@ -784,6 +784,67 @@ const providerVerificationRevokedEmail = (firstName, businessName, reason) => {
   };
 };
 
+/**
+ * Provider deactivated email (sent when admin deactivates a provider)
+ */
+const providerDeactivatedEmail = ({ firstName, businessName, reason }) => {
+  return {
+    subject: '⚠️ Votre profil prestataire a été désactivé - AELI Services',
+    html: baseTemplate(`
+      <h2>Bonjour ${firstName},</h2>
+      <p>Nous vous informons que votre profil prestataire <strong>"${businessName}"</strong> a été <strong>temporairement désactivé</strong> sur AELI Services.</p>
+      
+      <div class="info-box" style="border-left-color: #ff9800;">
+        <p><strong>Raison :</strong></p>
+        <p>${reason}</p>
+      </div>
+      
+      <h3>Conséquences :</h3>
+      <ul>
+        <li>❌ Votre profil n'apparaît plus dans les résultats de recherche</li>
+        <li>❌ Les clients ne peuvent plus vous trouver sur la plateforme</li>
+        <li>✅ Votre compte utilisateur reste actif</li>
+        <li>✅ Vos données sont conservées</li>
+      </ul>
+      
+      <p>Pour résoudre cette situation et réactiver votre profil, veuillez contacter notre service client :</p>
+      
+      <center>
+        <a href="mailto:support@aeli-services.cm" class="button">📧 Contacter le service client</a>
+      </center>
+      
+      <div class="highlight">
+        <p>💡 Vous pouvez également nous joindre par WhatsApp ou téléphone aux horaires d'ouverture.</p>
+      </div>
+      
+      <p><em>L'équipe AELI Services</em></p>
+    `)
+  };
+};
+
+/**
+ * Provider reactivated email (sent when admin reactivates a provider)
+ */
+const providerReactivatedEmail = ({ firstName, businessName }) => {
+  return {
+    subject: '✅ Votre profil prestataire est réactivé - AELI Services',
+    html: baseTemplate(`
+      <h2>Bonjour ${firstName} ! 🎉</h2>
+      <div class="highlight" style="background-color: #e8f5e9;">
+        <p>Bonne nouvelle ! Votre profil prestataire <strong>"${businessName}"</strong> a été <strong>réactivé</strong> sur AELI Services.</p>
+      </div>
+      
+      <p>Votre profil est de nouveau visible par les clients et vous pouvez recevoir des demandes de contact.</p>
+      
+      <center>
+        <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Accéder à mon tableau de bord</a>
+      </center>
+      
+      <p><em>L'équipe AELI Services</em></p>
+    `)
+  };
+};
+
 module.exports = {
   welcomeEmail,
   newContactEmail,
@@ -805,5 +866,7 @@ module.exports = {
   providerApprovedEmail,
   providerRejectedEmail,
   applicationReceivedEmail,
-  providerVerificationRevokedEmail
+  providerVerificationRevokedEmail,
+  providerDeactivatedEmail,
+  providerReactivatedEmail
 };

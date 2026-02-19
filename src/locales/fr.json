@@ -66,7 +66,8 @@
         "applicationNotFound": "Candidature non trouvée",
         "applicationAlreadyReviewed": "Cette candidature a déjà été examinée",
         "noApplication": "Aucune candidature trouvée",
-        "reapplyWait": "Vous devez attendre 7 jours après un rejet pour soumettre une nouvelle candidature"
+        "reapplyWait": "Vous devez attendre 7 jours après un rejet pour soumettre une nouvelle candidature",
+        "applicationIDProvided": "Cet ID correspond à une candidature. Si vous voulez la valider, utilisez l'endpoint de revue des candidatures (/api/admin/provider-applications/:id/review). S'il s'agit d'un prestataire déjà existant, vérifiez l'ID."
     },
     "documents": {
         "submitted": "Documents soumis pour vérification",

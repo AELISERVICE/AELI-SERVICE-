@@ -100,6 +100,12 @@ const Provider = sequelize.define('Provider', {
         defaultValue: false,
         field: 'is_featured'
     },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+        field: 'is_active',
+        comment: 'When false, provider is hidden from public listings'
+    },
     viewsCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
