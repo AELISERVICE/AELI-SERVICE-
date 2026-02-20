@@ -109,9 +109,8 @@ app.use(i18nMiddleware);
 // ============ CSRF PROTECTION ============
 // Appliquer CSRF sur toutes les méthodes de modification pour l'API complète
 app.use(csrfTokenMiddleware);
-// Pour le moment on applique juste le middleware qui initialise le token,
-// la validation stricte doit être ajoutée route par route ou globalement si le frontend le gère.
-// app.use(csrfValidation); // À activer quand le frontend est prêt à envoyer le X-CSRF-Token
+// Validation stricte globale (Le frontend DOIT envoyer X-CSRF-Token sur POST/PUT/DELETE)
+app.use(csrfValidation);
 
 // ============ API ROUTES ============
 

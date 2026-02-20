@@ -144,7 +144,7 @@ describe("Auth Controller", () => {
     getOTPExpiry.mockReturnValue(new Date(Date.now() + 10 * 60 * 1000));
     isOTPExpired.mockReturnValue(false);
     verifyOTP.mockResolvedValue(true);
-    i18nResponse.mockImplementation(() => {});
+    i18nResponse.mockImplementation(() => { });
     handleSuccessfulOTP.mockResolvedValue();
     handleFailedOTP.mockResolvedValue(true);
     logSecurityEvent.mockResolvedValue();
@@ -394,7 +394,7 @@ describe("Auth Controller", () => {
       await refreshAccessToken(mockReq, mockRes, mockNext);
 
       expect(RefreshToken.findOne).toHaveBeenCalledWith({
-        where: { token: "valid-refresh-token", isRevoked: false },
+        where: { token: "valid-refresh-token" },
       });
       expect(jwt.sign).toHaveBeenCalledWith(
         { id: "user-123", type: "access" },
@@ -406,7 +406,10 @@ describe("Auth Controller", () => {
         mockRes,
         200,
         "auth.tokenRefreshed",
-        { accessToken: "access-token" }
+        {
+          accessToken: "access-token",
+          refreshToken: expect.any(String)
+        }
       );
     });
 
