@@ -296,6 +296,70 @@ paths:
         '400':
           description: Motif de rejet manquant (si isVerified=false sans rejectionReason)
 
+  /admin/providers/{id}/review-documents:
+    put:
+      tags:
+        - Admin
+      summary: Examiner les documents d'un prestataire
+      description: |
+        Permet d'approuver ou de rejeter individuellement les documents fournis par un prestataire.
+        - Si la décision globale est `approved`, le prestataire est automatiquement vérifié.
+        - Si la décision est `rejected`, les motifs de rejet par document sont envoyés par email.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - decision
+              properties:
+                decision:
+                  type: string
+                  enum: [approved, rejected, under_review]
+                notes:
+                  type: string
+                  description: Notes internes de l'admin
+                approvedDocuments:
+                  type: array
+                  items:
+                    type: integer
+                  description: Index des documents à approuver
+                rejectedDocuments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      index:
+                        type: integer
+                      reason:
+                        type: string
+                  description: Index et raisons pour les documents rejetés
+            examples:
+              mixed_review:
+                summary: Revue mixte (un approuvé, un rejeté)
+                value:
+                  decision: under_review
+                  notes: "CNI OK, mais justificatif de domicile trop ancien"
+                  approvedDocuments: [0]
+                  rejectedDocuments:
+                    - index: 1
+                      reason: "Le document date de plus de 3 mois"
+      responses:
+        '200':
+          description: Documents examinés avec succès
+        '400':
+          description: Données invalides ou décision manquante
+
   /admin/providers/{id}/feature:
     put:
       tags:

@@ -20,7 +20,8 @@ const {
     featureProviderValidation,
     updateReviewVisibilityValidation,
     deleteUserValidation,
-    toggleProviderStatusValidation
+    toggleProviderStatusValidation,
+    reviewProviderDocumentsValidation
 } = require('../validators/adminValidator');
 const { validate } = require('../middlewares/validation');
 const {
@@ -63,7 +64,7 @@ router.get('/providers/under-review', getProvidersUnderReview);
 router.put('/providers/:id/verify', verifyProviderValidation, validate, verifyProvider);
 router.put('/providers/:id/feature', featureProviderValidation, validate, featureProvider);
 router.put('/providers/:id/status', toggleProviderStatusValidation, validate, toggleProviderStatus);
-router.put('/providers/:id/review-documents', reviewProviderDocuments);
+router.put('/providers/:id/review-documents', reviewProviderDocumentsValidation, validate, reviewProviderDocuments);
 
 // Reviews moderation
 router.get('/reviews', getAllReviews);

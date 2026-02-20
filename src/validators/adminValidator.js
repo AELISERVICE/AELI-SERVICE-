@@ -137,6 +137,45 @@ const toggleProviderStatusValidation = [
         .withMessage('La raison doit contenir entre 5 et 500 caractères')
 ];
 
+/**
+ * Validate provider documents review
+ */
+const reviewProviderDocumentsValidation = [
+    param('id')
+        .isUUID()
+        .withMessage('ID prestataire invalide'),
+    body('decision')
+        .isIn(['approved', 'rejected', 'under_review'])
+        .withMessage('Décision invalide. Choisissez: approved, rejected ou under_review'),
+    body('notes')
+        .optional()
+        .isString()
+        .trim()
+        .isLength({ max: 1000 })
+        .withMessage('Les notes ne peuvent pas dépasser 1000 caractères'),
+    body('approvedDocuments')
+        .optional()
+        .isArray()
+        .withMessage('approvedDocuments doit être un tableau d\'index'),
+    body('approvedDocuments.*')
+        .isInt({ min: 0 })
+        .withMessage('Les index de documents approuvés doivent être des entiers positifs'),
+    body('rejectedDocuments')
+        .optional()
+        .isArray()
+        .withMessage('rejectedDocuments doit être un tableau d\'objets'),
+    body('rejectedDocuments.*.index')
+        .isInt({ min: 0 })
+        .withMessage('L\'index du document rejeté doit être un entier positif'),
+    body('rejectedDocuments.*.reason')
+        .notEmpty()
+        .withMessage('La raison du rejet est requise pour chaque document rejeté')
+        .isString()
+        .trim()
+        .isLength({ min: 5, max: 500 })
+        .withMessage('Le motif de rejet doit contenir entre 5 et 500 caractères')
+];
+
 module.exports = {
     updateUserStatusValidation,
     verifyProviderValidation,
@@ -145,5 +184,6 @@ module.exports = {
     categoryValidation,
     updateCategoryValidation,
     deleteUserValidation,
-    toggleProviderStatusValidation
+    toggleProviderStatusValidation,
+    reviewProviderDocumentsValidation
 };

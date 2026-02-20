@@ -644,15 +644,25 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
 
   if (approvedDocuments && Array.isArray(approvedDocuments)) {
     approvedDocuments.forEach((idx) => {
-      if (documents[idx]) documents[idx].status = "approved";
+      // Robustness: Ensure index is valid and document exists
+      const documentIndex = parseInt(idx);
+      if (!isNaN(documentIndex) && documents[documentIndex]) {
+        documents[documentIndex].status = "approved";
+      } else {
+        logger.warn(`Admin ${req.user.id} tried to approve invalid document index ${idx} for provider ${id}`);
+      }
     });
   }
 
   if (rejectedDocuments && Array.isArray(rejectedDocuments)) {
     rejectedDocuments.forEach((item) => {
-      if (documents[item.index]) {
-        documents[item.index].status = "rejected";
-        documents[item.index].rejectionReason = item.reason;
+      // Robustness: Ensure index is valid and document exists
+      const documentIndex = parseInt(item.index);
+      if (!isNaN(documentIndex) && documents[documentIndex]) {
+        documents[documentIndex].status = "rejected";
+        documents[documentIndex].rejectionReason = item.reason;
+      } else {
+        logger.warn(`Admin ${req.user.id} tried to reject invalid document index ${item.index} for provider ${id}`);
       }
     });
   }
@@ -710,6 +720,7 @@ const reviewProviderDocuments = asyncHandler(async (req, res) => {
   const oldDocuments = JSON.parse(JSON.stringify(provider.documents || []));
 
   provider.documents = documents;
+  provider.changed("documents", true);
   provider.verificationNotes = notes || null;
   await provider.save();
 
