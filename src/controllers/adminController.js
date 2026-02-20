@@ -7,6 +7,7 @@ const {
   Contact,
   Category,
   Payment,
+  ProviderApplication,
 } = require("../models");
 const { asyncHandler, AppError } = require("../middlewares/errorHandler");
 const {

@@ -45,6 +45,9 @@ jest.mock('../../src/models', () => ({
     },
     Payment: {
         findAll: jest.fn()
+    },
+    ProviderApplication: {
+        findByPk: jest.fn()
     }
 }));
 
@@ -89,7 +92,7 @@ jest.mock('../../src/config/redis', () => ({
     delByPattern: jest.fn()
 }));
 
-const { User, Provider, Service, Review, Contact, Payment } = require('../../src/models');
+const { User, Provider, Service, Review, Contact, Payment, ProviderApplication } = require('../../src/models');
 const { i18nResponse, getPaginationParams, getPaginationData, sendEmailSafely } = require('../../src/utils/helpers');
 const { sendEmail } = require('../../src/config/email');
 const { delByPattern } = require('../../src/config/redis');
@@ -204,7 +207,7 @@ describe('Admin Controller', () => {
                 user: { email: 'provider@example.com', firstName: 'John' }
             };
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
+            Provider.findOne.mockResolvedValue(mockProvider);
 
             await verifyProvider(mockReq, mockRes, mockNext);
 
@@ -217,7 +220,7 @@ describe('Admin Controller', () => {
         it('should throw error if provider not found', async () => {
             mockReq.params = { id: 'nonexistent' };
 
-            Provider.findByPk.mockResolvedValue(null);
+            Provider.findOne.mockResolvedValue(null);
 
             await expect(verifyProvider(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
         });
@@ -234,7 +237,7 @@ describe('Admin Controller', () => {
                 user: { email: 'provider@example.com', firstName: 'John' }
             };
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
+            Provider.findOne.mockResolvedValue(mockProvider);
 
             await verifyProvider(mockReq, mockRes, mockNext);
 
@@ -256,7 +259,7 @@ describe('Admin Controller', () => {
                 user: { email: 'provider@example.com', firstName: 'John' }
             };
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
+            Provider.findOne.mockResolvedValue(mockProvider);
 
             await expect(verifyProvider(mockReq, mockRes, mockNext)).rejects.toThrow('admin.rejectionReasonRequired');
         });
@@ -275,7 +278,7 @@ describe('Admin Controller', () => {
                 user: { email: 'provider@example.com', firstName: 'John' }
             };
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
+            Provider.findOne.mockResolvedValue(mockProvider);
 
             await featureProvider(mockReq, mockRes, mockNext);
 
@@ -362,7 +365,8 @@ describe('Admin Controller', () => {
 
             const mockProvider = {
                 id: 'provider-123',
-                updateRating: jest.fn().mockResolvedValue()
+                updateRating: jest.fn().mockResolvedValue(),
+                changed: jest.fn()
             };
 
             Review.findByPk.mockResolvedValue(mockReview);
@@ -474,10 +478,11 @@ describe('Admin Controller', () => {
                     { type: 'license', status: 'pending' }
                 ],
                 save: jest.fn().mockResolvedValue(),
+                changed: jest.fn(),
                 user: { email: 'provider@example.com', firstName: 'John' }
             };
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
+            Provider.findOne.mockResolvedValue(mockProvider);
 
             await reviewProviderDocuments(mockReq, mockRes, mockNext);
 
@@ -508,10 +513,11 @@ describe('Admin Controller', () => {
                     { type: 'id', status: 'pending' }
                 ],
                 save: jest.fn().mockResolvedValue(),
+                changed: jest.fn(),
                 user: { email: 'provider@example.com', firstName: 'John' }
             };
 
-            Provider.findByPk.mockResolvedValue(mockProvider);
+            Provider.findOne.mockResolvedValue(mockProvider);
 
             await reviewProviderDocuments(mockReq, mockRes, mockNext);
 
@@ -525,7 +531,7 @@ describe('Admin Controller', () => {
         it('should throw error if provider not found', async () => {
             mockReq.params = { id: 'nonexistent' };
 
-            Provider.findByPk.mockResolvedValue(null);
+            Provider.findOne.mockResolvedValue(null);
 
             await expect(reviewProviderDocuments(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
         });

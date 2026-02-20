@@ -45,6 +45,9 @@ jest.mock('../../src/models', () => ({
     Contact: {
         findAll: jest.fn(),
         count: jest.fn()
+    },
+    ProviderApplication: {
+        findByPk: jest.fn()
     }
 }));
 
@@ -90,7 +93,7 @@ jest.mock('sequelize', () => ({
     literal: jest.fn()
 }));
 
-const { Provider, User, Service, Subscription, Review, Contact } = require('../../src/models');
+const { Provider, User, Service, Subscription, Review, Contact, ProviderApplication } = require('../../src/models');
 const { i18nResponse, getPaginationParams, getPaginationData, buildSortOrder, extractPhotoUrls } = require('../../src/utils/helpers');
 const cache = require('../../src/config/redis');
 const { deleteImage, getPublicIdFromUrl, uploadDocument } = require('../../src/config/cloudinary');
@@ -118,7 +121,7 @@ describe('Provider Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
         getPaginationParams.mockReturnValue({ limit: 12, offset: 0 });
         getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
         buildSortOrder.mockReturnValue([['createdAt', 'DESC']]);
@@ -186,7 +189,7 @@ describe('Provider Controller', () => {
             await getProviders(mockReq, mockRes, mockNext);
 
             expect(Provider.findAndCountAll).toHaveBeenCalledWith({
-                where: { isVerified: true },
+                where: { isVerified: true, isActive: true },
                 include: expect.any(Array),
                 order: [['createdAt', 'DESC']],
                 limit: 12,
