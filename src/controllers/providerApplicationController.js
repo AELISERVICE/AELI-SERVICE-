@@ -137,8 +137,8 @@ const applyToBeProvider = asyncHandler(async (req, res) => {
     activities: Array.isArray(activities)
       ? activities
       : activities
-      ? JSON.parse(activities)
-      : [],
+        ? JSON.parse(activities)
+        : [],
     latitude,
     longitude,
     cniNumber,
@@ -280,10 +280,10 @@ const reviewApplication = asyncHandler(async (req, res) => {
           activities: application.activities,
           latitude: application.latitude,
           longitude: application.longitude,
-          isVerified: true, // Auto-verified since admin approved
-          verifiedAt: new Date(),
-          verifiedBy: req.user.id,
-          verificationStatus: "approved",
+          isVerified: false, // Must be verified via review-documents after onboarding
+          verifiedAt: null,
+          verifiedBy: null,
+          verificationStatus: "under_review",
         },
         { transaction }
       );
