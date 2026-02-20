@@ -218,30 +218,8 @@ paths:
                     properties:
                       accessToken:
                         type: string
-                      refreshToken:
-                        type: string
         '401':
           description: Refresh token invalide ou expiré
-
-  /csrf-token:
-    get:
-      tags:
-        - Security
-      summary: Obtenir un token CSRF
-      description: Retourne un jeton CSRF à inclure dans les requêtes de modification (POST, PUT, DELETE) via l'en-tête X-CSRF-Token. Un cookie XSRF-TOKEN est également défini.
-      responses:
-        '200':
-          description: Jeton CSRF généré
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  csrfToken:
-                    type: string
 
   /auth/logout:
     post:

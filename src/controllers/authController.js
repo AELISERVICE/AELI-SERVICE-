@@ -331,26 +331,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new AppError(req.t("auth.refreshTokenInvalid"), 400);
   }
 
-  // Find refresh token (even if revoked, for reuse detection)
+  // Find refresh token
   const tokenRecord = await RefreshToken.findOne({
-    where: { token: refreshToken },
+    where: { token: refreshToken, isRevoked: false },
   });
 
   if (!tokenRecord) {
-    throw new AppError(req.t("auth.refreshTokenInvalid"), 401);
-  }
-
-  // Token reuse detection: if it's already revoked, someone is trying to use a stolen rotated token!
-  if (tokenRecord.isRevoked) {
-    // Revoke all tokens for this user as their session is compromised
-    await RefreshToken.revokeAllForUser(tokenRecord.userId);
-    await logSecurityEvent(
-      "stolen_refresh_token_attempt",
-      req,
-      tokenRecord.userId,
-      { token: refreshToken },
-      true
-    );
     throw new AppError(req.t("auth.refreshTokenInvalid"), 401);
   }
 
@@ -362,33 +348,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new AppError(req.t("auth.tokenExpired"), 401);
   }
 
-  // ROTATION: Invalidate the current refresh token
-  tokenRecord.isRevoked = true;
-  tokenRecord.revokedAt = new Date();
+  // Update last used
   tokenRecord.lastUsedAt = new Date();
-  await tokenRecord.save();
+  await tokenRecord.save({ fields: ["lastUsedAt"] });
 
   // Generate new access token
   const accessToken = generateAccessToken(tokenRecord.userId);
 
-  // Generate new refresh token
-  const newRefreshToken = generateRefreshToken();
-
-  // Save the new refresh token
-  await RefreshToken.create({
-    userId: tokenRecord.userId,
-    token: newRefreshToken,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-    userAgent: req.get("user-agent"),
-    ipAddress: req.ip,
-  });
-
   await logSecurityEvent("token_refresh", req, tokenRecord.userId, {}, true);
 
-  i18nResponse(req, res, 200, "auth.tokenRefreshed", {
-    accessToken,
-    refreshToken: newRefreshToken
-  });
+  i18nResponse(req, res, 200, "auth.tokenRefreshed", { accessToken });
 });
 
 /**

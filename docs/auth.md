@@ -402,33 +402,7 @@ Authorization: Bearer <accessToken>
 
 ---
 
-## 🛡️ 8. SÉCURITÉ & CSRF
-
-### Protection CSRF (Cross-Site Request Forgery)
-L'API implémente une vérification stricte des requêtes de modification (POST, PUT, PATCH, DELETE) pour les clients web.
-
-**Flux de fonctionnement CSRF :**
-1. Au chargement de l'application cliente, appeler `GET /api/csrf-token`.
-2. L'API retourne un token CSRF et définit un cookie `XSRF-TOKEN`.
-3. Pour TOUTE requête de modification (POST, PUT, DELETE), le client doit envoyer ce token dans les en-têtes HTTP sous la clé `X-CSRF-Token` (ou `X-XSRF-Token`).
-
-**Exemple d'intégration avec Axios :**
-```javascript
-// 1. Récupération initiale (ex: au boot de l'app React/Angular)
-const response = await axios.get('/api/csrf-token');
-const csrfToken = response.data.csrfToken;
-
-// 2. Configuration globale de Axios
-axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
-
-// 3. Les requêtes POST passeront maintenant !
-await axios.post('/api/auth/login', { email, password });
-```
-*(Note : Les requêtes avec un header `Authorization: Bearer ...` pur (sans cookie/session web comme les apps mobiles) ignorent la vérification CSRF).*
-
----
-
-## 🚨 Gestion des erreurs
+##  Gestion des erreurs
 
 | Code | Situation |
 |------|-----------|

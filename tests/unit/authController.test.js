@@ -394,7 +394,7 @@ describe("Auth Controller", () => {
       await refreshAccessToken(mockReq, mockRes, mockNext);
 
       expect(RefreshToken.findOne).toHaveBeenCalledWith({
-        where: { token: "valid-refresh-token" },
+        where: { token: "valid-refresh-token", isRevoked: false },
       });
       expect(jwt.sign).toHaveBeenCalledWith(
         { id: "user-123", type: "access" },
@@ -406,10 +406,7 @@ describe("Auth Controller", () => {
         mockRes,
         200,
         "auth.tokenRefreshed",
-        {
-          accessToken: "access-token",
-          refreshToken: expect.any(String)
-        }
+        { accessToken: "access-token" }
       );
     });
 
