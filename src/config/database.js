@@ -22,7 +22,7 @@ const poolConfig = {
 const currentPool = poolConfig[process.env.NODE_ENV] || poolConfig.development;
 
 const dbName = isTest
-    ? (process.env.DB_NAME_TEST || `${process.env.DB_NAME}_test`)
+    ? (process.env.DB_NAME_TEST || (process.env.DB_NAME && process.env.DB_NAME.endsWith('_test') ? process.env.DB_NAME : `${process.env.DB_NAME}_test`))
     : process.env.DB_NAME;
 
 const sequelize = new Sequelize(
