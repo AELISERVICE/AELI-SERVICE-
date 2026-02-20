@@ -22,10 +22,20 @@ morgan.token('user-id', (req) => {
     return req.user?.id || 'anonymous';
 });
 
-// Custom token for request body size
+// Custom token for request body size and content
 morgan.token('req-body-size', (req) => {
     if (req.body && Object.keys(req.body).length > 0) {
-        return JSON.stringify(req.body).length + 'b';
+        // Scrub sensitive fields before logging string length
+        const sanitizedBody = { ...req.body };
+        const sensitiveFields = ['password', 'passwordConfirm', 'token', 'authorization', 'otp', 'creditCard'];
+
+        sensitiveFields.forEach(field => {
+            if (sanitizedBody[field]) {
+                sanitizedBody[field] = '***';
+            }
+        });
+
+        return JSON.stringify(sanitizedBody).length + 'b';
     }
     return '0b';
 });

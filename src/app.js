@@ -100,32 +100,18 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ============ XSS PROTECTION ============
-// Sanitize request data
-const sanitizeInput = (req, res, next) => {
-    const sanitize = (obj) => {
-        if (typeof obj === 'string') {
-            return obj.replace(/[<>]/g, '');
-        }
-        if (typeof obj === 'object' && obj !== null) {
-            for (const key in obj) {
-                obj[key] = sanitize(obj[key]);
-            }
-        }
-        return obj;
-    };
+const xssClean = require('xss-clean');
+app.use(xssClean());
 
-    if (req.body) req.body = sanitize(req.body);
-    if (req.query) req.query = sanitize(req.query);
-    if (req.params) req.params = sanitize(req.params);
-
-    next();
-};
-
-app.use(sanitizeInput);
-
-// ============ INTERNATIONALIZATION ============
 const { i18nMiddleware } = require('./middlewares/i18n');
 app.use(i18nMiddleware);
+
+// ============ CSRF PROTECTION ============
+// Appliquer CSRF sur toutes les méthodes de modification pour l'API complète
+app.use(csrfTokenMiddleware);
+// Pour le moment on applique juste le middleware qui initialise le token,
+// la validation stricte doit être ajoutée route par route ou globalement si le frontend le gère.
+// app.use(csrfValidation); // À activer quand le frontend est prêt à envoyer le X-CSRF-Token
 
 // ============ API ROUTES ============
 
