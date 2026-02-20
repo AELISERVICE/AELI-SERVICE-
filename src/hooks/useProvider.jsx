@@ -7,7 +7,6 @@ export const useProviderApplications = () => {
     return useQuery({
         queryKey: ["useProviderApplications"],
         queryFn: () => request("/api/admin/provider-applications", "GET"),
-        // Optionnel : ne pas rafraîchir à chaque clic sur la fenêtre
         refetchOnWindowFocus: false,
     });
 };
@@ -26,14 +25,14 @@ export const useProviderPending = () => {
     return useQuery({
         queryKey: ["useProviderApplicationsDetail"],
         queryFn: () => request("/api/admin/providers/pending", "GET"),
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
     });
 };
 
 // Valider/Rejeter un prestataire
-export const useProvidersVerify = () => {
+export const useProvidersCreation = () => {
     return useMutation({
-        mutationKey: ["useProvidersVerify"],
-        mutationFn: ({ id }) => request(`/providers/${id}/verify`, "PUT")
+        mutationKey: ["useProvidersCreation"],
+        mutationFn: ({ id, formData }) => request(`/api/admin/provider-applications/${id}/review`, "PUT", formData)
     });
 };

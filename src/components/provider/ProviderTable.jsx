@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext } from 'react-router-dom';
-import { MapPin, Briefcase, FileText, MoreVertical, RotateCcw, Phone, MessageCircle, Users } from 'lucide-react';
+import { toast } from "react-toastify";
+import { MapPin, Upload, FileText, MoreVertical, RotateCcw, Loader2, MessageCircle, Users } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Table } from '../../ui/Table';
@@ -8,11 +10,14 @@ import { Badge } from '../../ui/Badge';
 import { NotFound } from '../global/NotFound';
 import { ActionMenu } from '../global/ActionMenu';
 import { useProviderApplications, useProviderPending } from '../../hooks/useProvider';
+import { useExportProviders } from '../../hooks/useExport';
 
 export const ProviderTable = ({ applications, isLoading, actifTabs }) => {
     const { onActiveModal } = useOutletContext();
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
+
+    const { mutate: mutateExport, isLoading: isLoadingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport } = useExportProviders();
 
     const headers = [
         "Business",
@@ -25,9 +30,85 @@ export const ProviderTable = ({ applications, isLoading, actifTabs }) => {
         "Actions"
     ];
 
+    const handleExport = () => {
+        mutateExport();
+    };
+
+
+    useEffect(() => {
+        if (isSuccessExport && dataExport) {
+            const csvContent = dataExport.message;
+
+            // Créer le Blob (avec le BOM "\ufeff" pour la compatibilité Excel/Accents)
+            const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // Créer le lien de téléchargement
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            // Nom du fichier (ex: export-prestataires-19-02-2026.csv)
+            const now = new Date();
+            const date = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+
+            const time = `${hours}h${minutes}m${seconds}s`;
+
+            // Configurer le nom du fichier
+            link.href = url;
+            link.setAttribute('download', `export-prestataires-${date}-${time}.csv`);
+
+            // Déclenchement automatique du téléchargement
+            document.body.appendChild(link);
+            link.click();
+
+            // Nettoyage de la mémoire et du DOM
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Exportation réussie !");
+        }
+
+        if (isErrorExport) {
+            const mainMessage = errorExport?.message || "Erreur lors de l'exportation";
+            toast.error(mainMessage);
+
+            const backendErrors = errorExport?.response?.data?.errors;
+            if (Array.isArray(backendErrors)) {
+                backendErrors.forEach((err) => {
+                    toast.info(err.message);
+                });
+            }
+        }
+    }, [isSuccessExport, isErrorExport, dataExport, errorExport]);
 
     return (
         <Card>
+            <div className="flex justify-between mb-1">
+                <div>
+                    <h1 className="text-xl text-gray-700 font-bold lg:pacifico-regular">Prestataires</h1>
+                </div>
+                <Button
+                    variant="primary"
+                    size={"icon"}
+                    disabled={isLoadingExport}
+                    onClick={handleExport}
+                    className="p-2.5  md:px-3"
+                >
+                    {isLoadingExport ? (
+                        <span key="loading-state" className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="hidden md:inline">Exportation...</span>
+                        </span>
+                    ) : (
+                        <span key="idle-state" className="flex items-center gap-2">
+                            <Upload size={18} />
+                            <span className="hidden md:inline">Exporter</span>
+                        </span>
+                    )}
+                </Button>
+            </div>
             {applications.length > 0 ? (
                 <Table headers={headers}>
                     {applications.map((app) => (
@@ -76,12 +157,12 @@ export const ProviderTable = ({ applications, isLoading, actifTabs }) => {
                             {/* 4. Contact (Phone + WhatsApp) */}
                             <td className="px-6 py-4 text-slate-600">
                                 <div className="flex flex-col gap-1">
-                                    <span className="flex gap-1 text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 truncate">
-                                        <Phone size={12} className="text-slate-400" />
+                                    <span className="flex gap-1 text-[11px] bg-slate-100 text-slate-600 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded whitespace-nowrap">
+                                        {/* <Phone size={12} className="text-slate-600" /> */}
                                         <span>{app.phone}</span>
                                     </span>
-                                    <span className="flex gap-1 text-[10px] bg-green-100 px-1.5 py-0.5 rounded text-green-800 truncate">
-                                        <MessageCircle size={12} />
+                                    <span className="flex gap-1 text-[11px] bg-green-100  text-green-600 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded whitespace-nowrap">
+                                        {/* <MessageCircle size={12} /> */}
                                         <span>{app.whatsapp}</span>
                                     </span>
                                 </div>
@@ -89,10 +170,13 @@ export const ProviderTable = ({ applications, isLoading, actifTabs }) => {
 
                             {/* 5. Activités */}
                             <td className="px-6 py-4">
-                                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                <div className="grid grid-rows-2 grid-flow-col gap-2 max-w-[200px] overflow-x-auto pb-1">
                                     {app.activities.map((act, index) => (
-                                        <span key={index} className="bg-blue-50 text-blue-600 text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1 truncate">
-                                            <Briefcase size={10} /> {act}
+                                        <span
+                                            key={index}
+                                            className="bg-[#E8524D]/10 text-[#E8524D] text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded whitespace-nowrap "
+                                        >
+                                            {act}
                                         </span>
                                     ))}
                                 </div>
@@ -131,7 +215,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs }) => {
                             </td>
 
                             {/* 8. Actions */}
-                            <td className="relative px-6 py-4 text-right">
+                            <td className={`relative px-6 py-4 text-right ${openMenuId === app.id ? 'z-50' : 'z-auto'}`}>
                                 {actifTabs === "Supprimer" ? (
                                     <Button
                                         size={false}

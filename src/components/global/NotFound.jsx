@@ -12,7 +12,7 @@ export const NotFound = ({
             <h2 className="text-2xl font-bold text-gray-400 mb-2 text-center">
                 {title}
             </h2>
-            <span className="text-sm text-gray-400">{message}</span>
+            <span className="text-sm text-gray-400 px-2 text-center">{message}</span>
         </div>
     );
 };

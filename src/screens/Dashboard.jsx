@@ -1,5 +1,5 @@
 import React from "react";
-import { Users, Briefcase, ShoppingBag, Star } from 'lucide-react';
+import { ToastContainer } from 'react-toastify';
 import { KpiCount } from '../components/dashboard/KpiCount';
 import { PaymentSummary } from '../components/dashboard/PaymentSummary';
 import { ContactAnalytics } from '../components/dashboard/ContactAnalytics';
@@ -41,6 +41,7 @@ export function Dashboard() {
                 </div>
                 <LastusersRegister />
             </div>
+            <ToastContainer position="bottom-center" />
         </div>
     )
 }

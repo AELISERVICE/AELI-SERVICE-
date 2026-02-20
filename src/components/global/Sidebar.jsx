@@ -60,7 +60,7 @@ export function Sidebar({ isOpen, onClose }) {
                         onClick={onClose}
                         className="lg:hidden relative p-2.5 shadow-sm "
                     >
-                        <X size={24} className="text-gray-500"/>
+                        <X size={24} className="text-gray-500" />
                     </Button>
                 </div>
 

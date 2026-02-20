@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import { Pagination } from '../components/global/Pagination'
 import { ProviderTable } from '../components/provider/ProviderTable';
 import { TabButton } from '../components/global/TabButton'
@@ -6,22 +7,20 @@ import { useProviderApplications, useProviderPending } from '../hooks/useProvide
 
 
 export function Provider() {
-    const TABS = ['Tout', 'Actifs', 'Attente', 'Bloquer', 'Supprimer'];
-    // On initialise avec 'Tout' pour correspondre au premier onglet
+    const TABS = ['Tout', 'Actifs', 'Attente', 'Bloquer'];
     const [actifTabs, setActifTabs] = useState('Tout');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 2;
 
-    // On récupère les deux sources de données
     const { data: allData, isLoading: loadingAll } = useProviderApplications();
     const { data: pendingData, isLoading: loadingPending } = useProviderPending();
 
     // Logique de sélection des données selon l'onglet
     const getFilteredData = () => {
         if (actifTabs === 'Attente') {
-            // Pour Pending, on cherche "providers" et non "applications"
             return pendingData?.data?.providers || [];
         }
 
-        // Pour les autres onglets
         const allApps = allData?.data?.applications || [];
 
         switch (actifTabs) {
@@ -31,32 +30,48 @@ export function Provider() {
                 return allApps.filter(app => app.status === 'blocked');
             case 'Supprimer':
                 return allApps.filter(app => app.status === 'deleted');
+            case 'Attente':
+                return allApps.filter(app => app.status === 'pending');
             default:
                 return allApps;
         }
     };
 
-    const displayData = getFilteredData();
-    const pagination = actifTabs === 'Attente' ? pendingData?.data?.pagination : allData?.data?.pagination;
+    const fullFilteredData = getFilteredData();
+
+    // Calcul du découpage (Slicing)
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = fullFilteredData.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(fullFilteredData.length / itemsPerPage);
+
+    // Reset de la page quand on change d'onglet
+    const handleTabChange = (tab) => {
+        setActifTabs(tab);
+        setCurrentPage(1);
+    };
 
     return (
         <>
             <div className="flex mb-6 flex-wrap gap-2">
-                <TabButton TABS={TABS} setActifTabs={setActifTabs} />
+                <TabButton TABS={TABS} setActifTabs={handleTabChange} />
             </div>
 
             <ProviderTable
-                applications={displayData}
+                applications={currentItems}
                 isLoading={actifTabs === 'Attente' ? loadingPending : loadingAll}
                 actifTabs={actifTabs}
             />
 
             <div className="mt-6">
                 <Pagination
-                    currentPage={pagination?.currentPage}
-                    totalPages={pagination?.totalPages}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
                 />
             </div>
+            <ToastContainer position="bottom-center" />
         </>
     );
 }

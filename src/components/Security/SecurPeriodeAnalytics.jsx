@@ -3,14 +3,12 @@ import { AreaCharts } from '../../ui/AreaChart';
 import { Card } from '../../ui/Card';
 import { useSecurityLogs } from "../../hooks/useStats";
 
+
 export const SecurPeriodeAnalytics = () => {
     const { data: logsResponse, isLoading } = useSecurityLogs();
 
     const chartData = useMemo(() => {
         const logs = logsResponse?.data?.logs || [];
-
-        // 1. Initialiser les 7 derniers jours avec des valeurs à 0
-        // On utilise les noms de jours en français pour correspondre au contexte
         const days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
         const last7Days = Array.from({ length: 7 }).map((_, i) => {
@@ -19,13 +17,13 @@ export const SecurPeriodeAnalytics = () => {
 
             return {
                 name: days[d.getDay()],
-                // On garde la date brute (YYYY-MM-DD) pour la comparaison
+                // la date brute (YYYY-MM-DD) pour la comparaison
                 dateString: d.toISOString().split('T')[0],
                 events: 0
             };
         });
 
-        // 2. Compter les logs pour chaque jour correspondant
+        // compter les logs pour chaque jour correspondant
         logs.forEach(log => {
             if (log.createdAt) {
                 const logDate = log.createdAt.split('T')[0];
@@ -39,6 +37,10 @@ export const SecurPeriodeAnalytics = () => {
         return last7Days;
     }, [logsResponse]);
 
+    const total7Days = useMemo(() => {
+        return chartData.reduce((acc, curr) => acc + curr.events, 0);
+    }, [chartData]);
+
     return (
         <Card className="h-full">
             <div className="flex justify-between items-start mb-6">
@@ -51,13 +53,12 @@ export const SecurPeriodeAnalytics = () => {
                 {!isLoading && (
                     <div className="text-right">
                         <span className="text-2xl font-bold text-purple-600">
-                            {logsResponse?.data?.pagination?.totalItems || 0}
+                            {total7Days || 0}
                         </span>
                         <p className="text-[10px] text-gray-400 uppercase font-bold">Total</p>
                     </div>
                 )}
             </div>
-
             <div className="h-[250px] w-full">
                 <AreaCharts
                     data={chartData}

@@ -98,7 +98,10 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-slate-600">
-                    <div className="flex items-center gap-2"><MapPin size={14} className="fill-red-400 text-white" />{item.location}</div>
+                    <div className="flex items-center gap-2 max-w-[100px]">
+                      <MapPin size={14} className="fill-red-400 text-white shrink-0" />
+                      <span className="truncate">{item.location}</span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1"><Star size={14} className="fill-amber-400 text-amber-400" />{item.averageRating}</div>

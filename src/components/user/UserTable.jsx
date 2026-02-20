@@ -1,57 +1,122 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
-import { MoreVertical, RotateCcw, Mail, Phone, MapPin, Calendar, ShieldCheck, User as UserIcon, Users } from 'lucide-react';
+import { MoreVertical, Upload, Loader2, ShieldCheck, Users } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
 import { NotFound } from '../global/NotFound';
-import { useGetUsers, useDeactivateAccount } from '../../hooks/useUser';
+import { useDeactivateAccount } from '../../hooks/useUser';
+import { useExportUsers } from '../../hooks/useExport';
 
-export const UserTable = ({ actifTabs }) => {
+export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
     const headers = ["Utilisateur", "Rôle", "Genre", "Contact", "Localisation", "Vérifié", "Dernière Connexion", "Status", "Actions"];
 
     const { onActiveModal } = useOutletContext();
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
 
-    // Hooks de données
-    const { data: apiResponse, isLoading, refetch } = useGetUsers();
-    const { mutate: mutateDesactivate, data: dataDesactivate, isSuccess, isError, error } = useDeactivateAccount();
+    const { mutate: mutateDesactivate, isSuccess, data: dataDesactivate, isError, error, reset } = useDeactivateAccount();
+    const { mutate: mutateExport, isLoading: isLoadingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportUsers();
 
-    // TON BLOC DE NOTIFICATION EXACT
+    const handleStatusChange = (user) => {
+        mutateDesactivate({
+            id: user.id,
+            formData: { isActive: !user.isActive }
+        });
+    };
+
+    const handleExport = () => {
+        mutateExport();
+    };
+
     useEffect(() => {
         if (isSuccess && dataDesactivate?.success) {
             toast.success(dataDesactivate.message);
             refetch();
         }
 
+        if (isSuccessExport && dataExport) {
+            const csvContent = dataExport.message;
+
+            // Créer le Blob (avec le BOM "\ufeff" pour la compatibilité Excel/Accents)
+            const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // Créer le lien de téléchargement
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+
+            // Nom du fichier (ex: export-prestataires-19-02-2026.csv)
+            const now = new Date();
+            const date = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+
+            const time = `${hours}h${minutes}m${seconds}s`;
+
+            // Configurer le nom du fichier
+            link.href = url;
+            link.setAttribute('download', `export-users-${date}-${time}.csv`);
+
+            // Déclenchement automatique du téléchargement
+            document.body.appendChild(link);
+            link.click();
+
+            // Nettoyage de la mémoire et du DOM
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success("Exportation réussie !");
+        }
+
         if (isError) {
-            const mainMessage = error?.message;
+            const mainMessage = error?.message || errorExport?.message;
             toast.error(mainMessage);
 
-            const backendErrors = error?.response?.errors;
+            const backendErrors = error?.response?.errors || errorExport?.response?.data?.errors;
             if (Array.isArray(backendErrors)) {
                 backendErrors.forEach((err) => {
                     toast.info(err.message);
                 });
             }
         }
-    }, [isSuccess, isError, dataDesactivate, error, refetch]);
 
-    const users = apiResponse?.data?.users || [];
+        reset();
+        resetExport();
 
-    const handleStatusChange = (user) => {
-        mutateDesactivate({
-            id: user.id,
-            formData: { isActive: !user.isActive } // Envoie le booléen correct
-        });
-    };
+    }, [isSuccess, isError, dataDesactivate, error, refetch, isSuccessExport, isErrorExport, dataExport, errorExport]);
+
+    if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-red-500" /></div>;
 
     return (
         <Card>
+            <div className="flex justify-between mb-1">
+                <div>
+                    <h1 className="text-xl text-gray-700 font-bold lg:pacifico-regular">Utilisateurs</h1>
+                </div>
+                <Button
+                    variant="primary"
+                    size={"icon"}
+                    disabled={isLoadingExport}
+                    onClick={handleExport}
+                    className="p-2.5 md:px-3"
+                >
+                    {isLoadingExport ? (
+                        <span key="loading-state" className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="hidden md:inline">Exportation...</span>
+                        </span>
+                    ) : (
+                        <span key="idle-state" className="flex items-center gap-2">
+                            <Upload size={18} />
+                            <span className="hidden md:inline">Exporter</span>
+                        </span>
+                    )}
+                </Button>
+            </div>
             {users.length > 0 ? (
                 <Table headers={headers}>
                     {users.map((user) => (
@@ -79,7 +144,7 @@ export const UserTable = ({ actifTabs }) => {
                             </td>
 
                             <td className="px-6 py-4 text-xs capitalize text-slate-600">
-                                <div className={`text-xs capitalize px-2 py-1 rounded-full w-fit ${user.gender === 'male' ? 'bg-blue-50 text-blue-600' :
+                                <div className={`text-xs capitalize px-2 py-1 rounded-full w-fit truncate ${user.gender === 'male' ? 'bg-blue-50 text-blue-600' :
                                     user.gender === 'female' ? 'bg-pink-50 text-pink-600' : 'bg-slate-50 text-slate-400'
                                     }`}>
                                     {user.gender || 'Non défini'}
@@ -119,7 +184,7 @@ export const UserTable = ({ actifTabs }) => {
                                     isOpen={openMenuId === user.id}
                                     onClose={() => setOpenMenuId(null)}
                                     triggerRef={triggerRef}
-                                    initialStatus={!user.isActive} // Bloqué si isActive est false
+                                    initialStatus={!user.isActive}
                                     onStatusChange={() => handleStatusChange(user)}
                                     onEdit={() => onActiveModal(3, user)}
                                     onDelete={() => onActiveModal(1, user.id)}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Badge } from '../../ui/Badge';
 import { Card } from '../../ui/Card';
+import { usePayments } from '../../hooks/useSubscription';
 
 const DATA = [
     {
@@ -54,6 +55,9 @@ const DATA = [
 ]
 
 export const SubscriptionList = () => {
+    const { data: paymentsResponse, isLoading } = usePayments();
+    const payments = paymentsResponse?.data?.payments || [];
+
     return (
         <div className="w-full">
             <div className="space-y-4 max-w-6xl">

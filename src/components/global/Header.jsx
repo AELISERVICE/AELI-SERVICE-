@@ -50,7 +50,7 @@ export function Header({ onMenuClick }) {
 
                     </div>
                     <div>
-                        <h1 className="text-2xl text-gray-700 font-bold lg:pacifico-regular">{title}</h1>
+                        <h1 className="text-xl md:text-2xl text-gray-700 font-bold lg:pacifico-regular">{title}</h1>
                         <p >{subtitle}</p>
                     </div>
                 </div>
