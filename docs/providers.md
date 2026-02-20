@@ -105,6 +105,7 @@ Récupère le profil complet d'un prestataire avec ses services, avis récents e
     "photos": ["url1", "url2", "url3"],
     "isVerified": true,
     "isFeatured": false,
+    "featuredUntil": null,
     "averageRating": 4.8,
     "totalReviews": 25,
     "totalViews": 151,  // Incrémenté !
@@ -252,6 +253,8 @@ Récupère le profil complet du prestataire connecté, y compris les statistique
     "photos": [...],
     "documents": [...],
     "isVerified": true,
+    "isFeatured": false,
+    "featuredUntil": null,
     "verificationStatus": "approved",
     "averageRating": 4.8,
     "totalViews": 500,

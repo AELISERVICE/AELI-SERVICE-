@@ -116,6 +116,7 @@ Afficher des cartes KPI sur le dashboard avec les chiffres clés.
         "longitude": 11.5167,
         "isVerified": true,
         "isFeatured": false,
+        "featuredUntil": null,
         "viewsCount": 1250,
         "contactsCount": 89,
         "averageRating": 4.5,
@@ -417,6 +418,17 @@ Liste tous les prestataires (nouveaux ou existants) qui ont des documents en att
 
 ---
 
+### `GET /providers/featured` - Prestataires mis en avant
+
+**Description :**  
+Liste tous les prestataires actuellement mis en avant (`isFeatured = true`), triés par date de fin de mise en avant (`featuredUntil`).
+
+**Ce qu'il fait :**
+- Filtre sur `isFeatured: true`
+- Permet de voir quels sont les prestataires dont la mise en avant expire bientôt.
+
+---
+
 ### `PUT /providers/:id/verify` - Valider/Rejeter un prestataire
 
 **Description :**  
@@ -454,11 +466,24 @@ Met un prestataire "en vedette" pour qu'il apparaisse en priorité dans les rech
 **Ce qu'il fait :**
 - Met à jour `isFeatured = true`
 - Le prestataire apparaît en haut des résultats de recherche
+- Si une `duration` (en jours) est fournie, le système calcule automatiquement la date d'expiration (`featuredUntil`).
+- Une tâche cron s'exécute chaque nuit à 00:30 pour retirer automatiquement la mise en avant des prestataires dont la date `featuredUntil` a expiré.
+- Pour retirer manuellement la mise en avant, passez `isFeatured = false`.
 - Envoie un email de notification
 
-**Body :**
+**Body (Ajouter avec durée) :**
 ```json
-{ "isFeatured": true }
+{ 
+  "isFeatured": true,
+  "duration": 7
+}
+```
+
+**Body (Retirer) :**
+```json
+{ 
+  "isFeatured": false
+}
 ```
 
 ---
@@ -506,14 +531,20 @@ Active ou désactive un prestataire **indépendamment du compte utilisateur**. U
   "data": {
     "provider": {
       "id": "uuid",
+      "userId": "user-uuid",
       "businessName": "Salon Marie Coiffure",
+      "description": "...",
+      "location": "Douala",
       "isActive": false,
+      "isFeatured": false,
+      "featuredUntil": null,
       "user": {
         "id": "user-uuid",
         "email": "marie@example.com",
         "firstName": "Marie",
         "lastName": "Ndiaye"
-      }
+      },
+      "...": "Tous les autres champs du modèle Provider sont retournés"
     }
   }
 }

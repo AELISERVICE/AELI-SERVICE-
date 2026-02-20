@@ -303,6 +303,37 @@ const getPendingProviders = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Get all active featured providers
+ * @route   GET /api/admin/providers/featured
+ * @access  Private (admin)
+ */
+const getFeaturedProviders = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+
+  const { count, rows: providers } = await Provider.findAndCountAll({
+    where: { isFeatured: true },
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "firstName", "lastName", "email", "phone", "profilePhoto"],
+      },
+    ],
+    order: [["featuredUntil", "ASC"], ["createdAt", "DESC"]],
+    limit: queryLimit,
+    offset,
+  });
+
+  const pagination = getPaginationData(page, queryLimit, count);
+
+  i18nResponse(req, res, 200, "provider.list", {
+    providers,
+    pagination,
+  });
+});
+
+/**
  * @desc    Verify/reject a provider
  * @route   PUT /api/admin/providers/:id/verify
  * @access  Private (admin)
@@ -383,7 +414,7 @@ const verifyProvider = asyncHandler(async (req, res) => {
  */
 const featureProvider = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { isFeatured } = req.body;
+  const { isFeatured, duration } = req.body;
 
   const provider = await Provider.findOne({
     where: {
@@ -405,7 +436,15 @@ const featureProvider = asyncHandler(async (req, res) => {
   }
 
   provider.isFeatured = isFeatured;
-  await provider.save({ fields: ["isFeatured"] });
+
+  if (isFeatured && duration) {
+    // Calculate expiration date
+    provider.featuredUntil = new Date(Date.now() + duration * 24 * 60 * 60 * 1000);
+  } else if (!isFeatured) {
+    provider.featuredUntil = null; // Clear if not featured
+  }
+
+  await provider.save({ fields: ["isFeatured", "featuredUntil"] });
 
   // Send email notification to provider (optional - don't fail if email system is down)
   if (provider.user && provider.user.email) {
@@ -870,17 +909,7 @@ const toggleProviderStatus = asyncHandler(async (req, res) => {
   i18nResponse(req, res, 200,
     isActive ? 'admin.providerActivated' : 'admin.providerDeactivated',
     {
-      provider: {
-        id: provider.id,
-        businessName: provider.businessName,
-        isActive: provider.isActive,
-        user: provider.user ? {
-          id: provider.user.id,
-          email: provider.user.email,
-          firstName: provider.user.firstName,
-          lastName: provider.user.lastName
-        } : null
-      }
+      provider: provider
     }
   );
 });
@@ -888,6 +917,7 @@ const toggleProviderStatus = asyncHandler(async (req, res) => {
 module.exports = {
   getStats,
   getPendingProviders,
+  getFeaturedProviders,
   verifyProvider,
   featureProvider,
   updateUserStatus,

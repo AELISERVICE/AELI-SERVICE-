@@ -283,7 +283,7 @@ describe('Admin Controller', () => {
             await featureProvider(mockReq, mockRes, mockNext);
 
             expect(mockProvider.isFeatured).toBe(true);
-            expect(mockProvider.save).toHaveBeenCalledWith({ fields: ['isFeatured'] });
+            expect(mockProvider.save).toHaveBeenCalledWith({ fields: ['isFeatured', 'featuredUntil'] });
             expect(delByPattern).toHaveBeenCalledWith('route:/api/providers*');
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.featured', { provider: mockProvider });
         });

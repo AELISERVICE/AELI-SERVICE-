@@ -10,6 +10,7 @@ const {
     updateReviewVisibility,
     getAllUsers,
     getProvidersUnderReview,
+    getFeaturedProviders,
     reviewProviderDocuments,
     deleteUser,
     toggleProviderStatus
@@ -61,6 +62,7 @@ router.put('/provider-applications/:id/review', reviewApplication);
 // Providers management (existing providers)
 router.get('/providers/pending', getPendingProviders);
 router.get('/providers/under-review', getProvidersUnderReview);
+router.get('/providers/featured', getFeaturedProviders);
 router.put('/providers/:id/verify', verifyProviderValidation, validate, verifyProvider);
 router.put('/providers/:id/feature', featureProviderValidation, validate, featureProvider);
 router.put('/providers/:id/status', toggleProviderStatusValidation, validate, toggleProviderStatus);

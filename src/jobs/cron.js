@@ -94,9 +94,41 @@ const initCronJobs = () => {
                 }
             });
 
-            logger.info(`[CRON] Cleaned ${deleted} old security logs`);
+            if (deleted) logger.info(`[CRON] Cleaned ${deleted} old security logs`);
         } catch (error) {
             logger.error('[CRON] Security log cleanup error:', error.message);
+        }
+    }, {
+        scheduled: true,
+        timezone: 'Africa/Douala'
+    });
+
+    /**
+     * Un-feature expired providers - Daily at 00:30
+     */
+    cron.schedule('30 0 * * *', async () => {
+        logger.info('[CRON] Checking for expired featured providers...');
+        try {
+            const { Provider } = require('../models');
+            const { Op } = require('sequelize');
+
+            const [updated] = await Provider.update(
+                { isFeatured: false, featuredUntil: null },
+                {
+                    where: {
+                        isFeatured: true,
+                        featuredUntil: { [Op.lt]: new Date() }
+                    }
+                }
+            );
+
+            if (updated > 0) {
+                logger.info(`[CRON] Un-featured ${updated} expired providers`);
+                const cache = require('../config/redis');
+                await cache.delByPattern('route:/api/providers*');
+            }
+        } catch (error) {
+            logger.error('[CRON] Featured providers cleanup error:', error.message);
         }
     }, {
         scheduled: true,

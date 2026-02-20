@@ -100,6 +100,11 @@ const Provider = sequelize.define('Provider', {
         defaultValue: false,
         field: 'is_featured'
     },
+    featuredUntil: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'featured_until'
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
