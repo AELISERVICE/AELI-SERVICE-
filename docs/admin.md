@@ -346,17 +346,17 @@ Récupère tous les détails d'une candidature pour la revue.
 
 ---
 
-### `PUT /provider-applications/:id/review` - Approuver/Rejeter
+### `PUT /provider-applications/:id/review` - Onboarding initial (Admettre)
 
 **Description :**  
-Décision finale sur une candidature. C'est l'endpoint le plus critique car il déclenche la création du profil prestataire.
+Décision initiale sur une candidature. Cet endpoint transforme le Client en Prestataire mais ne le valide pas encore définitivement.
 
 **⚠️ IMPORTANT - Ce qu'il fait si `approved` :**
 1. Change le rôle de l'utilisateur : `client` → `provider`
-2. Crée automatiquement le profil `Provider` avec les données de la candidature
+2. Crée le profil `Provider` (avec `isVerified: false` et `status: under_review`)
 3. Crée un abonnement d'essai gratuit de 30 jours
-4. Envoie un email de félicitations
-5. Invalide le cache des prestataires
+4. Envoie un email de bienvenue
+5. **Le prestataire apparaît maintenant dans "Prestataires en cours de revue"** pour la validation finale des documents.
 
 **Tout est exécuté dans une transaction DB** : si une étape échoue, tout est annulé.
 
@@ -385,7 +385,8 @@ Décision finale sur une candidature. C'est l'endpoint le plus critique car il d
   "provider": {
     "id": "uuid",
     "businessName": "...",
-    "isVerified": true
+    "isVerified": false,
+    "verificationStatus": "under_review"
   }
 }
 ```
@@ -405,10 +406,14 @@ Liste les prestataires existants qui n'ont pas encore été vérifiés (`isVerif
 
 ---
 
-### `GET /providers/under-review` - Documents en cours de revue
+### `GET /providers/under-review` - Documents en cours de revue (ÉTAPE FINALE)
 
 **Description :**  
-Prestataires ayant soumis des documents et en attente de validation (`verificationStatus = 'under_review'`).
+Liste tous les prestataires (nouveaux ou existants) qui ont des documents en attente de validation. C'est ici que vous effectuez la vérification finale pour donner le badge "Vérifié".
+
+**Workflow :**
+1. Cliquer sur un prestataire → Voir ses documents.
+2. Utiliser `PUT /providers/:id/review-documents` pour valider les pièces.
 
 ---
 
@@ -856,7 +861,7 @@ Endpoint public pour afficher les bannières sur le site. Il filtre automatiquem
 │                    TRANSACTION ATOMIQUE                          │
 │  ┌───────────────────────────────────────────────────────────┐  │
 │  │ 1. User.role = 'provider'                                 │  │
-│  │ 2. Provider.create({...application data...})             │  │
+│  │ 2. Provider.create({..., isVerified: false })             │  │
 │  │ 3. Subscription.create({status: 'trial', days: 30})      │  │
 │  │ 4. Application.status = 'approved'                        │  │
 │  └───────────────────────────────────────────────────────────┘  │
@@ -866,13 +871,28 @@ Endpoint public pour afficher les bannières sur le site. Il filtre automatiquem
        │
        ▼
 ┌─────────────────────┐
-│ 📧 Email félicitations
-│ au nouveau prestataire
+│ 📧 Email Bienvenue   │
 └─────────┬───────────┘
           │
           ▼
-    ✅ Prestataire visible dans les recherches
-       Essai gratuit 30 jours activé
+    ⏳ Prestataire créé mais en attente de vérification finale
+       (Apparaît dans /admin/providers/under-review)
+          │
+          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              ÉTAPE 2: VÉRIFICATION DOCUMENTAIRE                  │
+│                                                                  │
+│  GET /api/admin/providers/under-review                           │
+│      │                                                           │
+│      ▼                                                           │
+│  PUT /api/admin/providers/:id/review-documents                   │
+│  { decision: "approved", approvedDocuments: [0, 1] }             │
+│                                                                  │
+└──────┬──────────────────────────────────────────────────────────┘
+       │
+       ▼
+    ✅ Prestataire Certifié (isVerified: true)
+       Badge visible publiquement
 ```
 
 ---
