@@ -16,7 +16,8 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: aeli_test
+          # MISE À JOUR : Nom de la BD de test demandé par le dev
+          POSTGRES_DB: aeli_services_test
           POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
@@ -42,16 +43,15 @@ jobs:
       - name: Run Tests
         env:
           NODE_ENV: test
-          # On définit TOUTES les variantes possibles pour être sûr que Sequelize les voit
           DB_HOST: localhost
           DB_PORT: 5432
           DB_USER: postgres
           DB_USERNAME: postgres
           DB_PASS: password
           DB_PASSWORD: password
-          DB_NAME: aeli_test
-          DB_DATABASE: aeli_test
-          # Ajoute ici tes autres variables nécessaires (JWT_SECRET, etc.)
+          # MISE À JOUR : On pointe vers la nouvelle base de données de test
+          DB_NAME: aeli_services_test
+          DB_DATABASE: aeli_services_test
           JWT_SECRET: test_secret
         run: npm test
 
