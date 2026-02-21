@@ -11,9 +11,10 @@ import { useProviderApplicationsDetail, useProvidersCreation } from '../../hooks
 
 
 export function ViewInfoProvider({ closeView, providerData }) {
-    const { data: response } = useProviderApplicationsDetail(providerData?.id);
+    const isAlreadyApproved = providerData?.status === 'approved' || providerData?.verificationStatus === 'under_review';
+    const { data: response } = useProviderApplicationsDetail(!isAlreadyApproved ? providerData?.id : null);
     const { mutate: mutateVerifyProvider, isLoading, isSuccess, data, isError, error } = useProvidersCreation();
-    const app = response?.data?.application;
+    const app = isAlreadyApproved ? providerData : response?.data?.application;
 
     const getDoc = (type) => app?.documents?.find(d => d.type === type)?.url;
 
@@ -44,6 +45,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
             id: providerData?.id,
             formData: payload
         });
+        console.log("Payload envoyé pour vérification :", providerData?.id, payload);
     };
 
     useEffect(() => {
@@ -180,59 +182,67 @@ export function ViewInfoProvider({ closeView, providerData }) {
                             ))}
                         </div>
                     </section>
+
                     <div className="bg-white rounded-[1.5rem] shadow-sm p-6 md:p-8 border border-white flex flex-col">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-bold text-zinc-700 mb-2">Notes administratives (Interne)</label>
-                                <textarea
-                                    name="adminNotes"
-                                    disabled={isLoading}
-                                    value={formData.adminNotes}
-                                    onChange={handleChange}
-                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 h-24 resize-none"
-                                    placeholder="Notes pour l'équipe interne..."
-                                />
+                        {!isAlreadyApproved &&
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-zinc-700 mb-2">Notes administratives (Interne)</label>
+                                    <textarea
+                                        name="adminNotes"
+                                        disabled={isLoading}
+                                        value={formData.adminNotes}
+                                        onChange={handleChange}
+                                        className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 h-24 resize-none"
+                                        placeholder="Notes pour l'équipe interne..."
+                                    />
+                                </div>
+
+                                {/* On affiche le champ Raison du rejet uniquement si nécessaire ou en permanence pour la saisie */}
+                                <div>
+                                    <label className="block text-sm font-bold text-zinc-700 mb-2 text-red-600">Motif du rejet (Envoyé au prestataire)</label>
+                                    <textarea
+                                        name="rejectionReason"
+                                        disabled={isLoading}
+                                        value={formData.rejectionReason}
+                                        onChange={handleChange}
+                                        className="w-full bg-red-50/30 border border-red-100 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-red-500/20 h-24 resize-none"
+                                        placeholder="Ex: CNI illisible, veuillez resoumettre..."
+                                    />
+                                </div>
                             </div>
+                        }
+                        <div className={`flex flex-col md:flex-row gap-4 ${!isAlreadyApproved ? "mt-8" : ""}`}>
+                            {!isAlreadyApproved &&
+                                <>
+                                    <Button
+                                        variant="primary"
+                                        onClick={() => handleAction(true)}
+                                        isLoading={isLoading}
+                                        disabled={isLoading}
+                                        className="w-full py-3 bg-emerald-600 text-white"
+                                    >
+                                        <CheckIcon size={18} /> Accepter la candidature
+                                    </Button>
 
-                            {/* On affiche le champ Raison du rejet uniquement si nécessaire ou en permanence pour la saisie */}
-                            <div>
-                                <label className="block text-sm font-bold text-zinc-700 mb-2 text-red-600">Motif du rejet (Envoyé au prestataire)</label>
-                                <textarea
-                                    name="rejectionReason"
-                                    disabled={isLoading}
-                                    value={formData.rejectionReason}
-                                    onChange={handleChange}
-                                    className="w-full bg-red-50/30 border border-red-100 rounded-xl p-4 text-sm outline-none focus:ring-2 focus:ring-red-500/20 h-24 resize-none"
-                                    placeholder="Ex: CNI illisible, veuillez resoumettre..."
-                                />
-                            </div>
-                        </div>
-                        <div className="flex flex-col md:flex-row gap-4 mt-8">
-                            <Button
-                                variant="primary"
-                                onClick={() => handleAction(true)}
-                                isLoading={isLoading}
-                                disabled={isLoading}
-                                className="w-full py-3 bg-emerald-600 text-white"
-                            >
-                                <CheckIcon size={18} /> Accepter la candidature
-                            </Button>
-
-                            <Button
-                                variant="danger"
-                                onClick={() => handleAction(false)}
-                                isLoading={isLoading}
-                                disabled={isLoading || !formData.rejectionReason} // Désactivé si pas de motif de rejet
-                                className="w-full py-3 border-red-200 text-red-600"
-                            >
-                                <XIcon size={18} /> Rejeter la candidature
-                            </Button>
-
+                                    <Button
+                                        variant="danger"
+                                        onClick={() => handleAction(false)}
+                                        isLoading={isLoading}
+                                        disabled={isLoading || !formData.rejectionReason} // Désactivé si pas de motif de rejet
+                                        className="w-full py-3 border-red-200 text-red-600"
+                                    >
+                                        <XIcon size={18} /> Rejeter la candidature
+                                    </Button>
+                                </>
+                            }
                             <Button variant="outline" onClick={closeView} className="w-full py-3">
-                                Annuler
+                                Fermer
                             </Button>
                         </div>
+
                     </div>
+
                 </div>
             </div>
         </main>

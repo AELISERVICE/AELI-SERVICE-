@@ -3,21 +3,22 @@ import { ToastContainer } from 'react-toastify';
 import { Pagination } from '../components/global/Pagination'
 import { ProviderTable } from '../components/provider/ProviderTable';
 import { TabButton } from '../components/global/TabButton'
-import { useProviderApplications, useProviderPending } from '../hooks/useProvider';
+import { useProviderApplications, useProviderPending, useProviders } from '../hooks/useProvider';
 
 
 export function Provider() {
-    const TABS = ['Tout', 'Actifs', 'Attente', 'Bloquer'];
+    const TABS = ['Tout', 'Attente', 'Doc verification', 'Actifs', 'Bloquer'];
     const [actifTabs, setActifTabs] = useState('Tout');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 2;
 
-    const { data: allData, isLoading: loadingAll } = useProviderApplications();
-    const { data: pendingData, isLoading: loadingPending } = useProviderPending();
+    const { data: providersData } = useProviders();
+    const { data: allData, isLoading: loadingAll, refetch } = useProviderApplications();
+    const { data: pendingData, isLoading: loadingPending, refetch: refetchPending } = useProviderPending();
 
     // Logique de sélection des données selon l'onglet
     const getFilteredData = () => {
-        if (actifTabs === 'Attente') {
+        if (actifTabs === 'Doc verification') {
             return pendingData?.data?.providers || [];
         }
 
@@ -62,6 +63,8 @@ export function Provider() {
                 applications={currentItems}
                 isLoading={actifTabs === 'Attente' ? loadingPending : loadingAll}
                 actifTabs={actifTabs}
+                refetch={refetch}
+                refetchPending={refetchPending}
             />
 
             <div className="mt-6">

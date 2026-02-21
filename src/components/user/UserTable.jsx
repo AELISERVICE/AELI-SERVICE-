@@ -72,7 +72,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
             toast.success("Exportation réussie !");
         }
 
-        if (isError) {
+        if (isError || isErrorExport) {
             const mainMessage = error?.message || errorExport?.message;
             toast.error(mainMessage);
 

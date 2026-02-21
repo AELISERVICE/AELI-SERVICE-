@@ -4,10 +4,11 @@ import { Sidebar } from '../components/global/Sidebar';
 import { Header } from '../components/global/Header';
 import { Confirmation } from '../components/modal/Confirmation';
 import { ViewInfoProvider } from '../components/modal/ViewInfoProvider';
+import { VerifyDocumentProvider } from '../components/modal/VerifyDocumentProvider';
 
 
 export function Base() {
-    const MODALS = { CONFIRM: 1, RECOVERY: 2, VIEWINFOPROVIDER: 3 }
+    const MODALS = { CONFIRM: 1, RECOVERY: 2, VIEWINFOPROVIDER: 3, VERIFYDOCUMENTSPROVIDER: 4 };
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeModal, setActiveModal] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
@@ -46,6 +47,13 @@ export function Base() {
             {/* Modale de détails - On vérifie le .type */}
             {activeModal?.type === MODALS.VIEWINFOPROVIDER &&
                 <ViewInfoProvider
+                    closeView={closeModal}
+                    providerData={activeModal.data}
+                />
+            }
+
+            {activeModal?.type === MODALS.VERIFYDOCUMENTSPROVIDER &&
+                <VerifyDocumentProvider
                     closeView={closeModal}
                     providerData={activeModal.data}
                 />

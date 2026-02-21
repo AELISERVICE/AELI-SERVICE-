@@ -1,14 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Trash2, Eye, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Trash2, Eye, ShieldAlert, ShieldCheck, FileText } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import { Portal } from '../../ui/Portal';
 
 
-export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete, onStatusChange, initialStatus = false }) {
+export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, onDelete, onStatusChange, initialStatus = false }) {
     const menuRef = useRef(null);
     const location = useLocation();
-    const isUsers = location.pathname.startsWith('/users');
+    const isProvider = location.pathname.startsWith('/provider');
     const [coords, setCoords] = useState({ top: 0, left: 0 });
     const [isBlocked, setIsBlocked] = useState(initialStatus);
 
@@ -54,18 +54,31 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete, onSt
                 className="bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden"
             >
                 <div className="flex flex-col">
-                    {!isUsers &&
-                        <div className="border-b border-gray-100 hover:bg-gray-50">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-full gap-3 px-4 py-3.5 text-xs font-bold justify-start text-zinc-600"
-                                onClick={() => { onEdit?.(); onClose(); }}
-                            >
-                                <Eye size={16} />
-                                <span>Consulter</span>
-                            </Button>
-                        </div>
+                    {isProvider &&
+                        <>
+                            <div className="border-b border-gray-100 hover:bg-gray-50">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full gap-3 px-4 py-3.5 text-xs font-bold justify-start text-zinc-600"
+                                    onClick={() => { onEdit?.(); onClose(); }}
+                                >
+                                    <Eye size={16} />
+                                    <span>Consulter</span>
+                                </Button>
+                            </div>
+                            <div className="border-b border-gray-100 hover:bg-gray-50">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full gap-3 px-4 py-3.5 text-xs font-bold justify-start text-zinc-600"
+                                    onClick={() => { onVerifyDoc?.(); onClose(); }}
+                                >
+                                    <FileText size={16} />
+                                    <span>Verifier doc</span>
+                                </Button>
+                            </div>
+                        </>
                     }
 
                     <div
