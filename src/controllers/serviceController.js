@@ -38,17 +38,24 @@ const getCategories = asyncHandler(async (req, res) => {
 const createCategory = asyncHandler(async (req, res) => {
     const { name, description, icon, order } = req.body;
 
-    const category = await Category.create({
-        name,
-        description,
-        icon,
-        order: order || 0
-    });
+    try {
+        const category = await Category.create({
+            name,
+            description,
+            icon,
+            order: order || 0
+        });
 
-    // Invalidate categories cache
-    await cache.del(cache.cacheKeys.categories());
+        // Invalidate categories cache
+        await cache.del(cache.cacheKeys.categories());
 
-    i18nResponse(req, res, 201, 'category.created', { category });
+        i18nResponse(req, res, 201, 'category.created', { category });
+    } catch (error) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            throw new AppError(req.t('category.alreadyExists') || 'Cette catégorie existe déjà', 400);
+        }
+        throw error;
+    }
 });
 
 /**
@@ -223,6 +230,76 @@ const deleteService = asyncHandler(async (req, res) => {
     i18nResponse(req, res, 200, 'service.deleted');
 });
 
+/**
+ * @desc    Get unique categories for a provider
+ * @route   GET /api/services/provider/:providerId/categories
+ * @access  Public
+ */
+const getCategoriesByProvider = asyncHandler(async (req, res) => {
+    const { providerId } = req.params;
+
+    const services = await Service.findAll({
+        where: {
+            providerId,
+            isActive: true
+        },
+        include: [
+            {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name', 'slug', 'icon']
+            }
+        ],
+        attributes: ['id'] // We only need the categories
+    });
+
+    // Extract unique categories
+    const uniqueCategoriesMap = new Map();
+    services.forEach(service => {
+        if (service.category && !uniqueCategoriesMap.has(service.category.id)) {
+            uniqueCategoriesMap.set(service.category.id, service.category);
+        }
+    });
+
+    const categories = Array.from(uniqueCategoriesMap.values());
+
+    i18nResponse(req, res, 200, 'category.list', { categories });
+});
+
+/**
+ * @desc    Remove a category from a provider (Soft deletes all services in that category)
+ * @route   DELETE /api/services/provider/category/:categoryId
+ * @access  Private (provider only)
+ */
+const deleteProviderCategory = asyncHandler(async (req, res) => {
+    const { categoryId } = req.params;
+
+    // Get provider for current user
+    const provider = await Provider.findOne({ where: { userId: req.user.id } });
+    if (!provider) {
+        throw new AppError(req.t('provider.notFound'), 400);
+    }
+
+    // Soft delete all active services for this provider in this category
+    const updatedCount = await Service.update(
+        { isActive: false },
+        {
+            where: {
+                providerId: provider.id,
+                categoryId,
+                isActive: true
+            }
+        }
+    );
+
+    // Invalidate provider services cache
+    await cache.del(cache.cacheKeys.services(provider.id));
+
+    i18nResponse(req, res, 200, 'service.deleted', {
+        message: `Catégorie retirée avec succès (${updatedCount} services désactivés)`
+    });
+});
+
 module.exports = {
     getCategories,
     createCategory,
@@ -230,5 +307,7 @@ module.exports = {
     createService,
     getServicesByProvider,
     updateService,
-    deleteService
+    deleteService,
+    getCategoriesByProvider,
+    deleteProviderCategory
 };

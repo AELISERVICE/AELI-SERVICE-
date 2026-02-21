@@ -106,7 +106,7 @@ Crée une nouvelle catégorie de services.
 
 ---
 
-### `PUT /categories/:id` - Modifier une catégorie
+### `PUT /api/services/categories/:id` - Modifier une catégorie
 
 **🔒 Authentification requise** | **Rôle : admin uniquement**
 
@@ -117,7 +117,7 @@ Modifie une catégorie existante.
 
 ## 🛠️ 2. SERVICES
 
-### `GET /provider/:providerId` - Services d'un prestataire
+### `GET /api/services/provider/:providerId` - Services d'un prestataire
 
 **🌐 Accessible publiquement**
 
@@ -173,7 +173,7 @@ Récupère tous les services proposés par un prestataire.
 
 ---
 
-### `POST /` - Créer un service
+### `POST /api/services` - Créer un service
 
 **🔒 Authentification requise** | **Rôle : provider**
 
@@ -224,7 +224,7 @@ Permet à un prestataire d'ajouter un service à son catalogue.
 
 ---
 
-### `PUT /:id` - Modifier un service
+### `PUT /api/services/:id` - Modifier un service
 
 **🔒 Authentification requise** | **Propriétaire du service**
 
@@ -247,7 +247,7 @@ Modifie un service existant.
 
 ---
 
-### `DELETE /:id` - Supprimer un service
+### `DELETE /api/services/:id` - Supprimer un service
 
 **🔒 Authentification requise** | **Propriétaire ou Admin**
 

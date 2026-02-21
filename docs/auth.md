@@ -58,6 +58,7 @@ Crée un nouveau compte utilisateur. Par défaut, tous les utilisateurs sont cr�
     "firstName": "Marie",
     "lastName": "Dupont",
     "role": "client",
+    "profilePhoto": null,
     "isEmailVerified": false
   }
 }
@@ -103,6 +104,7 @@ Valide le code OTP envoyé par email lors de l'inscription.
     "id": "uuid",
     "email": "marie@example.com",
     "role": "client",
+    "profilePhoto": null,
     "isEmailVerified": true
   }
 }
@@ -177,6 +179,7 @@ Authentifie un utilisateur et retourne les tokens JWT.
     "firstName": "Marie",
     "lastName": "Dupont",
     "role": "client",
+    "profilePhoto": "https://cloudinary.com/.../photo.jpg",
     "isEmailVerified": true
   }
 }
@@ -371,6 +374,7 @@ Authorization: Bearer <accessToken>
     "lastName": "Dupont",
     "phone": "+237699123456",
     "role": "provider",
+    "profilePhoto": "https://cloudinary.com/.../photo.jpg",
     "isEmailVerified": true,
     "provider": {  // Si role = provider
       "id": "uuid",

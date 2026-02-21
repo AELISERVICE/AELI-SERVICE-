@@ -286,7 +286,7 @@ const getPendingProviders = asyncHandler(async (req, res) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "firstName", "lastName", "email", "phone"],
+        attributes: ["id", "firstName", "lastName", "email", "phone", "profilePhoto"],
       },
     ],
     order: [["createdAt", "ASC"]],
@@ -628,7 +628,7 @@ const getProvidersUnderReview = asyncHandler(async (req, res) => {
       {
         model: User,
         as: "user",
-        attributes: ["id", "firstName", "lastName", "email", "phone"],
+        attributes: ["id", "firstName", "lastName", "email", "phone", "profilePhoto"],
       },
     ],
     order: [["createdAt", "ASC"]],

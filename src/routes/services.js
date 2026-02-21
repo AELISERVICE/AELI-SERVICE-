@@ -7,7 +7,9 @@ const {
     createService,
     getServicesByProvider,
     updateService,
-    deleteService
+    deleteService,
+    getCategoriesByProvider,
+    deleteProviderCategory
 } = require('../controllers/serviceController');
 const { protect, restrictTo } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
@@ -30,10 +32,12 @@ router.put('/categories/:id', protect, restrictTo('admin'), updateCategory);
 
 // Public
 router.get('/provider/:providerId', getServicesByProvider);
+router.get('/provider/:providerId/categories', getCategoriesByProvider);
 
 // Provider only
 router.post('/', protect, restrictTo('provider'), createServiceValidation, validate, createService);
 router.put('/:id', protect, updateServiceValidation, validate, updateService);
 router.delete('/:id', protect, deleteService);
+router.delete('/provider/category/:categoryId', protect, restrictTo('provider'), deleteProviderCategory);
 
 module.exports = router;
