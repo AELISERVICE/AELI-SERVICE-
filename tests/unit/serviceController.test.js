@@ -10,7 +10,9 @@ const {
     createService,
     getServicesByProvider,
     updateService,
-    deleteService
+    deleteService,
+    getCategoriesByProvider,
+    deleteProviderCategory
 } = require('../../src/controllers/serviceController');
 
 // Mock dependencies
@@ -18,7 +20,8 @@ jest.mock('../../src/models', () => ({
     Service: {
         findByPk: jest.fn(),
         findAll: jest.fn(),
-        create: jest.fn()
+        create: jest.fn(),
+        update: jest.fn()
     },
     Provider: {
         findOne: jest.fn(),
@@ -81,8 +84,8 @@ describe('Service Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
-        successResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
+        successResponse.mockImplementation(() => { });
         cache.get.mockResolvedValue(null);
         cache.set.mockResolvedValue('OK');
         cache.del.mockResolvedValue(1);
@@ -145,6 +148,17 @@ describe('Service Controller', () => {
             });
             expect(cache.del).toHaveBeenCalledWith('categories');
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 201, 'category.created', { category: mockCategory });
+        });
+
+        it('should return 400 error on duplicate category name', async () => {
+            mockReq.body = { name: 'Duplicate Category' };
+            const error = new Error('Validation error');
+            error.name = 'SequelizeUniqueConstraintError';
+
+            Category.create.mockRejectedValue(error);
+
+            await expect(createCategory(mockReq, mockRes, mockNext)).rejects.toThrow();
+            // The exact message is determined by i18n/AppError, we just verify it throws
         });
     });
 
@@ -380,6 +394,72 @@ describe('Service Controller', () => {
             Service.findByPk.mockResolvedValue(mockService);
 
             await expect(deleteService(mockReq, mockRes, mockNext)).rejects.toThrow('service.unauthorized');
+        });
+    });
+
+    describe('getCategoriesByProvider', () => {
+        it('should return unique categories from provider services', async () => {
+            mockReq.params = { providerId: 'provider-123' };
+
+            const mockServices = [
+                { id: 'service-1', category: { id: 'cat-1', name: 'Category 1' } },
+                { id: 'service-2', category: { id: 'cat-1', name: 'Category 1' } },
+                { id: 'service-3', category: { id: 'cat-2', name: 'Category 2' } }
+            ];
+
+            Service.findAll.mockResolvedValue(mockServices);
+
+            await getCategoriesByProvider(mockReq, mockRes, mockNext);
+
+            expect(Service.findAll).toHaveBeenCalledWith({
+                where: { providerId: 'provider-123', isActive: true },
+                include: expect.any(Array),
+                attributes: ['id']
+            });
+
+            // uniqueCategoriesMap should extract exactly 2 categories
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'category.list', {
+                categories: [
+                    { id: 'cat-1', name: 'Category 1' },
+                    { id: 'cat-2', name: 'Category 2' }
+                ]
+            });
+        });
+    });
+
+    describe('deleteProviderCategory', () => {
+        it('should soft delete services and invalidate cache', async () => {
+            mockReq.params = { categoryId: 'category-123' };
+            const mockProvider = { id: 'provider-123', userId: 'user-123' };
+
+            Provider.findOne.mockResolvedValue(mockProvider);
+            Service.update.mockResolvedValue([3]); // assume 3 rows updated
+
+            await deleteProviderCategory(mockReq, mockRes, mockNext);
+
+            expect(Provider.findOne).toHaveBeenCalledWith({ where: { userId: 'user-123' } });
+            expect(Service.update).toHaveBeenCalledWith(
+                { isActive: false },
+                {
+                    where: {
+                        providerId: 'provider-123',
+                        categoryId: 'category-123',
+                        isActive: true
+                    }
+                }
+            );
+            expect(cache.del).toHaveBeenCalledWith('services:provider-123');
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'service.deleted', {
+                message: 'Catégorie retirée avec succès (3 services désactivés)'
+            });
+        });
+
+        it('should throw error if provider not found', async () => {
+            mockReq.params = { categoryId: 'category-123' };
+
+            Provider.findOne.mockResolvedValue(null);
+
+            await expect(deleteProviderCategory(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
         });
     });
 });
