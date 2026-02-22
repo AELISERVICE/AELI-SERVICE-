@@ -21,7 +21,7 @@ describe('Services API', () => {
                 .get(`/api/services/provider/${fakeId}`);
 
             expect(res.statusCode).toBe(200);
-            expect(res.body.data.services).toEqual([]);
+            expect(res.body.data.categories).toEqual([]);
         });
     });
 
