@@ -129,7 +129,7 @@ Génère une session de paiement NotchPay.
 ```json
 {
   "amount": 5000,
-  "type": "subscription",
+  "type": "subscription", // ou "featured", "boost", "contact_premium"
   "providerId": "uuid",
   "description": "Premium AELI"
 }

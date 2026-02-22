@@ -228,22 +228,27 @@ Initie le processus d'abonnement. Redirige vers le paiement via l'API Payments.
 **Body :**
 ```json
 {
-  "plan": "monthly"  // monthly, quarterly, yearly
+  "plan": "monthly",  // monthly, quarterly, yearly
+  "gateway": "notchpay" // (Optionnel) "cinetpay" par défaut, ou "notchpay"
 }
 ```
 
 **⚠️ Note :** Le plan `trial` ne peut pas être souscrit manuellement - il est créé automatiquement à l'approbation de la candidature.
 
-**Réponse 200 :**
+**Réponse 201 (Succès) :**
 ```json
 {
   "success": true,
   "message": "Paiement initialisé",
-  "payment": {
+  "data": {
+    "paymentId": "5000...",
     "transactionId": "AELI1705347890123456",
     "amount": 5000,
     "currency": "XAF",
-    "paymentUrl": "https://checkout.cinetpay.com/pay/abc123..."
+    "plan": "monthly",
+    "duration": "30 jours",
+    "gateway": "NotchPay",
+    "paymentUrl": "https://api.notchpay.co/checkout/abc123..."
   }
 }
 ```

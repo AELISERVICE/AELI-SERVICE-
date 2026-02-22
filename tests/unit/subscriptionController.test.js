@@ -63,13 +63,14 @@ jest.mock('../../src/utils/emailTemplates', () => ({
 }));
 
 jest.mock('../../src/utils/paymentGateway', () => ({
-    initializeCinetPayPayment: jest.fn()
+    initializeCinetPayPayment: jest.fn(),
+    initializeNotchPayPayment: jest.fn()
 }));
 
 const { Subscription, Provider, Payment } = require('../../src/models');
 const { i18nResponse, sendEmailSafely } = require('../../src/utils/helpers');
 const { sendEmail } = require('../../src/config/email');
-const { initializeCinetPayPayment } = require('../../src/utils/paymentGateway');
+const { initializeCinetPayPayment, initializeNotchPayPayment } = require('../../src/utils/paymentGateway');
 
 describe('Subscription Controller', () => {
     let mockReq, mockRes, mockNext;
@@ -147,7 +148,10 @@ describe('Subscription Controller', () => {
 
             await subscribe(mockReq, mockRes, mockNext);
 
-            expect(Provider.findOne).toHaveBeenCalledWith({ where: { userId: 'user-123' } });
+            expect(Provider.findOne).toHaveBeenCalledWith({
+                where: { userId: 'user-123' },
+                include: expect.any(Array)
+            });
             expect(Payment.create).toHaveBeenCalledWith({
                 userId: 'user-123',
                 providerId: 'provider-123',
@@ -160,6 +164,41 @@ describe('Subscription Controller', () => {
                 metadata: { plan: 'monthly' }
             });
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 201, 'subscription.paymentInitiated', expect.any(Object));
+        });
+
+        it('should subscribe to plan successfully using NotchPay', async () => {
+            mockReq.body = { plan: 'monthly', gateway: 'notchpay' };
+
+            const mockProvider = { id: 'provider-123', userId: 'user-123', user: { email: 'test@example.com' } };
+            const mockPayment = { id: 'payment-123', transactionId: 'txn-123', amount: 5000, description: 'Test', save: jest.fn().mockResolvedValue() };
+
+            Provider.findOne.mockResolvedValue(mockProvider);
+            Payment.create.mockResolvedValue(mockPayment);
+
+            initializeNotchPayPayment.mockResolvedValue({
+                status: 'Accepted',
+                authorization_url: 'http://notchpay.co/pay'
+            });
+
+            await subscribe(mockReq, mockRes, mockNext);
+
+            expect(Provider.findOne).toHaveBeenCalledWith({
+                where: { userId: 'user-123' },
+                include: expect.any(Array)
+            });
+            expect(Payment.create).toHaveBeenCalledWith({
+                userId: 'user-123',
+                providerId: 'provider-123',
+                amount: 5000,
+                currency: 'XAF',
+                type: 'subscription',
+                description: 'Abonnement monthly - 30 jours',
+                status: 'PENDING',
+                transactionId: expect.any(String),
+                metadata: { plan: 'monthly' }
+            });
+            expect(initializeNotchPayPayment).toHaveBeenCalled();
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 201, 'subscription.paymentInitiated', expect.objectContaining({ gateway: 'NotchPay' }));
         });
 
         it('should throw error for invalid plan', async () => {

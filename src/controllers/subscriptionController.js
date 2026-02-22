@@ -10,7 +10,8 @@
 const { Subscription, Provider, User, Payment } = require("../models");
 const { asyncHandler, AppError } = require("../middlewares/errorHandler");
 const { i18nResponse } = require("../utils/helpers");
-const { initializeCinetPayPayment } = require("../utils/paymentGateway");
+const { initializeCinetPayPayment, initializeNotchPayPayment } = require("../utils/paymentGateway");
+const { NOTCH_PAY_CONFIG } = require("../config/notchpay");
 
 /**
  * @desc    Get subscription plans and pricing
@@ -75,15 +76,18 @@ const getMySubscription = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const subscribe = asyncHandler(async (req, res) => {
-  const { plan } = req.body;
+  const { plan, gateway = "cinetpay" } = req.body;
 
   // Validate plan
   if (!["monthly", "quarterly", "yearly"].includes(plan)) {
     throw new AppError(req.t("subscription.invalidPlan"), 400);
   }
 
-  // Get provider
-  const provider = await Provider.findOne({ where: { userId: req.user.id } });
+  // Get provider and user
+  const provider = await Provider.findOne({
+    where: { userId: req.user.id },
+    include: [{ model: User, as: "user" }]
+  });
   if (!provider) {
     throw new AppError(req.t("subscription.providerRequired"), 400);
   }
@@ -108,32 +112,69 @@ const subscribe = asyncHandler(async (req, res) => {
     metadata: { plan },
   });
 
+  const isNotchPay = gateway.toLowerCase() === "notchpay";
+  payment.gateway = isNotchPay ? "NotchPay" : "CinetPay";
+  await payment.save();
+
   try {
-    const cinetpayResponse = await initializeCinetPayPayment({
-      transactionId: payment.transactionId,
-      amount: payment.amount,
-      description: payment.description
-    });
-
-    if (cinetpayResponse.code === "201") {
-      payment.paymentToken = cinetpayResponse.data.payment_token;
-      payment.paymentUrl = cinetpayResponse.data.payment_url;
-      await payment.save();
-
-      i18nResponse(req, res, 201, "subscription.paymentInitiated", {
-        paymentId: payment.id,
-        transactionId: payment.transactionId,
-        paymentUrl: payment.paymentUrl,
-        amount: planConfig.price,
-        currency: "XAF",
-        plan,
-        duration: `${planConfig.days} jours`,
+    if (isNotchPay) {
+      const notchpayResponse = await initializeNotchPayPayment({
+        email: provider.user?.email || "test@aeli.com",
+        amount: payment.amount,
+        currency: payment.currency,
+        description: payment.description,
+        reference: payment.transactionId,
+        callback: NOTCH_PAY_CONFIG.callbackUrl,
       });
+
+      if (notchpayResponse.status === "Accepted" || notchpayResponse.authorization_url) {
+        payment.paymentUrl = notchpayResponse.authorization_url;
+        await payment.save();
+
+        i18nResponse(req, res, 201, "subscription.paymentInitiated", {
+          paymentId: payment.id,
+          transactionId: payment.transactionId,
+          paymentUrl: payment.paymentUrl,
+          amount: planConfig.price,
+          currency: "XAF",
+          plan,
+          duration: `${planConfig.days} jours`,
+          gateway: "NotchPay"
+        });
+      } else {
+        payment.status = "REFUSED";
+        payment.errorMessage = notchpayResponse.message;
+        await payment.save();
+        throw new AppError(req.t("payment.failed"), 400);
+      }
     } else {
-      payment.status = "REFUSED";
-      payment.errorMessage = cinetpayResponse.message;
-      await payment.save();
-      throw new AppError(req.t("payment.failed"), 400);
+      const cinetpayResponse = await initializeCinetPayPayment({
+        transactionId: payment.transactionId,
+        amount: payment.amount,
+        description: payment.description
+      });
+
+      if (cinetpayResponse.code === "201") {
+        payment.paymentToken = cinetpayResponse.data.payment_token;
+        payment.paymentUrl = cinetpayResponse.data.payment_url;
+        await payment.save();
+
+        i18nResponse(req, res, 201, "subscription.paymentInitiated", {
+          paymentId: payment.id,
+          transactionId: payment.transactionId,
+          paymentUrl: payment.paymentUrl,
+          amount: planConfig.price,
+          currency: "XAF",
+          plan,
+          duration: `${planConfig.days} jours`,
+          gateway: "CinetPay"
+        });
+      } else {
+        payment.status = "REFUSED";
+        payment.errorMessage = cinetpayResponse.message;
+        await payment.save();
+        throw new AppError(req.t("payment.failed"), 400);
+      }
     }
   } catch (error) {
     if (payment.status !== "REFUSED") {
