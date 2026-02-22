@@ -269,7 +269,7 @@ describe('Service Controller', () => {
         it('should return cached services if available', async () => {
             mockReq.params = { providerId: 'provider-123' };
 
-            const cachedData = { services: [] };
+            const cachedData = { categories: [] };
             cache.get.mockResolvedValue(cachedData);
 
             await getServicesByProvider(mockReq, mockRes, mockNext);
@@ -282,12 +282,14 @@ describe('Service Controller', () => {
         it('should fetch services from database if not cached', async () => {
             mockReq.params = { providerId: 'provider-123' };
 
-            const mockServices = [
-                { id: 'service-1', name: 'Test Service', category: { id: 'category-1', name: 'Category' } }
-            ];
+            const mockService1 = {
+                id: 'service-1', name: 'Test Service',
+                category: { id: 'category-1', name: 'Category' },
+                toJSON: function () { return { id: this.id, name: this.name, category: this.category }; }
+            };
 
             cache.get.mockResolvedValue(null);
-            Service.findAll.mockResolvedValue(mockServices);
+            Service.findAll.mockResolvedValue([mockService1]);
 
             await getServicesByProvider(mockReq, mockRes, mockNext);
 
@@ -299,8 +301,17 @@ describe('Service Controller', () => {
                 include: expect.any(Array),
                 order: [['createdAt', 'DESC']]
             });
-            expect(cache.set).toHaveBeenCalledWith('services:provider-123', { services: mockServices }, 600);
-            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'service.list', { services: mockServices });
+
+            const expectedCategories = [{
+                id: 'category-1',
+                name: 'Category',
+                slug: undefined,
+                icon: undefined,
+                services: [{ id: 'service-1', name: 'Test Service' }]
+            }];
+
+            expect(cache.set).toHaveBeenCalledWith('services:provider-123', { categories: expectedCategories }, 600);
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'service.list', { categories: expectedCategories });
         });
     });
 

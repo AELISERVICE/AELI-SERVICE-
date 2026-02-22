@@ -133,35 +133,34 @@ Récupère tous les services proposés par un prestataire.
 ```json
 {
   "success": true,
-  "services": [
+  "categories": [
     {
-      "id": "uuid",
-      "name": "Tresses africaines",
-      "description": "Tresses de tous types : nattes, vanilles, locks...",
-      "price": 5000,
-      "priceType": "from",  // "from" = à partir de, "fixed" = prix fixe
-      "duration": 180,      // En minutes
-      "isActive": true,
-      "category": {
-        "id": "uuid",
-        "name": "Coiffure"
-      }
-    },
-    {
-      "id": "uuid",
-      "name": "Coloration",
-      "description": "Coloration complète avec produits de qualité",
-      "price": 15000,
-      "priceType": "fixed",
-      "duration": 120,
-      "isActive": true,
-      "category": {
-        "id": "uuid",
-        "name": "Coiffure"
-      }
+      "id": "uuid-cat-coiffure",
+      "name": "Coiffure",
+      "slug": "coiffure",
+      "icon": "scissors",
+      "services": [
+        {
+          "id": "uuid",
+          "name": "Tresses africaines",
+          "description": "Tresses de tous types : nattes, vanilles, locks...",
+          "price": 5000,
+          "priceType": "from",
+          "duration": 180,
+          "isActive": true
+        },
+        {
+          "id": "uuid",
+          "name": "Coloration",
+          "description": "Coloration complète avec produits de qualité",
+          "price": 15000,
+          "priceType": "fixed",
+          "duration": 120,
+          "isActive": true
+        }
+      ]
     }
-  ],
-  "count": 8
+  ]
 }
 ```
 

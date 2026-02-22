@@ -147,13 +147,39 @@ const getServicesByProvider = asyncHandler(async (req, res) => {
             {
                 model: Category,
                 as: 'category',
-                attributes: ['id', 'name', 'slug']
+                attributes: ['id', 'name', 'slug', 'icon']
             }
         ],
         order: [['createdAt', 'DESC']]
     });
 
-    const responseData = { services };
+    // Group services by category
+    const categoriesMap = new Map();
+
+    services.forEach(service => {
+        const cat = service.category;
+        if (!cat) return; // Safety check
+
+        if (!categoriesMap.has(cat.id)) {
+            categoriesMap.set(cat.id, {
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                icon: cat.icon,
+                services: []
+            });
+        }
+
+        // Add formatted service without nested category object
+        const serviceData = service.toJSON();
+        delete serviceData.category; // Remove since it's already in the parent
+
+        categoriesMap.get(cat.id).services.push(serviceData);
+    });
+
+    const groupedCategories = Array.from(categoriesMap.values());
+
+    const responseData = { categories: groupedCategories };
 
     // Cache for 10 minutes
     await cache.set(cacheKey, responseData, 600);
