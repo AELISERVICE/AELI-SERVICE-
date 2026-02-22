@@ -62,9 +62,14 @@ jest.mock('../../src/utils/emailTemplates', () => ({
     subscriptionExpiringEmail: jest.fn()
 }));
 
+jest.mock('../../src/utils/paymentGateway', () => ({
+    initializeCinetPayPayment: jest.fn()
+}));
+
 const { Subscription, Provider, Payment } = require('../../src/models');
 const { i18nResponse, sendEmailSafely } = require('../../src/utils/helpers');
 const { sendEmail } = require('../../src/config/email');
+const { initializeCinetPayPayment } = require('../../src/utils/paymentGateway');
 
 describe('Subscription Controller', () => {
     let mockReq, mockRes, mockNext;
@@ -87,7 +92,7 @@ describe('Subscription Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
         sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         sendEmail.mockResolvedValue({});
     });
@@ -130,10 +135,15 @@ describe('Subscription Controller', () => {
             mockReq.body = { plan: 'monthly' };
 
             const mockProvider = { id: 'provider-123', userId: 'user-123' };
-            const mockPayment = { id: 'payment-123', transactionId: 'txn-123' };
+            const mockPayment = { id: 'payment-123', transactionId: 'txn-123', amount: 5000, description: 'Test', save: jest.fn().mockResolvedValue() };
 
             Provider.findOne.mockResolvedValue(mockProvider);
             Payment.create.mockResolvedValue(mockPayment);
+
+            initializeCinetPayPayment.mockResolvedValue({
+                code: '201',
+                data: { payment_token: 'token-123', payment_url: 'http://cinetpay.com/pay' }
+            });
 
             await subscribe(mockReq, mockRes, mockNext);
 

@@ -10,6 +10,7 @@
 const { Subscription, Provider, User, Payment } = require("../models");
 const { asyncHandler, AppError } = require("../middlewares/errorHandler");
 const { i18nResponse } = require("../utils/helpers");
+const { initializeCinetPayPayment } = require("../utils/paymentGateway");
 
 /**
  * @desc    Get subscription plans and pricing
@@ -107,15 +108,41 @@ const subscribe = asyncHandler(async (req, res) => {
     metadata: { plan },
   });
 
-  // In production, would integrate with CinetPay to get payment URL
-  i18nResponse(req, res, 201, "subscription.paymentInitiated", {
-    paymentId: payment.id,
-    transactionId: payment.transactionId,
-    amount: planConfig.price,
-    currency: "XAF",
-    plan,
-    duration: `${planConfig.days} jours`,
-  });
+  try {
+    const cinetpayResponse = await initializeCinetPayPayment({
+      transactionId: payment.transactionId,
+      amount: payment.amount,
+      description: payment.description
+    });
+
+    if (cinetpayResponse.code === "201") {
+      payment.paymentToken = cinetpayResponse.data.payment_token;
+      payment.paymentUrl = cinetpayResponse.data.payment_url;
+      await payment.save();
+
+      i18nResponse(req, res, 201, "subscription.paymentInitiated", {
+        paymentId: payment.id,
+        transactionId: payment.transactionId,
+        paymentUrl: payment.paymentUrl,
+        amount: planConfig.price,
+        currency: "XAF",
+        plan,
+        duration: `${planConfig.days} jours`,
+      });
+    } else {
+      payment.status = "REFUSED";
+      payment.errorMessage = cinetpayResponse.message;
+      await payment.save();
+      throw new AppError(req.t("payment.failed"), 400);
+    }
+  } catch (error) {
+    if (payment.status !== "REFUSED") {
+      payment.status = "REFUSED";
+      payment.errorMessage = error.message;
+      await payment.save();
+    }
+    throw error;
+  }
 });
 
 /**
