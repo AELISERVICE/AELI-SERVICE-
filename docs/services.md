@@ -147,6 +147,7 @@ Récupère tous les services proposés par un prestataire.
           "price": 5000,
           "priceType": "from",
           "duration": 180,
+          "photo": "https://url-de-la-photo.com/image.jpg",
           "isActive": true
         },
         {
@@ -156,6 +157,7 @@ Récupère tous les services proposés par un prestataire.
           "price": 15000,
           "priceType": "fixed",
           "duration": 120,
+          "photo": null,
           "isActive": true
         }
       ]
@@ -193,6 +195,7 @@ Permet à un prestataire d'ajouter un service à son catalogue.
   "price": 25000,
   "priceType": "fixed",
   "duration": 90,
+  "photo": "data:image/png;base64,iVBORw0KGgo...",
   "categoryId": "uuid"
 }
 ```
@@ -205,6 +208,7 @@ Permet à un prestataire d'ajouter un service à son catalogue.
 | `price` | ❌ | Entier ≥ 0 |
 | `priceType` | ❌ | `fixed`, `from`, `range`, `contact` (défaut: `contact`) |
 | `duration` | ❌ | Entier en minutes |
+| `photo` | ❌ | URL de l'image ou string Base64 |
 | `categoryId` | ✅ | UUID de catégorie valide |
 
 **Réponse 201 :**
@@ -216,6 +220,7 @@ Permet à un prestataire d'ajouter un service à son catalogue.
     "id": "uuid",
     "name": "Maquillage mariée",
     "price": 25000,
+    "photo": "data:image/png;base64,...",
     "isActive": true
   }
 }
@@ -240,6 +245,7 @@ Modifie un service existant.
 {
   "name": "Maquillage mariée + essai",
   "price": 30000,
+  "photo": "https://nouveau-lien-image.com/pic.jpg",
   "isActive": false  // Désactiver temporairement
 }
 ```
@@ -268,6 +274,7 @@ Supprime un service de manière permanente.
 ```html
 <div class="service-card">
   <div class="category-badge">Coiffure</div>
+  <img src={service.photo || '/default-service.jpg'} alt={service.name} class="service-image" />
   <h3>Tresses africaines</h3>
   <p>Tresses de tous types : nattes, vanilles, locks...</p>
   <div class="service-footer">

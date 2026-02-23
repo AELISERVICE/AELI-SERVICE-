@@ -92,7 +92,7 @@ const updateCategory = asyncHandler(async (req, res) => {
  * @access  Private (provider)
  */
 const createService = asyncHandler(async (req, res) => {
-    const { categoryId, name, description, price, priceType, duration, tags } = req.body;
+    const { categoryId, name, description, price, priceType, duration, tags, photo } = req.body;
 
     // Get provider for current user
     const provider = await Provider.findOne({ where: { userId: req.user.id } });
@@ -114,7 +114,8 @@ const createService = asyncHandler(async (req, res) => {
         price,
         priceType: priceType || 'contact',
         duration,
-        tags: tags || []
+        tags: tags || [],
+        photo: photo || null
     });
 
     // Invalidate provider services cache
@@ -194,7 +195,7 @@ const getServicesByProvider = asyncHandler(async (req, res) => {
  */
 const updateService = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { categoryId, name, description, price, priceType, duration, tags, isActive } = req.body;
+    const { categoryId, name, description, price, priceType, duration, tags, isActive, photo } = req.body;
 
     const service = await Service.findByPk(id, {
         include: [{ model: Provider, as: 'provider' }]
@@ -222,8 +223,12 @@ const updateService = asyncHandler(async (req, res) => {
     if (duration !== undefined) service.duration = duration;
     if (tags) service.tags = tags;
     if (isActive !== undefined) service.isActive = isActive;
+    if (photo !== undefined) service.photo = photo;
 
     await service.save();
+
+    // Invalidate cache
+    await cache.del(cache.cacheKeys.services(service.providerId));
 
     i18nResponse(req, res, 200, 'service.updated', { service });
 });
@@ -252,6 +257,9 @@ const deleteService = asyncHandler(async (req, res) => {
     // Soft delete
     service.isActive = false;
     await service.save({ fields: ['isActive'] });
+
+    // Invalidate cache
+    await cache.del(cache.cacheKeys.services(service.providerId));
 
     i18nResponse(req, res, 200, 'service.deleted');
 });

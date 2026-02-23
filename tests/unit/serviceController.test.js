@@ -239,7 +239,8 @@ describe('Service Controller', () => {
                 price: 100,
                 priceType: 'fixed',
                 duration: 60,
-                tags: ['tag1', 'tag2']
+                tags: ['tag1', 'tag2'],
+                photo: null
             });
             expect(cache.del).toHaveBeenCalledWith('services:provider-123');
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 201, 'service.created', { service: mockService });
@@ -341,6 +342,7 @@ describe('Service Controller', () => {
             expect(mockService.price).toBe(150);
             expect(mockService.isActive).toBe(false);
             expect(mockService.save).toHaveBeenCalled();
+            expect(cache.del).toHaveBeenCalledWith('services:provider-123');
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'service.updated', { service: mockService });
         });
 
@@ -383,6 +385,7 @@ describe('Service Controller', () => {
 
             expect(mockService.isActive).toBe(false);
             expect(mockService.save).toHaveBeenCalledWith({ fields: ['isActive'] });
+            expect(cache.del).toHaveBeenCalledWith('services:provider-123');
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'service.deleted');
         });
 
