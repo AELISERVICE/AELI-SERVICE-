@@ -126,6 +126,20 @@ const getProviders = asyncHandler(async (req, res) => {
       as: "user",
       attributes: ["id", "firstName", "lastName", "profilePhoto"],
     },
+    {
+      model: Service,
+      as: 'services',
+      attributes: ['id'], // Keep it minimal to improve performance
+      where: { isActive: true },
+      required: false, // Don't filter out providers with no active services unless category filter is on
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name', 'slug', 'icon'],
+        }
+      ]
+    }
   ];
 
   // If category filter, add where condition for providers with services in that category
@@ -140,13 +154,33 @@ const getProviders = asyncHandler(async (req, res) => {
     });
   }
 
-  const { count, rows: providers } = await Provider.findAndCountAll({
+  const { count, rows: providersObj } = await Provider.findAndCountAll({
     where,
     include,
     order: buildSortOrder(sort),
     limit: queryLimit,
     offset,
     distinct: true,
+  });
+
+  // Format the providers to extract unique categories from services
+  const providers = providersObj.map(provider => {
+    const providerJSON = provider.toJSON();
+
+    // Extract unique categories
+    const categoriesMap = new Map();
+    if (providerJSON.services) {
+      providerJSON.services.forEach(service => {
+        if (service.category && !categoriesMap.has(service.category.id)) {
+          categoriesMap.set(service.category.id, service.category);
+        }
+      });
+    }
+
+    providerJSON.categories = Array.from(categoriesMap.values());
+    delete providerJSON.services; // Remove raw services to keep payload small
+
+    return providerJSON;
   });
 
   const pagination = getPaginationData(page, queryLimit, count);

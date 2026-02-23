@@ -55,6 +55,14 @@ GET /api/providers?location=Douala&minRating=4&sortBy=rating&sortOrder=desc
       "isFeatured": true,
       "photos": ["url1", "url2"],  // ⚠️ Vide si abonnement expiré
       "whatsapp": "+237...",       // ⚠️ Masqué si abonnement expiré
+      "categories": [
+        {
+          "id": "uuid-cat-coiffure",
+          "name": "Coiffure",
+          "slug": "coiffure",
+          "icon": "scissors"
+        }
+      ],
       "subscription": {
         "isActive": true
       }

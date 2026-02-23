@@ -60,7 +60,25 @@ paths:
                       providers:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Provider'
+                          allOf:
+                            - $ref: '#/components/schemas/Provider'
+                            - type: object
+                              properties:
+                                categories:
+                                  type: array
+                                  description: Catégories uniques où le prestataire propose des services
+                                  items:
+                                    type: object
+                                    properties:
+                                      id:
+                                        type: string
+                                        format: uuid
+                                      name:
+                                        type: string
+                                      slug:
+                                        type: string
+                                      icon:
+                                        type: string
                       pagination:
                         $ref: '#/components/schemas/Pagination'
 
