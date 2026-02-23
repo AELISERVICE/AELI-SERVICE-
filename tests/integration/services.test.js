@@ -2,6 +2,18 @@ const request = require('supertest');
 const app = require('../../src/app');
 
 describe('Services API', () => {
+    describe('GET /api/services', () => {
+        it('should return list of all active services grouped by category', async () => {
+            const res = await request(app)
+                .get('/api/services');
+
+            expect(res.statusCode).toBe(200);
+            expect(res.body.success).toBe(true);
+            expect(res.body.data).toHaveProperty('categories');
+            expect(Array.isArray(res.body.data.categories)).toBe(true);
+        });
+    });
+
     describe('GET /api/services/categories', () => {
         it('should return list of categories', async () => {
             const res = await request(app)

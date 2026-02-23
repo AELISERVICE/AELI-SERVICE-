@@ -8,6 +8,7 @@ const {
     createCategory,
     updateCategory,
     createService,
+    getAllServicesGrouped,
     getServicesByProvider,
     updateService,
     deleteService,
@@ -263,6 +264,57 @@ describe('Service Controller', () => {
             Category.findByPk.mockResolvedValue(null);
 
             await expect(createService(mockReq, mockRes, mockNext)).rejects.toThrow('category.notFound');
+        });
+    });
+
+    describe('getAllServicesGrouped', () => {
+        it('should return cached services if available', async () => {
+            const cachedData = { categories: [] };
+            cache.get.mockResolvedValue(cachedData);
+
+            await getAllServicesGrouped(mockReq, mockRes, mockNext);
+
+            expect(cache.get).toHaveBeenCalledWith('services:all:grouped');
+            expect(successResponse).toHaveBeenCalledWith(mockRes, 200, 'service.list', cachedData);
+            expect(i18nResponse).not.toHaveBeenCalled();
+        });
+
+        it('should fetch and group all services if no cache', async () => {
+            cache.get.mockResolvedValue(null);
+
+            const mockServices = [
+                {
+                    id: 'service-1',
+                    category: { id: 'category-1', name: 'Category 1', slug: 'category-1', icon: 'icon-1' },
+                    provider: { id: 'provider-1', businessName: 'Provider 1', location: 'City' },
+                    name: 'Test Service 1',
+                    toJSON: function () { return { id: this.id, name: this.name, provider: this.provider, category: this.category }; }
+                }
+            ];
+
+            Service.findAll.mockResolvedValue(mockServices);
+
+            await getAllServicesGrouped(mockReq, mockRes, mockNext);
+
+            expect(Service.findAll).toHaveBeenCalledWith({
+                where: { isActive: true },
+                include: [
+                    { model: Category, as: 'category', attributes: ['id', 'name', 'slug', 'icon'] },
+                    { model: Provider, as: 'provider', attributes: ['id', 'businessName', 'location'] }
+                ],
+                order: [['createdAt', 'DESC']]
+            });
+
+            const expectedCategories = [{
+                id: 'category-1',
+                name: 'Category 1',
+                slug: 'category-1',
+                icon: 'icon-1',
+                services: [{ id: 'service-1', name: 'Test Service 1', provider: { id: 'provider-1', businessName: 'Provider 1', location: 'City' } }]
+            }];
+
+            expect(cache.set).toHaveBeenCalledWith('services:all:grouped', { categories: expectedCategories }, 600);
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'service.list', { categories: expectedCategories });
         });
     });
 

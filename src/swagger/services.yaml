@@ -85,6 +85,38 @@ paths:
           description: Catégorie modifiée
 
   /services:
+    get:
+      tags:
+        - Services
+      summary: Liste globale de tous les services groupés par catégorie
+      responses:
+        '200':
+          description: Liste des catégories et leurs services actifs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        slug:
+                          type: string
+                        icon:
+                          type: string
+                        services:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Service'
     post:
       tags:
         - Services

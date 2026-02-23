@@ -120,8 +120,75 @@ const createService = asyncHandler(async (req, res) => {
 
     // Invalidate provider services cache
     await cache.del(cache.cacheKeys.services(provider.id));
+    await cache.del('services:all:grouped');
 
     i18nResponse(req, res, 201, 'service.created', { service });
+});
+
+/**
+ * @desc    Get all services globally grouped by category
+ * @route   GET /api/services
+ * @access  Public
+ */
+const getAllServicesGrouped = asyncHandler(async (req, res) => {
+    // Try cache first
+    const cacheKey = 'services:all:grouped';
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+        return successResponse(res, 200, req.t('service.list'), cached);
+    }
+
+    const services = await Service.findAll({
+        where: {
+            isActive: true
+        },
+        include: [
+            {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name', 'slug', 'icon']
+            },
+            {
+                model: Provider,
+                as: 'provider',
+                attributes: ['id', 'businessName', 'location']
+            }
+        ],
+        order: [['createdAt', 'DESC']]
+    });
+
+    // Group services by category
+    const categoriesMap = new Map();
+
+    services.forEach(service => {
+        const cat = service.category;
+        if (!cat) return; // Safety check
+
+        if (!categoriesMap.has(cat.id)) {
+            categoriesMap.set(cat.id, {
+                id: cat.id,
+                name: cat.name,
+                slug: cat.slug,
+                icon: cat.icon,
+                services: []
+            });
+        }
+
+        // Add formatted service without nested category object
+        const serviceData = service.toJSON();
+        delete serviceData.category; // Remove since it's already in the parent
+
+        categoriesMap.get(cat.id).services.push(serviceData);
+    });
+
+    const groupedCategories = Array.from(categoriesMap.values());
+
+    const responseData = { categories: groupedCategories };
+
+    // Cache for 10 minutes (it changes often as people add services)
+    await cache.set(cacheKey, responseData, 600);
+
+    i18nResponse(req, res, 200, 'service.list', responseData);
 });
 
 /**
@@ -229,6 +296,7 @@ const updateService = asyncHandler(async (req, res) => {
 
     // Invalidate cache
     await cache.del(cache.cacheKeys.services(service.providerId));
+    await cache.del('services:all:grouped');
 
     i18nResponse(req, res, 200, 'service.updated', { service });
 });
@@ -260,6 +328,7 @@ const deleteService = asyncHandler(async (req, res) => {
 
     // Invalidate cache
     await cache.del(cache.cacheKeys.services(service.providerId));
+    await cache.del('services:all:grouped');
 
     i18nResponse(req, res, 200, 'service.deleted');
 });
@@ -328,6 +397,7 @@ const deleteProviderCategory = asyncHandler(async (req, res) => {
 
     // Invalidate provider services cache
     await cache.del(cache.cacheKeys.services(provider.id));
+    await cache.del('services:all:grouped');
 
     i18nResponse(req, res, 200, 'service.deleted', {
         message: `Catégorie retirée avec succès (${updatedCount} services désactivés)`
@@ -339,6 +409,7 @@ module.exports = {
     createCategory,
     updateCategory,
     createService,
+    getAllServicesGrouped,
     getServicesByProvider,
     updateService,
     deleteService,

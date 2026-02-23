@@ -117,6 +117,53 @@ Modifie une catégorie existante.
 
 ## 🛠️ 2. SERVICES
 
+### `GET /api/services` - Liste globale de tous les services
+
+**🌐 Accessible publiquement**
+
+**Description :**  
+Récupère TOUS les services actifs de la plateforme, groupés par catégorie. Idéal pour un catalogue général.
+
+**Ce qu'il fait :**
+- Retourne uniquement les services actifs (`isActive = true`)
+- Regroupe les services par catégorie
+- Inclut les informations de base du prestataire (`provider`)
+- Utilise un cache Redis pour accélérer le chargement
+
+**Réponse 200 :**
+```json
+{
+  "success": true,
+  "categories": [
+    {
+      "id": "uuid-cat-coiffure",
+      "name": "Coiffure",
+      "slug": "coiffure",
+      "icon": "scissors",
+      "services": [
+        {
+          "id": "uuid-service",
+          "name": "Coupe Homme",
+          "description": "Coupe classique",
+          "price": 2000,
+          "priceType": "fixed",
+          "duration": 30,
+          "photo": null,
+          "isActive": true,
+          "provider": {
+            "id": "uuid-provider",
+            "businessName": "Salon Bellezza",
+            "location": "Yaoundé"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
 ### `GET /api/services/provider/:providerId` - Services d'un prestataire
 
 **🌐 Accessible publiquement**

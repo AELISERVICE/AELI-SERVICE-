@@ -5,6 +5,7 @@ const {
     createCategory,
     updateCategory,
     createService,
+    getAllServicesGrouped,
     getServicesByProvider,
     updateService,
     deleteService,
@@ -31,6 +32,7 @@ router.put('/categories/:id', protect, restrictTo('admin'), updateCategory);
 // ============ SERVICE ROUTES ============
 
 // Public
+router.get('/', getAllServicesGrouped);
 router.get('/provider/:providerId', getServicesByProvider);
 router.get('/provider/:providerId/categories', getCategoriesByProvider);
 
