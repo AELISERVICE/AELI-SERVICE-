@@ -181,7 +181,10 @@ describe('Provider Controller', () => {
 
             const mockProviders = {
                 count: 5,
-                rows: [{ id: 'provider-1' }, { id: 'provider-2' }]
+                rows: [
+                    { id: 'provider-1', toJSON: function () { return { id: this.id }; } },
+                    { id: 'provider-2', toJSON: function () { return { id: this.id }; } }
+                ]
             };
 
             Provider.findAndCountAll.mockResolvedValue(mockProviders);
