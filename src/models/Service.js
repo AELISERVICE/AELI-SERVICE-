@@ -73,6 +73,10 @@ const Service = sequelize.define('Service', {
         type: DataTypes.JSONB,
         defaultValue: []
     },
+    photo: {
+        type: DataTypes.STRING(1000),
+        allowNull: true
+    },
     isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
