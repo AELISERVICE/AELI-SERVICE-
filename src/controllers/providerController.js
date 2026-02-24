@@ -140,12 +140,6 @@ const getProviders = asyncHandler(async (req, res) => {
         }
       ]
     },
-    {
-      model: Provider,
-      as: 'provider',
-      attributes: ['id', 'profilePhoto'],
-      required: false
-    }
   ];
 
   // If category filter, add where condition for providers with services in that category
