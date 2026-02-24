@@ -139,6 +139,12 @@ const getProviders = asyncHandler(async (req, res) => {
           attributes: ['id', 'name', 'slug', 'icon'],
         }
       ]
+    },
+    {
+      model: Provider,
+      as: 'provider',
+      attributes: ['id', 'profilePhoto'],
+      required: false
     }
   ];
 
@@ -210,6 +216,7 @@ const getProviderById = asyncHandler(async (req, res) => {
       "facebook",
       "instagram",
       "photos",
+      "profilePhoto",
       "averageRating",
       "totalReviews",
       "viewsCount",
@@ -343,6 +350,23 @@ const updateProvider = asyncHandler(async (req, res) => {
     }
 
     provider.photos = [...currentPhotos, ...newPhotos];
+  }
+
+  // Handle logo upload
+  if (req.file) {
+    // Delete old logo if exists
+    if (provider.profilePhoto) {
+      const oldPublicId = getPublicIdFromUrl(provider.profilePhoto);
+      if (oldPublicId) {
+        await deleteImage(oldPublicId).catch((err) => {
+          logger.error("Error deleting old provider logo:", {
+            error: err.message,
+            publicId: oldPublicId,
+          });
+        });
+      }
+    }
+    provider.profilePhoto = req.file.path;
   }
 
   await provider.save();

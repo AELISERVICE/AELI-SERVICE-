@@ -53,6 +53,7 @@ GET /api/providers?location=Douala&minRating=4&sortBy=rating&sortOrder=desc
       "totalReviews": 25,
       "totalViews": 150,
       "isFeatured": true,
+      "profilePhoto": "https://res.cloudinary.com/...",
       "photos": ["url1", "url2"],  // ⚠️ Vide si abonnement expiré
       "whatsapp": "+237...",       // ⚠️ Masqué si abonnement expiré
       "categories": [
@@ -110,6 +111,7 @@ Récupère le profil complet d'un prestataire avec ses services, avis récents e
     "whatsapp": "+237699123456",  // Masqué si abonnement expiré
     "facebook": "facebook.com/salonmarie",
     "instagram": "@salonmarie",
+    "profilePhoto": "https://res.cloudinary.com/...",
     "photos": ["url1", "url2", "url3"],
     "isVerified": true,
     "isFeatured": false,

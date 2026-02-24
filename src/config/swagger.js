@@ -85,7 +85,8 @@ L'API utilise des JWT tokens:
                         viewsCount: { type: 'integer' },
                         contactsCount: { type: 'integer' },
                         averageRating: { type: 'number' },
-                        totalReviews: { type: 'integer' }
+                        totalReviews: { type: 'integer' },
+                        profilePhoto: { type: 'string', description: 'URL du logo/photo de profil du prestataire' }
                     }
                 },
                 Category: {
@@ -112,6 +113,7 @@ L'API utilise des JWT tokens:
                         priceType: { type: 'string', enum: ['fixed', 'from', 'range', 'contact'] },
                         duration: { type: 'integer', description: 'Durée en minutes' },
                         tags: { type: 'array', items: { type: 'string' } },
+                        photo: { type: 'string', description: 'URL de la photo du service' },
                         isActive: { type: 'boolean' }
                     }
                 },

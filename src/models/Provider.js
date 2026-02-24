@@ -90,6 +90,11 @@ const Provider = sequelize.define('Provider', {
         type: DataTypes.DECIMAL(11, 8),
         allowNull: true
     },
+    profilePhoto: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+        field: 'profile_photo'
+    },
     isVerified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

@@ -50,9 +50,6 @@ const galleryPhotoStorage = new CloudinaryStorage({
     }
 });
 
-/**
- * Cloudinary storage configuration for advertising banners
- */
 const bannerStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -65,6 +62,23 @@ const bannerStorage = new CloudinaryStorage({
         ]
     }
 });
+
+/**
+ * Cloudinary storage configuration for provider logos
+ */
+const providerLogoStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'aeli-services/logos',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [
+            { width: 400, height: 400, crop: 'fill' },
+            { quality: 'auto' },
+            { fetch_format: 'auto' }
+        ]
+    }
+});
+
 
 /**
  * File filter to only allow images
@@ -233,6 +247,43 @@ const handleServicePhotoUpload = (req, res, next) => {
 };
 
 /**
+ * Multer upload configuration for provider logos (single image)
+ */
+const uploadProviderLogo = multer({
+    storage: providerLogoStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB max
+    },
+    fileFilter: imageFileFilter
+}).single('logo');
+
+/**
+ * Middleware wrapper for provider logo upload with error handling
+ */
+const handleProviderLogoUpload = (req, res, next) => {
+    uploadProviderLogo(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La taille du logo ne doit pas dépasser 5MB'
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: `Erreur d'upload: ${err.message}`
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+        next();
+    });
+};
+
+/**
  * Cloudinary storage configuration for verification documents (PDF, images)
  */
 const documentStorage = new CloudinaryStorage({
@@ -379,5 +430,6 @@ module.exports = {
     handleApplicationUpload,
     handleBannerUpload,
     uploadServicePhoto,
-    handleServicePhotoUpload
+    handleServicePhotoUpload,
+    handleProviderLogoUpload
 };

@@ -294,10 +294,10 @@ paths:
                             type: integer
                           totalReviews:
                             type: integer
-                          averageRating:
-                            type: number
-                          pendingContacts:
-                            type: integer
+                        averageRating:
+                          type: number
+                        pendingContacts:
+                          type: integer
                       recentContacts:
                         type: array
                         items:
