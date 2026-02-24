@@ -19,6 +19,22 @@ const profilePhotoStorage = new CloudinaryStorage({
 });
 
 /**
+ * Cloudinary storage configuration for service photos
+ */
+const servicePhotoStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'aeli-services/services',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [
+            { width: 800, height: 600, crop: 'limit' },
+            { quality: 'auto' },
+            { fetch_format: 'auto' }
+        ]
+    }
+});
+
+/**
  * Cloudinary storage configuration for provider gallery photos
  */
 const galleryPhotoStorage = new CloudinaryStorage({
@@ -180,6 +196,43 @@ const handleBannerUpload = (req, res, next) => {
 };
 
 /**
+ * Multer upload configuration for service photos (single image)
+ */
+const uploadServicePhoto = multer({
+    storage: servicePhotoStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB max
+    },
+    fileFilter: imageFileFilter
+}).single('photo');
+
+/**
+ * Middleware wrapper for service photo upload with error handling
+ */
+const handleServicePhotoUpload = (req, res, next) => {
+    uploadServicePhoto(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La taille de l\'image de service ne doit pas dépasser 5MB'
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: `Erreur d'upload: ${err.message}`
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+        next();
+    });
+};
+
+/**
  * Cloudinary storage configuration for verification documents (PDF, images)
  */
 const documentStorage = new CloudinaryStorage({
@@ -324,5 +377,7 @@ module.exports = {
     handleGalleryPhotosUpload,
     handleDocumentUpload,
     handleApplicationUpload,
-    handleBannerUpload
+    handleBannerUpload,
+    uploadServicePhoto,
+    handleServicePhotoUpload
 };

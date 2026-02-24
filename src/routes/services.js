@@ -19,6 +19,7 @@ const {
     createServiceValidation,
     updateServiceValidation
 } = require('../validators/serviceValidator');
+const { handleServicePhotoUpload } = require('../middlewares/upload');
 
 // ============ CATEGORY ROUTES ============
 
@@ -37,8 +38,8 @@ router.get('/provider/:providerId', getServicesByProvider);
 router.get('/provider/:providerId/categories', getCategoriesByProvider);
 
 // Provider only
-router.post('/', protect, restrictTo('provider'), createServiceValidation, validate, createService);
-router.put('/:id', protect, updateServiceValidation, validate, updateService);
+router.post('/', protect, restrictTo('provider'), handleServicePhotoUpload, createServiceValidation, validate, createService);
+router.put('/:id', protect, handleServicePhotoUpload, updateServiceValidation, validate, updateService);
 router.delete('/:id', protect, deleteService);
 router.delete('/provider/category/:categoryId', protect, restrictTo('provider'), deleteProviderCategory);
 

@@ -234,7 +234,7 @@ const getProviderById = asyncHandler(async (req, res) => {
   // Fetch services separately (optimized query)
   const services = await Service.findAll({
     where: { providerId: id, isActive: true },
-    attributes: ["id", "name", "description", "price", "priceType", "duration"],
+    attributes: ["id", "name", "description", "price", "priceType", "duration", "photo"],
     include: [
       {
         model: Category,

@@ -3,6 +3,8 @@ const { Service, Provider, Category } = require('../models');
 const { asyncHandler, AppError } = require('../middlewares/errorHandler');
 const { i18nResponse, successResponse } = require('../utils/helpers');
 const cache = require('../config/redis');
+const { getPublicIdFromUrl, deleteImage } = require('../config/cloudinary');
+const logger = require('../utils/logger');
 
 /**
  * @desc    Get all categories
@@ -106,6 +108,11 @@ const createService = asyncHandler(async (req, res) => {
         throw new AppError(req.t('category.notFound'), 404);
     }
 
+    let photoUrl = photo || null;
+    if (req.file) {
+        photoUrl = req.file.path;
+    }
+
     const service = await Service.create({
         providerId: provider.id,
         categoryId,
@@ -115,7 +122,7 @@ const createService = asyncHandler(async (req, res) => {
         priceType: priceType || 'contact',
         duration,
         tags: tags || [],
-        photo: photo || null
+        photo: photoUrl
     });
 
     // Invalidate provider services cache
@@ -291,6 +298,22 @@ const updateService = asyncHandler(async (req, res) => {
     if (tags) service.tags = tags;
     if (isActive !== undefined) service.isActive = isActive;
     if (photo !== undefined) service.photo = photo;
+
+    // Handle photo upload
+    if (req.file) {
+        if (service.photo) {
+            const oldPublicId = getPublicIdFromUrl(service.photo);
+            if (oldPublicId) {
+                await deleteImage(oldPublicId).catch((err) => {
+                    logger.error("Error deleting old service photo:", {
+                        error: err.message,
+                        publicId: oldPublicId,
+                    });
+                });
+            }
+        }
+        service.photo = req.file.path;
+    }
 
     await service.save();
 
