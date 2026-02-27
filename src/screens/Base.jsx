@@ -21,6 +21,7 @@ export function Base() {
     const [openSidebar, isOpenSidebar] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ onConfirm: () => { }, isPending: false, title: "", description: "" });
+    const [dataProviderToRate, setDataProviderToRate] = useState(null);
     const [dataContact, setDataContact] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
     const closeModal2 = () => setActiveModal2(MODALS.NONE);
@@ -61,6 +62,10 @@ export function Base() {
                                 openMessaging: () => setActiveModal(MODALS.MESSAGING),
                                 closeModal2: () => setActiveModal2(MODALS.NONE),
                                 openSidebar: openSidebar,
+                                openFeedback: (data) => {
+                                    setDataProviderToRate(data); // Stocke les données quand on ouvre
+                                    setActiveModal(MODALS.FEEDBACK);
+                                },
 
                             }} />
                         </div>
@@ -72,7 +77,10 @@ export function Base() {
                         />
                     )}
                     {activeModal === MODALS.FEEDBACK && (
-                        <FeedbackCard closeFeedback={closeModal} />
+                        <FeedbackCard
+                            closeFeedback={closeModal}
+                            providerData={dataProviderToRate}
+                        />
                     )}
                     {activeModal === MODALS.FAVORITE && (
                         <FavoriteList

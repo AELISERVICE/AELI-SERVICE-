@@ -153,7 +153,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                                 <Button
                                     variant="softRed"
                                     size="md"
-                                    onClick={openFeedback}
+                                    onClick={() => openFeedback(providerDetail)}
                                     className={`${!customerContact && "bg-gray-300 hover:bg-gray-300 hover:text-white"}`}
                                 >
                                     noter

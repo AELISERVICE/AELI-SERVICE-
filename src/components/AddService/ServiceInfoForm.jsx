@@ -63,25 +63,23 @@ export function ServiceInfoForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        let base64Photo = null;
+        const fData = new FormData();
+        fData.append('name', formData.name);
+        fData.append('description', formData.description);
+        fData.append('price', Number(formData.price));
+        fData.append('duration', Number(formData.duration));
+        fData.append('categoryId', formData.categoryId);
+        fData.append('priceType', "fixed");
+
+        // On envoie le fichier direct (pas le Base64)
         if (formData.photo instanceof File) {
-            base64Photo = await fileToBase64(formData.photo);
+            fData.append('photo', formData.photo);
         }
 
-        const payload = {
-            name: formData.name,
-            description: formData.description,
-            price: Number(formData.price),
-            duration: Number(formData.duration),
-            categoryId: formData.categoryId,
-            priceType: "fixed",
-            photo: base64Photo
-        };
-
         if (isEditMode) {
-            mutateUpdate({ id: dataEdit.id, formData: payload });
+            mutateUpdate({ id: dataEdit.id, formData: fData });
         } else {
-            mutateCreate(payload);
+            mutateCreate(fData);
         }
     };
 
