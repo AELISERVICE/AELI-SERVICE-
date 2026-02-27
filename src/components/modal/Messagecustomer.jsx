@@ -1,129 +1,87 @@
-import React, { useRef } from 'react'
-import { ModalCard } from '../../ui/ModalCard'
-import { Button } from '../../ui/Button'
-import { CountItems } from '../global/CountItems'
-import { MessageCard } from '../../ui/MessageCustomerCard'
-import { Trash2 } from 'lucide-react'
-
-const MOCK_DATA = [
-    {
-        id: '1',
-        businessName: 'Salon Marie',
-        image:
-            'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '15 Jan 2026',
-        time: '19:30',
-        displayId: 'a3f8c2d1',
-        message:
-            'Bonjour, je voudrais prendre rendez-vous pour une coupe et coloration. Je suis disponible en semaine après 17h. Pourriez-vous me confirmer vos disponibilités ?',
-        status: 'pending',
-    },
-    {
-        id: '2',
-        businessName: 'Spa Zen Attitude',
-        image:
-            'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '14 Jan 2026',
-        time: '14:20',
-        displayId: 'b7e9d3f2',
-        message:
-            'Bonjour, je souhaiterais réserver un massage relaxant pour deux personnes. Avez-vous des disponibilités ce weekend ?',
-        status: 'contacted',
-    },
-    {
-        id: '3',
-        businessName: 'FitZone Studio',
-        image:
-            'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '13 Jan 2026',
-        time: '10:15',
-        displayId: 'c4d8a1e5',
-        message:
-            "Bonjour, je suis intéressé par un abonnement annuel. Pourriez-vous me donner plus d'informations sur vos tarifs et les cours disponibles ?",
-        status: 'pending',
-    },
-    {
-        id: '4',
-        businessName: 'Nails & Beauty',
-        image:
-            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '12 Jan 2026',
-        time: '16:45',
-        displayId: 'e2f5b9c7',
-        message:
-            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
-        status: 'contacted',
-    },
-    {
-        id: '4',
-        businessName: 'Nails & Beauty',
-        image:
-            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '12 Jan 2026',
-        time: '16:45',
-        displayId: 'e2f5b9c7',
-        message:
-            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
-        status: 'contacted',
-    },
-    {
-        id: '4',
-        businessName: 'Nails & Beauty',
-        image:
-            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '12 Jan 2026',
-        time: '16:45',
-        displayId: 'e2f5b9c7',
-        message:
-            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
-        status: 'contacted',
-    },
-    {
-        id: '4',
-        businessName: 'Nails & Beauty',
-        image:
-            'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&q=80&w=200&h=200',
-        date: '12 Jan 2026',
-        time: '16:45',
-        displayId: 'e2f5b9c7',
-        message:
-            "Bonjour, faites-vous des poses de vernis semi-permanent ? Si oui, quel est le tarif ? Merci d'avance.",
-        status: 'contacted',
-    },
-]
+import React, { useRef, useMemo } from 'react';
+import { ModalCard } from '../../ui/ModalCard';
+import { Button } from '../../ui/Button';
+import { CountItems } from '../global/CountItems';
+import { MessageCard } from '../../ui/MessageCustomerCard';
+import { Trash2, Loader2 } from 'lucide-react';
+import { useGetContactSend } from '../../hooks/useContact';
 
 export function Messagecustomer({ closeMessage, onConfirmation }) {
-    const scrollRef = useRef(null)
+    const scrollRef = useRef(null);
+
+    // 1. Récupération des données réelles
+    const { data: contactResponse, isLoading } = useGetContactSend();
+
+    // 2. Extraction et formatage des données
+    const contactsList = useMemo(() => {
+        return contactResponse?.data?.contacts || [];
+    }, [contactResponse]);
+
+    const totalItems = contactResponse?.data?.pagination?.totalItems || 0;
+
+    // 3. Transformation pour le composant MessageCard
+    const formattedMessages = useMemo(() => {
+        return contactsList.map((contact) => {
+            const dateObj = new Date(contact.createdAt);
+            return {
+                id: contact.id,
+                businessName: contact.provider?.businessName || 'Prestataire',
+                // On utilise la photo du profil si elle existe, sinon une image par défaut
+                image: contact.provider?.user?.profilePhoto || `https://ui-avatars.com/api/?name=${contact.provider?.businessName}&background=random`,
+                date: dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
+                time: dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+                displayId: contact.id.substring(0, 8), // Petit ID visuel
+                message: contact.message,
+                status: contact.status, // 'pending', etc.
+            };
+        });
+    }, [contactsList]);
 
     return (
         <ModalCard
-            title="Messages"
+            title="Messages envoyés"
             closeModal={closeMessage}
             isWide={true}
         >
-            <CountItems count={MOCK_DATA.length} scrollContainerRef={scrollRef} />
-            <div
-                ref={scrollRef}
-                className="flex flex-col gap-4 overflow-y-auto h-full pb-5 md:pb-10 no-scrollbar ">
-                {MOCK_DATA.map((msg, index) => (
-                    <div key={msg.id} data-index={index} className="flex-shrink-0">
-                        <MessageCard
-                            {...msg}
-                            actions={
-                                <Button
-                                    variant="secondary"
-                                    className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
-                                    onClick={onConfirmation}
-                                    aria-label="Supprimer"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            }
-                        />
-                    </div>
-                ))}
-            </div>
+            {isLoading ? (
+                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                    <p className="text-sm text-gray-500">Chargement de vos messages...</p>
+                </div>
+            ) : (
+                <>
+                    <CountItems count={totalItems} scrollContainerRef={scrollRef} />
 
+                    <div
+                        ref={scrollRef}
+                        className="flex flex-col gap-4 overflow-y-auto h-full pb-5 md:pb-10 no-scrollbar"
+                    >
+                        {formattedMessages.length > 0 ? (
+                            formattedMessages.map((msg, index) => (
+                                <div key={msg.id} data-index={index} className="flex-shrink-0">
+                                    <MessageCard
+                                        {...msg}
+                                        // actions={
+                                        //     <Button
+                                        //         variant="secondary"
+                                        //         className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
+                                        //         onClick={() => onConfirmation(msg.id)}
+                                        //         aria-label="Supprimer"
+                                        //     >
+                                        //         <Trash2 className="w-4 h-4" />
+                                        //     </Button>
+                                        // }
+                                    />
+                                </div>
+                            ))
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-40 text-gray-500 italic">
+                                Aucun message envoyé pour le moment.
+                            </div>
+                        )}
+                    </div>
+                </>
+            )}
         </ModalCard>
-    )
+    );
 }

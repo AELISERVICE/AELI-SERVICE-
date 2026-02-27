@@ -1,9 +1,10 @@
-import React from 'react'
-import { MoreVertical, Mail } from 'lucide-react'
-import { useOutletContext } from 'react-router-dom'
-import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts'
-import { Button } from '../../ui/Button' // Vérifie que le chemin vers ton bouton est correct
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import React, { useMemo } from 'react';
+import { MoreVertical, Mail } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts';
+import { Button } from '../../ui/Button';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useGetStatDaily } from '../../hooks/useContact';
 
 const data = [
   { name: '1-10', value: 65 },
@@ -34,6 +35,25 @@ const contacts = [
 
 export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   const { openMessaging } = useOutletContext()
+  // 1. Appel au hook des statistiques
+  const { data: statsResponse, isLoading } = useGetStatDaily();
+
+  // AJUSTEMENT ICI : L'API renvoie les données dans statsResponse.data
+  const dailyStats = statsResponse?.data?.dailyStats || [];
+  const totalContacts = statsResponse?.data?.totalContacts || 0;
+
+  // 2. Transformation des données pour Recharts
+  // On inverse l'ordre (reverse) pour avoir la date la plus ancienne à gauche
+  const chartData = useMemo(() => {
+    if (!dailyStats.length) return [];
+
+    return [...dailyStats].reverse().map(item => ({
+      // item.date est "2026-02-27"
+      name: new Date(item.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+      // item.count est une chaîne "2", on la convertit en nombre pour Recharts
+      value: parseInt(item.count, 10)
+    }));
+  }, [dailyStats]);
 
   return (
     <div className={`
@@ -59,9 +79,9 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
             <div className="bg-pink-50/50 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-lg text-gray-800">Stats</h3>
-                <button className="text-gray-400 hover:text-gray-600">
-                  <MoreVertical size={20} />
-                </button>
+                <span className="bg-white px-2 py-1 rounded-lg text-xs font-bold text-purple-600 shadow-sm">
+                  {totalContacts} au total
+                </span>
               </div>
               <div className="flex flex-col items-center mb-8">
                 <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex items-center justify-center relative mb-4">
@@ -80,23 +100,32 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                 </p>
               </div>
               <div className="h-32 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data}>
-                    <Bar dataKey="value" radius={[4, 4, 4, 4]}>
-                      {data.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={index % 2 === 0 ? '#FCE0D6' : '#C4B5FD'}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div className="flex justify-between text-xs text-gray-400 mt-2 px-1">
-                  <span>1-10 May</span>
-                  <span>11-20 May</span>
-                  <span>20-30 May</span>
-                </div>
+                {isLoading ? (
+                  <div className="h-full flex items-center justify-center text-xs text-gray-400">Chargement...</div>
+                ) : chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <Bar dataKey="value" radius={[4, 4, 4, 4]}>
+                        {chartData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={index === chartData.length - 1 ? '#C4B5FD' : '#FCE0D6'}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-xs text-gray-400 italic">
+                    Aucune donnée
+                  </div>
+                )}
+                {chartData.length > 0 && (
+                  <div className="flex justify-between text-[10px] text-gray-400 mt-2 px-1">
+                    <span>{chartData[0]?.name}</span>
+                    <span>{chartData.length > 1 ? "Aujourd'hui" : ""}</span>
+                  </div>
+                )}
               </div>
             </div>
             <div>
