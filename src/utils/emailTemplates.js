@@ -535,7 +535,17 @@ const subscriptionExpiredEmail = ({ firstName, businessName }) => {
  * Contact status changed email (sent to sender)
  */
 const contactStatusChangedEmail = ({ firstName, providerName, status }) => {
-  const statusText = status === 'read' ? 'lue' : 'répondue';
+  const statusLabels = {
+    read: 'lue',
+    replied: 'répondue',
+    pending: 'en attente'
+  };
+  const statusText = statusLabels[status] || status;
+
+  // Don't send email for 'pending' status (reset) - no meaningful message to send
+  if (status === 'pending') {
+    return null;
+  }
   return {
     subject: `Votre demande a été ${statusText} - AELI Services`,
     html: baseTemplate(`

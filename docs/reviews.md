@@ -19,6 +19,7 @@ Les clients authentifiés peuvent laisser des avis sur les prestataires. Un avis
 - Note entre **1 et 5 étoiles**
 - Commentaire **max 1000 caractères**
 - La note moyenne du prestataire est **recalculée automatiquement**
+- **Prérequis** : le client doit avoir un contact avec le prestataire dont le statut est `read` ou `replied` (le prestataire doit avoir au minimum lu le message)
 
 ---
 
@@ -112,11 +113,12 @@ const RatingDistribution = ({ distribution, total }) => (
 Permet à un client de laisser un avis sur un prestataire.
 
 **Ce qu'il fait :**
-1. Vérifie que l'utilisateur n'a pas déjà laissé d'avis
-2. Vérifie que l'utilisateur n'est pas le prestataire lui-même
-3. Crée l'avis avec `isVisible = true`
-4. **Recalcule automatiquement** la note moyenne du prestataire
-5. Envoie une notification au prestataire (optionnel)
+1. Vérifie que l'utilisateur a un contact avec ce prestataire en statut `read` ou `replied`
+2. Vérifie que l'utilisateur n'a pas déjà laissé d'avis
+3. Vérifie que l'utilisateur n'est pas le prestataire lui-même
+4. Crée l'avis avec `isVisible = true`
+5. **Recalcule automatiquement** la note moyenne du prestataire
+6. Envoie une notification au prestataire (optionnel)
 
 **Body :**
 ```json
@@ -159,6 +161,7 @@ Permet à un client de laisser un avis sur un prestataire.
 | 400 | Note invalide | rating < 1 ou > 5 |
 | 400 | Avis déjà existant | 1 avis par prestataire |
 | 400 | Cannot review yourself | Propriétaire du profil |
+| 400 | `review.mustContactFirst` | Pas de contact `read/replied` avec ce prestataire |
 | 404 | Prestataire non trouvé | ID invalide |
 
 ---

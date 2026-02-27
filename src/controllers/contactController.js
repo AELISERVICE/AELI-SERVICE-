@@ -210,19 +210,22 @@ const updateContactStatus = asyncHandler(async (req, res) => {
     });
   }
 
-  // Send email notification to sender
+  // Send email notification to sender (only for meaningful status changes)
   if (contact.senderEmail) {
-    await sendEmailSafely(
-      {
-        to: contact.senderEmail,
-        ...contactStatusChangedEmail({
-          firstName: contact.senderName.split(" ")[0],
-          providerName: contact.provider.businessName,
-          status,
-        }),
-      },
-      "Contact status changed"
-    );
+    const emailPayload = contactStatusChangedEmail({
+      firstName: contact.senderName.split(" ")[0],
+      providerName: contact.provider.businessName,
+      status,
+    });
+    if (emailPayload) {
+      await sendEmailSafely(
+        {
+          to: contact.senderEmail,
+          ...emailPayload,
+        },
+        "Contact status changed"
+      );
+    }
   }
 
   i18nResponse(req, res, 200, "contact.statusUpdated", { contact });

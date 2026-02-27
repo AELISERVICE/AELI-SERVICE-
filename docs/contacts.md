@@ -180,17 +180,18 @@ Met à jour le statut d'un contact pour le suivi.
 - Met à jour le statut
 
 **Statuts disponibles :**
-| Statut | Description |
-|--------|-------------|
-| `pending` | Nouveau, non traité |
-| `contacted` | Client contacté |
-| `completed` | Prestation effectuée |
-| `spam` | Marqué comme spam |
+| Statut | Description | Email envoyé au client ? |
+|--------|-------------|-------------------------|
+| `pending` | Remis en non-traité | ❌ Non |
+| `read` | Message lu par le prestataire | ✅ Oui |
+| `replied` | Prestataire a répondu | ✅ Oui |
+
+> ⚠️ **Important pour les avis** : le client ne peut noter le prestataire que si son contact est passé en `read` ou `replied`. Cela garantit que l'interaction a bien eu lieu.
 
 **Body :**
 ```json
 {
-  "status": "contacted"
+  "status": "read"
 }
 ```
 

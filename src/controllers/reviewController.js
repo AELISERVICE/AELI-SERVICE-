@@ -32,7 +32,8 @@ const createReview = asyncHandler(async (req, res) => {
     throw new AppError(req.t("review.cannotSelfReview"), 400);
   }
 
-  // Check if user has contacted this provider (must have read or replied status)
+  // Check if user has contacted this provider AND the provider has read/replied
+  // (anti-abuse: prevents fake reviews from people who just sent a message)
   const hasContact = await Contact.findOne({
     where: {
       userId: req.user.id,

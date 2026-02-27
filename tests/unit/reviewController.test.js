@@ -99,8 +99,8 @@ describe('Review Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
-        successResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
+        successResponse.mockImplementation(() => { });
         getPaginationParams.mockReturnValue({ limit: 10, offset: 0 });
         getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
         sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));

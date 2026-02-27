@@ -209,6 +209,7 @@ const getProviderById = asyncHandler(async (req, res) => {
       "whatsapp",
       "facebook",
       "instagram",
+      "businessContact",
       "photos",
       "profilePhoto",
       "averageRating",
@@ -312,6 +313,7 @@ const updateProvider = asyncHandler(async (req, res) => {
     whatsapp,
     facebook,
     instagram,
+    businessContact,
   } = req.body;
 
   const provider = await Provider.findByPk(id);
@@ -332,6 +334,7 @@ const updateProvider = asyncHandler(async (req, res) => {
   if (whatsapp !== undefined) provider.whatsapp = whatsapp;
   if (facebook !== undefined) provider.facebook = facebook;
   if (instagram !== undefined) provider.instagram = instagram;
+  if (businessContact !== undefined) provider.businessContact = businessContact;
 
   // Handle new photos
   if (req.files && req.files.length > 0) {

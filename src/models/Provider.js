@@ -66,6 +66,12 @@ const Provider = sequelize.define('Provider', {
         type: DataTypes.STRING(255),
         allowNull: true
     },
+    businessContact: {
+        type: DataTypes.STRING(200),
+        allowNull: true,
+        field: 'business_contact',
+        comment: 'Professional contact phone number for business activities'
+    },
     photos: {
         type: DataTypes.JSONB,
         defaultValue: [],
