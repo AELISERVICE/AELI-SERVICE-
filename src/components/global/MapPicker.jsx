@@ -98,7 +98,6 @@ export function MapPicker({ onConfirm, onClose }) {
                             )}
                         </div>
                     </div>
-
                     <MapContainer center={mapCenter} zoom={13} style={{ height: '100%' }}>
                         <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
                         <TileLayer url="https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png" />
@@ -114,8 +113,17 @@ export function MapPicker({ onConfirm, onClose }) {
                             disabled={!tempPos || isLoading}
                             className="bg-[#E8524D] text-white px-6 py-2 rounded-lg disabled:opacity-50 flex items-center gap-2"
                         >
-                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
-                            Confirmer ce lieu
+                            {isLoading ? (
+                                <span key="loading-state" className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Verification...
+                                </span>
+                            ) : (
+                                <span key="idle-state" className="flex items-center gap-2">
+                                    <Check size={18} />
+                                    Confirmer ce lieu
+                                </span>
+                            )}
                         </button>
                     </div>
                 </div>

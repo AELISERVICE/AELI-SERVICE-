@@ -1,121 +1,146 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { toast } from "react-toastify";
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Filter, ShoppingBag } from 'lucide-react'
 import { ProductCard } from '../../ui/productCard'
-import { Button } from '../../ui/Button'
-import { SelectFilter } from '../global/SelectFilter';
+import { Button } from '../../ui/Button';
+import { Input } from '../../ui/Input';
+import { NotFound } from '../global/Notfound';
+import { Pagination } from '../global/Pagination';
+import { useGetCategory } from '../../hooks/useServices';
+import { useGetProviderList } from '../../hooks/useProvider';
+import { useAddToFavorites } from '../../hooks/useFavorites';
 
-const DATA = [
-    {
-        id: 1,
-        name: 'Luxe & Volupté',
-        description: 'Boutique spécialisée dans le prêt-à-porter haut de gamme et accessoires de créateurs.',
-        location: 'Yaounde, Nkolbisson',
-        rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&q=80&w=800',
-        activities: ["activites3"]
-    },
-    {
-        id: 2,
-        name: 'Éclat Naturel',
-        description: 'Produits de soin bio et rituels bien-être issus de l\'agriculture locale.',
-        location: 'Yaounde, Melen',
-        rating: 4.5,
-        image: 'https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&q=80&w=800',
-        activities: ["Ménage", "Plomberie", "Électricité"]
-    },
-    {
-        id: 3,
-        name: 'Urban Tech',
-        description: 'Le meilleur de l\'innovation et des gadgets connectés pour votre quotidien.',
-        location: 'Douala,Bepanda',
-        rating: 4.2,
-        image: 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80&w=800',
-        activities: ["Mécanique", "Cours d'appui"]
-    },
-    {
-        id: 4,
-        name: 'Maison Bohème',
-        description: 'Mobilier artisanal et objets de décoration pour un intérieur unique et chaleureux.',
-        location: 'Douala, deido',
-        rating: 4.9,
-        image: 'https://images.unsplash.com/photo-1615184697985-c9bde1b07da7?auto=format&fit=crop&q=80&w=800',
-        activities: ["activites1", "activites3"]
-    },
-    {
-        id: 5,
-        name: 'La Galerie du Temps',
-        description: 'Montres de luxe et pièces de collection pour les passionnés d\'horlogerie fine.',
-        location: 'Tchad, ndjamena',
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&q=80&w=800',
-        activities: ["Coiffure", "Esthétique", "Mécanique"]
-    },
-    {
-        id: 6,
-        name: 'Sport Élite',
-        description: 'Équipements professionnels pour toutes les disciplines sportives.',
-        location: 'Ebolowa, Quartier',
-        rating: 4.3,
-        image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&q=80&w=800',
-        activities: ["Ménage"]
-    }
-]
 
 export function ServicesSection() {
     const navigate = useNavigate();
     const { openContact, openFeedback, openSidebar } = useOutletContext();
 
-    const [selectedActivity, setSelectedActivity] = useState('All');
+    // État pour la catégorie sélectionnée (ID de la catégorie)
+    const [selectedCategoryId, setSelectedCategoryId] = useState('');
 
-    // 1. Extraire TOUTES les activités de TOUS les prestataires et en faire une liste unique
-    // flatMap() permet de mettre à plat tous les tableaux "activities" en un seul
-    const allActivities = [...new Set(DATA.flatMap(item => item.activities))];
+    // 1. Récupération des catégories pour le Select
+    const { data: categoryData } = useGetCategory();
+    const categoriesFromApi = categoryData?.data?.categories || [];
 
-    // 2. Filtrer : On vérifie si selectedActivity est présent dans le tableau item.activities
-    const filteredData = selectedActivity === 'All'
-        ? DATA
-        : DATA.filter(item => item.activities.includes(selectedActivity));
+    // 2. Récupération de tous les prestataires
+    const { data: providersResponse, isLoading } = useGetProviderList();
+
+    // CORRECTION ICI : Ton JSON a une double imbrication "data"
+    const allProviders = providersResponse?.data?.providers || [];
+
+    // Préparation des options du Select
+    const categoryOptions = [
+        { value: '', label: 'Toutes les catégories' },
+        ...categoriesFromApi.map(cat => ({
+            value: cat.id,
+            label: cat.name
+        }))
+    ];
+
+    // 3. LOGIQUE DE FILTRAGE CÔTÉ CLIENT
+    const filteredData = selectedCategoryId === ''
+        ? allProviders
+        : allProviders.filter(provider =>
+            // On vérifie si l'ID de la catégorie sélectionnée est présent dans le tableau categories du prestataire
+            provider.categories?.some(cat => cat.id === selectedCategoryId)
+        );
+
+
+    const { mutate: addToFavorites, isSuccess: isSuccessAddFavorite, isError: isErrorAddFavorite, data: dataAddFavorite, error: errorAddFavorite } = useAddToFavorites();
+
+    const handleFavoriteClick = (providerId) => {
+        addToFavorites({ providerId }, {
+            onSuccess: () => {
+                // Petit bonus : un message de succès
+                console.log("Ajouté aux favoris !");
+            },
+            onError: (error) => {
+                if (error.status === 400) {
+                    console.warn("Déjà dans vos favoris");
+                }
+            }
+        });
+    };
+
+    useEffect(() => {
+        if (isSuccessAddFavorite && dataAddFavorite?.success) {
+            toast.success(dataAddFavorite.message);
+        }
+
+        if (isErrorAddFavorite) {
+            const mainMessage = errorAddFavorite?.message;
+            toast.error(mainMessage);
+
+            const backendErrors = errorAddFavorite?.response?.errors;
+            if (Array.isArray(backendErrors)) {
+                backendErrors.forEach((err) => {
+                    toast.info(err.message);
+                });
+            }
+        }
+    }, [isSuccessAddFavorite, isErrorAddFavorite, dataAddFavorite, errorAddFavorite]);
+
 
     return (
         <div className="space-y-8">
             <div className="flex flex-row items-center justify-between gap-4">
                 <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Services</h2>
 
-                <SelectFilter
-                    options={allActivities} // On passe la liste des activités uniques
-                    value={selectedActivity}
-                    onChange={setSelectedActivity}
-                    label="Filtrer par activité"
-                    className="w-45"
-                    classNameButon="shadow-sm"
-                />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredData.map((item) => (
-                    <ProductCard
-                        key={item.id}
-                        {...item}
-                        isStructure={true}
-                        onContact={openContact}
-                        onFeedback={openFeedback}
-                        actions={[
-                            <Button
-                                key="btn"
-                                variant="gradient"
-                                size="md"
-                                onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                className="rounded-full px-6"
-                            >
-                                <span className={openSidebar ? "lg:inline" : "md:hidden inline"}>Consulter</span>
-                                <ArrowRight size={16} className="ml-2" />
-                            </Button>
-                        ]}
+                <div className="flex relative w-[250px]">
+                    <Filter size={18} className="text-[#E8524D] absolute top-4 left-4 z-10" />
+                    <Input
+                        name="selectCategory"
+                        type="select"
+                        value={selectedCategoryId}
+                        onChange={(e) => setSelectedCategoryId(e.target.value)}
+                        options={categoryOptions}
+                        className="bg-white text-gray-700 border border-gray-200 rounded-xl !font-semibold w-full pl-12 pr-4 py-3"
                     />
-                ))}
+                </div>
             </div>
 
+            {filteredData.length > 0 ? (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filteredData.map((item) => (
+                        <ProductCard
+                            key={item.id}
+                            id={item.id}
+                            name={item.businessName}
+                            description={item.description}
+                            location={item.location}
+                            rating={item.averageRating}
+                            // Gestion de l'image (prend la 1ère ou un placeholder)
+                            image={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000'}
+                            isStructure={true}
+                            onContact={openContact}
+                            onFavorite={() => handleFavoriteClick(item.id)}
+                            actions={[
+                                <Button
+                                    key="btn"
+                                    variant="gradient"
+                                    size="md"
+                                    onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
+                                    className="rounded-full px-6"
+                                >
+                                    <span className={openSidebar ? "lg:inline" : "md:hidden inline"}>Consulter</span>
+                                    <ArrowRight size={16} className="ml-2" />
+                                </Button>
+                            ]}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <NotFound
+                    Icon={ShoppingBag}
+                    title="Aucun prestataire trouvé"
+                    message="  Aucun prestataire ne correspond à cette catégorie."
+                    className="bg-gray-100 h-[300px]"
+                />
+            )}
+            {filteredData.length > 0 &&
+                <Pagination />
+            }
         </div>
     );
 }

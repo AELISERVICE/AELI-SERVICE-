@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { StatsProvider } from '../components/provider/StatsProvider'
-import { ServiceProvider } from "../components/provider/ServiceProvider"
-import { ChevronLeft, X } from 'lucide-react' // Import des icônes
+import { ToastContainer } from 'react-toastify';
+import { StatsProvider } from '../components/provider/StatsProvider';
+import { ServiceProvider } from '../components/provider/ServiceProvider';
+
 
 export function ProviderScreen() {
     const location = useLocation();
@@ -12,13 +13,11 @@ export function ProviderScreen() {
 
     return (
         <main className="flex-1 flex flex-col xl:flex-row h-screen md:overflow-hidden relative">
-            {/* Contenu Principal */}
             <div className="flex-1 h-full md:overflow-y-auto py-4 md:p-2 md:pr-4 no-scrollbar">
                 <div className="mx-auto">
-                    <ServiceProvider mode={mode} data={data}/>
+                    <ServiceProvider mode={mode} dataConsult={data} />
                 </div>
             </div>
-
             {/* Overlay sombre quand les stats sont ouvertes sur mobile */}
             {showStats && (
                 <div
@@ -26,11 +25,10 @@ export function ProviderScreen() {
                     onClick={() => setShowStats(false)}
                 />
             )}
-
             {mode != "consultationCustomers" && (
                 < StatsProvider showStats={showStats} setHideStats={() => setShowStats(false)} setShowStats={() => setShowStats(true)} />
             )}
-
+            <ToastContainer position="bottom-center" />
         </main>
     )
 }

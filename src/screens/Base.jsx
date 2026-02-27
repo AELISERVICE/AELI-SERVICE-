@@ -1,24 +1,27 @@
-import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import { Sidebar } from '../components/global/Sidebar'
-import { Header } from '../components/global/header'
-import { Messagecustomer } from '../components/modal/Messagecustomer'
-import { ContactCustomer } from '../components/modal/ContactCustomer'
-import { FeedbackCard } from '../components/modal/FeedbackCard'
-import { FavoriteList } from '../components/modal/FavoriteList'
-import { ReviewList } from '../components/modal/ReviewList'
-import { Confirmation } from '../components/modal/Confirmation'
-import { ProviderMessaging } from '../components/modal/ProviderMessaging/ProviderMessaging'
-
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import { Sidebar } from '../components/global/Sidebar';
+import { Header } from '../components/global/header';
+import { Messagecustomer } from '../components/modal/Messagecustomer';
+import { ContactCustomer } from '../components/modal/ContactCustomer';
+import { FeedbackCard } from '../components/modal/FeedbackCard';
+import { FavoriteList } from '../components/modal/FavoriteList';
+import { ReviewList } from '../components/modal/ReviewList';
+import { Confirmation } from '../components/modal/Confirmation';
+import { ProviderMessaging } from '../components/modal/ProviderMessaging/ProviderMessaging';
+import { Banner } from '../components/modal/Banner';
+import { Loading } from '../components/global/Loading';
 
 
 export function Base() {
-    const MODALS = { NONE: 0, MESSAGE: 1, FEEDBACK: 2, CONTACT: 3, FAVORITE: 4, REVIEW: 5, MESSAGING: 6, CONFIRM: 7 };
+    const MODALS = { NONE: 0, MESSAGE: 1, FEEDBACK: 2, CONTACT: 3, FAVORITE: 4, REVIEW: 5, MESSAGING: 6, CONFIRM: 7, BANNER: 8 };
     const [activeModal, setActiveModal] = useState(null);
-    const [activeModal2, setActiveModal2] = useState(null);
+    const [activeModal2, setActiveModal2] = useState(8); // Par défaut, le banner est actif
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // État pour le burger
     const [openSidebar, isOpenSidebar] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const [confirmConfig, setConfirmConfig] = useState({ onConfirm: () => { }, isPending: false, title: "", description: "" });
+    const [dataContact, setDataContact] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
     const closeModal2 = () => setActiveModal2(MODALS.NONE);
 
@@ -35,18 +38,29 @@ export function Base() {
                     isOpen={isSidebarOpen} // Prop pour l'ouverture mobile
                     onClose={() => setIsSidebarOpen(false)} // Prop pour fermer
                     closeModal={closeModal}
+                    isLoading={isLoading}
                 />
             </aside>
-            <main className="h-screen overflow-y-auto">
+            <main className="relative h-screen overflow-y-auto">
+                {isLoading && (
+                    <div className="fixed inset-0 z-40 bg-[#FAFAFB] flex items-center justify-center">
+                        <Loading />
+                    </div>
+                )}
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
                         <Header onOpenMenu={() => setIsSidebarOpen(true)} openSidebar={openSidebar} />
                         <div className="mt-6 ">
                             <Outlet context={{
+                                setIsLoading,
+                                setConfirmConfig,
+                                setDataContact,
                                 openContact: () => setActiveModal2(MODALS.CONTACT),
+                                openConfirm: () => setActiveModal2(MODALS.CONFIRM),
                                 openFeedback: () => setActiveModal(MODALS.FEEDBACK),
                                 openMessaging: () => setActiveModal(MODALS.MESSAGING),
-                                openSidebar: openSidebar
+                                closeModal2: () => setActiveModal2(MODALS.NONE),
+                                openSidebar: openSidebar,
 
                             }} />
                         </div>
@@ -75,14 +89,23 @@ export function Base() {
                 </div>
             </main>
             {activeModal2 === MODALS.CONTACT && (
-                <ContactCustomer closeContact={closeModal2} />
+                <ContactCustomer
+                    closeContact={closeModal2}
+                    dataContact={dataContact}
+                />
             )}
             {activeModal2 === MODALS.CONFIRM && (
                 <Confirmation
                     closeConfirm={closeModal2}
+                    onConfirm={confirmConfig.onConfirm}
+                    isPending={confirmConfig.isPending}
+                    title={confirmConfig.title}
+                    description={confirmConfig.description}
                 />
             )}
-
+            {activeModal2 === MODALS.BANNER && (
+                <Banner closeBanner={closeModal2} />
+            )}
         </div>
     )
 }

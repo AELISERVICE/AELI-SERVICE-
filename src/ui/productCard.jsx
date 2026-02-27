@@ -1,8 +1,10 @@
-import React from 'react'
-import { Heart, MapPin, Star, Coins } from 'lucide-react'
-import { Button } from './Button' // Vérifie le chemin d'importation
+import React from 'react';
+import { Heart, MapPin, Star, Coins } from 'lucide-react';
+import { Button } from './Button';
+import { useCheckFavorites } from '../hooks/useFavorites';
 
 export function ProductCard({
+  id,
   title,
   name,
   description,
@@ -16,11 +18,14 @@ export function ProductCard({
   showMenu = false,
   isStructure = false,
   onContact,
-  onFeedback,
+  onFavorite,
   actions
 }) {
   const displayTitle = title || name
   const displaySub = description || role
+
+  const { data: checkData } = useCheckFavorites(id);
+  const isFavorite = checkData?.data?.isFavorite;
 
   return (
     <div className="group relative transition-all duration-300 bg-white rounded-[2rem] p-3 shadow-sm hover:shadow-xl">
@@ -61,7 +66,17 @@ export function ProductCard({
 
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-2">
-              <Heart className="fill-white text-white" size={16} onClick={onFeedback} />
+              <Heart
+                className={`cursor-pointer transition-all duration-300 ${isFavorite
+                  ? "fill-red-500 text-red-500 scale-110"
+                  : "fill-white text-white hover:scale-110"
+                  }`}
+                size={16}
+                onClick={(e) => {
+                  e.stopPropagation(); // Empêche de cliquer sur la carte
+                  onFavorite();
+                }}
+              />
               <span className="text-sm font-medium">{likes}</span>
             </div>
 

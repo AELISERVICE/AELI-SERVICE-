@@ -14,6 +14,8 @@ export function Input({
   onChange,
   placeholder, // Assure-toi que cette prop est bien reçue
   name,
+  titleButtonSelectAutre = false,
+  onAutres,
   ...props
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -33,6 +35,12 @@ export function Input({
     }
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [type])
+
+  useEffect(() => {
+    if (props.previewImage) {
+      setFilePreview(props.previewImage);
+    }
+  }, [props.previewImage]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -89,7 +97,19 @@ export function Input({
                       {value === opt.value && <Check size={14} />}
                     </Button>
                   ))}
+                  {titleButtonSelectAutre &&
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={onAutres}
+                      className="w-full !bg-gray-50"
+                    >
+                      {titleButtonSelectAutre}
+                    </Button>
+                  }
                 </div>
+
+
               </div>
             )}
           </div>

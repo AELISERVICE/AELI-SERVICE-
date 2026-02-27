@@ -4,7 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Star, Mail, LogOut, Store, Search, MessageSquare, X, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Button } from '../../ui/Button'
 
-export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal }) {
+
+export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -25,11 +26,11 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
     <>
       {/* Overlay Mobile */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 md:hidden" onClick={onClose} />
       )}
 
       <aside className={`
-        fixed md:sticky left-0 top-0 h-screen z-40
+        fixed md:sticky left-0 top-0 h-screen z-50
         flex flex-col py-8 bg-white border-r border-gray-100
         transition-all duration-300 ease-in-out 
         
@@ -103,6 +104,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
           ].map((item, idx) => (
             <button
               key={idx}
+              disabled={isLoading}
               onClick={item.onClick}
               className={`p-3 rounded-xl transition-all duration-200 flex items-center gap-4
                 ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}

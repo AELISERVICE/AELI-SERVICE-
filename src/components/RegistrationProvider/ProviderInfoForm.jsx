@@ -112,6 +112,66 @@ export function ProviderInfoForm() {
         setShowMapModal(false)
     }
 
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("La géolocalisation n'est pas supportée par votre navigateur");
+            return;
+        }
+
+        toast.info("Recherche de votre position exacte...");
+
+        const options = {
+            enableHighAccuracy: true, // Force l'utilisation du GPS (très important)
+            timeout: 15000,           // Laisse 15 secondes au GPS pour se fixer
+            maximumAge: 0             // Interdit l'utilisation d'une position mise en cache
+        };
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude, accuracy } = position.coords;
+
+                // Log pour debug en console
+                console.log(`Précision : ${accuracy} mètres`);
+
+                try {
+                    // On utilise Nominatim pour transformer les coordonnées en adresse
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                    );
+                    const data = await response.json();
+
+                    // On met à jour le formulaire avec les données précises
+                    setFormData(prev => ({
+                        ...prev,
+                        location: data.display_name || `Position (${accuracy}m)`,
+                        latitude: latitude.toString(),
+                        longitude: longitude.toString()
+                    }));
+
+                    toast.success(`Position trouvée à ${Math.round(accuracy)} mètres près !`);
+                } catch (error) {
+                    setFormData(prev => ({
+                        ...prev,
+                        location: `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}`,
+                        latitude: latitude.toString(),
+                        longitude: longitude.toString()
+                    }));
+                }
+            },
+            (error) => {
+                console.error("Erreur GPS:", error);
+                if (error.code === 1) {
+                    toast.error("Veuillez autoriser l'accès à la position dans votre navigateur.");
+                } else if (error.code === 3) {
+                    toast.error("Délai d'attente dépassé. Le signal GPS est trop faible.");
+                } else {
+                    toast.error("Impossible de récupérer une position précise.");
+                }
+            },
+            options
+        );
+    };
+
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
         if (type === 'file') {
@@ -305,9 +365,17 @@ export function ProviderInfoForm() {
                             onChange={handleChange}
                             required
                         />
+
+                        <Input
+                            name="address"
+                            label="Address (optionel)"
+                            placeholder="6xx xxx xxx"
+                            onChange={handleChange}
+                            className="flex-1"
+                        />
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-700">Localisation <span className="text-red-500">*</span></label>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-4">
                                 <Input
                                     name="location"
                                     placeholder="Choisissez sur la carte..."
@@ -316,15 +384,26 @@ export function ProviderInfoForm() {
                                     readOnly // Empêche la saisie manuelle pour forcer la précision carte
                                     className="flex-1"
                                 />
-                                <Button
-                                    type="button"
-                                    variant="softRed"
-                                    onClick={() => setShowMapModal(true)}
-                                    className="h-[49px]"
-                                >
-                                    <MapPin size={18} />
-                                    Carte
-                                </Button>
+                                <div className="flex gap-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline" // Ou un style différent pour différencier
+                                        onClick={handleGetCurrentLocation}
+                                        className="flex-1 h-[49px] gap-2"
+                                    >
+                                        <MapPin size={18} className="text-blue-600" />
+                                        Position
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="softRed"
+                                        onClick={() => setShowMapModal(true)}
+                                        className=" flex-1 h-[49px] gap-2"
+                                    >
+                                        <MapPin size={18} />
+                                        Carte
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                         {/* --- MODAL DE LA CARTE --- */}
@@ -334,13 +413,6 @@ export function ProviderInfoForm() {
                                 onConfirm={handleConfirmLocation}
                             />
                         )}
-                        <Input
-                            name="address"
-                            label="Address (optionel)"
-                            placeholder="6xx xxx xxx"
-                            onChange={handleChange}
-                            className="flex-1"
-                        />
                         <div className="space-y-3">
                             <Input
                                 name="activities"

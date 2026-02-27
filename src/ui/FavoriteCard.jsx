@@ -41,7 +41,7 @@ export function FavoriteCard({
                 </p>
 
                 <div className="flex items-center gap-2 text-gray-500 mb-6">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4 shrink-0" />
                     <span className="text-sm">{location}</span>
                 </div>
 

@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { Pagination } from '../components/global/Pagination'
-import { RecommendationSection } from "../components/home/RecommendationSection"
-import { ServicesSection } from '../components/home/ServicesSection'
+import React, { useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import { RecommendationSection } from "../components/home/RecommendationSection";
+import { ServicesSection } from '../components/home/ServicesSection';
 
 
 
@@ -20,7 +20,7 @@ export function HomeScreen() {
                     <ServicesSection />
                 </div>
             </div>
-            <Pagination />
+            <ToastContainer position="bottom-center" />
         </div>
     )
 }

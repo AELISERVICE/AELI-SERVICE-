@@ -1,18 +1,23 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Briefcase, X, Check } from 'lucide-react'
-import { SectionHeader } from '../../ui/SectionHeader'
-import { Input } from '../../ui/Input'
-import { Button } from '../../ui/Button'
-import { FormCard } from '../../ui/FormCard'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
+import { Briefcase, X, Check, Loader2 } from 'lucide-react';
+import { SectionHeader } from '../../ui/SectionHeader';
+import { Input } from '../../ui/Input';
+import { Button } from '../../ui/Button';
+import { FormCard } from '../../ui/FormCard';
+import { useCreateCategories } from '../../hooks/useServices';
+
 
 export function CategoryInfoForm() {
     const navigate = useNavigate()
-    const [agreed] = useState(true) // On garde agreed à true par défaut
+    const { mutate: createCategory, isPending, isSuccess, isError, data, error } = useCreateCategories();
     const [formData, setFormData] = useState({
-        category: ""
+        name: "",
+        description: ""
     })
 
+    const isInvalid = !formData.name;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -22,9 +27,27 @@ export function CategoryInfoForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        console.log("Données envoyées :", formData)
+        createCategory(formData);
     }
 
+    useEffect(() => {
+        if (isSuccess && data?.success) {
+            toast.success(data.message);
+            navigate(-1);
+        }
+
+        if (isError) {
+            const mainMessage = error?.message;
+            toast.error(mainMessage);
+
+            const backendErrors = error?.response?.errors;
+            if (Array.isArray(backendErrors)) {
+                backendErrors.forEach((err) => {
+                    toast.info(err.message);
+                });
+            }
+        }
+    }, [isSuccess, isError, data, error]);
 
 
     return (
@@ -43,10 +66,19 @@ export function CategoryInfoForm() {
                     <div className="flex flex-col gap-y-6">
 
                         <Input
-                            name="category"
+                            name="name"
                             label="categorie"
                             placeholder="Entrez une categorie"
+                            value={formData.name}
+                            onChange={handleChange}
                             required
+                        />
+                        <Input
+                            name="description"
+                            label="Description "
+                            type="textarea"
+                            placeholder="Vos services..."
+                            value={formData.description}
                             onChange={handleChange}
                         />
 
@@ -67,10 +99,20 @@ export function CategoryInfoForm() {
                         variant="gradient"
                         type="submit"
                         className="w-full sm:w-auto gap-2 px-8 py-3"
-                        disabled={!agreed}
+                        disabled={isInvalid || isPending}
                     >
-                        <Check className="w-4 h-4" />
-                        Soumettre
+                        {isPending ? (
+                            <span className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Verification...
+                            </span>
+                        ) : (
+                            <span key="loading-state" className="flex items-center gap-2">
+                                <Check className="w-4 h-4" />
+                                Soumettre
+                            </span>
+                        )}
+
                     </Button>
                 </div>
             </form>

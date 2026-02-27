@@ -3,7 +3,8 @@ import { Send, Phone, MessageCircle, X } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
 
-export function ContactCustomer({ closeContact }) {
+export function ContactCustomer({ closeContact, dataContact }) {
+  console.log("data contact:", dataContact)
   return (
     <div
       onClick={() => closeContact()}
@@ -71,7 +72,7 @@ export function ContactCustomer({ closeContact }) {
                 className="flex-[2] gap-2 py-3"
               >
                 <Send className="w-4 h-4 " />
-                Envoyer la demande
+                Envoyer la demande whatsapp
               </Button>
             </div>
           </form>
@@ -82,16 +83,45 @@ export function ContactCustomer({ closeContact }) {
           {/* WhatsApp Card */}
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
-              <h3 className="font-bold text-lg text-gray-700  pacifico-regular">WhatsApp</h3>
+              <h3 className="font-bold text-lg text-gray-700 pacifico-regular">WhatsApp</h3>
             </div>
             <p className="text-gray-500 text-sm mb-6 flex-grow">
-              Réponse rapide pour vos questions urgentes.
+              {dataContact?.whatsapp
+                ? "Réponse rapide pour vos questions urgentes."
+                : "Le numéro WhatsApp n'est pas renseigné par ce prestataire."}
             </p>
-            <Button variant="whatsapp" className="w-full gap-2 py-3">
+            <Button
+              variant="whatsapp"
+              disabled={!dataContact?.whatsapp}
+              onClick={() => {
+                if (dataContact?.whatsapp) {
+                  const cleanNumber = dataContact.whatsapp.replace(/\D/g, '');
+
+                  // Récupération des détails du service sélectionné
+                  const s = dataContact?.selectedService;
+
+                  // Construction du message structuré
+                  const messageBrut = `
+Salut, je suis intéressé par votre service sur Aeli Service :
+*Service :* ${s?.name || 'Non spécifié'}
+*Prix :* ${s?.price ? s.price + ' FCFA' : 'Sur devis'}
+*Description :* ${s?.description || '/'}
+
+J'aimerais avoir plus d'informations à ce sujet. Merci !`;
+
+                  // Encodage pour l'URL
+                  const messageEncoded = encodeURIComponent(messageBrut);
+
+                  window.open(`https://wa.me/${cleanNumber}?text=${messageEncoded}`, '_blank');
+                }
+              }}
+              className={`w-full gap-2 py-3 ${!dataContact?.whatsapp ? 'bg-gray-300 cursor-not-allowed opacity-70 grayscale' : ''}`}
+            >
               <MessageCircle className="w-6 h-6" />
-              Ouvrir WhatsApp
+              {dataContact?.whatsapp ? "Ouvrir WhatsApp" : "Indisponible"}
             </Button>
           </div>
+
 
           {/* Direct Call Card */}
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">

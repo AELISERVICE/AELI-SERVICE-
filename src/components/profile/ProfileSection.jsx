@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { Badge } from '../../ui/Badge';
-import { Mail, CheckCircle2, Save, X } from 'lucide-react'; 
+import { Mail, CheckCircle2, Save, X } from 'lucide-react';
 import { useInfoUserConnected, useUpdateProfile } from '../../hooks/useUser';
 
 
 export function ProfileSection({ setIsRole }) {
     const navigate = useNavigate();
+    const { setIsLoading } = useOutletContext();
     const [isEditing, setIsEditing] = useState(false);
-    const { data, refetch } = useInfoUserConnected();
+    const { data: userData } = useInfoUserConnected();
     const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProfile();
-    const user = data?.data?.user;
+    const user = userData?.data?.user;
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -22,6 +23,10 @@ export function ProfileSection({ setIsRole }) {
         phone: "",
         profilePhoto: null
     });
+
+    useEffect(() => {
+        setIsLoading(!userData);
+    }, [userData, setIsLoading]);
 
     useEffect(() => {
         if (user) {
@@ -47,7 +52,6 @@ export function ProfileSection({ setIsRole }) {
         }
     };
 
-
     const handleSave = () => {
         const dataToSend = new FormData();
         dataToSend.append("firstName", formData.firstName);
@@ -64,6 +68,7 @@ export function ProfileSection({ setIsRole }) {
     useEffect(() => {
         if (isSuccessUpdate && dataUpdate?.success) {
             toast.success(dataUpdate.message);
+            setIsEditing(false);
         }
 
         if (isErrorUpdate) {
@@ -135,7 +140,7 @@ export function ProfileSection({ setIsRole }) {
                                 disabled={isPendingUpdate}
                                 variant=""
                                 size="sm"
-                                className="bg-green-600/20 border-green-600/10"
+                                className="bg-emerald-500 border-green-600/10"
                             >
                                 <Save size={16} className="mr-1" /> {isPendingUpdate ? "..." : "Enregistrer"}
                             </Button>
@@ -153,6 +158,7 @@ export function ProfileSection({ setIsRole }) {
                         value={formData.lastName}
                         onChange={handleChange}
                         disabled={!isEditing}
+                        className="!text-slate-500"
                     />
                     <Input
                         label="Prenom"
@@ -160,6 +166,7 @@ export function ProfileSection({ setIsRole }) {
                         value={formData.firstName}
                         onChange={handleChange}
                         disabled={!isEditing}
+                        className="!text-slate-500"
                     />
 
                     <Input
@@ -171,12 +178,14 @@ export function ProfileSection({ setIsRole }) {
                             { value: 'female', label: 'Femme' },
                             { value: 'male', label: 'Homme' }
                         ]}
+                        className="!text-slate-500"
                     />
 
                     <Input
                         label="Pays"
                         value={user?.country}
                         disabled={true}
+                        className="!text-slate-500"
                     />
 
                     <Input
@@ -184,6 +193,7 @@ export function ProfileSection({ setIsRole }) {
                         type="email"
                         value={user?.email}
                         disabled={true}
+                        className="!text-slate-500"
                     />
                     <Input
                         label="Telephone"
@@ -191,11 +201,12 @@ export function ProfileSection({ setIsRole }) {
                         value={formData.phone}
                         onChange={handleChange}
                         disabled={!isEditing}
+                        className="!text-slate-500"
                     />
                 </div>
 
                 {/* Status Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Mon adresse email</label>
                         <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
@@ -219,9 +230,9 @@ export function ProfileSection({ setIsRole }) {
                         </Badge>
                     </div>
                 </div>
+                {user?.role !== "provider" && (
+                    <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
 
-                <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
-                    {user?.role !== "provider" && (
                         <Button
                             onClick={() => navigate("/become-service-provider")}
                             variant="gradient"
@@ -229,17 +240,9 @@ export function ProfileSection({ setIsRole }) {
                         >
                             Devenir prestataire
                         </Button>
-                    )}
-                    {user?.role === "provider" && (
-                        <Button
-                            onClick={() => navigate("/subscription")}
-                            variant="softRed"
-                            className="py-3 w-full sm:w-auto"
-                        >
-                            Souscrire à un plan
-                        </Button>
-                    )}
-                </div>
+
+                    </div>
+                )}
             </Card>
         </div>
     );

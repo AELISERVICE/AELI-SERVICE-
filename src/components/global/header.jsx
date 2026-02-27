@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { Search, Bell, Menu, Star, Coins, X } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { SelectFilter } from './SelectFilter'
-import { Button } from '../../ui/Button'
+import React, { useState, useEffect } from 'react';
+import { Search, Bell, Menu, Star, Coins, X } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { SelectFilter } from './SelectFilter';
+import { Button } from '../../ui/Button';
+import { useInfoUserConnected } from '../../hooks/useUser';
 
 export function Header({ onOpenMenu, openSidebar }) {
   const navigate = useNavigate()
   const location = useLocation()
+
+  const { data: userData } = useInfoUserConnected();
+  const user = userData?.data?.user;
 
   // États de base
   const [query, setQuery] = useState("")
@@ -52,7 +56,7 @@ export function Header({ onOpenMenu, openSidebar }) {
       <div className={`w-full flex items-center justify-between gap-4 ${openSidebar ? "flex" : "md:hidden lg:flex"}`}>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Bienvenue, <span className="text-[#E8524D] pacifico-regular text-3xl"> Amanda</span>
+            Bienvenue, <span className="text-[#E8524D] pacifico-regular text-3xl"> {user?.firstName}</span>
           </h1>
           <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
         </div>
@@ -113,7 +117,7 @@ export function Header({ onOpenMenu, openSidebar }) {
         </Button>
         <div onClick={() => navigate("/profile")} className='w-14 cursor-pointer'>
           <img
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+            src={user?.profilePhoto || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=random&color=fff&size=128`}
             alt="Profile"
             className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm hover:scale-105 transition-transform"
           />
