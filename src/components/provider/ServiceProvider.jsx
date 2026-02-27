@@ -217,7 +217,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                             title={service.name}
                             description={service.description}
                             price={service.price}
-                            image={service.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800"}
+                            image={service.photo || "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800"}
                             isAdmin={mode !== "consultationCustomers"}
                             actions={mode === "consultationCustomers"
                                 ? [

@@ -17,7 +17,7 @@ export function ModalCard({
             <div
                 // Empêche le clic à l'intérieur de fermer la modale ${isWide ? 'lg:w-[60%] xl:w-[55%]' : 'lg:w-[40%] xl:w-[30%]'} 
                 onClick={(e) => e.stopPropagation()}
-                className={`w-fit   h-full flex flex-col bg-[#FAFAFB] px-4`}
+                className={`w-full md:w-fit   h-full flex flex-col bg-[#FAFAFB] px-4`}
             >
                 {title && (
                     <header className="py-6 md:py-10 flex-shrink-0">

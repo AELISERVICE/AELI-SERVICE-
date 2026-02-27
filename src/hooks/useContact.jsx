@@ -28,3 +28,24 @@ export const useGetContactSend = () => {
         queryFn: () => request(`/api/contacts/sent`, "GET"),
     });
 };
+
+// get contact recived by provider
+export const useGetReceivedContact = () => {
+    return useQuery({
+        queryKey: ["useGetReceivedContact"],
+        queryFn: () => request(`/api/contacts/received`, "GET"),
+    });
+};
+
+
+export const useUpdateStatusMessage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationKey: ["useUpdateStatusMessage"],
+        mutationFn: ({ id, formData }) => request(`/api/contacts/${id}/status`, "PUT", formData),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["useGetReceivedContact"] });
+        },
+    });
+};
+

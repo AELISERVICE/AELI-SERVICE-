@@ -86,7 +86,7 @@ export function ContactCustomer({ closeContact, dataContact }) {
         className="w-full max-w-3xl space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 my-auto"
       >
         <div className="bg-white rounded-2xl overflow-hidden shadow-2xl relative">
-          <div className="px-6 py-8 md:px-10">
+          <div className="px-6 pt-8 md:px-10">
             <h1 className="text-3xl font-bold text-gray-700 mb-2 tracking-tight pacifico-regular">
               Prendre rendez-vous
             </h1>
