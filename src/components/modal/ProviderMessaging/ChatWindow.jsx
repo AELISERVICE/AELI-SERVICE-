@@ -138,14 +138,16 @@ export function ChatWindow({ chat, onBack }) {
                                 </span>
 
                                 {/* Bouton avec ref dynamique */}
-                                <button
-                                    ref={el => triggerRefs.current[msg.id] = el}
-                                    onClick={() => setOpenMenuId(openMenuId === msg.id ? null : msg.id)}
-                                    className="px-4 py-1.5 rounded-full border border-purple-400 text-purple-600 text-[10px] font-bold hover:bg-purple-50 transition-colors"
-                                >
-                                    Changer status
-                                </button>
-                                {msg.isUnlocked && (
+                                {msg.isUnlocked &&
+                                    <button
+                                        ref={el => triggerRefs.current[msg.id] = el}
+                                        onClick={() => setOpenMenuId(openMenuId === msg.id ? null : msg.id)}
+                                        className="px-4 py-1.5 rounded-full border border-purple-400 text-purple-600 text-[10px] font-bold hover:bg-purple-50 transition-colors"
+                                    >
+                                        Changer status
+                                    </button>
+                                }
+                                {!msg.isUnlocked && (
                                     <button
                                         onClick={() => handleUnlock(msg.id)}
                                         disabled={isUnlocking}
