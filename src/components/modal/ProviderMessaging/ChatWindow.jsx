@@ -1,17 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from "react-toastify";
-import { Phone, ArrowLeft, Mail } from 'lucide-react';
+import { Phone, ArrowLeft, Mail, ExternalLink } from 'lucide-react';
 import { Avatar } from '../../../ui/Avatar';
 import { Alert } from '../../../ui/Alert';
-import { useUpdateStatusMessage } from '../../../hooks/useContact';
-import { StatusMenu } from '../../global/StatusMenu'; // Import du nouveau menu
+import { StatusMenu } from '../../global/StatusMenu';
+import { useUpdateStatusMessage, useUnlockMessage } from '../../../hooks/useContact';
+
 
 
 export function ChatWindow({ chat, onBack }) {
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRefs = useRef({}); // Stocke les refs de chaque bouton
 
-    const { mutate: mutateUpdateStatus, isSuccess: isSuccessUpdateStatus, isError: isErrorUpdateStatus, data: dataUpdateStatus, error: errorUpdateStatus } = useUpdateStatusMessage();
+    const {
+        mutate: mutateUpdateStatus,
+        isSuccess: isSuccessUpdateStatus,
+        isError: isErrorUpdateStatus,
+        data: dataUpdateStatus,
+        error: errorUpdateStatus,
+        reset: resetUpdateStatus
+    } = useUpdateStatusMessage();
+
+    const {
+        mutate: mutateUnlockMessage,
+        data: dataUnlock,
+        isSuccess: isSuccessUnlock,
+        isError: isErrorUnlock,
+        error: errorUnlock,
+        isPending: isUnlocking,
+        reset: resetUnlocking
+    } = useUnlockMessage();
 
     if (!chat) return <div className="flex-1 flex items-center justify-center text-gray-400">Sélectionnez une discussion</div>;
     const latestInfo = chat.messages[0].fullData;
@@ -23,24 +41,32 @@ export function ChatWindow({ chat, onBack }) {
             formData: { status: newStatus }
         });
     };
+    const handleUnlock = (messageId) => {
+        mutateUnlockMessage({
+            id: messageId
+        });
+    };
 
     useEffect(() => {
-        if (isSuccessUpdateStatus && dataUpdateStatus?.success) {
-            toast.success(dataUpdateStatus.message);
+        if (isSuccessUpdateStatus && dataUpdateStatus?.success || isSuccessUnlock && dataUnlock?.success) {
+            toast.success(dataUpdateStatus.message || dataUnlock.message);
         }
 
-        if (isErrorUpdateStatus) {
-            const mainMessage = errorUpdateStatus?.message;
+        if (isErrorUpdateStatus || isErrorUnlock) {
+            const mainMessage = errorUpdateStatus?.message || errorUnlock?.message;
             toast.error(mainMessage);
 
-            const backendErrors = errorUpdateStatus?.response?.errors;
+            const backendErrors = errorUpdateStatus?.response?.errors || errorUnlock?.response?.errors;
             if (Array.isArray(backendErrors)) {
                 backendErrors.forEach((err) => {
                     toast.info(err.message);
                 });
             }
         }
-    }, [isSuccessUpdateStatus, isErrorUpdateStatus, dataUpdateStatus, errorUpdateStatus]);
+
+        resetUpdateStatus()
+        resetUnlocking()
+    }, [isSuccessUpdateStatus, isErrorUpdateStatus, dataUpdateStatus, errorUpdateStatus, resetUpdateStatus, isSuccessUnlock, isErrorUnlock, dataUnlock, errorUnlock, resetUnlocking]);
 
     return (
         <div className="flex flex-col h-full w-full">
@@ -119,6 +145,16 @@ export function ChatWindow({ chat, onBack }) {
                                 >
                                     Changer status
                                 </button>
+                                {msg.isUnlocked && (
+                                    <button
+                                        onClick={() => handleUnlock(msg.id)}
+                                        disabled={isUnlocking}
+                                        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-600 text-white text-[10px] font-bold hover:bg-purple-700 transition-colors shadow-sm disabled:opacity-50"
+                                    >
+                                        {isUnlocking ? "Chargement..." : "Voir (500 Fcfa)"}
+                                        <ExternalLink size={12} />
+                                    </button>
+                                )}
 
 
 

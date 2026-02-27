@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { CheckCircle2, MessageSquare, Clock, ShieldAlert } from 'lucide-react'
+import { MessageSquare, Clock, CheckCheck, SendHorizontal } from 'lucide-react' // Nouvelles icônes plus adaptées
 import { Button } from '../../ui/Button'
 import { Portal } from '../../ui/Portal'
 
@@ -7,18 +7,35 @@ export function StatusMenu({ isOpen, onClose, triggerRef, onUpdateStatus }) {
     const menuRef = useRef(null)
     const [coords, setCoords] = useState({ top: 0, left: 0 })
 
+    // Mise à jour avec les statuts réels du backend : pending, read, replied
     const STATUS_OPTIONS = [
-        { id: 'pending', label: 'En attente', icon: Clock, color: 'text-amber-500' },
-        { id: 'contacted', label: 'Contacté', icon: MessageSquare, color: 'text-blue-500' },
-        { id: 'completed', label: 'Terminé', icon: CheckCircle2, color: 'text-green-500' },
-        { id: 'spam', label: 'Spam', icon: ShieldAlert, color: 'text-red-500' },
+        {
+            id: 'pending',
+            label: 'En attente',
+            icon: Clock,
+            color: 'text-amber-500'
+        },
+        {
+            id: 'read',
+            label: 'Lu',
+            icon: CheckCheck,
+            color: 'text-blue-500'
+        },
+        {
+            id: 'replied',
+            label: 'Répondu',
+            icon: SendHorizontal,
+            color: 'text-green-500'
+        },
     ]
 
     useEffect(() => {
         if (isOpen && triggerRef?.current) {
             const rect = triggerRef.current.getBoundingClientRect();
+
+            // Calcul de la position (ajusté pour 3 options cette fois)
             setCoords({
-                top: rect.top + window.scrollY - 160, // Ajusté pour 4 options
+                top: rect.top + window.scrollY - 130,
                 left: rect.left + window.scrollX - 40
             });
         }
@@ -46,12 +63,18 @@ export function StatusMenu({ isOpen, onClose, triggerRef, onUpdateStatus }) {
             >
                 <div className="flex flex-col">
                     {STATUS_OPTIONS.map((status, index) => (
-                        <div key={status.id} className={`${index !== STATUS_OPTIONS.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50`}>
+                        <div
+                            key={status.id}
+                            className={`${index !== STATUS_OPTIONS.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50`}
+                        >
                             <Button
                                 variant="ghost"
                                 size="sm"
                                 className="w-full gap-3 px-4 py-3 text-xs justify-start font-medium"
-                                onClick={() => { onUpdateStatus(status.id); onClose(); }}
+                                onClick={() => {
+                                    onUpdateStatus(status.id);
+                                    onClose();
+                                }}
                             >
                                 <status.icon size={16} className={status.color} />
                                 <span>{status.label}</span>

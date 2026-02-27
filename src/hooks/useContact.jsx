@@ -49,3 +49,11 @@ export const useUpdateStatusMessage = () => {
     });
 };
 
+
+export const useUnlockMessage = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationKey: ["useUnlockMessage"],
+        mutationFn: ({ id, formData }) => request(`/api/contacts/${id}/unlock`, "POST", formData),
+    });
+};
