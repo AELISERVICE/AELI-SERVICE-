@@ -232,13 +232,9 @@ J'aimerais avoir plus d'informations à ce sujet. Merci !`;
               className={`w-full gap-2 py-3 ${!dataContact?.phone ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!dataContact?.phone}
               onClick={() => {
-                if (dataContact?.phone) {
                   // Supprime les espaces ou caractères spéciaux pour le lien tel:
                   const cleanPhone = dataContact.phone.replace(/\s/g, '');
                   window.location.href = `tel:${cleanPhone}`;
-                } else {
-                  toast.info("Le numéro de téléphone n'est pas renseigné.");
-                }
               }}
             >
               <Phone className="w-6 h-6" />
