@@ -163,4 +163,159 @@ describe('Email Templates', () => {
             expect(result.html).toContain('1 heure');
         });
     });
+
+    // ── Additional templates added for coverage ───────────────────────────────
+
+    const {
+        subscriptionExpiringEmail,
+        subscriptionExpiredEmail,
+        contactStatusChangedEmail,
+        providerFeaturedEmail,
+        subscriptionRenewedEmail,
+        accountDeactivatedEmail,
+        passwordChangedConfirmationEmail,
+        providerApprovedEmail,
+        providerRejectedEmail,
+        applicationReceivedEmail,
+        providerVerificationRevokedEmail,
+        providerDeactivatedEmail,
+        providerReactivatedEmail,
+        newReviewEmail
+    } = require('../../src/utils/emailTemplates');
+
+    const assertShape = (result) => {
+        expect(result).toBeDefined();
+        expect(result).toHaveProperty('subject');
+        expect(result).toHaveProperty('html');
+        expect(typeof result.subject).toBe('string');
+        expect(typeof result.html).toBe('string');
+    };
+
+    describe('newReviewEmail', () => {
+        it('should generate new review notification', () => {
+            const result = newReviewEmail({ firstName: 'Mado', reviewerName: 'Jean', rating: 4, comment: 'Bien !' });
+            assertShape(result);
+            expect(result.html).toContain('Mado');
+        });
+    });
+
+    describe('subscriptionExpiringEmail', () => {
+        it('should warn about expiry with days left', () => {
+            const result = subscriptionExpiringEmail({ firstName: 'Claire', businessName: 'Salon C', daysLeft: 3, endDate: new Date(), plan: 'monthly' });
+            assertShape(result);
+            expect(result.html).toContain('Claire');
+            expect(result.html).toContain('3');
+        });
+    });
+
+    describe('subscriptionExpiredEmail', () => {
+        it('should notify that subscription has expired', () => {
+            const result = subscriptionExpiredEmail({ firstName: 'Diane', businessName: 'Salon D' });
+            assertShape(result);
+            expect(result.html).toContain('Diane');
+        });
+    });
+
+    describe('contactStatusChangedEmail', () => {
+        it('should return null for pending status', () => {
+            expect(contactStatusChangedEmail({ firstName: 'A', providerName: 'B', status: 'pending' })).toBeNull();
+        });
+
+        it('should return email for read status', () => {
+            const result = contactStatusChangedEmail({ firstName: 'A', providerName: 'B', status: 'read' });
+            assertShape(result);
+            expect(result.subject).toContain('lue');
+        });
+
+        it('should return email for replied status', () => {
+            const result = contactStatusChangedEmail({ firstName: 'A', providerName: 'B', status: 'replied' });
+            assertShape(result);
+            expect(result.subject).toContain('répondue');
+        });
+    });
+
+    describe('providerFeaturedEmail', () => {
+        it('should return featured = true email', () => {
+            const result = providerFeaturedEmail({ firstName: 'Grace', businessName: 'Salon G', featured: true });
+            assertShape(result);
+            expect(result.subject).toContain('⭐');
+        });
+
+        it('should return featured = false email', () => {
+            const result = providerFeaturedEmail({ firstName: 'Grace', businessName: 'Salon G', featured: false });
+            assertShape(result);
+        });
+    });
+
+    describe('subscriptionRenewedEmail', () => {
+        it('should confirm renewal', () => {
+            const result = subscriptionRenewedEmail({ firstName: 'Ines', businessName: 'Salon I', plan: 'monthly', endDate: new Date() });
+            assertShape(result);
+            expect(result.html).toContain('Ines');
+        });
+    });
+
+    describe('accountDeactivatedEmail', () => {
+        it('should notify account deactivation', () => {
+            const result = accountDeactivatedEmail({ firstName: 'Joel', reason: 'CGU' });
+            assertShape(result);
+            expect(result.html).toContain('Joel');
+        });
+    });
+
+    describe('passwordChangedConfirmationEmail', () => {
+        it('should confirm password change', () => {
+            const result = passwordChangedConfirmationEmail({ firstName: 'Kendra' });
+            assertShape(result);
+            expect(result.html).toContain('Kendra');
+        });
+    });
+
+    describe('providerApprovedEmail', () => {
+        it('should notify provider of approval', () => {
+            const result = providerApprovedEmail({ firstName: 'Lisa', businessName: 'Salon L' });
+            assertShape(result);
+            expect(result.html).toContain('Lisa');
+        });
+    });
+
+    describe('providerRejectedEmail', () => {
+        it('should notify provider of rejection', () => {
+            const result = providerRejectedEmail({ firstName: 'Marc', rejectionReason: 'Profil incomplet' });
+            assertShape(result);
+            expect(result.html).toContain('Marc');
+        });
+    });
+
+    describe('applicationReceivedEmail', () => {
+        it('should acknowledge application', () => {
+            const result = applicationReceivedEmail({ firstName: 'Nina', businessName: 'Salon N' });
+            assertShape(result);
+            expect(result.html).toContain('Nina');
+        });
+    });
+
+    describe('providerVerificationRevokedEmail', () => {
+        it('should notify verification revocation', () => {
+            const result = providerVerificationRevokedEmail({ firstName: 'Olive', businessName: 'Couture O', reason: 'Docs expiré' });
+            assertShape(result);
+            expect(result.html).toContain('Olive');
+        });
+    });
+
+    describe('providerDeactivatedEmail', () => {
+        it('should notify provider deactivation', () => {
+            const result = providerDeactivatedEmail({ firstName: 'Pam', businessName: 'Salon P', reason: 'Signalement' });
+            assertShape(result);
+            expect(result.html).toContain('Pam');
+        });
+    });
+
+    describe('providerReactivatedEmail', () => {
+        it('should notify provider reactivation', () => {
+            const result = providerReactivatedEmail({ firstName: 'Quinn', businessName: 'Salon Q' });
+            assertShape(result);
+            expect(result.html).toContain('Quinn');
+        });
+    });
 });

@@ -2,6 +2,21 @@
  * Email templates for AELI Services
  */
 
+const getFrontendUrl = () => {
+  const url = process.env.FRONTEND_URL || 'http://localhost:5173';
+  if (url.startsWith('[')) {
+    try {
+      const urls = JSON.parse(url);
+      return Array.isArray(urls) ? urls[0] : url;
+    } catch (e) {
+      return url;
+    }
+  }
+  return url;
+};
+
+const frontendUrl = getFrontendUrl();
+
 const baseTemplate = (content) => `
 <!DOCTYPE html>
 <html lang="fr">
@@ -118,7 +133,7 @@ const welcomeEmail = ({ firstName, role }) => {
       </ul>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}" class="button">Découvrir la plateforme</a>
+        <a href="${frontendUrl}" class="button">Découvrir la plateforme</a>
       </center>
       
       <p>À très bientôt sur AELI Services !</p>
@@ -151,7 +166,7 @@ const newContactEmail = ({ providerName, senderName, senderEmail, senderPhone, m
       <p>N'hésitez pas à répondre rapidement pour ne pas manquer cette opportunité !</p>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Voir dans mon tableau de bord</a>
+        <a href="${frontendUrl}/dashboard" class="button">Voir dans mon tableau de bord</a>
       </center>
       
       <p><em>L'équipe AELI Services</em></p>
@@ -182,7 +197,7 @@ const accountVerifiedEmail = ({ firstName, businessName }) => {
       </ul>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Optimiser mon profil</a>
+        <a href="${frontendUrl}/dashboard" class="button">Optimiser mon profil</a>
       </center>
       
       <p>Bonne continuation sur AELI Services !</p>
@@ -194,13 +209,13 @@ const accountVerifiedEmail = ({ firstName, businessName }) => {
 /**
  * New review notification email (sent to provider)
  */
-const newReviewEmail = ({ providerName, reviewerName, rating, comment }) => {
+const newReviewEmail = ({ firstName, reviewerName, rating, comment }) => {
   const stars = '⭐'.repeat(rating);
 
   return {
     subject: `Nouvel avis reçu : ${stars}`,
     html: baseTemplate(`
-      <h2>Bonjour ${providerName} !</h2>
+      <h2>Bonjour ${firstName} !</h2>
       <p>Vous avez reçu un nouvel avis sur votre profil AELI Services.</p>
       
       <div class="highlight">
@@ -212,7 +227,7 @@ const newReviewEmail = ({ providerName, reviewerName, rating, comment }) => {
       <p>Les avis positifs renforcent votre crédibilité auprès des futures clientes. Continuez votre excellent travail !</p>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Voir tous mes avis</a>
+        <a href="${frontendUrl}/dashboard" class="button">Voir tous mes avis</a>
       </center>
       
       <p><em>L'équipe AELI Services</em></p>
@@ -311,7 +326,7 @@ const documentsRejectedEmail = ({ firstName, businessName, reasons, notes }) => 
       </ol>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard/documents" class="button">Corriger mes documents</a>
+        <a href="${frontendUrl}/dashboard/documents" class="button">Corriger mes documents</a>
       </center>
       
       <div class="highlight">
@@ -375,7 +390,7 @@ const paymentSuccessEmail = ({ firstName, transactionId, amount, currency, type,
       </div>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/payments/history" class="button">Voir mon historique</a>
+        <a href="${frontendUrl}/payments/history" class="button">Voir mon historique</a>
       </center>
       
       <p>Conservez cet email comme reçu de paiement.</p>
@@ -408,7 +423,7 @@ const paymentFailedEmail = ({ firstName, transactionId, amount, currency, errorM
       </ul>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/payments" class="button">Réessayer le paiement</a>
+        <a href="${frontendUrl}/payments" class="button">Réessayer le paiement</a>
       </center>
       
       <p>Si le problème persiste, contactez votre opérateur Mobile Money ou notre support.</p>
@@ -490,7 +505,7 @@ const subscriptionExpiringEmail = ({ firstName, businessName, daysLeft, endDate,
       </div>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard/subscription" class="button">Renouveler mon abonnement</a>
+        <a href="${frontendUrl}/dashboard/subscription" class="button">Renouveler mon abonnement</a>
       </center>
       
       <p>Ne perdez pas vos clients ! Renouvelez dès maintenant pour continuer à recevoir des demandes.</p>
@@ -523,7 +538,7 @@ const subscriptionExpiredEmail = ({ firstName, businessName }) => {
       <p>Renouvelez votre abonnement pour récupérer votre visibilité complète et continuer à recevoir des clients.</p>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard/subscription" class="button">Renouveler maintenant</a>
+        <a href="${frontendUrl}/dashboard/subscription" class="button">Renouveler maintenant</a>
       </center>
       
       <p><em>L'équipe AELI Services</em></p>
@@ -559,7 +574,7 @@ const contactStatusChangedEmail = ({ firstName, providerName, status }) => {
         <p>Le prestataire a vu votre message et reviendra vers vous prochainement.</p>
       `}
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/contacts" class="button">Voir mes contacts</a>
+        <a href="${frontendUrl}/contacts" class="button">Voir mes contacts</a>
       </p>
     `)
   };
@@ -583,7 +598,7 @@ const providerFeaturedEmail = ({ firstName, businessName, featured }) => {
         <p>Vous apparaissez maintenant dans les résultats standards.</p>
       `}
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/my-profile" class="button">Voir mon profil</a>
+        <a href="${frontendUrl}/my-profile" class="button">Voir mon profil</a>
       </p>
     `)
   };
@@ -607,7 +622,7 @@ const subscriptionRenewedEmail = ({ firstName, businessName, plan, endDate }) =>
       </div>
       <p>Votre profil continuera d'être visible et vos contacts et photos resteront accessibles.</p>
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/my-dashboard" class="button">Accéder au tableau de bord</a>
+        <a href="${frontendUrl}/my-dashboard" class="button">Accéder au tableau de bord</a>
       </p>
     `)
   };
@@ -652,7 +667,7 @@ const passwordChangedConfirmationEmail = ({ firstName }) => {
         <li>Contacter notre support</li>
       </ul>
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/forgot-password" class="button">Réinitialiser le mot de passe</a>
+        <a href="${frontendUrl}/forgot-password" class="button">Réinitialiser le mot de passe</a>
       </p>
     `)
   };
@@ -661,7 +676,7 @@ const passwordChangedConfirmationEmail = ({ firstName }) => {
 /**
  * Provider application approved email
  */
-const providerApprovedEmail = (firstName, businessName) => {
+const providerApprovedEmail = ({ firstName, businessName }) => {
   return {
     subject: '🎉 Félicitations ! Votre candidature est approuvée - AELI Services',
     html: baseTemplate(`
@@ -685,7 +700,7 @@ const providerApprovedEmail = (firstName, businessName) => {
         <li>Répondez rapidement aux demandes de contact</li>
       </ul>
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/provider/dashboard" class="button">Accéder à mon dashboard</a>
+        <a href="${frontendUrl}/provider/dashboard" class="button">Accéder à mon dashboard</a>
       </p>
       <p style="color: #666; font-size: 14px; margin-top: 20px;">
         Besoin d'aide ? Notre équipe est à votre disposition : support@aeli-services.cm
@@ -697,7 +712,7 @@ const providerApprovedEmail = (firstName, businessName) => {
 /**
  * Provider application rejected email
  */
-const providerRejectedEmail = (firstName, rejectionReason) => {
+const providerRejectedEmail = ({ firstName, rejectionReason }) => {
   return {
     subject: '📋 Votre candidature nécessite des modifications - AELI Services',
     html: baseTemplate(`
@@ -717,7 +732,7 @@ const providerRejectedEmail = (firstName, rejectionReason) => {
         <li>Assurez-vous que vos documents sont lisibles et valides</li>
       </ul>
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/become-provider" class="button">Soumettre une nouvelle candidature</a>
+        <a href="${frontendUrl}/become-provider" class="button">Soumettre une nouvelle candidature</a>
       </p>
       <p style="color: #666; font-size: 14px;">
         Des questions ? Contactez-nous : support@aeli-services.cm
@@ -729,7 +744,7 @@ const providerRejectedEmail = (firstName, rejectionReason) => {
 /**
  * Provider application received email (sent when application is submitted)
  */
-const applicationReceivedEmail = (firstName, businessName) => {
+const applicationReceivedEmail = ({ firstName, businessName }) => {
   return {
     subject: '📋 Candidature reçue - AELI Services',
     html: baseTemplate(`
@@ -750,7 +765,7 @@ const applicationReceivedEmail = (firstName, businessName) => {
       </ol>
       <p>Assurez-vous que vos documents (CNI, photos) sont lisibles pour accélérer le traitement.</p>
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/my-application" class="button">Suivre ma candidature</a>
+        <a href="${frontendUrl}/my-application" class="button">Suivre ma candidature</a>
       </p>
       <p style="color: #666; font-size: 14px;">
         Des questions ? support@aeli-services.cm
@@ -762,7 +777,7 @@ const applicationReceivedEmail = (firstName, businessName) => {
 /**
  * Provider verification revoked email (sent when admin revokes verified status of an existing provider)
  */
-const providerVerificationRevokedEmail = (firstName, businessName, reason) => {
+const providerVerificationRevokedEmail = ({ firstName, businessName, reason }) => {
   return {
     subject: '⚠️ Statut de vérification retiré - AELI Services',
     html: baseTemplate(`
@@ -785,7 +800,7 @@ const providerVerificationRevokedEmail = (firstName, businessName, reason) => {
         <li>Contactez notre support si vous avez des questions</li>
       </ul>
       <p style="text-align: center; margin-top: 30px;">
-        <a href="${process.env.FRONTEND_URL}/dashboard/documents" class="button">Soumettre mes documents</a>
+        <a href="${frontendUrl}/dashboard/documents" class="button">Soumettre mes documents</a>
       </p>
       <p style="color: #666; font-size: 14px;">
         Des questions ? Contactez-nous : support@aeli-services.cm
@@ -847,7 +862,7 @@ const providerReactivatedEmail = ({ firstName, businessName }) => {
       <p>Votre profil est de nouveau visible par les clients et vous pouvez recevoir des demandes de contact.</p>
       
       <center>
-        <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Accéder à mon tableau de bord</a>
+        <a href="${frontendUrl}/dashboard" class="button">Accéder à mon tableau de bord</a>
       </center>
       
       <p><em>L'équipe AELI Services</em></p>
