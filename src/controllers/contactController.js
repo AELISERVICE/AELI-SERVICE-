@@ -212,8 +212,11 @@ const updateContactStatus = asyncHandler(async (req, res) => {
 
   // Send email notification to sender (only for meaningful status changes)
   if (contact.senderEmail) {
+    const firstName = contact.senderName
+      ? contact.senderName.split(" ")[0]
+      : "Cher(e) client(e)";
     const emailPayload = contactStatusChangedEmail({
-      firstName: contact.senderName.split(" ")[0],
+      firstName,
       providerName: contact.provider.businessName,
       status,
     });

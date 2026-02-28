@@ -43,8 +43,8 @@ const sendEmail = async ({ to, subject, html, text }) => {
         logger.error('❌ Email sending failed:', {
             error: error.message,
             stack: error.stack,
-            to: mailOptions.to,
-            subject: mailOptions.subject
+            to: to,
+            subject: subject
         });
         throw error;
     }

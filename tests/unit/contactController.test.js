@@ -110,7 +110,7 @@ describe('Contact Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
         getPaginationParams.mockReturnValue({ limit: 10, offset: 0 });
         getPaginationData.mockReturnValue({ page: 1, totalPages: 1 });
         Payment.generateTransactionId.mockReturnValue('txn-123');
@@ -233,27 +233,144 @@ describe('Contact Controller', () => {
     });
 
     describe('updateContactStatus', () => {
-        it('should update contact status successfully', async () => {
+        const { sendEmailSafely } = require('../../src/utils/helpers');
+        const { contactStatusChangedEmail } = require('../../src/utils/emailTemplates');
+
+        it('should update contact status to "read" and send email', async () => {
             mockReq.params = { id: 'contact-123' };
             mockReq.body = { status: 'read' };
 
             const mockContact = {
                 id: 'contact-123',
-                provider: { userId: 'user-123' },
+                provider: { userId: 'user-123', businessName: 'Salon Marie' },
                 userId: 'sender-123',
                 senderEmail: 'sender@example.com',
-                senderName: 'John Doe',
+                senderName: 'Fatou Kamga',
                 save: jest.fn().mockResolvedValue()
             };
 
+            const mockEmailPayload = {
+                subject: 'Votre demande a été lue - AELI Services',
+                html: '<p>...</p>'
+            };
+
             Contact.findByPk.mockResolvedValue(mockContact);
+            contactStatusChangedEmail.mockReturnValue(mockEmailPayload);
+            sendEmailSafely.mockResolvedValue({});
 
             await updateContactStatus(mockReq, mockRes, mockNext);
 
             expect(mockContact.status).toBe('read');
             expect(mockContact.save).toHaveBeenCalledWith({ fields: ['status'] });
             expect(emitContactStatusChange).toHaveBeenCalled();
+            expect(contactStatusChangedEmail).toHaveBeenCalledWith({
+                firstName: 'Fatou',
+                providerName: 'Salon Marie',
+                status: 'read'
+            });
+            expect(sendEmailSafely).toHaveBeenCalledWith(
+                { to: 'sender@example.com', ...mockEmailPayload },
+                'Contact status changed'
+            );
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'contact.statusUpdated', { contact: mockContact });
+        });
+
+        it('should update status to "replied" and send email', async () => {
+            mockReq.params = { id: 'contact-123' };
+            mockReq.body = { status: 'replied' };
+
+            const mockContact = {
+                id: 'contact-123',
+                provider: { userId: 'user-123', businessName: 'Salon Marie' },
+                userId: 'sender-123',
+                senderEmail: 'sender@example.com',
+                senderName: 'Jean Paul',
+                save: jest.fn().mockResolvedValue()
+            };
+
+            const mockEmailPayload = {
+                subject: 'Votre demande a été répondue - AELI Services',
+                html: '<p>...</p>'
+            };
+
+            Contact.findByPk.mockResolvedValue(mockContact);
+            contactStatusChangedEmail.mockReturnValue(mockEmailPayload);
+            sendEmailSafely.mockResolvedValue({});
+
+            await updateContactStatus(mockReq, mockRes, mockNext);
+
+            expect(mockContact.status).toBe('replied');
+            expect(sendEmailSafely).toHaveBeenCalled();
+        });
+
+        it('should update status to "pending" WITHOUT sending email', async () => {
+            mockReq.params = { id: 'contact-123' };
+            mockReq.body = { status: 'pending' };
+
+            const mockContact = {
+                id: 'contact-123',
+                provider: { userId: 'user-123', businessName: 'Salon Marie' },
+                userId: 'sender-123',
+                senderEmail: 'sender@example.com',
+                senderName: 'Fatou Kamga',
+                save: jest.fn().mockResolvedValue()
+            };
+
+            Contact.findByPk.mockResolvedValue(mockContact);
+            contactStatusChangedEmail.mockReturnValue(null); // pending → null
+
+            await updateContactStatus(mockReq, mockRes, mockNext);
+
+            expect(mockContact.status).toBe('pending');
+            expect(contactStatusChangedEmail).toHaveBeenCalledWith({
+                firstName: 'Fatou',
+                providerName: 'Salon Marie',
+                status: 'pending'
+            });
+            // No email should be sent when payload is null
+            expect(sendEmailSafely).not.toHaveBeenCalled();
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'contact.statusUpdated', { contact: mockContact });
+        });
+
+        it('should handle null senderName gracefully without crashing', async () => {
+            mockReq.params = { id: 'contact-123' };
+            mockReq.body = { status: 'read' };
+
+            const mockContact = {
+                id: 'contact-123',
+                provider: { userId: 'user-123', businessName: 'Salon Marie' },
+                userId: null,           // anonymous sender
+                senderEmail: 'anon@example.com',
+                senderName: null,       // ← no name provided
+                save: jest.fn().mockResolvedValue()
+            };
+
+            const mockEmailPayload = { subject: 'Test subject', html: '<p>test</p>' };
+
+            Contact.findByPk.mockResolvedValue(mockContact);
+            contactStatusChangedEmail.mockReturnValue(mockEmailPayload);
+            sendEmailSafely.mockResolvedValue({});
+
+            // Should NOT crash despite senderName being null
+            await expect(
+                updateContactStatus(mockReq, mockRes, mockNext)
+            ).resolves.not.toThrow();
+
+            // Falls back to default greeting
+            expect(contactStatusChangedEmail).toHaveBeenCalledWith({
+                firstName: 'Cher(e) client(e)',
+                providerName: 'Salon Marie',
+                status: 'read'
+            });
+        });
+
+        it('should reject invalid status values with 400', async () => {
+            mockReq.params = { id: 'contact-123' };
+            mockReq.body = { status: 'archived' }; // invalid value
+
+            await expect(
+                updateContactStatus(mockReq, mockRes, mockNext)
+            ).rejects.toThrow('common.badRequest');
         });
 
         it('should throw error if contact not found', async () => {
@@ -263,6 +380,27 @@ describe('Contact Controller', () => {
             Contact.findByPk.mockResolvedValue(null);
 
             await expect(updateContactStatus(mockReq, mockRes, mockNext)).rejects.toThrow('contact.notFound');
+        });
+
+        it('should skip email if no senderEmail on the contact', async () => {
+            mockReq.params = { id: 'contact-123' };
+            mockReq.body = { status: 'read' };
+
+            const mockContact = {
+                id: 'contact-123',
+                provider: { userId: 'user-123', businessName: 'Salon Marie' },
+                userId: 'sender-123',
+                senderEmail: null,  // ← no email
+                senderName: 'Fatou',
+                save: jest.fn().mockResolvedValue()
+            };
+
+            Contact.findByPk.mockResolvedValue(mockContact);
+
+            await updateContactStatus(mockReq, mockRes, mockNext);
+
+            expect(sendEmailSafely).not.toHaveBeenCalled();
+            expect(i18nResponse).toHaveBeenCalled();
         });
     });
 
