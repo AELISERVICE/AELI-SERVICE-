@@ -92,6 +92,8 @@ const getProviders = asyncHandler(async (req, res) => {
     category,
     location,
     minRating,
+    minPrice,
+    maxPrice,
     search,
     sort = "recent",
   } = req.query;
@@ -113,10 +115,33 @@ const getProviders = asyncHandler(async (req, res) => {
   }
 
   if (search) {
+    const searchPattern = `%${search}%`;
     where[Op.or] = [
-      { businessName: { [Op.iLike]: `%${search}%` } },
-      { description: { [Op.iLike]: `%${search}%` } },
+      { businessName: { [Op.iLike]: searchPattern } },
+      { description: { [Op.iLike]: searchPattern } },
+      {
+        id: {
+          [Op.in]: literal(
+            `(SELECT DISTINCT provider_id FROM services WHERE name ILIKE '${searchPattern}' OR description ILIKE '${searchPattern}')`
+          ),
+        },
+      },
     ];
+  }
+
+  // Price Range Filter
+  if (minPrice || maxPrice) {
+    const minP = parseFloat(minPrice) || 0;
+    const maxP = parseFloat(maxPrice) || 999999999;
+
+    where[Op.and] = where[Op.and] || [];
+    where[Op.and].push({
+      id: {
+        [Op.in]: literal(
+          `(SELECT DISTINCT provider_id FROM services WHERE price >= ${minP} AND price <= ${maxP} AND is_active = true)`
+        ),
+      },
+    });
   }
 
   // Build include for category filter
@@ -129,9 +154,9 @@ const getProviders = asyncHandler(async (req, res) => {
     {
       model: Service,
       as: 'services',
-      attributes: ['id'], // Keep it minimal to improve performance
+      attributes: ['id', 'name', 'price'],
       where: { isActive: true },
-      required: false, // Don't filter out providers with no active services unless category filter is on
+      required: false,
       include: [
         {
           model: Category,
@@ -142,7 +167,7 @@ const getProviders = asyncHandler(async (req, res) => {
     },
   ];
 
-  // If category filter, add where condition for providers with services in that category
+  // If category filter, add where condition
   if (category) {
     where[Op.and] = where[Op.and] || [];
     where[Op.and].push({
@@ -157,6 +182,14 @@ const getProviders = asyncHandler(async (req, res) => {
   const { count, rows: providersObj } = await Provider.findAndCountAll({
     where,
     include,
+    attributes: {
+      include: [
+        [
+          literal(`(SELECT MIN(price) FROM services WHERE services.provider_id = "Provider".id AND services.is_active = true)`),
+          'min_price'
+        ]
+      ]
+    },
     order: buildSortOrder(sort),
     limit: queryLimit,
     offset,

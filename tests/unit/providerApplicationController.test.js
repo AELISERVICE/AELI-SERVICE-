@@ -3,6 +3,7 @@
  * Tests for provider application-related endpoints
  */
 
+const { Op } = require('sequelize');
 const {
     applyToBeProvider,
     getMyApplication,
@@ -107,7 +108,7 @@ describe('Provider Application Controller', () => {
         mockNext = jest.fn();
 
         // Setup default mocks
-        i18nResponse.mockImplementation(() => {});
+        i18nResponse.mockImplementation(() => { });
         extractPhotoUrls.mockReturnValue([]);
         sendEmailSafely.mockImplementation((emailData) => sendEmail(emailData));
         uploadDocument.mockResolvedValue({ url: 'doc-url', publicId: 'doc-public-id' });
@@ -218,6 +219,19 @@ describe('Provider Application Controller', () => {
                 offset: 0
             });
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'admin.applicationsList', expect.any(Object));
+        });
+
+        it('should filter applications by search query', async () => {
+            mockReq.query = { search: 'Marie' };
+            ProviderApplication.findAndCountAll.mockResolvedValue({ count: 1, rows: [] });
+
+            await getApplications(mockReq, mockRes, mockNext);
+
+            expect(ProviderApplication.findAndCountAll).toHaveBeenCalledWith(expect.objectContaining({
+                where: expect.objectContaining({
+                    [Op.or]: expect.any(Array)
+                })
+            }));
         });
     });
 

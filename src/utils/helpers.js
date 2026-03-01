@@ -118,7 +118,9 @@ const buildSortOrder = (sortParam) => {
         recent: [['created_at', 'DESC']],
         views: [['views_count', 'DESC']],
         contacts: [['contacts_count', 'DESC']],
-        name: [['business_name', 'ASC']]
+        name: [['business_name', 'ASC']],
+        price_asc: [['min_price', 'ASC']],
+        price_desc: [['min_price', 'DESC']]
     };
 
     return sortOptions[sortParam] || sortOptions.recent;

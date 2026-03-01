@@ -277,11 +277,23 @@ const getStats = asyncHandler(async (req, res) => {
  * @access  Private (admin)
  */
 const getPendingProviders = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, search } = req.query;
   const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
+  const where = { isVerified: false };
+
+  if (search) {
+    const searchPattern = `%${search}%`;
+    where[Op.or] = [
+      { businessName: { [Op.iLike]: searchPattern } },
+      { "$user.firstName$": { [Op.iLike]: searchPattern } },
+      { "$user.lastName$": { [Op.iLike]: searchPattern } },
+      { "$user.email$": { [Op.iLike]: searchPattern } },
+    ];
+  }
+
   const { count, rows: providers } = await Provider.findAndCountAll({
-    where: { isVerified: false },
+    where,
     include: [
       {
         model: User,
@@ -595,6 +607,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
       { firstName: { [Op.iLike]: `%${search}%` } },
       { lastName: { [Op.iLike]: `%${search}%` } },
       { email: { [Op.iLike]: `%${search}%` } },
+      { "$provider.businessName$": { [Op.iLike]: `%${search}%` } },
     ];
   }
 
@@ -603,6 +616,13 @@ const getAllUsers = asyncHandler(async (req, res) => {
     attributes: {
       exclude: ["password", "resetPasswordToken", "resetPasswordExpires"],
     },
+    include: [
+      {
+        model: Provider,
+        as: "provider",
+        attributes: ["id", "businessName", "isVerified", "isActive"],
+      },
+    ],
     order: [["createdAt", "DESC"]],
     limit: queryLimit,
     offset,
@@ -619,11 +639,23 @@ const getAllUsers = asyncHandler(async (req, res) => {
  * @access  Private (admin)
  */
 const getProvidersUnderReview = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 10, search } = req.query;
   const { limit: queryLimit, offset } = getPaginationParams(page, limit);
 
+  const where = { verificationStatus: "under_review" };
+
+  if (search) {
+    const searchPattern = `%${search}%`;
+    where[Op.or] = [
+      { businessName: { [Op.iLike]: searchPattern } },
+      { "$user.firstName$": { [Op.iLike]: searchPattern } },
+      { "$user.lastName$": { [Op.iLike]: searchPattern } },
+      { "$user.email$": { [Op.iLike]: searchPattern } },
+    ];
+  }
+
   const { count, rows: providers } = await Provider.findAndCountAll({
-    where: { verificationStatus: "under_review" },
+    where,
     include: [
       {
         model: User,

@@ -3,6 +3,7 @@
  * Tests for provider-related endpoints
  */
 
+const { Op } = require('sequelize');
 const {
     createProvider,
     getProviders,
@@ -207,14 +208,14 @@ describe('Provider Controller', () => {
 
             await getProviders(mockReq, mockRes, mockNext);
 
-            expect(Provider.findAndCountAll).toHaveBeenCalledWith({
+            expect(Provider.findAndCountAll).toHaveBeenCalledWith(expect.objectContaining({
                 where: { isVerified: true, isActive: true },
                 include: expect.anything(),
                 order: [['createdAt', 'DESC']],
                 limit: 12,
                 offset: 0,
                 distinct: true
-            });
+            }));
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.list', expect.anything());
         });
 
@@ -247,6 +248,34 @@ describe('Provider Controller', () => {
             expect(buildSortOrder).toHaveBeenCalled();
             expect(Provider.findAndCountAll).toHaveBeenCalled();
             expect(i18nResponse).toHaveBeenCalled();
+        });
+
+        it('should filter providers by price range', async () => {
+            mockReq.query = {
+                minPrice: '1000',
+                maxPrice: '5000'
+            };
+            Provider.findAndCountAll.mockResolvedValue({ count: 1, rows: [] });
+
+            await getProviders(mockReq, mockRes, mockNext);
+
+            expect(Provider.findAndCountAll).toHaveBeenCalled();
+            // Verify that at least one of the calls to Provider.findAndCountAll includes the price subquery
+            const lastCallArgs = Provider.findAndCountAll.mock.calls[Provider.findAndCountAll.mock.calls.length - 1][0];
+            expect(lastCallArgs.where[Op.and]).toBeDefined();
+        });
+
+        it('should handle price sorting', async () => {
+            mockReq.query = { sort: 'price_asc' };
+            buildSortOrder.mockReturnValue([['min_price', 'ASC']]);
+            Provider.findAndCountAll.mockResolvedValue({ count: 1, rows: [] });
+
+            await getProviders(mockReq, mockRes, mockNext);
+
+            expect(buildSortOrder).toHaveBeenCalledWith('price_asc');
+            expect(Provider.findAndCountAll).toHaveBeenCalled();
+            const lastCallArgs = Provider.findAndCountAll.mock.calls[Provider.findAndCountAll.mock.calls.length - 1][0];
+            expect(lastCallArgs.attributes.include).toBeDefined();
         });
     });
 

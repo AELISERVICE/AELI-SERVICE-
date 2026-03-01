@@ -27,16 +27,18 @@ Récupère la liste paginée des prestataires avec filtres et recherche. C'est l
 |-------|------|-------------|
 | `page` | int | Numéro de page (défaut: 1) |
 | `limit` | int | Éléments par page (défaut: 20, max: 50) |
-| `search` | string | Recherche dans nom, description |
+| `search` | string | Recherche dans nom, description du prestataire **ET des services** |
 | `location` | string | Filtrer par ville (Douala, Yaoundé, etc.) |
 | `categoryId` | UUID | Filtrer par catégorie de service |
 | `minRating` | float | Note minimum (1-5) |
-| `sortBy` | string | `rating`, `views`, `createdAt` |
-| `sortOrder` | string | `asc`, `desc` |
+| `minPrice` | float | Prix minimum d'un service du prestataire |
+| `maxPrice` | float | Prix maximum d'un service du prestataire |
+| `sort` | string | `rating`, `views`, `recent`, `price_asc`, `price_desc` |
+| `order` | string | `asc`, `desc` (obsolète, préférez `sort`) |
 
 **Exemple :**
 ```
-GET /api/providers?location=Douala&minRating=4&sortBy=rating&sortOrder=desc
+GET /api/providers?search=coiffure&minPrice=2000&maxPrice=10000&sort=price_asc
 ```
 
 **Réponse 200 :**

@@ -195,6 +195,15 @@ const getApplications = asyncHandler(async (req, res) => {
 
   const where = {};
   if (status) where.status = status;
+  if (req.query.search) {
+    const searchPattern = `%${req.query.search}%`;
+    where[Op.or] = [
+      { businessName: { [Op.iLike]: searchPattern } },
+      { firstName: { [Op.iLike]: searchPattern } },
+      { lastName: { [Op.iLike]: searchPattern } },
+      { email: { [Op.iLike]: searchPattern } },
+    ];
+  }
 
   const { count, rows: applications } =
     await ProviderApplication.findAndCountAll({

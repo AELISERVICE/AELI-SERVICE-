@@ -241,7 +241,7 @@ Récupère la liste paginée des utilisateurs avec filtres. **Les administrateur
 | `page` | int | 1 | Numéro de page |
 | `limit` | int | 20 | Éléments par page (max 100) |
 | `role` | string | - | `client`, `provider` (admins exclus par défaut) |
-| `search` | string | - | Recherche nom/email |
+| `search` | string | - | Recherche nom, prénom, email ou **nom d'entreprise** |
 
 **Exemple :**
 ```
@@ -328,6 +328,7 @@ Récupère toutes les demandes de clients souhaitant devenir prestataires.
 | `page` | int | Numéro de page |
 | `limit` | int | Éléments par page |
 | `status` | string | `pending`, `approved`, `rejected` |
+| `search` | string | Recherche par nom, entreprise ou email |
 
 **Workflow frontend :**
 1. Afficher liste avec `status=pending`
@@ -404,9 +405,14 @@ Décision initiale sur une candidature. Cet endpoint transforme le Client en Pre
 **Description :**  
 Liste les prestataires existants qui n'ont pas encore été vérifiés (`isVerified = false`).
 
-**Différence avec candidatures :**
-- Les candidatures sont des **demandes** avant création du profil
 - Les prestataires pending ont **déjà** un profil mais non vérifié
+
+**Paramètres query :**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Numéro de page |
+| `limit` | int | Éléments par page |
+| `search` | string | Recherche par nom d'entreprise ou nom du prestataire |
 
 ---
 
@@ -414,6 +420,13 @@ Liste les prestataires existants qui n'ont pas encore été vérifiés (`isVerif
 
 **Description :**  
 Liste tous les prestataires (nouveaux ou existants) qui ont des documents en attente de validation. C'est ici que vous effectuez la vérification finale pour donner le badge "Vérifié".
+
+**Paramètres query :**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Numéro de page |
+| `limit` | int | Éléments par page |
+| `search` | string | Recherche par nom d'entreprise ou nom du prestataire |
 
 **Workflow :**
 1. Cliquer sur un prestataire → Voir ses documents.

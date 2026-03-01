@@ -13,7 +13,10 @@ const {
     updateReviewVisibility,
     getAllUsers,
     getProvidersUnderReview,
-    reviewProviderDocuments
+    reviewProviderDocuments,
+    getFeaturedProviders,
+    deleteUser,
+    toggleProviderStatus
 } = require('../../src/controllers/adminController');
 
 // Mock dependencies
@@ -66,7 +69,8 @@ jest.mock('../../src/middlewares/audit', () => ({
         providerVerified: jest.fn(),
         userStatusChanged: jest.fn(),
         reviewModerated: jest.fn(),
-        documentsReviewed: jest.fn()
+        documentsReviewed: jest.fn(),
+        adminAction: jest.fn()
     }
 }));
 
@@ -85,7 +89,9 @@ jest.mock('../../src/utils/emailTemplates', () => ({
     accountVerifiedEmail: jest.fn(),
     providerFeaturedEmail: jest.fn(),
     documentsRejectedEmail: jest.fn(),
-    providerVerificationRevokedEmail: jest.fn()
+    providerVerificationRevokedEmail: jest.fn(),
+    providerDeactivatedEmail: jest.fn(),
+    providerReactivatedEmail: jest.fn()
 }));
 
 jest.mock('../../src/config/redis', () => ({
@@ -263,6 +269,30 @@ describe('Admin Controller', () => {
 
             await expect(verifyProvider(mockReq, mockRes, mockNext)).rejects.toThrow('admin.rejectionReasonRequired');
         });
+
+        it('should throw error if application ID provided instead of provider ID', async () => {
+            mockReq.params = { id: 'app-123' };
+            Provider.findOne.mockResolvedValue(null);
+            ProviderApplication.findByPk.mockResolvedValue({ id: 'app-123' });
+
+            await expect(verifyProvider(mockReq, mockRes, mockNext)).rejects.toThrow('provider.applicationIDProvided');
+        });
+    });
+
+    describe('getFeaturedProviders', () => {
+        it('should get featured providers successfully', async () => {
+            mockReq.query = { page: 1, limit: 10 };
+            const mockProviders = {
+                count: 2,
+                rows: [{ id: 'provider-1', isFeatured: true }]
+            };
+            Provider.findAndCountAll.mockResolvedValue(mockProviders);
+
+            await getFeaturedProviders(mockReq, mockRes, mockNext);
+
+            expect(Provider.findAndCountAll).toHaveBeenCalled();
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.list', expect.any(Object));
+        });
     });
 
     describe('featureProvider', () => {
@@ -286,6 +316,30 @@ describe('Admin Controller', () => {
             expect(mockProvider.save).toHaveBeenCalledWith({ fields: ['isFeatured', 'featuredUntil'] });
             expect(delByPattern).toHaveBeenCalledWith('route:/api/providers*');
             expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.featured', { provider: mockProvider });
+        });
+
+        it('should feature provider with duration', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { isFeatured: true, duration: 30 };
+            const mockProvider = {
+                id: 'provider-123',
+                save: jest.fn().mockResolvedValue(),
+                user: { email: 'test@example.com' }
+            };
+            Provider.findOne.mockResolvedValue(mockProvider);
+
+            await featureProvider(mockReq, mockRes, mockNext);
+
+            expect(mockProvider.featuredUntil).toBeDefined();
+            expect(mockProvider.isFeatured).toBe(true);
+        });
+
+        it('should throw error if application ID provided to featureProvider', async () => {
+            mockReq.params = { id: 'app-123' };
+            Provider.findOne.mockResolvedValue(null);
+            ProviderApplication.findByPk.mockResolvedValue({ id: 'app-123' });
+
+            await expect(featureProvider(mockReq, mockRes, mockNext)).rejects.toThrow('provider.applicationIDProvided');
         });
     });
 
@@ -534,6 +588,117 @@ describe('Admin Controller', () => {
             Provider.findOne.mockResolvedValue(null);
 
             await expect(reviewProviderDocuments(mockReq, mockRes, mockNext)).rejects.toThrow('provider.notFound');
+        });
+
+        it('should throw error if application ID provided to reviewProviderDocuments', async () => {
+            mockReq.params = { id: 'app-123' };
+            Provider.findOne.mockResolvedValue(null);
+            ProviderApplication.findByPk.mockResolvedValue({ id: 'app-123' });
+
+            await expect(reviewProviderDocuments(mockReq, mockRes, mockNext)).rejects.toThrow('provider.applicationIDProvided');
+        });
+
+        it('should throw error if invalid decision provided', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { decision: 'maybe' };
+            Provider.findOne.mockResolvedValue({ id: 'provider-123' });
+
+            await expect(reviewProviderDocuments(mockReq, mockRes, mockNext)).rejects.toThrow('common.badRequest');
+        });
+
+        it('should handle invalid document indexes gracefully', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = {
+                decision: 'approved',
+                approvedDocuments: [99],
+                rejectedDocuments: [{ index: 100, reason: 'Bad' }]
+            };
+            const mockProvider = {
+                id: 'provider-123',
+                documents: [{ status: 'pending' }],
+                save: jest.fn().mockResolvedValue(),
+                changed: jest.fn()
+            };
+            Provider.findOne.mockResolvedValue(mockProvider);
+
+            await reviewProviderDocuments(mockReq, mockRes, mockNext);
+
+            expect(mockProvider.save).toHaveBeenCalled();
+        });
+    });
+
+    describe('deleteUser', () => {
+        it('should delete user successfully', async () => {
+            mockReq.params = { id: 'user-123' };
+            const mockUser = {
+                id: 'user-123',
+                destroy: jest.fn().mockResolvedValue(),
+                provider: { businessName: 'Test' }
+            };
+            User.findByPk.mockResolvedValue(mockUser);
+
+            await deleteUser(mockReq, mockRes, mockNext);
+
+            expect(mockUser.destroy).toHaveBeenCalled();
+            expect(delByPattern).toHaveBeenCalled();
+        });
+
+        it('should prevent deleting self', async () => {
+            mockReq.params = { id: 'admin-123' }; // Matches mockReq.user.id
+            User.findByPk.mockResolvedValue({ id: 'admin-123' });
+
+            await expect(deleteUser(mockReq, mockRes, mockNext)).rejects.toThrow('admin.cannotDeleteSelf');
+        });
+
+        it('should prevent deleting other admins', async () => {
+            mockReq.params = { id: 'other-admin' };
+            User.findByPk.mockResolvedValue({ id: 'other-admin', role: 'admin' });
+
+            await expect(deleteUser(mockReq, mockRes, mockNext)).rejects.toThrow('admin.cannotDeleteAdmin');
+        });
+    });
+
+    describe('toggleProviderStatus', () => {
+        it('should activate provider successfully', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { isActive: true };
+            const mockProvider = {
+                id: 'provider-123',
+                isActive: false,
+                save: jest.fn().mockResolvedValue(),
+                user: { email: 'test@example.com' }
+            };
+            Provider.findOne.mockResolvedValue(mockProvider);
+
+            await toggleProviderStatus(mockReq, mockRes, mockNext);
+
+            expect(mockProvider.isActive).toBe(true);
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'admin.providerActivated', expect.any(Object));
+        });
+
+        it('should deactivate provider with reason', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { isActive: false, reason: 'Maintenance' };
+            const mockProvider = {
+                id: 'provider-123',
+                isActive: true,
+                save: jest.fn().mockResolvedValue(),
+                user: { email: 'test@example.com' }
+            };
+            Provider.findOne.mockResolvedValue(mockProvider);
+
+            await toggleProviderStatus(mockReq, mockRes, mockNext);
+
+            expect(mockProvider.isActive).toBe(false);
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'admin.providerDeactivated', expect.any(Object));
+        });
+
+        it('should throw error if deactivating without reason', async () => {
+            mockReq.params = { id: 'provider-123' };
+            mockReq.body = { isActive: false };
+            Provider.findOne.mockResolvedValue({ id: 'provider-123' });
+
+            await expect(toggleProviderStatus(mockReq, mockRes, mockNext)).rejects.toThrow();
         });
     });
 });
