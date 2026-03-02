@@ -6,7 +6,7 @@ import { Messagecustomer } from '../components/modal/Messagecustomer';
 import { ContactCustomer } from '../components/modal/ContactCustomer';
 import { FeedbackCard } from '../components/modal/FeedbackCard';
 import { FavoriteList } from '../components/modal/FavoriteList';
-import { ReviewList } from '../components/modal/ReviewList';
+// import { ReviewList } from '../components/modal/ReviewList';
 import { Confirmation } from '../components/modal/Confirmation';
 import { ProviderMessaging } from '../components/modal/ProviderMessaging/ProviderMessaging';
 import { Banner } from '../components/modal/Banner';
@@ -22,6 +22,11 @@ export function Base() {
     const [isLoading, setIsLoading] = useState(false);
     const [confirmConfig, setConfirmConfig] = useState({ onConfirm: () => { }, isPending: false, title: "", description: "" });
     const [dataProviderToRate, setDataProviderToRate] = useState(null);
+    const [filters, setFilters] = useState({
+        search: "",
+        maxPrice: "",
+        minRating: ""
+    });
     const [dataContact, setDataContact] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
     const closeModal2 = () => setActiveModal2(MODALS.NONE);
@@ -50,9 +55,16 @@ export function Base() {
                 )}
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
-                        <Header onOpenMenu={() => setIsSidebarOpen(true)} openSidebar={openSidebar} />
+                        <Header
+                            onOpenMenu={() => setIsSidebarOpen(true)}
+                            openSidebar={openSidebar}
+                            setFilters={setFilters} // On passe setFilters au lieu de setSearch
+                            filters={filters}
+                        />
                         <div className="mt-6 ">
                             <Outlet context={{
+                                filters,
+                                setFilters,
                                 setIsLoading,
                                 setConfirmConfig,
                                 setDataContact,
@@ -88,9 +100,9 @@ export function Base() {
                             onContact={() => setActiveModal2(MODALS.CONTACT)}
                         />
                     )}
-                    {activeModal === MODALS.REVIEW && (
+                    {/* {activeModal === MODALS.REVIEW && (
                         <ReviewList closeReview={closeModal} />
-                    )}
+                    )} */}
                     {activeModal === MODALS.MESSAGING && (
                         <ProviderMessaging closeMessaging={closeModal} />
                     )}

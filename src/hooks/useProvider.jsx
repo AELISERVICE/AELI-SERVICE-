@@ -10,11 +10,17 @@ export const useApplyProvider = () => {
 };
 
 // get providers list
-export const useGetProviderList = () => {
+export const useGetProviderList = (params = {}) => {
+    // On transforme l'objet { search: '...', maxPrice: 500 } en string query
+    const queryString = new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([_, v]) => v != null && v !== ""))
+    ).toString();
+
     return useQuery({
-        queryKey: ["useGetProviderList"],
-        queryFn: () => request(`/api/providers`, "GET"),
+        queryKey: ["useGetProviderList", params], // La clé change quand les filtres changent
+        queryFn: () => request(`/api/providers?${queryString}`, "GET"),
         refetchOnWindowFocus: false,
+        enabled: true
     });
 };
 

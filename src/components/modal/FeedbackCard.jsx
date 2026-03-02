@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { RatingStars } from "../../ui/RatingStars";
 import { Button } from "../../ui/Button";
-import { useCreateReview } from '../../hooks/useReview';
+import { useCreateReview, useUpdateReview } from '../../hooks/useReview';
 
 export function FeedbackCard({ closeFeedback, providerData }) {
-  const navigate = useNavigate()
   const [hoverRating, setHoverRating] = useState(0);
+  const isEditing = !!providerData?.userId;
 
-  // Utilisation de tes noms de variables exacts
   const {
     mutate: mutateAddFeedback,
     isSuccess: isSuccessAddFeedback,
     isPending: isPendingAddFeedback,
     isError: isErrorAddFeedback,
-    data: dataAddFeedback, // Note: dans useMutation c'est "data", on le mappe vers dataAddFeedback
-    error: errorAddFeedback
+    data: dataAddFeedback,
+    error: errorAddFeedback,
+    reset: resetAdd
   } = useCreateReview();
+
+  const {
+    mutate: mutateUpdateFeedback,
+    isSuccess: isSuccessUpdateFeedback,
+    isPending: isPendingUpdateFeedback,
+    isError: isErrorUpdateFeedback,
+    data: dataUpdateFeedback,
+    error: errorUpdateFeedback,
+    reset: resetUpdate
+  } = useUpdateReview();
 
   const [formData, setFormData] = useState({
     providerId: "",
@@ -26,75 +35,104 @@ export function FeedbackCard({ closeFeedback, providerData }) {
     comment: ""
   });
 
-  // Synchronisation du providerId
+  // Initialisation et Correction de la persistence des données
   useEffect(() => {
-    if (providerData?.id) {
-      setFormData(prev => ({ ...prev, providerId: providerData.id }));
+    if (providerData) {
+      if (isEditing) {
+        // Mode ÉDITION : pré-remplissage avec les données existantes
+        setFormData({
+          providerId: providerData.providerId || "",
+          rating: providerData.rating || 0,
+          comment: providerData.comment || ""
+        });
+      } else {
+        // Mode CRÉATION : Reset complet des champs pour le nouveau prestataire
+        setFormData({
+          providerId: providerData.id || "",
+          rating: 0,
+          comment: ""
+        });
+      }
     }
-  }, [providerData]);
+  }, [providerData, isEditing]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleRateChange = (value) => {
-    setFormData((prev) => ({ ...prev, rating: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    mutateAddFeedback(formData);
-  };
-
-  // Gestion des retours API
+  // Logique de feedback centralisée (Ajout + Update)
   useEffect(() => {
-    if (isSuccessAddFeedback && dataAddFeedback?.success) {
-      toast.success(dataAddFeedback.message);
-      closeFeedback();
+    const isSuccess = (isSuccessAddFeedback && dataAddFeedback?.success) || (isSuccessUpdateFeedback && dataUpdateFeedback?.success);
+    const isError = isErrorAddFeedback || isErrorUpdateFeedback;
+
+    if (isSuccess) {
+      toast.success(dataAddFeedback?.message || dataUpdateFeedback?.message);
+      const timer = setTimeout(() => {
+        closeFeedback();
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
 
-    if (isErrorAddFeedback) {
-      const mainMessage = errorAddFeedback?.response?.message;
+    if (isError) {
+      const errorObj = errorAddFeedback || errorUpdateFeedback;
+      const mainMessage = errorObj?.response?.data?.message || errorObj?.message;
       toast.error(mainMessage);
 
-      const backendErrors = errorAddFeedback?.response?.data?.errors;
+      const backendErrors = errorObj?.response?.data?.errors;
       if (Array.isArray(backendErrors)) {
         backendErrors.forEach((err) => toast.info(err.message));
       }
     }
-  }, [isSuccessAddFeedback, isErrorAddFeedback, dataAddFeedback, errorAddFeedback, closeFeedback]);
+
+    if (isSuccess || isError) {
+      resetAdd();
+      resetUpdate();
+    }
+  }, [
+    isSuccessAddFeedback, isErrorAddFeedback, dataAddFeedback, errorAddFeedback, resetAdd,
+    isSuccessUpdateFeedback, isErrorUpdateFeedback, dataUpdateFeedback, errorUpdateFeedback, resetUpdate
+  ]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isEditing) {
+      // Pour l'update, on envoie l'ID de la review et les nouvelles datas
+      mutateUpdateFeedback({
+        id: providerData.id,
+        formData: {
+          rating: formData.rating,
+          comment: formData.comment
+        }
+      });
+    } else {
+      mutateAddFeedback(formData);
+    }
+  };
+
+  const displayName = isEditing ? providerData?.user?.firstName : providerData?.businessName;
+  const displayImage = isEditing ? providerData?.user?.profilePhoto : providerData?.photos?.[0];
 
   return (
     <div
       onClick={closeFeedback}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm h-screen flex flex-col justify-center items-center z-10 p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[100] p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white rounded-2xl shadow-2xl h-auto overflow-hidden animate-in zoom-in duration-300"
+        className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-300"
       >
-        <div className="p-6 sm:p-8 md:p-10">
+        <div className="p-6 sm:p-8">
           <div className="flex justify-center mb-6">
-            <div className="relative">
-              <img
-                src={providerData?.photos?.[0] || "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000"}
-                alt={providerData?.businessName}
-                className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg object-cover"
-              />
-              <div className="absolute -bottom-1 -right-1 bg-green-500 w-6 h-6 rounded-full border-4 border-white"></div>
-            </div>
+            <img
+              src={displayImage || "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=200"}
+              alt={displayName}
+              className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg object-cover"
+            />
           </div>
 
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Évaluez votre expérience
+              {isEditing ? "Modifier mon avis" : "Évaluez votre expérience"}
             </h1>
             <p className="text-gray-500 text-sm">
-              Comment s'est passé votre service avec{" "}
-              <span className="font-semibold text-gray-900">
-                {providerData?.businessName || "le prestataire"}
-              </span> ?
+              Note pour <span className="font-semibold text-gray-900">{displayName}</span>
             </p>
           </div>
 
@@ -102,41 +140,33 @@ export function FeedbackCard({ closeFeedback, providerData }) {
             <RatingStars
               rating={formData.rating}
               hoverRating={hoverRating}
-              onRate={handleRateChange}
+              onRate={(val) => setFormData(p => ({ ...p, rating: val }))}
               onHover={setHoverRating}
             />
 
-            <div className="space-y-2">
-              <textarea
-                name="comment"
-                id="feedback"
-                rows={4}
-                value={formData.comment}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-none text-gray-700"
-                placeholder="Dites-nous en plus..."
-              />
-            </div>
+            <textarea
+              name="comment"
+              rows={4}
+              value={formData.comment}
+              onChange={(e) => setFormData(p => ({ ...p, comment: e.target.value }))}
+              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-none text-gray-700"
+              placeholder="Votre avis aide les autres membres..."
+            />
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-3">
               <Button
                 type="submit"
                 variant="gradient"
-                size="lg"
-                className="w-full"
-                disabled={formData.rating === 0 || isPendingAddFeedback}
+                className="w-full py-3"
+                disabled={formData.rating === 0 || isPendingAddFeedback || isPendingUpdateFeedback}
               >
-                {isPendingAddFeedback ? (
+                {(isPendingAddFeedback || isPendingUpdateFeedback) ? (
                   <span className="flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Verification...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Traitement...
                   </span>
                 ) : (
-                  <span key="loading-state" className="flex items-center gap-2">
-                    Soumettre
-                  </span>
+                  <span>{isEditing ? "Mettre à jour" : "Soumettre"}</span>
                 )}
-
               </Button>
               <Button
                 type="button"

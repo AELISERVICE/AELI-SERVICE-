@@ -5,7 +5,7 @@ import { SelectFilter } from './SelectFilter';
 import { Button } from '../../ui/Button';
 import { useInfoUserConnected } from '../../hooks/useUser';
 
-export function Header({ onOpenMenu, openSidebar }) {
+export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -28,13 +28,23 @@ export function Header({ onOpenMenu, openSidebar }) {
   }, [])
 
   const handleSearchChange = (e) => {
-    const value = e.target.value
-    setQuery(value)
-    // Redirige vers /search si on commence à taper ailleurs
-    if (value.length > 0 && !isSearchPage) {
-      navigate('/search', { state: { initialQuery: value } })
+    const value = e.target.value;
+    setQuery(value);
+    setFilters(prev => ({ ...prev, search: value })); // Met à jour le contexte
+    if (value.length > 0 && location.pathname !== '/search') {
+      navigate('/search');
     }
-  }
+  };
+
+  const handlePriceChange = (e) => {
+    setFilters(prev => ({ ...prev, maxPrice: e.target.value }));
+  };
+
+  const handleRatingChange = (val) => {
+    setRating(val);
+    const numericRating = val.replace('+', ''); // Transforme "4.0+" en "4.0"
+    setFilters(prev => ({ ...prev, minRating: numericRating }));
+  };
 
   const isExpanded = query.length > 0
   const showFilters = isSearchPage && (isMobile || isExpanded)
@@ -90,6 +100,7 @@ export function Header({ onOpenMenu, openSidebar }) {
               <Coins color="gold" size={20} />
               <input
                 type="number"
+                onChange={handlePriceChange}
                 placeholder="Prix Max"
                 className="w-full outline-none text-[11px] font-medium bg-transparent py-[14px]"
               />
@@ -99,7 +110,7 @@ export function Header({ onOpenMenu, openSidebar }) {
                 label="Note"
                 options={['4.0+', '4.5+', '5.0']}
                 value={rating}
-                onChange={setRating}
+                onChange={handleRatingChange}
                 className="w-full border-none shadow-none"
                 classNameButon="border-none md:shadow-sm "
                 customIcon={<Star size={16} className="text-yellow-400 fill-yellow-400" />}

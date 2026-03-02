@@ -14,8 +14,9 @@ export function ProfileSection({ setIsRole }) {
     const { setIsLoading } = useOutletContext();
     const [isEditing, setIsEditing] = useState(false);
     const { data: userData } = useInfoUserConnected();
-    const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProfile();
     const user = userData?.data?.user;
+    const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProfile();
+
 
     const [formData, setFormData] = useState({
         firstName: "",

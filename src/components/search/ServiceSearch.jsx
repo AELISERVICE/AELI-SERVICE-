@@ -1,96 +1,72 @@
 import React from 'react';
-import { useOutletContext } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '../../ui/productCard';
 import { Pagination } from '../global/Pagination';
-import { Button } from '../../ui/Button'
+import { Button } from '../../ui/Button';
 
+export function ServiceSearch({ providers }) {
+    const navigate = useNavigate();
+    const { openContact, openSidebar } = useOutletContext();
 
-const data = [
-    {
-        id: 1,
-        title: 'Pantalon Cargo Sable',
-        description: 'Coupe décontractée en coton robuste avec poches latérales fonctionnelles.',
-        image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop',
-        likes: 124,
-        price: 5000,
-        category: 'Lifestyle',
-        showMenu: true,
-    },
-    {
-        id: 2,
-        title: 'Jean Slim Indigo',
-        description: 'Denim stretch premium pour un confort optimal et une silhouette affinée.',
-        image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=600&h=800&fit=crop',
-        likes: 89,
-        price: 5500,
-        category: 'Denim',
-    },
-    {
-        id: 3,
-        title: 'Chino Slim Olive',
-        description: 'L\'équilibre parfait entre élégance et décontracté pour vos sorties.',
-        image: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&h=800&fit=crop',
-        likes: 210,
-        price: 14000,
-        category: 'Classique',
-    },
-    {
-        id: 4,
-        title: 'Pantalon Lin Beige',
-        description: 'Matière légère et respirante, idéal pour les journées ensoleillées.',
-        image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=600&h=800&fit=crop',
-        likes: 56,
-        price: 30000,
-        category: 'Été',
-    },
-    {
-        id: 5,
-        title: 'Jogging Tech Fleece',
-        description: 'Style urbain avec finition hydrophobe et coupe ajustée.',
-        image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=800&fit=crop',
-        likes: 312,
-        price: 25000,
-        category: 'Sport',
-    },
-    {
-        id: 6,
-        title: 'Pantalon Velours Côtelé',
-        description: 'Texture rétro et chaleur douce pour la saison automne-hiver.',
-        image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop',
-        likes: 142,
-        price: 100000,
-        category: 'Hiver',
-    },
-]
+    // Fonction pour gérer les favoris (à lier à ton hook de favoris plus tard)
+    const handleFavoriteClick = (id) => {
+        console.log("Ajout au favoris du prestataire ID:", id);
+    };
 
-
-
-export function ServiceSearch() {
-    const { openContact, openFeedback } = useOutletContext()
+    if (!providers || providers.length === 0) {
+        return (
+            <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200">
+                <p className="text-gray-500 font-medium">Aucun prestataire ne correspond à vos critères de recherche.</p>
+            </div>
+        );
+    }
 
     return (
         <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-4">
-                {data.map((item) => (
+                {providers.map((item) => (
                     <ProductCard
                         key={item.id}
-                        {...item}
-                        onContact={openContact}
-                        onFeedback={openFeedback}
+                        id={item.id}
+                        name={item.businessName}
+                        description={item.description}
+                        location={item.location}
+                        // Utilise la note de l'API ou 0 par défaut
+                        rating={item.averageRating || 0}
+                        // On prend la première photo de l'array 'photos' ou le profil, sinon le placeholder
+                        image={
+                            (item.photos && item.photos.length > 0) 
+                            ? item.photos[0] 
+                            : (item.profilePhoto || 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000')
+                        }
+                        isStructure={true}
+                        onContact={() => openContact(item)}
+                        onFavorite={() => handleFavoriteClick(item.id)}
                         actions={[
                             <Button
+                                key="btn-consult"
                                 variant="gradient"
                                 size="md"
-                                onClick={openContact}
-                                className="rounded-full px-6" 
+                                onClick={() => navigate('/consult-provider', { 
+                                    state: { mode: "consultationCustomers", data: item } 
+                                })}
+                                className="rounded-full px-6 flex items-center justify-center"
                             >
-                                Contacter
+                                <span className={openSidebar ? "lg:inline" : "md:hidden inline"}>
+                                    Consulter
+                                </span>
+                                <ArrowRight size={16} className="ml-2" />
                             </Button>
                         ]}
                     />
                 ))}
             </div>
-            <Pagination />
+            
+            {/* Pagination à lier avec ton état de page si nécessaire */}
+            <div className="mt-8">
+                <Pagination />
+            </div>
         </>
     );
 }

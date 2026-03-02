@@ -3,7 +3,7 @@ import { Star } from 'lucide-react'
 
 export function ReviewCard({ name, role, company, imageUrl, testimonial, rating = 5, actions }) {
     return (
-        <div className="w-full max-w-sm mx-auto bg-white rounded-[2rem] shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden relative group">
+        <div className="w-full w-sm mx-auto bg-white rounded-[2rem] shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden relative group">
             {/* Section Haut */}
             <div className="bg-[#F3F4F6] p-6 pb-8">
                 <div className="flex items-center gap-4">

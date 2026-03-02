@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react' // Ajout de useState
 import { useTheme } from 'next-themes'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Star, Mail, LogOut, Store, Search, MessageSquare, X, ChevronRight, ChevronLeft } from 'lucide-react'
-import { Button } from '../../ui/Button'
+import { Button } from '../../ui/Button';
+import { useInfoUserConnected } from '../../hooks/useUser';
 
 
 export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading }) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { data: userData } = useInfoUserConnected();
+  const user = userData?.data?.user;
 
   // État pour gérer l'agrandissement sur ordinateur
   const [isCollapsed, setIsCollapsed] = useState(true)
@@ -15,8 +18,8 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
   const navLinks = [
     { icon: LayoutDashboard, path: '/home', label: 'Accueil' },
     { icon: Search, path: '/search', label: 'Recherche' },
-    { icon: Store, path: '/provider', label: 'Prestataires' },
-  ]
+    user?.role === "provider" && { icon: Store, path: '/provider', label: 'Prestataires' },
+  ].filter(Boolean);
 
   useEffect(() => {
     isOpenSidebar(isCollapsed)
@@ -99,7 +102,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
           {/* Boutons Modales */}
           {[
             { icon: Mail, label: 'Messages', onClick: onOpenMessage, id: MODALS.MESSAGE },
-            { icon: MessageSquare, label: 'Avis', onClick: onOpenReview, id: MODALS.REVIEW },
+            // { icon: MessageSquare, label: 'Avis', onClick: onOpenReview, id: MODALS.REVIEW },
             { icon: Star, label: 'Favoris', onClick: onOpenFavorite, id: MODALS.FAVORITE }
           ].map((item, idx) => (
             <button

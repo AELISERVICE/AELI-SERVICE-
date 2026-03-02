@@ -7,6 +7,7 @@ import { MoreHorizontal, Star, MapPin, ShoppingBag } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { NotFound } from '../global/Notfound';
 import { Pagination } from '../global/Pagination';
+import { ReviewList } from './ReviewList';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { useGetServicesByProvider, useDeleteServices } from '../../hooks/useServices';
 import { useGetProviderByid } from '../../hooks/useProvider';
@@ -135,7 +136,11 @@ export function ServiceProvider({ mode, dataConsult }) {
                             <p className="text-xs text-gray-500 mt-1 ">
                                 {providerDetail?.description || "Franchir la porte de notre institut, c'est s'offrir une parenthèse enchantée..."}
                             </p>
-                            <div className="flex flex-wrap gap-2 mt-4">
+                            <p className="flex gap-2 items-center text-xs text-gray-500 mt-1 mt-4 mb-4">
+                                <MapPin className="text-gray-500" size={16} />
+                                {providerDetail?.location || dataConsult?.location}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mb-4">
                                 {(providerDetail?.activities || dataConsult?.activities)?.map((act) => (
                                     <span
                                         key={act}
@@ -145,10 +150,6 @@ export function ServiceProvider({ mode, dataConsult }) {
                                     </span>
                                 ))}
                             </div>
-                            <p className="flex gap-2 items-center text-xs text-gray-500 mt-1 mt-4 mb-4">
-                                <MapPin className="text-gray-500" size={16} />
-                                {providerDetail?.location || dataConsult?.location}
-                            </p>
                             <div className="flex gap-4 mt-2 items-center">
                                 <Button
                                     variant="softRed"
@@ -172,6 +173,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                     </div>
                 </div>
             )}
+            <ReviewList idProvider={providerDetail?.id || provider?.id} />
 
             <div className="flex overflow-x-auto no-scrollbar items-center gap-4 mb-10">
                 {apiCategories.map((cat) => (
@@ -179,7 +181,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                         <div className="relative">
                             <CategoryTag
                                 cat={{ ...cat, active: cat.id === activeCatId }}
-                                isConsult={mode === "consultationCustomers"}
+                                isConsult={mode === "consultationCustomers" || true}
                                 onSelect={() => setActiveCatId(cat.id)}
                                 onPressMenu={() => setOpenMenuId(openMenuId === cat.id ? null : cat.id)}
                                 ref={openMenuId === cat.id ? triggerRef : null}
