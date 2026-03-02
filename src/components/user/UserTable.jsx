@@ -187,7 +187,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
                                     initialStatus={!user.isActive}
                                     onStatusChange={() => handleStatusChange(user)}
                                     onEdit={() => onActiveModal(3, user)}
-                                    onDelete={() => onActiveModal(1, user.id)}
+                                    onDelete={false}
                                 />
                             </td>
                         </tr>

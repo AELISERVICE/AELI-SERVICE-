@@ -61,3 +61,20 @@ export const useDeactivateAccountProvider = () => {
         mutationFn: ({ id, formData }) => request(`/api/admin/providers/${id}/status`, "PUT", formData),
     });
 };
+
+
+
+// get provider public route
+export const useGetProviderList = (params = {}) => {
+    // On transforme l'objet { search: '...', maxPrice: 500 } en string query
+    const queryString = new URLSearchParams(
+        Object.fromEntries(Object.entries(params).filter(([_, v]) => v != null && v !== ""))
+    ).toString();
+
+    return useQuery({
+        queryKey: ["useGetProviderList", params], // La clé change quand les filtres changent
+        queryFn: () => request(`/api/providers?${queryString}`, "GET"),
+        refetchOnWindowFocus: false,
+        enabled: true
+    });
+};

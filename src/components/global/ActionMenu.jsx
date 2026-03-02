@@ -99,18 +99,19 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, o
                             <div className={`absolute top-[2px] left-[2px] bg-white w-3.5 h-3.5 rounded-full transition-transform duration-300 shadow-sm ${isBlocked ? 'translate-x-[14px]' : 'translate-x-0'}`} />
                         </div>
                     </div>
-
-                    <div className="hover:bg-red-50">
-                        <Button
-                            variant="ghostDanger"
-                            size="sm"
-                            className="w-full gap-3 px-4 py-3.5 text-xs font-bold justify-start"
-                            onClick={() => { onDelete?.(); onClose(); }}
-                        >
-                            <Trash2 size={16} />
-                            <span>Supprimer</span>
-                        </Button>
-                    </div>
+                    {onDelete &&
+                        <div className="hover:bg-red-50">
+                            <Button
+                                variant="ghostDanger"
+                                size="sm"
+                                className="w-full gap-3 px-4 py-3.5 text-xs font-bold justify-start"
+                                onClick={() => { onDelete?.(); onClose(); }}
+                            >
+                                <Trash2 size={16} />
+                                <span>Supprimer</span>
+                            </Button>
+                        </div>
+                    }
                 </div>
             </div>
         </Portal>

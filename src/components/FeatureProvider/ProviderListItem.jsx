@@ -1,88 +1,116 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Clock, CheckCircle2 } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import { MapPin, Clock, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card } from '../../ui/Card';
-import { Badge } from '../../ui/Badge'
-
-
-
-const PROVIDERS = [
-    {
-        id: '1',
-        name: 'Sarah Connor',
-        description:
-            'Specialized in cybernetic threat assessment and advanced defense systems. 10+ years of experience.',
-        location: 'Los Angeles, CA',
-        avatar:
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150',
-        status: 'active',
-        joinedDate: '2 years ago',
-        isVerified: true,
-    },
-    {
-        id: '2',
-        name: 'Michael Chen',
-        description:
-            'Full-stack neural network architect providing comprehensive AI integration services for enterprise clients.',
-        location: 'Neo Tokyo, JP',
-        avatar:
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150&h=150',
-        status: 'active',
-        joinedDate: '1 year ago',
-        isVerified: true,
-    },
-    {
-        id: '3',
-        name: 'Elena Rodriguez',
-        description:
-            'Digital marketing strategist focusing on holographic advertising and virtual reality campaigns.',
-        location: 'Chicago, IL',
-        avatar:
-            'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150&h=150',
-        status: 'active',
-        joinedDate: '3 years ago',
-        isVerified: false,
-    },
-]
-
+import { Pagination } from '../global/Pagination';
+import { useGetProviderList } from '../../hooks/useProvider';
 
 export const ProviderListItem = ({ setSelectedProvider }) => {
-    const [selectedId, setSelectedId] = useState('2');
-    const selectedProvider = PROVIDERS.find(item => item.id === selectedId);
+    // 1. Récupération des filtres depuis le contexte du dashboard
+    const { filters } = useOutletContext();
 
+    // 2. États pour la pagination et la sélection
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedId, setSelectedId] = useState(null);
+
+    // 3. Appel API avec filtres et pagination
+    const { data: apiResponse, isLoading, isError } = useGetProviderList({
+        search: filters?.search,
+        page: currentPage,
+        limit: 5 // ou la limite souhaitée
+    });
+
+    const providers = apiResponse?.data?.providers || [];
+    const pagination = apiResponse?.data?.pagination;
+
+    // 4. Gestion de la sélection du prestataire
     useEffect(() => {
-        setSelectedProvider(selectedProvider)
-    }, [selectedId])
+        if (providers.length > 0) {
+            // Si rien n'est sélectionné, on prend le premier par défaut
+            const initialSelection = selectedId
+                ? providers.find(p => p.id === selectedId)
+                : providers[0];
+
+            if (initialSelection) {
+                setSelectedId(initialSelection.id);
+                setSelectedProvider(initialSelection);
+            }
+        }
+    }, [providers, selectedId]);
+
+    // Reset de la page si la recherche change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters?.search]);
+
+    if (isLoading) return (
+        <div className="flex justify-center py-10">
+            <Loader2 className="w-8 h-8 animate-spin text-[#E8524D]" />
+        </div>
+    );
+
+    if (isError) return <div className="text-red-500 text-center py-4">Erreur lors du chargement des prestataires.</div>;
 
     return (
-        <>
-            {
-                PROVIDERS.map(item => (
+        <div className="flex flex-col gap-4">
+            {providers.length > 0 ? (
+                providers.map((item) => (
                     <Card
                         key={item.id}
                         variant={selectedId === item.id ? 'active' : 'default'}
-                        onClick={() => setSelectedId(item.id)}
-                        className="cursor-pointer group transition-transform hover:translate-x-1"
+                        onClick={() => {
+                            setSelectedId(item.id);
+                            setSelectedProvider(item);
+                        }}
+                        className="cursor-pointer group transition-all hover:translate-x-1"
                     >
                         <div className="flex items-start gap-4">
                             <div className="relative">
-                                <img src={item.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-slate-100" alt="" />
-                                {item.isVerified && <CheckCircle2 className="absolute -bottom-1 -right-1 w-4 h-4 text-[#E8524D] bg-white rounded-full" />}
+                                <img
+                                    src={item.user?.profilePhoto || `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-slate-100"
+                                    alt={item.businessName}
+                                />
+                                {item.isVerified && (
+                                    <CheckCircle2 className="absolute -bottom-1 -right-1 w-4 h-4 text-[#E8524D] bg-white rounded-full" />
+                                )}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center mb-1">
-                                    <h3 className={`font-semibold truncate ${selectedId ? 'text-violet-700' : 'text-slate-800'}`}>{item.name}</h3>
-                                    {/* <Badge variant={item.status === 'active' ? 'success' : 'neutral'}>{item.status}</Badge> */}
+                                    <h3 className={`font-semibold truncate ${selectedId === item.id ? 'text-[#E8524D]' : 'text-slate-800'}`}>
+                                        {item.businessName}
+                                    </h3>
                                 </div>
-                                <p className="text-sm text-slate-500 line-clamp-2 mb-3">{item.description}</p>
-                                <div className="flex items-center gap-4 text-xs text-slate-400">
-                                    <span className="flex items-center gap-1"><MapPin size={12} /> {item.location}</span>
-                                    <span className="flex items-center gap-1"><Clock size={12} /> {item.joinedDate}</span>
+                                <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                                    {item.description}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                                    <span className="flex items-center gap-1">
+                                        <MapPin size={12} /> {item.location.split(',')[0]}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                        <Clock size={12} />
+                                        {new Date(item.createdAt).toLocaleDateString()}
+                                    </span>
                                 </div>
                             </div>
                         </div>
                     </Card>
                 ))
-            }
-        </>
-    )
+            ) : (
+                <div className="text-center py-10 text-gray-500">Aucun prestataire trouvé.</div>
+            )}
+
+            {/* 5. Pagination Dynamique */}
+            {pagination && pagination.totalPages > 1 && (
+                <div className="mt-4">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={pagination.totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            )}
+        </div>
+    );
 };

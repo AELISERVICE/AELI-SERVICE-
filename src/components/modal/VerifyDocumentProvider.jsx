@@ -12,6 +12,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
     const { mutate: reviewDocuments, isLoading, isSuccess, data, isError, error } = useReviewProviderDocuments();
 
     const app = providerData;
+    console.log('donnees', app)
 
     // 3. États pour le formulaire de révision
     const [decision, setDecision] = useState("approved"); // "approved", "rejected", "under_review"

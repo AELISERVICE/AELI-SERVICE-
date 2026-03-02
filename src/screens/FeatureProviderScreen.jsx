@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import { ProviderListItem } from '../components/FeatureProvider/ProviderListItem';
 import { ConfigurationPanel } from '../components/FeatureProvider/ConfigurationPanel'
 import { FeaturedCard } from '../components/FeatureProvider/FeaturedCard'
@@ -7,7 +8,7 @@ import { FeaturedCard } from '../components/FeatureProvider/FeaturedCard'
 
 export function FeatureProviderScreen() {
     const [selectedProvider, setSelectedProvider] = useState();
-    
+
     return (
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto space-y-12">
@@ -35,6 +36,7 @@ export function FeatureProviderScreen() {
                     <FeaturedCard />
                 </div>
             </div>
+            <ToastContainer position="bottom-center" />
         </div>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pagination } from '../components/global/Pagination';
+import { ToastContainer } from 'react-toastify';
 import { ReviewsList } from '../components/review/ReviewsList';
 
 
@@ -9,9 +9,7 @@ export function ReviewsScreen() {
             <div >
                 <ReviewsList />
             </div>
-            <div className="mt-6">
-                <Pagination />
-            </div>
+            <ToastContainer position="bottom-center" />
         </div>
 
     );

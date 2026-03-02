@@ -6,12 +6,15 @@ import { Confirmation } from '../components/modal/Confirmation';
 import { ViewInfoProvider } from '../components/modal/ViewInfoProvider';
 import { VerifyDocumentProvider } from '../components/modal/VerifyDocumentProvider';
 
+const MODALS = { CONFIRM: 1, RECOVERY: 2, VIEWINFOPROVIDER: 3, VERIFYDOCUMENTSPROVIDER: 4 };
 
 export function Base() {
-    const MODALS = { CONFIRM: 1, RECOVERY: 2, VIEWINFOPROVIDER: 3, VERIFYDOCUMENTSPROVIDER: 4 };
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeModal, setActiveModal] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
+    const [filters, setFilters] = useState({
+        search: "",
+    });
 
 
     return (
@@ -24,23 +27,33 @@ export function Base() {
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
                 <Header
+                    setFilters={setFilters}
+                    filters={filters}
                     onMenuClick={() => setSidebarOpen(true)}
                 />
                 <div className="flex-1 overflow-y-auto p-4 lg:p-8">
                     <div className="max-w-7xl mx-auto  lg:p-8">
                         <Outlet
                             context={{
-                                onActiveModal: (type, data = null) => setActiveModal({ type, data }),
+                                filters,
+                                setFilters,
+                                onActiveModal: (type, config = {}) => setActiveModal({ type, ...config }),
+                                closeConfirm: closeModal
                             }}
                         />
                     </div>
                 </div>
             </main>
             {/* Modales de confirmation */}
-            {(activeModal?.type === MODALS.CONFIRM || activeModal?.type === MODALS.RECOVERY) && (
+            {activeModal?.type === MODALS.CONFIRM && (
                 <Confirmation
                     closeConfirm={closeModal}
-                    activeModal={activeModal.type} // On passe le type pour que Confirmation sache quoi afficher
+                    title={activeModal.title}
+                    description={activeModal.description}
+                    isPending={activeModal.isPending}
+                    onConfirm={() => {
+                        if (activeModal.onConfirm) activeModal.onConfirm();
+                    }}
                 />
             )}
 

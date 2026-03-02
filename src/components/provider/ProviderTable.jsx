@@ -1,23 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
 import {
-    MapPin, Upload, FileText, MoreVertical, RotateCcw,
-    Loader2, Users, Phone, MessageSquare
+    MapPin, Upload, FileText, MoreVertical,
+    Loader2, Users, Phone, MessageSquare, ShieldCheck, Briefcase
 } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Badge } from '../../ui/Badge';
+import { Table } from '../../ui/Table'; // On utilise ton composant Table
 import { NotFound } from '../global/NotFound';
 import { ActionMenu } from '../global/ActionMenu';
 import { useExportProviders } from '../../hooks/useExport';
 import { useDeactivateAccountProvider } from '../../hooks/useProvider';
 
 export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, refetchPending }) => {
+    // Headers adaptés aux prestataires
+    const headers = ["Prestataire", "Contact", "Activités", "Localisation", "Documents", "Statut", "Compte", "Actions"];
+
     const { onActiveModal } = useOutletContext();
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
 
+    // --- TES HOOKS (Inchangés) ---
     const { mutate: mutateStatus, isSuccess: isSuccessStatus, data: dataStatus, isError: isErrorStatus, error: errorStatus, reset: resetStatus } = useDeactivateAccountProvider();
     const { mutate: mutateExport, isLoading: isLoadingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportProviders();
 
@@ -27,6 +32,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
 
     const handleExport = () => mutateExport();
 
+    // --- TON EFFECT D'EXPORT ET STATUS (Inchangé) ---
     useEffect(() => {
         if (isSuccessStatus) {
             toast.success(dataStatus?.message);
@@ -36,60 +42,41 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
 
         if (isSuccessExport && dataExport) {
             const csvContent = dataExport.message;
-
-            // Créer le Blob (avec le BOM "\ufeff" pour la compatibilité Excel/Accents)
             const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
-
-            // Créer le lien de téléchargement
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
-
-            // Nom du fichier (ex: export-prestataires-19-02-2026.csv)
             const now = new Date();
             const date = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const time = `${now.getHours()}h${now.getMinutes()}m${now.getSeconds()}s`;
 
-            const time = `${hours}h${minutes}m${seconds}s`;
-
-            // Configurer le nom du fichier
             link.href = url;
             link.setAttribute('download', `export-prestataires-${date}-${time}.csv`);
-
-            // Déclenchement automatique du téléchargement
             document.body.appendChild(link);
             link.click();
-
-            // Nettoyage de la mémoire et du DOM
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-
             toast.success("Exportation réussie !");
         }
 
         if (isErrorExport || isErrorStatus) {
-            const mainMessage = errorExport?.message || errorStatus?.message;
-            toast.error(mainMessage);
-
-            const backendErrors = errorExport?.response?.data?.errors || errorStatus?.response?.data?.errors;
+            const errorObj = errorExport || errorStatus;
+            toast.error(errorObj?.message || "Une erreur est survenue");
+            const backendErrors = errorObj?.response?.data?.errors;
             if (Array.isArray(backendErrors)) {
-                backendErrors.forEach((err) => {
-                    toast.info(err.message);
-                });
+                backendErrors.forEach((err) => toast.info(err.message));
             }
         }
 
         resetStatus();
         resetExport();
-    }, [isSuccessExport, isErrorExport, dataExport, errorExport, resetExport, isSuccessStatus, isErrorStatus, dataStatus, errorStatus, resetStatus]);
+    }, [isSuccessExport, isErrorExport, dataExport, errorExport, resetExport, isSuccessStatus, isErrorStatus, dataStatus, errorStatus, resetStatus, refetch, refetchPending]);
+
+    if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-red-500" /></div>;
 
     return (
         <Card>
-            <div className="flex justify-between mb-6 items-center">
-                <div>
-                    <h1 className="text-xl text-gray-700 font-bold lg:pacifico-regular">Utilisateurs</h1>
-                </div>
+            <div className="flex justify-between mb-4 items-center">
+                <h1 className="text-xl text-gray-700 font-bold lg:pacifico-regular">Prestataires</h1>
                 <Button
                     variant="primary"
                     size={"icon"}
@@ -98,12 +85,12 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                     className="p-2.5 md:px-3"
                 >
                     {isLoadingExport ? (
-                        <span key="loading-state" className="flex items-center gap-2">
+                        <span className="flex items-center gap-2">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="hidden md:inline">Exportation...</span>
                         </span>
                     ) : (
-                        <span key="idle-state" className="flex items-center gap-2">
+                        <span className="flex items-center gap-2">
                             <Upload size={18} />
                             <span className="hidden md:inline">Exporter</span>
                         </span>
@@ -112,144 +99,130 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
             </div>
 
             {applications.length > 0 ? (
-                /* Conteneur Flexbox avec wrap pour éviter l'étirement des Grid */
-                <div className="flex flex-wrap gap-4 justify-start">
+                <Table headers={headers}>
                     {applications.map((app) => (
-                        <div
-                            key={app.id}
-                            /* Taille fixe de 330px, ne rétrécit pas avec flex-shrink-0 */
-                            className="group relative w-full sm:w-[330px] flex-shrink-0 bg-white rounded-xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 overflow-hidden"
-                        >
-
-                            {/* Menu d'actions style "Floating Island" (Glassmorphism) */}
-                            <div className="absolute top-4 right-4 z-20">
-                                <div className="relative">
-                                    <button
-                                        ref={openMenuId === app.id ? triggerRef : null}
-                                        onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
-                                        className="p-2.5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white hover:bg-white hover:text-slate-900 shadow-xl transition-all duration-300"
-                                    >
-                                        <MoreVertical size={18} />
-                                    </button>
-                                    <ActionMenu
-                                        isOpen={openMenuId === app.id}
-                                        onClose={() => setOpenMenuId(null)}
-                                        triggerRef={triggerRef}
-                                        initialStatus={!app.isActive}
-                                        onStatusChange={() => handleStatusChange(app)}
-                                        onEdit={() => onActiveModal(3, app)}
-                                        onVerifyDoc={() => onActiveModal(4, app)}
-                                        onDelete={() => onActiveModal(1, app.id)}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* 1. Header: Image de couverture avec overlay sombre */}
-                            <div className="relative h-48 bg-slate-100">
-                                <img
-                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(app.businessName)}&background=random&size=512`}
-                                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                    alt="business-cover"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-black/20" />
-
-                                {/* Status Badge positionné en haut à gauche */}
-                                <div className="absolute top-4 left-4">
-                                    <Badge
-                                        status={app.status || app.verificationStatus}
-                                        variant={app.status === 'approved' ? 'green' : app.status === 'pending' ? 'yellow' : 'red'}
-                                    // className="backdrop-blur-md border-none px-4 py-1.5 shadow-lg"
-                                    />
-                                </div>
-
-                                {/* Avatar circulaire flottant "à cheval" sur l'image */}
-                                <div className="absolute -bottom-6 left-8 p-1.5 bg-white rounded-[1.5rem] shadow-xl transform transition-transform group-hover:-translate-y-1">
-                                    <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-50">
+                        <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-none">
+                            {/* Prestataire (Image + Nom) */}
+                            <td className="px-6 py-4">
+                                <div className="flex items-center gap-3">
+                                    {/* Suppression de w-full ici et ajout de flex-shrink-0 */}
+                                    <div className="relative flex-shrink-0">
                                         <img
-                                            src={app.user?.profilePhoto || `https://ui-avatars.com/api/?name=${app.firstName || app.user?.firstName}+${app.lastName || app.user?.lastName}&background=frandom`}
-                                            className="w-full h-full object-cover"
+                                            src={app.user?.profilePhoto || `https://ui-avatars.com/api/?name=${app.businessName}&background=random`}
+                                            className="h-10 w-10 rounded-full object-cover border border-slate-200"
                                             alt="avatar"
                                         />
+                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                            <Briefcase size={10} className="text-red-500" />
+                                        </div>
+                                    </div>
+
+                                    {/* On ajoute min-w-0 pour que le truncate fonctionne bien dans le flex */}
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="font-bold text-slate-900 leading-none truncate">
+                                            {app.businessName}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 mt-1 truncate">
+                                            {app.firstName} {app.lastName}
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
+                            </td>
 
-                            {/* 2. Content Section : Informations du prestataire */}
-                            <div className="pt-10 p-8 space-y-5">
-                                <div className="space-y-1">
-                                    <h3 className="font-black text-slate-800 truncate text-xl tracking-tight group-hover:text-[#E8524D] transition-colors">
-                                        {app.businessName}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-slate-400 font-medium">
-                                        <Users size={14} className="text-[#E8524D]" />
-                                        <span className="text-xs uppercase tracking-widest">{app.firstName || app.user?.firstName} {app.lastName || app.user?.lastName}</span>
+                            {/* Contact (Email + Phone) */}
+                            <td className="px-6 py-4">
+                                <div className="flex flex-col gap-1">
+                                    <div className="text-[10px] text-slate-400">{app.phone}</div>
+                                    <div className="flex items-center gap-1.5 text-[11px] text-blue-500">
+                                        <a href={`https://wa.me/${app.whatsapp?.replace(/\s/g, '')}`} target="_blank" rel="noreferrer" className="text-[10px] hover:underline">{app.whatsapp}</a>
                                     </div>
                                 </div>
+                            </td>
 
-                                <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed min-h-[40px]">
-                                    {app.description || "Un partenaire d'exception au service de votre quotidien."}
-                                </p>
+                            {/* Activités (Tags) */}
+                            <td className="px-6 py-4">
+                                <div className="flex gap-1 flex-wrap max-w-[150px]">
+                                    {app.activities?.slice(0, 2).map((act, idx) => (
+                                        <span key={idx} className="bg-red-50 text-red-600 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
+                                            {act}
+                                        </span>
+                                    ))}
+                                    {app.activities?.length > 2 && <span className="text-[9px] text-slate-400">+{app.activities.length - 2}</span>}
+                                </div>
+                            </td>
 
-                                {/* Grid d'informations rapides (Localisation & Contact) */}
-                                <div className="grid grid-cols-1 gap-3 pt-2">
-                                    <div className="flex items-center gap-3 text-slate-600 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50">
-                                        <div className="p-2 bg-white rounded-xl shadow-sm">
-                                            <MapPin size={14} className="text-red-500" />
-                                        </div>
-                                        <span className="text-xs font-semibold truncate">{app.location}</span>
-                                    </div>
+                            {/* Localisation */}
+                            <td className="px-6 py-4">
+                                <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                                    <MapPin size={12} className="text-red-400" />
+                                    <span className="truncate max-w-[120px]">{app.location}</span>
+                                </div>
+                            </td>
 
-                                    <div className="flex gap-3">
-                                        {/* Téléphone */}
-                                        <div className="flex-1 flex items-center gap-2 bg-blue-50/30 text-slate-600  p-3 rounded-2xl border border-blue-100/50">
-                                            <Phone size={14} />
-                                            <span className="text-[11px] text-slate-600 font-black">{app.phone}</span>
-                                        </div>
-                                        {/* WhatsApp Bouton d'action direct */}
+                            {/* Documents */}
+                            <td className="px-6 py-4">
+                                <div className="flex -space-x-2">
+                                    {app.documents?.map((doc, idx) => (
                                         <a
-                                            href={`https://wa.me/${app.whatsapp?.replace(/\s/g, '')}`}
+                                            key={idx}
+                                            href={doc.url}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="p-3 bg-emerald-500 text-white rounded-2xl hover:bg-emerald-600 shadow-lg shadow-emerald-500/20 transition-all active:scale-90"
+                                            className="w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:z-10 shadow-sm transition-all"
+                                            title={`Doc: ${doc.type}`}
                                         >
-                                            <MessageSquare size={18} />
+                                            <FileText size={14} />
                                         </a>
-                                    </div>
+                                    ))}
                                 </div>
+                            </td>
 
-                                {/* Footer : Tags d'activités et Liens Documents */}
-                                <div className="flex justify-between items-center pt-5 border-t border-slate-100">
-                                    <div className="flex gap-1.5 overflow-hidden">
-                                        {app.activities?.slice(0, 2).map((act, idx) => (
-                                            <span key={idx} className="bg-[#E8524D]/10 text-[#E8524D] text-[9px] font-bold uppercase px-3 py-1.5 rounded-full shadow-sm">
-                                                {act}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <div className="flex -space-x-2">
-                                        {app.documents?.map((doc, idx) => (
-                                            <a
-                                                key={idx}
-                                                href={doc.url}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="w-10 h-10 bg-white border-2 border-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-[#E8524D] hover:z-10 shadow-sm transition-all"
-                                                title={`Document ${doc.type}`}
-                                            >
-                                                <FileText size={16} />
-                                            </a>
-                                        ))}
-                                    </div>
+                            {/* Statut Métier (Approved, Pending, etc.) */}
+                            <td className="px-6 py-4">
+                                <Badge
+                                    status={app.status || app.verificationStatus}
+                                    variant={app.status === 'approved' ? 'green' : app.status === 'pending' ? 'yellow' : 'red'}
+                                />
+                            </td>
+
+                            {/* Statut Compte (Actif / Bloqué) */}
+                            <td className="px-6 py-4">
+                                <Badge
+                                    status={app.isActive ? 'Actif' : 'Bloqué'}
+                                    variant={app.isActive ? 'green' : 'red'}
+                                />
+                            </td>
+
+                            {/* Actions */}
+                            <td className="relative px-6 py-4 text-right">
+                                <div className="flex justify-end">
+                                    <Button
+                                        ref={openMenuId === app.id ? triggerRef : null}
+                                        onClick={() => setOpenMenuId(openMenuId === app.id ? null : app.id)}
+                                        className="text-slate-400 hover:text-slate-600 border-none bg-transparent"
+                                    >
+                                        <MoreVertical size={18} />
+                                    </Button>
                                 </div>
-                            </div>
-                        </div>
+                                <ActionMenu
+                                    isOpen={openMenuId === app.id}
+                                    onClose={() => setOpenMenuId(null)}
+                                    triggerRef={triggerRef}
+                                    initialStatus={!app.isActive}
+                                    onStatusChange={() => handleStatusChange(app)}
+                                    onEdit={() => onActiveModal(3, { data: app })}
+                                    onVerifyDoc={() => onActiveModal(4, { data: app })}
+                                    onDelete={false}
+                                />
+                            </td>
+                        </tr>
                     ))}
-                </div>
+                </Table>
             ) : (
                 <NotFound
                     Icon={Users}
                     title="Aucun prestataire trouvé"
-                    message="Aucun nouveau profil de prestataire n'a été créé ou n'est en attente de validation pour le moment."
+                    message="Aucun profil de prestataire ne correspond à vos critères."
                 />
             )}
         </Card>

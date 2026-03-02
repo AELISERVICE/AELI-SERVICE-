@@ -1,56 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
+import { useOutletContext } from 'react-router-dom';
 import { Pagination } from '../components/global/Pagination'
 import { ProviderTable } from '../components/provider/ProviderTable';
 import { TabButton } from '../components/global/TabButton'
-import { useProviderApplications, useProviderPending, useProviders } from '../hooks/useProvider';
-
+import { useProviderApplications, useProviderPending } from '../hooks/useProvider';
 
 export function Provider() {
+    // 1. Récupération des filtres (search) depuis le dashboard
+    const { filters } = useOutletContext();
+
     const TABS = ['Tout', 'Attente', 'Doc verification', 'Actifs', 'Bloquer'];
     const [actifTabs, setActifTabs] = useState('Tout');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 2;
+    const itemsPerPage = 5;
 
-    const { data: providersData } = useProviders();
-    const { data: allData, isLoading: loadingAll, refetch } = useProviderApplications();
-    const { data: pendingData, isLoading: loadingPending, refetch: refetchPending } = useProviderPending();
+    // 2. Appels API (On récupère tout, ou on passe le search si ton API le gère)
+    const { data: allData, isLoading: loadingAll, refetch } = useProviderApplications({ search: filters?.search });
+    const { data: pendingData, isLoading: loadingPending, refetch: refetchPending } = useProviderPending({ search: filters?.search });
 
-    // Logique de sélection des données selon l'onglet
+    // 3. TA LOGIQUE DE FILTRAGE PAR STATUT (Client-side)
     const getFilteredData = () => {
+        // Cas spécial pour les documents en attente
         if (actifTabs === 'Doc verification') {
             return pendingData?.data?.providers || [];
         }
 
         const allApps = allData?.data?.applications || [];
 
+        // Filtrage en fonction du libellé de l'onglet
         switch (actifTabs) {
             case 'Actifs':
                 return allApps.filter(app => app.status === 'approved');
             case 'Bloquer':
                 return allApps.filter(app => app.status === 'blocked');
-            case 'Supprimer':
-                return allApps.filter(app => app.status === 'deleted');
             case 'Attente':
                 return allApps.filter(app => app.status === 'pending');
             default:
-                return allApps;
+                return allApps; // "Tout"
         }
     };
 
     const fullFilteredData = getFilteredData();
 
-    // Calcul du découpage (Slicing)
+    // 4. LOGIQUE DE PAGINATION (Slicing du tableau filtré)
+    const totalItems = fullFilteredData.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = fullFilteredData.slice(indexOfFirstItem, indexOfLastItem);
 
-    const totalPages = Math.ceil(fullFilteredData.length / itemsPerPage);
+    // 5. EFFETS DE BORD
+    // Reset la page à 1 si l'onglet ou la recherche change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [actifTabs, filters?.search]);
 
-    // Reset de la page quand on change d'onglet
     const handleTabChange = (tab) => {
         setActifTabs(tab);
-        setCurrentPage(1);
     };
 
     return (
@@ -60,22 +68,25 @@ export function Provider() {
             </div>
 
             <ProviderTable
-                applications={currentItems}
-                isLoading={actifTabs === 'Attente' ? loadingPending : loadingAll}
+                applications={currentItems} // On passe les éléments découpés (max 5)
+                isLoading={actifTabs === 'Doc verification' ? loadingPending : loadingAll}
                 actifTabs={actifTabs}
                 refetch={refetch}
                 refetchPending={refetchPending}
             />
 
-            <div className="mt-6">
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => setCurrentPage(page)}
-                />
-            </div>
+            {/* Affichage de la pagination uniquement s'il y a plusieurs pages */}
+            {totalPages > 1 && (
+                <div className="mt-6">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            )}
+
             <ToastContainer position="bottom-center" />
         </>
     );
 }
-

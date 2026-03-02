@@ -15,6 +15,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
     const { data: response } = useProviderApplicationsDetail(!isAlreadyApproved ? providerData?.id : null);
     const { mutate: mutateVerifyProvider, isLoading, isSuccess, data, isError, error } = useProvidersCreation();
     const app = isAlreadyApproved ? providerData : response?.data?.application;
+    console.log("donnees provider:", app)
 
     const getDoc = (type) => app?.documents?.find(d => d.type === type)?.url;
 
