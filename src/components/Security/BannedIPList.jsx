@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { toast } from "react-toastify";
-import Skeleton from 'react-loading-skeleton';
 import { Trash2, Plus, ShieldAlert } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -90,6 +89,7 @@ export function BannedIPList() {
                 ) : (
                     <NotFound
                         Icon={ShieldAlert}
+                        title="Aucune IP bannie"
                         message="Aucune IP bannie actuellement"
                     />
                 )}

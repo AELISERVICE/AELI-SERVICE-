@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
 import {
     MapPin, Upload, FileText, MoreVertical,
-    Loader2, Users, Phone, MessageSquare, ShieldCheck, Briefcase
+    Users, Phone, MessageSquare, ShieldCheck, Briefcase
 } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -11,6 +11,7 @@ import { Badge } from '../../ui/Badge';
 import { Table } from '../../ui/Table'; // On utilise ton composant Table
 import { NotFound } from '../global/NotFound';
 import { ActionMenu } from '../global/ActionMenu';
+import { Loader, ButtonLoader } from '../global/Loader';
 import { useExportProviders } from '../../hooks/useExport';
 import { useDeactivateAccountProvider } from '../../hooks/useProvider';
 
@@ -71,11 +72,11 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
         resetExport();
     }, [isSuccessExport, isErrorExport, dataExport, errorExport, resetExport, isSuccessStatus, isErrorStatus, dataStatus, errorStatus, resetStatus, refetch, refetchPending]);
 
-    if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-red-500" /></div>;
+    if (isLoading) return <Loader variant="default" message="Chargement..." />;
 
     return (
         <Card>
-            <div className="flex justify-between mb-4 items-center">
+            <div className="flex justify-between mb-1 items-center">
                 <h1 className="text-xl text-gray-700 font-bold lg:pacifico-regular">Prestataires</h1>
                 <Button
                     variant="primary"
@@ -86,7 +87,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                 >
                     {isLoadingExport ? (
                         <span className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <ButtonLoader />
                             <span className="hidden md:inline">Exportation...</span>
                         </span>
                     ) : (
@@ -101,7 +102,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
             {applications.length > 0 ? (
                 <Table headers={headers}>
                     {applications.map((app) => (
-                        <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-none">
+                        <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors">
                             {/* Prestataire (Image + Nom) */}
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
@@ -119,7 +120,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
 
                                     {/* On ajoute min-w-0 pour que le truncate fonctionne bien dans le flex */}
                                     <div className="flex flex-col min-w-0">
-                                        <span className="font-bold text-slate-900 leading-none truncate">
+                                        <span className="font-semibold text-slate-900 leading-none truncate">
                                             {app.businessName}
                                         </span>
                                         <span className="text-[10px] text-slate-400 mt-1 truncate">
@@ -132,9 +133,9 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                             {/* Contact (Email + Phone) */}
                             <td className="px-6 py-4">
                                 <div className="flex flex-col gap-1">
-                                    <div className="text-[10px] text-slate-400">{app.phone}</div>
+                                    <div className="text-xs text-slate-600">{app.phone}</div>
                                     <div className="flex items-center gap-1.5 text-[11px] text-blue-500">
-                                        <a href={`https://wa.me/${app.whatsapp?.replace(/\s/g, '')}`} target="_blank" rel="noreferrer" className="text-[10px] hover:underline">{app.whatsapp}</a>
+                                        <a href={`https://wa.me/${app.whatsapp?.replace(/\s/g, '')}`} target="_blank" rel="noreferrer" className="text-[10px] text-slate-400 hover:text-blue-500 hover:underline">{app.whatsapp}</a>
                                     </div>
                                 </div>
                             </td>

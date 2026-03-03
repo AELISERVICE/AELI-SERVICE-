@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from "react-toastify";
-import { CheckCircle2, XCircle, Eye, ShieldCheck, Loader2, AlertCircle, FileText, Info } from 'lucide-react';
+import { CheckCircle2, XCircle, Eye, ShieldCheck, AlertCircle, FileText, Info } from 'lucide-react';
+import { ButtonLoader } from '../global/Loader';
 import { Button } from '../../ui/Button';
 import { useReviewProviderDocuments } from '../../hooks/useProvider';
 
@@ -241,7 +242,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                                         decision === 'rejected' ? 'bg-[#E8524D] shadow-red-200' : 'bg-slate-800 shadow-slate-200'
                                         }`}
                                 >
-                                    {isLoading ? <Loader2 className="animate-spin mx-auto" /> : "Confirmer la décision"}
+                                    {isLoading ? <ButtonLoader className="mx-auto" /> : "Confirmer la décision"}
                                 </Button>
                                 <Button onClick={closeView} variant="outline" className="px-10 rounded-[1.5rem] border-slate-200">
                                     Annuler

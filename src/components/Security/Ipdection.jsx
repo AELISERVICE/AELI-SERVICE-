@@ -95,7 +95,8 @@ export function IpDetection() {
                 ) : (
                     <NotFound
                         Icon={ShieldAlert}
-                        message="Aucune IP bannie actuellement"
+                        title="Aucun log de sécurité"
+                        message="Aucun événement de sécurité ne correspond à la période ou aux filtres appliqués."
                     />
                 )}
             </Card>

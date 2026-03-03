@@ -8,6 +8,7 @@ import { ReviewsScreen } from './screens/ReviewScreen';
 import { FeatureProviderScreen } from './screens/FeatureProviderScreen';
 import { SecurityScreen } from './screens/SecurityScreen';
 import { Users } from './screens/Users';
+import { BannerScreen } from './screens/BannerScreen';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/feature" element={<FeatureProviderScreen />} />
         <Route path="/security" element={<SecurityScreen />} />
         <Route path="/users" element={<Users />} />
+        <Route path="/banners" element={<BannerScreen />} />
       </Route>
     </Routes>
   )

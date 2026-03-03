@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react'; // Ajout de useEffect ici
 import { toast } from "react-toastify";
 import { useOutletContext } from 'react-router-dom';
-import { X, Star, Loader2 } from 'lucide-react';
+import { X, Star } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
+import { Loader, ButtonLoader } from '../global/Loader';
+import { NotFound } from '../global/NotFound';
 import { useGetFeatured, useFeature } from '../../hooks/useBoost';
 
 export const FeaturedCard = () => {
@@ -63,11 +65,7 @@ export const FeaturedCard = () => {
     }, [isSuccess, isError, data, error]);
 
     if (isLoadingFeatured) {
-        return (
-            <div className="flex justify-center items-center py-10">
-                <Loader2 className="w-8 h-8 animate-spin text-[#E8524D]" />
-            </div>
-        );
+        return <Loader variant="centered" message="Chargement..." />;
     }
 
     return (
@@ -98,7 +96,7 @@ export const FeaturedCard = () => {
                                     {/* Petit indicateur de chargement si cette carte précise est en cours de modif */}
                                     {isPending && (
                                         <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-xl">
-                                            <Loader2 className="w-4 h-4 animate-spin text-[#E8524D]" />
+                                            <ButtonLoader />
                                         </div>
                                     )}
                                 </div>
@@ -130,8 +128,12 @@ export const FeaturedCard = () => {
                         </Card>
                     ))
                 ) : (
-                    <div className="col-span-full py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <p className="text-slate-400 text-sm italic">Aucune mise en avant active pour le moment.</p>
+                    <div className="col-span-full">
+                        <NotFound
+                            Icon={Star}
+                            title="Aucune prestation à la une"
+                            message="Aucun prestataire n'est actuellement mis en avant."
+                        />
                     </div>
                 )}
             </div>

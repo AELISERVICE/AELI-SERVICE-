@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { MapPin, Clock, CheckCircle2, Loader2 } from 'lucide-react';
+import { MapPin, Clock, CheckCircle2, Users } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Pagination } from '../global/Pagination';
+import { Loader } from '../global/Loader';
+import { NotFound } from '../global/NotFound';
 import { useGetProviderList } from '../../hooks/useProvider';
 
 export const ProviderListItem = ({ setSelectedProvider }) => {
@@ -43,11 +45,7 @@ export const ProviderListItem = ({ setSelectedProvider }) => {
         setCurrentPage(1);
     }, [filters?.search]);
 
-    if (isLoading) return (
-        <div className="flex justify-center py-10">
-            <Loader2 className="w-8 h-8 animate-spin text-[#E8524D]" />
-        </div>
-    );
+    if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
     if (isError) return <div className="text-red-500 text-center py-4">Erreur lors du chargement des prestataires.</div>;
 
@@ -98,7 +96,11 @@ export const ProviderListItem = ({ setSelectedProvider }) => {
                     </Card>
                 ))
             ) : (
-                <div className="text-center py-10 text-gray-500">Aucun prestataire trouvé.</div>
+                <NotFound
+                    Icon={Users}
+                    title="Aucun prestataire trouvé"
+                    message="Aucun profil de prestataire ne correspond à vos critères."
+                />
             )}
 
             {/* 5. Pagination Dynamique */}

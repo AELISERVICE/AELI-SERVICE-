@@ -80,6 +80,19 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, o
                             </div>
                         </>
                     }
+                    {onEdit && !isProvider &&
+                        <div className="border-b border-gray-100 hover:bg-gray-50">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full gap-3 px-4 py-3.5 text-xs font-bold justify-start text-zinc-600"
+                                onClick={() => { onEdit?.(); onClose(); }}
+                            >
+                                <Eye size={16} />
+                                <span>Modifier</span>
+                            </Button>
+                        </div>
+                    }
 
                     <div
                         className="flex items-center justify-between px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer group"

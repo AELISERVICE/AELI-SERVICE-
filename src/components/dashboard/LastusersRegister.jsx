@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Star, Eye, MessageSquare, User, Loader2 } from 'lucide-react';
+import { MapPin, User, ShieldCheck, Briefcase, FileText } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
@@ -11,8 +11,8 @@ export const LastusersRegister = () => {
   const recentUsers = statsResponse?.data?.recentUsers || [];
   const recentProviders = statsResponse?.data?.recentProviders || [];
 
-  const headers = ["Provider", "Location", "Rating", "Reviews", "View", "Status", "Contact"];
-  const headersUser = ["User", "Gender", "Email", "Country", "Status", "Contact"];
+  const headers = ["Prestataire", "Contact", "Activités", "Localisation", "Documents", "Statut métier", "Statut compte"];
+  const headersUser = ["Utilisateur", "Rôle", "Genre", "Contact", "Localisation", "Vérifié", "Dernière Connexion", "Status"];
 
   return (
     <div className="f mb-2">
@@ -28,36 +28,56 @@ export const LastusersRegister = () => {
               {recentUsers.map((item) => (
                 <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      {/* Utilisation d'une image par défaut si profilePhoto est null */}
+                    <div className="flex items-center gap-3">
                       <img
                         src={item.profilePhoto || `https://ui-avatars.com/api/?name=${item.firstName}+${item.lastName}&background=random`}
-                        className="h-10 w-10 rounded-lg object-cover"
+                        className="h-10 w-10 rounded-full object-cover border border-slate-200"
+                        alt="avatar"
                       />
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-900">{item.firstName} {item.lastName}</span>
-                        </div>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-900 leading-none truncate">
+                          {item.firstName} {item.lastName}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono mt-1 italic">
+                          ID: {item.id?.slice(0, 8)}
+                        </span>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    <div className={`flex items-center rounded-full items-center justify-center gap-2 w-fit py-1 px-2 ${item.gender === "female" ? "bg-pink-50 text-pink-700" : "bg-blue-50 text-blue-700"}`}>
-                      {item.gender === "female" ? "femme" : "homme"}
+                  <td className="px-6 py-4">
+                    <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${item.role === 'admin'
+                      ? 'bg-purple-100 text-purple-700'
+                      : item.role === 'provider'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-slate-100 text-slate-600'
+                      }`}>
+                      {item.role || 'user'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-xs capitalize text-slate-600">
+                    <div className={`text-xs capitalize px-2 py-1 rounded-full w-fit truncate ${item.gender === 'male'
+                      ? 'bg-blue-50 text-blue-600'
+                      : item.gender === 'female'
+                        ? 'bg-pink-50 text-pink-600'
+                        : 'bg-slate-50 text-slate-400'
+                      }`}>
+                      {item.gender || 'Non défini'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    <div className="flex items-center gap-2">{item.email}</div>
+                  <td className="px-6 py-4">
+                    <div className="text-xs text-slate-600">{item.email}</div>
+                    <div className="text-[10px] text-slate-400">{item.phone || '-'}</div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    <div className="flex items-center gap-2">{item.country}</div>
+                  <td className="px-6 py-4 text-sm text-slate-600">{item.country || '-'}</td>
+                  <td className="px-6 py-4 text-center">
+                    {item.isEmailVerified && <ShieldCheck size={18} className="text-emerald-500 mx-auto" />}
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    <div className="flex items-center gap-2">{item.phone}</div>
+                  <td className="px-6 py-4 text-[11px] text-slate-500">
+                    {item.lastLogin ? new Date(item.lastLogin).toLocaleDateString() : 'Jamais'}
                   </td>
                   <td className="px-6 py-4">
                     <Badge
-                      status={item.isActive ? 'Active' : 'Inactive'}
+                      status={item.isActive ? 'Actif' : 'Bloqué'}
                       variant={item.isActive ? 'green' : 'red'}
                     />
                   </td>
@@ -84,41 +104,104 @@ export const LastusersRegister = () => {
             <Table headers={headers}>
               {recentProviders.map((item) => (
                 <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">
+                  {/* Prestataire (Image + Nom) */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center font-bold text-slate-400">
-                        {item.businessName?.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-900">{item.businessName}</span>
-                          {item.isFeatured && <span className="bg-purple-50 text-purple-600 text-[10px] px-1.5 py-0.5 rounded">Featured</span>}
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex-shrink-0">
+                        <img
+                          src={item.user?.profilePhoto || `https://ui-avatars.com/api/?name=${item.businessName || 'Provider'}&background=random`}
+                          className="h-10 w-10 rounded-full object-cover border border-slate-200"
+                          alt="avatar"
+                        />
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm">
+                          <Briefcase size={10} className="text-red-500" />
                         </div>
                       </div>
+
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-slate-900 leading-none truncate">
+                          {item.businessName || '-'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 mt-1 truncate">
+                          {item.firstName || ''} {item.lastName || ''}
+                        </span>
+                      </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-slate-600">
-                    <div className="flex items-center gap-2 max-w-[100px]">
-                      <MapPin size={14} className="fill-red-400 text-white shrink-0" />
-                      <span className="truncate">{item.location}</span>
+
+                  {/* Contact (Téléphone + WhatsApp) */}
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-xs text-slate-600">{item.phone || '-'}</div>
+                      <div className="flex items-center gap-1.5 text-[11px] text-blue-500">
+                        <a
+                          href={item.whatsapp ? `https://wa.me/${String(item.whatsapp).replace(/\s/g, '')}` : undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-slate-400 hover:text-blue-500 hover:underline"
+                        >
+                          {item.whatsapp || '-'}
+                        </a>
+                      </div>
                     </div>
                   </td>
+
+                  {/* Activités (Tags) */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1"><Star size={14} className="fill-amber-400 text-amber-400" />{item.averageRating}</div>
+                    <div className="flex gap-1 flex-wrap max-w-[150px]">
+                      {item.activities?.slice(0, 2).map((act, idx) => (
+                        <span key={idx} className="bg-red-50 text-red-600 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
+                          {act}
+                        </span>
+                      ))}
+                      {item.activities?.length > 2 && <span className="text-[9px] text-slate-400">+{item.activities.length - 2}</span>}
+                      {!item.activities?.length && <span className="text-[10px] text-slate-400">-</span>}
+                    </div>
                   </td>
+
+                  {/* Localisation */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1"><MessageSquare size={14} className="fill-gray-400 text-white" />{item.viewsCount}</div>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                      <MapPin size={12} className="text-red-400" />
+                      <span className="truncate max-w-[120px]">{item.location || '-'}</span>
+                    </div>
                   </td>
+
+                  {/* Documents */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1"><Eye size={14} className="fill-gray-400 text-white" />{item.viewsCount}</div>
+                    <div className="flex -space-x-2">
+                      {item.documents?.length > 0 ? (
+                        item.documents.map((doc, idx) => (
+                          <a
+                            key={idx}
+                            href={doc?.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-8 h-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:z-10 shadow-sm transition-all"
+                            title={`Doc: ${doc?.type || 'Fichier'}`}
+                          >
+                            <FileText size={14} />
+                          </a>
+                        ))
+                      ) : (
+                        <span className="text-[10px] text-slate-400">-</span>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="text-green-600 font-medium">{item.whatsapp}</span>
-                  </td>
+
+                  {/* Statut Métier */}
                   <td className="px-6 py-4">
                     <Badge
-                      status={item.isVerified ? 'Active' : 'Pending'}
-                      variant={item.isVerified ? 'green' : 'gray'}
+                      status={item.status || item.verificationStatus || (item.isVerified ? 'approved' : 'pending')}
+                      variant={item.status === 'approved' || item.verificationStatus === 'approved' || item.isVerified ? 'green' : item.status === 'pending' || item.verificationStatus === 'pending' ? 'yellow' : 'red'}
+                    />
+                  </td>
+
+                  {/* Statut Compte */}
+                  <td className="px-6 py-4">
+                    <Badge
+                      status={item.isActive ? 'Actif' : 'Bloqué'}
+                      variant={item.isActive ? 'green' : 'red'}
                     />
                   </td>
                 </tr>

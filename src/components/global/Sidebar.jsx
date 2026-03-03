@@ -4,7 +4,7 @@ import { Button } from '../../ui/Button'
 import {
     LayoutDashboard, Users, UserCircle, CreditCard,
     TrendingUp, ShieldCheck, Lock, X, Sparkles,
-    ChevronRight, ChevronLeft
+    ChevronRight, ChevronLeft, Image
 } from 'lucide-react'
 
 export function Sidebar({ isOpen, onClose }) {
@@ -19,6 +19,7 @@ export function Sidebar({ isOpen, onClose }) {
         { icon: UserCircle, label: 'Utilisateurs', path: '/users' },
         { icon: ShieldCheck, label: 'Moderation', path: '/moderation' },
         { icon: Lock, label: 'Securite', path: 'security' },
+        { icon: Image, label: 'Bannières', path: '/banners' },
     ]
 
     return (

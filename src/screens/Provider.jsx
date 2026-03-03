@@ -4,7 +4,8 @@ import { useOutletContext } from 'react-router-dom';
 import { Pagination } from '../components/global/Pagination'
 import { ProviderTable } from '../components/provider/ProviderTable';
 import { TabButton } from '../components/global/TabButton'
-import { useProviderApplications, useProviderPending } from '../hooks/useProvider';
+import { useProviderApplications, useProviderPending, useGetProviderList } from '../hooks/useProvider';
+
 
 export function Provider() {
     // 1. Récupération des filtres (search) depuis le dashboard
@@ -16,6 +17,7 @@ export function Provider() {
     const itemsPerPage = 5;
 
     // 2. Appels API (On récupère tout, ou on passe le search si ton API le gère)
+    const { data: dataProviderPublic } = useGetProviderList();
     const { data: allData, isLoading: loadingAll, refetch } = useProviderApplications({ search: filters?.search });
     const { data: pendingData, isLoading: loadingPending, refetch: refetchPending } = useProviderPending({ search: filters?.search });
 

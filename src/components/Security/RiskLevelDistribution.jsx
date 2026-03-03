@@ -1,6 +1,9 @@
 import React, { useMemo } from "react"
+import { ShieldAlert } from 'lucide-react';
 import { PieCharts } from '../../ui/PieChart';
 import { Card } from '../../ui/Card';
+import { Loader } from '../global/Loader';
+import { NotFound } from '../global/NotFound';
 import { useSecurityLogs } from "../../hooks/useStats";
 
 export function RiskLevelDistribution() {
@@ -52,11 +55,15 @@ export function RiskLevelDistribution() {
 
             <div className="h-[250px] w-full flex items-center justify-center relative">
                 {isLoading ? (
-                    <div className="text-gray-400 text-sm animate-pulse">Chargement...</div>
+                    <Loader variant="inline" message="Chargement..." />
                 ) : compositionData.length > 0 ? (
                     <PieCharts data={compositionData} />
                 ) : (
-                    <div className="text-gray-400 text-sm">Aucune donnée disponible</div>
+                    <NotFound
+                        Icon={ShieldAlert}
+                        title="Aucun événement de sécurité"
+                        message="Aucune donnée n'est disponible pour la répartition des événements."
+                    />
                 )}
             </div>
         </Card>

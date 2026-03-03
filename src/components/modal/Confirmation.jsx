@@ -1,7 +1,7 @@
 import React, { useState } from 'react'; // Ajoute useState
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
-import { Loader2 } from 'lucide-react'; // N'oublie pas l'import
+import { ButtonLoader } from '../global/Loader';
 
 export function Confirmation({ closeConfirm, title, description, onConfirm }) {
   const [loading, setLoading] = useState(false); // État local interne
@@ -40,7 +40,7 @@ export function Confirmation({ closeConfirm, title, description, onConfirm }) {
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirmer"}
+            {loading ? <ButtonLoader /> : "Confirmer"}
           </Button>
         </div>
       </Card>

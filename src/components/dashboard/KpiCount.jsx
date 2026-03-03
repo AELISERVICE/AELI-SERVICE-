@@ -1,6 +1,6 @@
 import React from 'react'
 import { StatsCard } from '../../ui/StatsCard';
-import { Users, Briefcase, ShoppingBag, Star, Loader2 } from 'lucide-react';
+import { Users, Briefcase, ShoppingBag, Star } from 'lucide-react';
 import { useStats } from '../../hooks/useStats';
 
 export function KpiCount() {

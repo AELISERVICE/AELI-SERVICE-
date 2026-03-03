@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from "react-toastify";
-import { Loader2 } from 'lucide-react';
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
+import { ButtonLoader } from '../global/Loader';
 import { useLogin } from '../../hooks/useAuth';
 
 export function LoginForm() {
@@ -86,7 +86,7 @@ export function LoginForm() {
                             {isPending ? (
                                 // Utiliser une clé unique pour l'état de chargement
                                 <span key="loading-state" className="flex items-center gap-2">
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <ButtonLoader />
                                     Verification...
                                 </span>
                             ) : (

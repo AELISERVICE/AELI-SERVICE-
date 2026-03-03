@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
-import { MoreVertical, Upload, Loader2, ShieldCheck, Users } from 'lucide-react';
+import { MoreVertical, Upload, ShieldCheck, Users } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
 import { NotFound } from '../global/NotFound';
+import { Loader, ButtonLoader } from '../global/Loader';
 import { useDeactivateAccount } from '../../hooks/useUser';
 import { useExportUsers } from '../../hooks/useExport';
 
@@ -89,7 +90,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
 
     }, [isSuccess, isError, dataDesactivate, error, refetch, isSuccessExport, isErrorExport, dataExport, errorExport]);
 
-    if (isLoading) return <div className="flex justify-center p-10"><Loader2 className="animate-spin text-red-500" /></div>;
+    if (isLoading) return <Loader variant="default" message="Chargement..." />;
 
     return (
         <Card>
@@ -106,7 +107,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
                 >
                     {isLoadingExport ? (
                         <span key="loading-state" className="flex items-center gap-2">
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <ButtonLoader />
                             <span className="hidden md:inline">Exportation...</span>
                         </span>
                     ) : (

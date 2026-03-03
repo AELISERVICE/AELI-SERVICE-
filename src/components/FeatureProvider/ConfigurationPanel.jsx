@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from "react-toastify";
-import { ChevronDown, Star, Loader2, Sparkles } from 'lucide-react';
+import { ChevronDown, Star, Sparkles } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
+import { ButtonLoader } from '../global/Loader';
 import { useFeature } from '../../hooks/useBoost';
 
 export const ConfigurationPanel = ({ selectedProvider }) => {
@@ -97,7 +98,7 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
         disabled={!selectedProvider || isPending || selectedProvider?.isFeatured}
       >
         {isPending ? (
-          <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          <ButtonLoader className="mr-2" />
         ) : selectedProvider?.isFeatured ? (
           "Déjà en vedette"
         ) : (

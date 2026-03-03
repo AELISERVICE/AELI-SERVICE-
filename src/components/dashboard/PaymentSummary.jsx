@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '../../ui/Card';
-import { CreditCard, TrendingUp, Loader2 } from 'lucide-react';
+import { CreditCard, TrendingUp } from 'lucide-react';
 import { useStats } from '../../hooks/useStats';
 
 export const PaymentSummary = () => {

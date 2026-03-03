@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { toast } from "react-toastify";
-import { Mail, Upload, Loader2 } from 'lucide-react';
+import { Mail, Upload } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
+import { ButtonLoader } from '../global/Loader';
 import { useStats } from '../../hooks/useStats';
 import { useExportContacts } from '../../hooks/useExport';
 
@@ -90,7 +91,7 @@ export const ContactAnalytics = () => {
           >
             {isLoadingExport ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <ButtonLoader />
               </span>
             ) : (
               <span className="flex items-center gap-2">
