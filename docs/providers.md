@@ -263,6 +263,7 @@ Récupère le profil complet du prestataire connecté, y compris les statistique
     "businessName": "Salon Marie",
     "description": "...",
     "location": "Douala",
+    "profilePhoto": "https://res.cloudinary.com/...",
     "photos": [...],
     "documents": [...],
     "isVerified": true,
