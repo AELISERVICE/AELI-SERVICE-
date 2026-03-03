@@ -21,7 +21,7 @@ export function ServicesSection() {
 
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 2; // Remets une valeur normale ici
+    const itemsPerPage = 10; // Remets une valeur normale ici
 
     const { data: categoryData } = useGetCategory();
     const categoriesFromApi = categoryData?.data?.categories || [];
@@ -99,7 +99,7 @@ export function ServicesSection() {
                                 description={item.description}
                                 location={item.location}
                                 rating={item.averageRating}
-                                image={item.photos && item.photos.length > 0 && item.photos[0]}
+                                image={item.profilePhoto}
                                 isStructure={true}
                                 onContact={openContact}
                                 onFavorite={() => handleFavoriteClick(item.id)}

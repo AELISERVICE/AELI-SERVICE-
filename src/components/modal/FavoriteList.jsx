@@ -84,7 +84,7 @@ export function FavoriteList({ closeFavorite }) {
                                         <FavoriteCard
 
                                             name={provider.businessName}
-                                            image={provider.photos?.[0] || `https://ui-avatars.com/api/?name=${provider.businessName}&background=random`}
+                                            image={provider.profilePhoto || `https://ui-avatars.com/api/?name=${provider.businessName}&background=random`}
                                             rating={provider.averageRating}
                                             description={provider.description}
                                             location={provider.location}

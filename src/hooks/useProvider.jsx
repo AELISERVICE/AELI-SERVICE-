@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 /**
@@ -36,5 +36,39 @@ export const useGetProviderByid = (id) => {
         queryKey: ["useGetProviderByid", id],
         queryFn: () => request(`/api/providers/${id}`, "GET"),
         refetchOnWindowFocus: false,
+    });
+};
+
+/**
+ * Custom hook that manages provider profile update.
+ */
+export const useUpdateProviderProfile = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["useUpdateProviderProfile"],
+        mutationFn: ({ id, formData }) => request(`/api/providers/${id}`, "PUT", formData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["useInfoUserConnected"] });
+            queryClient.invalidateQueries({ queryKey: ["useGetProviderList"] });
+            queryClient.invalidateQueries({ queryKey: ["useGetProviderByid"] });
+        },
+    });
+};
+
+/**
+ * Custom hook that manages provider photo deletion.
+ */
+export const useDeleteProviderPhoto = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["useDeleteProviderPhoto"],
+        mutationFn: ({ id, photoIndex }) => request(`/api/providers/${id}/photos/${photoIndex}`, "DELETE"),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["useInfoUserConnected"] });
+            queryClient.invalidateQueries({ queryKey: ["useGetProviderList"] });
+            queryClient.invalidateQueries({ queryKey: ["useGetProviderByid"] });
+        },
     });
 };

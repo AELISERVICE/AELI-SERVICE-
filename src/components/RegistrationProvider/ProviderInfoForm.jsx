@@ -9,31 +9,37 @@ import { FormCard } from '../../ui/FormCard';
 import { TermsSection } from "./TermsSection";
 import { MapPicker } from '../global/MapPicker';
 import { useInfoUserConnected } from '../../hooks/useUser';
-import { useApplyProvider } from '../../hooks/useProvider';
+import { useApplyProvider, useUpdateProviderProfile } from '../../hooks/useProvider';
 
 const availableActivities = [
     "Ménage", "Plomberie", "Électricité", "Jardinage",
     "Coiffure", "Esthétique", "Mécanique", "Cours d'appui"
 ]
 
-/**
- * UI component responsible for rendering provider info form.
- */
 export function ProviderInfoForm() {
     const navigate = useNavigate()
     const [agreed, setAgreed] = useState(false)
     const [showMapModal, setShowMapModal] = useState(false)
     const { data: userData } = useInfoUserConnected();
-    const { mutate, isPending, isError, error, isSuccess, data } = useApplyProvider();
+    const { mutate: mutateApply, isPending: isPendingApply, isError: isErrorApply, error: errorApply, isSuccess: isSuccessApply, data: dataApply } = useApplyProvider();
+    const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProviderProfile();
+
     const user = userData?.data?.user;
+    const provider = userData?.data?.provider;
+    const isEditMode = Boolean(provider?._id || provider?.id);
+    const providerId = provider?._id || provider?.id;
+
+    useEffect(() => {
+        if (isEditMode) setAgreed(true);
+    }, [isEditMode]);
 
     const [formData, setFormData] = useState({
-        firstName: user?.firstName,
-        lastName: user?.lastName,
-        gender: user?.gender,
-        country: user?.country,
-        email: user?.email,
-        phone: user?.phone,
+        firstName: '',
+        lastName: '',
+        gender: '',
+        country: '',
+        email: '',
+        phone: '',
         cniNumber: '',
         imgcnirecto: null,
         imgcniverso: null,
@@ -63,270 +69,150 @@ export function ProviderInfoForm() {
         }
     }, [user]);
 
-    const isInvalid = [
-        formData.firstName,
-        formData.lastName,
-        formData.gender,
-        formData.country,
-        formData.email,
-        formData.phone,
-        formData.cniNumber,
-        formData.imgcnirecto,
-        formData.imgcniverso,
-        formData.photos,
-        formData.businessContact,
-        formData.businessName,
-        formData.location,
-        formData.latitude,
-        formData.longitude,
-        formData.description
-    ].some(value => !value) || formData.activities.length === 0;
+    useEffect(() => {
+        console.log("dTA PREV:", provider)
+        if (provider) {
+            const rectoDoc = provider.documents?.find(d => d.type === 'cni_recto');
+            const versoDoc = provider.documents?.find(d => d.type === 'cni_verso');
+            const cleanWhatsapp = (val) => {
+                if (!val) return '';
+                if (val.includes(':') || val.length > 20) return '';
+                return val;
+            }
+            setFormData(prev => ({
+                ...prev,
+                cniNumber: provider.cniNumber || '',
+                // On récupère les URLs des images existantes pour la prévisualisation
+                imgcnirecto: rectoDoc?.url || null,
+                imgcniverso: versoDoc?.url || null,
+                photos: provider.profilePhoto || provider.photo || provider.photos || null,
+                businessContact: provider.businessContact || '',
+                whatsapp: cleanWhatsapp(provider.whatsapp),
+                businessName: provider.businessName || '',
+                location: provider.location || '',
+                address: provider.address || '',
+                latitude: provider.latitude || '',
+                longitude: provider.longitude || '',
+                description: provider.description || '',
+                activities: Array.isArray(provider.activities) ? provider.activities : []
+            }));
+        }
+    }, [provider]);
 
-    /**
-     * Handles handle add activity behavior.
-     */
+    const hasPhotos = Array.isArray(formData.photos) ? formData.photos.length > 0 : Boolean(formData.photos);
+    const isInvalidBase = [formData.businessName, formData.location, formData.description].some(v => !v) || formData.activities.length === 0;
+    const isInvalidIdentity = !isEditMode && [formData.cniNumber, formData.imgcnirecto, formData.imgcniverso].some(v => !v);
+    const isInvalid = isInvalidBase || (isInvalidIdentity || (!isEditMode && !hasPhotos));
+    const isPending = isPendingApply || isPendingUpdate;
+
     const handleAddActivity = (e) => {
         const selected = e.target.value
         if (selected && !formData.activities.includes(selected)) {
-            setFormData(prev => ({
-                ...prev,
-                activities: [...prev.activities, selected]
-            }))
+            setFormData(prev => ({ ...prev, activities: [...prev.activities, selected] }))
         }
-
         e.target.value = ""
     }
 
-    /**
-     * Handles remove activity behavior.
-     */
     const removeActivity = (activityToRemove) => {
-        setFormData(prev => ({
-            ...prev,
-            activities: prev.activities.filter(act => act !== activityToRemove)
-        }))
+        if (isEditMode) return; // Optionnel : empêcher de retirer des activités en mode édition si tu veux
+        setFormData(prev => ({ ...prev, activities: prev.activities.filter(act => act !== activityToRemove) }))
     }
 
-    /**
-     * Handles handle confirm location behavior.
-     */
     const handleConfirmLocation = (mapData) => {
-        setFormData(prev => ({
-            ...prev,
-            location: mapData.address,
-            latitude: mapData.lat,
-            longitude: mapData.lon
-        }))
+        setFormData(prev => ({ ...prev, location: mapData.address, latitude: mapData.lat, longitude: mapData.lon }))
         setShowMapModal(false)
     }
 
-    /**
-     * Handles handle get current location behavior.
-     */
     const handleGetCurrentLocation = () => {
-        if (!navigator.geolocation) {
-            toast.error("La géolocalisation n'est pas supportée par votre navigateur");
-            return;
-        }
-
-        toast.info("Recherche de votre position exacte...");
-
-        const options = {
-            enableHighAccuracy: true, // Force l'utilisation du GPS (très important)
-            timeout: 15000,           // Laisse 15 secondes au GPS pour se fixer
-            maximumAge: 0             // Interdit l'utilisation d'une position mise en cache
-        };
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude, accuracy } = position.coords;
-
-                console.log(`Précision : ${accuracy} mètres`);
-
-                try {
-
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-                    );
-                    const data = await response.json();
-
-                    setFormData(prev => ({
-                        ...prev,
-                        location: data.display_name || `Position (${accuracy}m)`,
-                        latitude: latitude.toString(),
-                        longitude: longitude.toString()
-                    }));
-
-                    toast.success(`Position trouvée à ${Math.round(accuracy)} mètres près !`);
-                } catch (error) {
-                    setFormData(prev => ({
-                        ...prev,
-                        location: `Lat: ${latitude.toFixed(6)}, Lon: ${longitude.toFixed(6)}`,
-                        latitude: latitude.toString(),
-                        longitude: longitude.toString()
-                    }));
-                }
-            },
-            (error) => {
-                console.error("Erreur GPS:", error);
-                if (error.code === 1) {
-                    toast.error("Veuillez autoriser l'accès à la position dans votre navigateur.");
-                } else if (error.code === 3) {
-                    toast.error("Délai d'attente dépassé. Le signal GPS est trop faible.");
-                } else {
-                    toast.error("Impossible de récupérer une position précise.");
-                }
-            },
-            options
-        );
+        if (!navigator.geolocation) return toast.error("Géolocalisation non supportée");
+        toast.info("Recherche de votre position...");
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                const data = await res.json();
+                setFormData(prev => ({ ...prev, location: data.display_name, latitude: latitude.toString(), longitude: longitude.toString() }));
+                toast.success("Position trouvée !");
+            } catch (e) {
+                setFormData(prev => ({ ...prev, latitude: latitude.toString(), longitude: longitude.toString() }));
+            }
+        }, () => toast.error("Erreur GPS"), { enableHighAccuracy: true });
     };
 
-    /**
-     * Handles handle change behavior.
-     */
     const handleChange = (e) => {
+        if (isEditMode && (e.target.name === 'imgcnirecto' || e.target.name === 'imgcniverso' || e.target.name === 'cniNumber')) return;
         const { name, value, type, files } = e.target;
-        if (type === 'file') {
-            setFormData(prev => ({ ...prev, [name]: files[0] }));
-        } else {
-            setFormData(prev => ({ ...prev, [name]: value }));
-        }
+        setFormData(prev => ({ ...prev, [name]: type === 'file' ? files?.[0] : value }));
     };
 
-    /**
-     * Handles handle submit behavior.
-     */
     const handleSubmit = (e) => {
         e.preventDefault();
         const dataToSend = new FormData();
+        dataToSend.append('businessName', formData.businessName);
+        dataToSend.append('description', formData.description);
+        dataToSend.append('location', formData.location);
+        dataToSend.append('address', formData.address || '');
+        dataToSend.append('whatsapp', formData.whatsapp || '');
+        dataToSend.append('businessContact', formData.businessContact || '');
+        dataToSend.append('latitude', formData.latitude || '');
+        dataToSend.append('longitude', formData.longitude || '');
+        dataToSend.append('activities', JSON.stringify(formData.activities));
 
-        Object.keys(formData).forEach(key => {
-            if (key === 'activities') {
-                dataToSend.append(key, JSON.stringify(formData[key]));
-            } else if (['imgcnirecto', 'imgcniverso', 'photos'].includes(key)) {
-                if (formData[key]) dataToSend.append(key, formData[key]);
-            } else {
-                dataToSend.append(key, formData[key]);
-            }
-        });
-
-        console.log("--- Contenu du FormData envoyé ---");
-        for (let [key, value] of dataToSend.entries()) {
-
-            if (value instanceof File) {
-                console.log(`${key}: [Fichier] ${value.name} (${value.size} octets)`);
-            } else {
-                console.log(`${key}:`, value);
-            }
+        if (isEditMode) {
+            if (formData.photos instanceof File) dataToSend.append('logo', formData.photos);
+            mutateUpdate({ id: providerId, formData: dataToSend });
+        } else {
+            if (formData.photos instanceof File) dataToSend.append('profilePhoto', formData.photos);
+            dataToSend.append('firstName', formData.firstName);
+            dataToSend.append('lastName', formData.lastName);
+            dataToSend.append('email', formData.email);
+            dataToSend.append('phone', formData.phone);
+            dataToSend.append('cniNumber', formData.cniNumber);
+            if (formData.imgcnirecto instanceof File) dataToSend.append('imgcnirecto', formData.imgcnirecto);
+            if (formData.imgcniverso instanceof File) dataToSend.append('imgcniverso', formData.imgcniverso);
+            mutateApply(dataToSend);
         }
-
-        mutate(dataToSend);
     };
 
     useEffect(() => {
-        if (isSuccess && data?.success) {
-            toast.success(data.message);
+        if ((isSuccessApply && dataApply?.success) || (isSuccessUpdate && dataUpdate?.success)) {
+            toast.success(dataApply?.message || dataUpdate?.message);
             navigate(-1);
         }
-
-        if (isError) {
-            const mainMessage = error?.message;
-            toast.error(mainMessage);
-
-            const backendErrors = error?.response?.errors;
-            if (Array.isArray(backendErrors)) {
-                backendErrors.forEach((err) => {
-                    toast.info(err.message);
-                });
-            }
-        }
-
-    }, [isSuccess, isError, data, error]);
+        const error = errorApply || errorUpdate;
+        if (error) toast.error(error.response?.data?.message || error.message);
+    }, [isSuccessApply, isSuccessUpdate, isErrorApply, isErrorUpdate, navigate, dataApply, dataUpdate, errorApply, errorUpdate]);
 
     return (
         <FormCard
-            title="Inscription Prestataire"
-            subtitle="Veuillez remplir toutes les informations requises pour compléter votre inscription"
+            title={isEditMode ? "Modification Prestataire" : "Inscription Prestataire"}
+            subtitle={isEditMode ? "Consultez vos documents et modifiez votre activité" : "Complétez votre inscription"}
         >
-            <form
-                onSubmit={handleSubmit}
-                className="space-y-10"
-            >
+            <form onSubmit={handleSubmit} className="space-y-10">
                 <section>
-                    <SectionHeader
-                        icon={User}
-                        title="Informations Personnelles"
-                        colorClass="text-blue-600"
-                    />
+                    <SectionHeader icon={User} title="Informations Personnelles" colorClass="text-blue-600" />
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <Input
-                            name="firstName"
-                            label="Nom"
-                            placeholder="Nom"
-                            value={formData.firstName}
-                            onChange={handleChange}
-                            isreadOnly={true}
-                            required
-                            readOnly
-                        />
-                        <Input
-                            name="lastName"
-                            label="Prénom"
-                            placeholder="Prénom"
-                            value={formData.lastName}
-                            onChange={handleChange}
-                            isreadOnly={true}
-                            required
-                            readOnly
-                        />
-                        <Input
-                            name="gender"
-                            label="Genre"
-                            placeholder="Femme"
-                            value={formData.gender}
-                            onChange={handleChange}
-                            isreadOnly={true}
-                            required
-                            readOnly
-                        />
-                        <Input
-                            name="email"
-                            label="Adresse E-mail"
-                            type="email"
-                            placeholder="email@exemple.com"
-                            value={formData.email}
-                            onChange={handleChange}
-                            isreadOnly={true}
-                            required
-                            readOnly
-                        />
-                        <Input
-                            name="phone"
-                            label="Téléphone"
-                            type="tel"
-                            placeholder="6xx xxx xxx"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            isreadOnly={true}
-                            required
-                            readOnly
-                        />
+                        <Input name="firstName" label="Nom" value={formData.firstName} isreadOnly readOnly />
+                        <Input name="lastName" label="Prénom" value={formData.lastName} isreadOnly readOnly />
+                        <Input name="gender" label="Genre" value={formData.gender} isreadOnly readOnly />
+                        <Input name="email" label="Adresse E-mail" value={formData.email} isreadOnly readOnly />
+                        <Input name="phone" label="Téléphone" value={formData.phone} isreadOnly readOnly />
                     </div>
                 </section>
+
                 <section>
-                    <SectionHeader
-                        icon={Briefcase}
-                        title="Informations sur la Structure"
-                        colorClass="text-purple-600"
-                    />
+                    <SectionHeader icon={Briefcase} title="Informations sur la Structure" colorClass="text-purple-600" />
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        {/* Champs CNI : Toujours visibles, mais bloqués en mode édition */}
                         <div className="flex flex-col gap-6">
                             <Input
                                 name="cniNumber"
                                 label="Numéro CNI"
-                                placeholder="CNI"
+                                value={formData.cniNumber}
                                 onChange={handleChange}
                                 required
+                                isreadOnly={isEditMode}
+                                readOnly={isEditMode}
                             />
                             <div className="flex flex-col md:flex-row gap-6">
                                 <Input
@@ -334,175 +220,81 @@ export function ProviderInfoForm() {
                                     label="Photo CNI Recto"
                                     type="file"
                                     onChange={handleChange}
-                                    required
+                                    required={!isEditMode}
+                                    previewImage={typeof formData.imgcnirecto === 'string' ? formData.imgcnirecto : undefined}
                                     className="h-[150px]"
+                                    disabled={isEditMode}
                                 />
                                 <Input
                                     name="imgcniverso"
                                     label="Photo CNI Verso"
                                     type="file"
                                     onChange={handleChange}
-                                    required
+                                    required={!isEditMode}
+                                    previewImage={typeof formData.imgcniverso === 'string' ? formData.imgcniverso : undefined}
                                     className="h-[150px]"
+                                    disabled={isEditMode}
                                 />
                             </div>
                         </div>
+
                         <Input
                             name="photos"
                             label="Photo / Logo"
                             type="file"
+                            previewImage={typeof formData.photos === 'string' ? formData.photos : undefined}
                             onChange={handleChange}
-                            required
+                            required={!isEditMode}
+                            accept="image/*"
                             className="h-[250px]"
                         />
-                        <Input
-                            name="businessName"
-                            label="Entreprise"
-                            placeholder="Nom structure"
-                            onChange={handleChange}
-                            required
-                        />
-                        <Input
-                            name="businessContact"
-                            label="Contact Pro"
-                            type="number"
-                            placeholder="6xx xxx xxx"
-                            onChange={handleChange}
-                            required
-                        />
-                        <Input
-                            name="whatsapp"
-                            label="Contact whatsapp"
-                            type="number"
-                            placeholder="6xx xxx xxx"
-                            onChange={handleChange}
-                            required
-                        />
+                        <Input name="businessName" label="Entreprise" value={formData.businessName} onChange={handleChange} required />
+                        <Input name="businessContact" label="Contact Pro" type="number" value={formData.businessContact} onChange={handleChange} required />
+                        <Input name="whatsapp" label="Contact whatsapp" type="text" value={formData.whatsapp} onChange={handleChange} required />
+                        <Input name="address" label="Address (optionel)" value={formData.address} onChange={handleChange} className="flex-1" />
 
-                        <Input
-                            name="address"
-                            label="Address (optionel)"
-                            placeholder="6xx xxx xxx"
-                            onChange={handleChange}
-                            className="flex-1"
-                        />
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-700">Localisation <span className="text-red-500">*</span></label>
+                            <label className="text-sm font-medium text-gray-700">Localisation *</label>
                             <div className="flex flex-col gap-4">
-                                <Input
-                                    name="location"
-                                    placeholder="Choisissez sur la carte..."
-                                    value={formData.location}
-                                    isreadOnly={true}
-                                    readOnly // Empêche la saisie manuelle pour forcer la précision carte
-                                    className="flex-1"
-                                />
+                                <Input name="location" value={formData.location} isreadOnly readOnly className="flex-1" />
                                 <div className="flex gap-4">
-                                    <Button
-                                        type="button"
-                                        variant="outline" // Ou un style différent pour différencier
-                                        onClick={handleGetCurrentLocation}
-                                        className="flex-1 h-[49px] gap-2"
-                                    >
-                                        <MapPin size={18} className="text-blue-600" />
-                                        Position
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="softRed"
-                                        onClick={() => setShowMapModal(true)}
-                                        className=" flex-1 h-[49px] gap-2"
-                                    >
-                                        <MapPin size={18} />
-                                        Carte
-                                    </Button>
+                                    <Button type="button" variant="outline" onClick={handleGetCurrentLocation} className="flex-1 h-[49px] gap-2"><MapPin size={18} /> Position</Button>
+                                    <Button type="button" variant="softRed" onClick={() => setShowMapModal(true)} className="flex-1 h-[49px] gap-2"><MapPin size={18} /> Carte</Button>
                                 </div>
                             </div>
                         </div>
-                        {}
-                        {showMapModal && (
-                            <MapPicker
-                                onClose={() => setShowMapModal(false)}
-                                onConfirm={handleConfirmLocation}
-                            />
-                        )}
+
+                        {showMapModal && <MapPicker onClose={() => setShowMapModal(false)} onConfirm={handleConfirmLocation} />}
+
                         <div className="space-y-3">
                             <Input
                                 name="activities"
                                 label="Sélectionner vos activités"
                                 type="select"
                                 onChange={handleAddActivity}
-                                required
-                                options={[
-                                    { value: '', label: 'Choisir une activité...' },
-                                    ...availableActivities
-                                        .filter(act => !formData.activities.includes(act))
-                                        .map(act => ({ value: act, label: act }))
-                                ]}
+                                disabled={isEditMode}
+                                options={[{ value: '', label: 'Choisir...' }, ...availableActivities.filter(act => !formData.activities.includes(act)).map(act => ({ value: act, label: act }))]}
                             />
-
-                            {}
                             <div className="flex flex-wrap gap-2">
                                 {formData.activities.map((act) => (
-                                    <span
-                                        key={act}
-                                        className="inline-flex items-center gap-1 px-3 py-1 bg-[#E8524D]/10 text-[#E8524D] text-sm font-medium rounded-full border border-[#E8524D]/20 animate-in zoom-in duration-200"
-                                    >
+                                    <span key={act} className="inline-flex items-center gap-1 px-3 py-1 bg-red-50 text-red-500 text-sm font-medium rounded-full border border-red-100">
                                         {act}
-                                        <button
-                                            type="button"
-                                            onClick={() => removeActivity(act)}
-                                            className="hover:bg-[#E8524D]/2 rounded-full p-0.5 transition-colors"
-                                        >
-                                            <X size={14} />
-                                        </button>
+                                        {!isEditMode && <button type="button" onClick={() => removeActivity(act)}><X size={14} /></button>}
                                     </span>
                                 ))}
                             </div>
                         </div>
 
-                        <Input
-                            name="description"
-                            label="Description "
-                            type="textarea"
-                            placeholder="Vos services..."
-                            onChange={handleChange}
-                            required
-                        />
+                        <Input name="description" label="Description " type="textarea" value={formData.description} onChange={handleChange} required />
                     </div>
                 </section>
-                <TermsSection
-                    agreed={agreed}
-                    onToggle={(checked) => setAgreed(checked)}
-                />
-                <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
-                    <Button
-                        variant="secondary"
-                        className="w-full sm:w-auto gap-2 py-3"
-                        type="button"
-                        onClick={() => navigate(-1)}
-                    >
-                        <X className="w-4 h-4" />
-                        Retour
-                    </Button>
 
-                    <Button
-                        variant="gradient"
-                        type="submit"
-                        className="w-full sm:w-auto gap-2 py-3"
-                        disabled={!agreed || isInvalid || isPending}
-                    >
-                        {isPending ? (
-                            <>
-                                <Loader2 className="w-4 h-4 animate-spin" size={18} />
-                                <span>Envoi...</span>
-                            </>
-                        ) : (
-                            <>
-                                <Check className="w-4 h-4" />
-                                <span>Soumettre</span>
-                            </>
-                        )}
+                {!isEditMode && <TermsSection agreed={agreed} onToggle={setAgreed} />}
+
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
+                    <Button variant="secondary" className="w-full sm:w-auto gap-2 py-3" type="button" onClick={() => navigate(-1)}><X size={16} /> Retour</Button>
+                    <Button variant="gradient" type="submit" className="w-full sm:w-auto gap-2 py-3" disabled={!agreed || isInvalid || isPending}>
+                        {isPending ? <><Loader2 className="w-4 h-4 animate-spin" /> Envoi...</> : <><Check size={16} /> {isEditMode ? 'Enregistrer' : 'Soumettre'}</>}
                     </Button>
                 </div>
             </form>

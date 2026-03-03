@@ -12,6 +12,7 @@ import { RegistrationProviderScreen } from './screens/RegistrationProviderScreen
 import { AddCategorycreen } from './screens/AddCategory';
 import { AddServiceScreen } from "./screens/AddServiceScreen";
 import { SubscriptionScreen } from "./screens/SubscriptionScreen";
+import { ResetPasswordScreen } from "./screens/ResetPasswordScreen";
 
 /**
  * UI component responsible for rendering app.
@@ -27,8 +28,8 @@ function App() {
       <Route path="/become-service-provider" element={<RegistrationProviderScreen />} />
       <Route path="/add-category" element={<AddCategorycreen />} />
       <Route path="/add-service" element={<AddServiceScreen />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordScreen />} />
 
-      {}
       <Route element={<Base />}>
         <Route path="/home" element={<HomeScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />

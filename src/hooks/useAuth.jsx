@@ -65,3 +65,14 @@ export const useForgotPassword = () => {
     });
 };
 
+
+/**
+ * Custom hook that manages forgot password.
+ */
+export const useResetPassword = () => {
+    return useMutation({
+        mutationKey: ["useResetPassword"],
+        mutationFn: ({ token, password }) => request(`/api/auth/reset-password/${token}`, "POST", { password }),
+    });
+};
+

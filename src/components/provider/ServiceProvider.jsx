@@ -140,7 +140,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                         <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex relative mb-4">
                             <div className="w-full h-full rounded-full overflow-hidden no-scrollbar">
                                 <img
-                                    src={providerDetail?.photos?.[0] || dataConsult?.image || `https://ui-avatars.com/api/?name=${providerDetail.businessName}&background=random`}
+                                    src={providerDetail?.profilePhoto || `https://ui-avatars.com/api/?name=${providerDetail.businessName}&background=random`}
                                     alt="Stats"
                                     className="w-full h-full object-cover opacity-80"
                                 />

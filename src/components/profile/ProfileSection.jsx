@@ -5,7 +5,7 @@ import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { Badge } from '../../ui/Badge';
-import { Mail, CheckCircle2, Save, X } from 'lucide-react';
+import { Mail, CheckCircle2, Save, X, Pencil } from 'lucide-react';
 import { Loading } from '../global/Loading';
 import { useInfoUserConnected, useUpdateProfile } from '../../hooks/useUser';
 
@@ -93,7 +93,7 @@ export function ProfileSection({ setIsRole }) {
                     <div className="relative">
                         {!isEditing &&
                             <img
-                                src={user?.profilePhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+                                src={user?.profilePhoto || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=random&color=fff&size=128`}
                                 alt="profile"
                                 className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-xl mb-2"
                             />
@@ -124,7 +124,11 @@ export function ProfileSection({ setIsRole }) {
                             size="sm"
                             className="bg-white/20 border-white/30 text-white hover:bg-white/30 backdrop-blur-sm"
                         >
-                            Modifier
+                            <span className="flex gap-2 item-center justify-center">
+                                <Pencil size={16} />
+                                Modifier
+                            </span>
+
                         </Button>
                     ) : (
                         <div className="flex gap-2">

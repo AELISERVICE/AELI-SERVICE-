@@ -67,7 +67,7 @@ export function RecommendationSection() {
                         key={item.id}
                         title={item.businessName}
 
-                        image={item.photos && item.photos.length > 0 ? item.photos[0] : `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
+                        image={item.profilePhoto ? item.profilePhoto : `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
                         description={item.description}
                         location={item.location.split(',')[0]} // Ville simplifiée
                         rating={parseFloat(item.averageRating)}
