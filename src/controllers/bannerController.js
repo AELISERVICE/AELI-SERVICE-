@@ -1,6 +1,6 @@
 const { Banner } = require("../models");
 const { asyncHandler, AppError } = require("../middlewares/errorHandler");
-const { i18nResponse } = require("../middlewares/i18n");
+const { i18nResponse } = require("../utils/helpers");
 const { deleteImage } = require("../config/cloudinary");
 const { delByPattern } = require("../config/redis");
 const { Op } = require("sequelize");
