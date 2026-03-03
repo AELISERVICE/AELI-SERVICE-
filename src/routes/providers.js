@@ -18,7 +18,7 @@ const {
 } = require('../controllers/providerApplicationController');
 const { protect, restrictTo } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
-const { handleGalleryPhotosUpload, handleDocumentUpload, handleApplicationUpload, handleProviderLogoUpload } = require('../middlewares/upload');
+const { handleGalleryPhotosUpload, handleDocumentUpload, handleApplicationUpload, handleProviderLogoUpload, handleProviderCreationUpload } = require('../middlewares/upload');
 const {
     createProviderValidation,
     updateProviderValidation,
@@ -47,7 +47,7 @@ router.get('/my-profile', restrictTo('provider'), getMyProfile);
 router.get('/my-dashboard', restrictTo('provider'), getMyDashboard);
 
 // Legacy create route (keep for backwards compatibility, but now mainly done via application approval)
-router.post('/create', restrictTo('provider'), handleGalleryPhotosUpload, createProviderValidation, validate, createProvider);
+router.post('/create', restrictTo('provider'), handleProviderCreationUpload, createProviderValidation, validate, createProvider);
 
 router.put('/:id', handleProviderLogoUpload, updateProviderValidation, validate, updateProvider);
 router.delete('/:id/photos/:photoIndex', deleteProviderPhoto);

@@ -158,11 +158,15 @@ describe('Provider Controller', () => {
                 instagram: 'https://instagram.com/test'
             };
             mockReq.body = providerData;
-            mockReq.files = [{}, {}]; // Mock files
+            mockReq.files = {
+                profilePhoto: [{ path: 'https://cloudinary.com/profile.jpg' }],
+                photos: [{}, {}]
+            };
 
             const mockProvider = {
                 id: 'provider-123',
                 ...providerData,
+                profilePhoto: 'https://cloudinary.com/profile.jpg',
                 photos: ['photo1.jpg', 'photo2.jpg'],
                 save: jest.fn().mockResolvedValue()
             };
@@ -178,7 +182,8 @@ describe('Provider Controller', () => {
             expect(Provider.create).toHaveBeenCalledWith({
                 userId: 'user-123',
                 ...providerData,
-                photos: ['photo1.jpg', 'photo2.jpg']
+                photos: ['photo1.jpg', 'photo2.jpg'],
+                profilePhoto: 'https://cloudinary.com/profile.jpg'
             });
             expect(Subscription.createTrial).toHaveBeenCalledWith('provider-123');
             expect(cache.delByPattern).toHaveBeenCalledWith('providers:list:*');

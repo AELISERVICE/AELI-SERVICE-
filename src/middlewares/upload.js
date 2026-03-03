@@ -258,6 +258,53 @@ const uploadProviderLogo = multer({
 }).single('logo');
 
 /**
+ * Multer upload configuration for provider creation (profilePhoto + photos)
+ */
+const uploadProviderCreation = multer({
+    storage: galleryPhotoStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+        files: 6 // 1 profilePhoto + 5 photos max
+    },
+    fileFilter: imageFileFilter
+}).fields([
+    { name: 'profilePhoto', maxCount: 1 },
+    { name: 'photos', maxCount: 5 }
+]);
+
+/**
+ * Middleware wrapper for provider creation upload with error handling
+ */
+const handleProviderCreationUpload = (req, res, next) => {
+    uploadProviderCreation(req, res, (err) => {
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'La taille de chaque image ne doit pas dépasser 5MB'
+                });
+            }
+            if (err.code === 'LIMIT_FILE_COUNT') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Maximum 6 fichiers autorisés (1 photo de profil + 5 photos)'
+                });
+            }
+            return res.status(400).json({
+                success: false,
+                message: `Erreur d'upload: ${err.message}`
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+        next();
+    });
+};
+
+/**
  * Middleware wrapper for provider logo upload with error handling
  */
 const handleProviderLogoUpload = (req, res, next) => {
@@ -431,5 +478,6 @@ module.exports = {
     handleBannerUpload,
     uploadServicePhoto,
     handleServicePhotoUpload,
-    handleProviderLogoUpload
+    handleProviderLogoUpload,
+    handleProviderCreationUpload
 };

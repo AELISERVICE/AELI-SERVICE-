@@ -187,6 +187,7 @@ Permet à un client de soumettre une candidature complète pour devenir prestata
 **Fichiers :**
 | Champ | Type | Requis | Description |
 |-------|------|--------|-------------|
+| `profilePhoto` | file | ❌ | Photo de profil du prestataire |
 | `photos` | files | ❌ | Photos de réalisations (max 5) |
 | `imgcnirecto` | file | ✅ | Photo CNI Face avant |
 | `imgcniverso` | file | ✅ | Photo CNI Face arrière |
@@ -349,7 +350,8 @@ Met à jour les informations du profil prestataire. Permet aussi d'ajouter des p
 | `whatsapp` | string | Numéro WhatsApp |
 | `facebook` | string | URL Facebook |
 | `instagram` | string | Pseudo Instagram |
-| `photos` | files | Nouvelles photos à ajouter |
+| `logo` | file | Photo de profil du prestataire (remplace l'ancienne) |
+| `photos` | files | Nouvelles photos à ajouter à la galerie |
 
 **⚠️ Le WhatsApp est chiffré** en base de données (AES-256-GCM).
 

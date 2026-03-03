@@ -50,7 +50,8 @@ const createProvider = asyncHandler(async (req, res) => {
   }
 
   // Extract photo URLs from uploaded files
-  const photos = extractPhotoUrls(req.files);
+  const photos = req.files?.photos ? extractPhotoUrls(req.files.photos) : [];
+  const profilePhoto = req.files?.profilePhoto?.[0]?.path || null;
 
   // Create provider
   const provider = await Provider.create({
@@ -63,6 +64,7 @@ const createProvider = asyncHandler(async (req, res) => {
     facebook,
     instagram,
     photos,
+    profilePhoto,
   });
 
   // Create FREE 30-day trial subscription
