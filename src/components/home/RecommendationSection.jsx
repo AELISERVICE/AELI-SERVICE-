@@ -67,7 +67,7 @@ export function RecommendationSection() {
                         key={item.id}
                         title={item.businessName}
 
-                        image={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000'}
+                        image={item.photos && item.photos.length > 0 ? item.photos[0] : `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
                         description={item.description}
                         location={item.location.split(',')[0]} // Ville simplifiée
                         rating={parseFloat(item.averageRating)}

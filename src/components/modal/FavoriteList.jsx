@@ -67,7 +67,7 @@ export function FavoriteList({ closeFavorite }) {
                 />
             ) : (
                 <>
-                    {}
+                    { }
                     <CountItems count={favorites.length} scrollContainerRef={scrollRef} />
 
                     <div
@@ -84,7 +84,7 @@ export function FavoriteList({ closeFavorite }) {
                                         <FavoriteCard
 
                                             name={provider.businessName}
-                                            image={provider.photos?.[0] || 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000'}
+                                            image={provider.photos?.[0] || `https://ui-avatars.com/api/?name=${provider.businessName}&background=random`}
                                             rating={provider.averageRating}
                                             description={provider.description}
                                             location={provider.location}
@@ -102,7 +102,7 @@ export function FavoriteList({ closeFavorite }) {
                                                     className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                                                     aria-label="Remove from favorites"
                                                 >
-                                                    {}
+                                                    { }
                                                     <Star className="w-4 h-4 text-yellow-500 fill-current hover:scale-110 transition-transform" />
                                                 </button>,
                                                 <Button
