@@ -99,7 +99,7 @@ export function ServicesSection() {
                                 description={item.description}
                                 location={item.location}
                                 rating={item.averageRating}
-                                image={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000'}
+                                image={item.photos && item.photos.length > 0 && item.photos[0]}
                                 isStructure={true}
                                 onContact={openContact}
                                 onFavorite={() => handleFavoriteClick(item.id)}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, ShoppingBag } from 'lucide-react'
+import { ArrowRight, BarChart3 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { RecommendationCard } from '../../ui/RecommendationCard';
 import { useGetProviderList } from '../../hooks/useProvider';
@@ -54,7 +54,7 @@ export function RecommendationSection() {
     return (
         <div>
             <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2 mb-8">
-                <ShoppingBag className="text-[#E8524D]" size={32} />
+                <BarChart3 className="text-[#E8524D]" size={32} />
                 Recommandations
             </h2>
             <div
@@ -88,13 +88,13 @@ export function RecommendationSection() {
                 ))}
             </div>
 
-            {}
+            { }
             <div className="flex gap-4 justify-center">
                 {featuredProviders.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => setActiveIndex(index)}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${index === activeIndex ? 'w-12 bg-[#E8524D]' : 'w-4 bg-gray-300'
+                        className={`h-1.5 rounded-full transition-all duration-500 ${index === activeIndex ? 'w-12 bg-[#E8524D]' : 'w-4 bg-[#E8524D]/20'
                             }`}
                     />
                 ))}

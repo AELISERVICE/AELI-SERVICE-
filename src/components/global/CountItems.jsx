@@ -46,8 +46,8 @@ export function CountItems({ count = 0, scrollContainerRef, className, clasNameC
                 <div
                     key={index}
                     className={`w-1.5 h-12  rounded-full transition-all duration-300 transform ${index === activeIndex
-                        ? 'bg-purple-700 scale-110 shadow-sm'
-                        : 'bg-purple-200 scale-100'
+                        ? 'bg-[#E8524D] scale-110 shadow-sm'
+                        : 'bg-[#E8524D]/20 scale-100'
                         } ${clasNameChild}`}
                 />
             ))}

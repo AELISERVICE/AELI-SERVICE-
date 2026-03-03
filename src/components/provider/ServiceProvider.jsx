@@ -140,7 +140,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                         <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex relative mb-4">
                             <div className="w-full h-full rounded-full overflow-hidden no-scrollbar">
                                 <img
-                                    src={providerDetail?.photos?.[0] || dataConsult?.image || `https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000`}
+                                    src={providerDetail?.photos?.[0] || dataConsult?.image || `https://ui-avatars.com/api/?name=${providerDetail.businessName}&background=random`}
                                     alt="Stats"
                                     className="w-full h-full object-cover opacity-80"
                                 />
@@ -238,7 +238,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                             title={service.name}
                             description={service.description}
                             price={service.price}
-                            image={service.photo || "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800"}
+                            image={service.photo}
                             isAdmin={mode !== "consultationCustomers"}
                             actions={mode === "consultationCustomers"
                                 ? [

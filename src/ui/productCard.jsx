@@ -33,16 +33,16 @@ export function ProductCard({
   return (
     <div className="group relative transition-all duration-300 bg-white rounded-[2rem] p-3 shadow-sm hover:shadow-xl">
 
-      {}
+      { }
       <div className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4">
         <img
-          src={image}
+          src={image || `https://ui-avatars.com/api/?name=${name}&background=random`}
           alt={displayTitle}
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70" />
 
-        {}
+        { }
         <div className="absolute bottom-0 left-0 w-full p-5 text-white">
           <h3 className="text-xl font-bold mb-1">{displayTitle}</h3>
           <p className="text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90">
