@@ -1,9 +1,11 @@
 import React, { useMemo } from 'react';
-import { MoreVertical, Mail } from 'lucide-react';
+import { MoreVertical, Mail, BarChart3, Users, AlertCircle } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts';
 import { Button } from '../../ui/Button';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loading } from '../global/Loading';
+import { NotFound } from '../global/Notfound';
 import { useGetStatDaily } from '../../hooks/useContact';
 
 const data = [
@@ -36,7 +38,7 @@ const contacts = [
 export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   const { openMessaging } = useOutletContext()
   // 1. Appel au hook des statistiques
-  const { data: statsResponse, isLoading } = useGetStatDaily();
+  const { data: statsResponse, isLoading, isError } = useGetStatDaily();
 
   // AJUSTEMENT ICI : L'API renvoie les données dans statsResponse.data
   const dailyStats = statsResponse?.data?.dailyStats || [];
@@ -78,7 +80,10 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
           <aside className="w-full xl:w-full bg-white p-6 flex flex-col gap-8 border-none md:border-2 md:border-gray-100 rounded-4xl xl:shadow-sm hover:shadow-xl transition-all duration-300 group md:mb-10">
             <div className="bg-pink-50/50 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg text-gray-800">Stats</h3>
+                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                  <BarChart3 className="text-[#E8524D]" size={20} />
+                  Stats
+                </h3>
                 <span className="bg-white px-2 py-1 rounded-lg text-xs font-bold text-purple-600 shadow-sm">
                   {totalContacts} au total
                 </span>
@@ -101,7 +106,14 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
               </div>
               <div className="h-32 w-full">
                 {isLoading ? (
-                  <div className="h-full flex items-center justify-center text-xs text-gray-400">Chargement...</div>
+                  <Loading className="h-full" size="small" title="Chargement des statistiques..." />
+                ) : isError ? (
+                  <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Une erreur est survenue lors de la récupération des statistiques."
+                    className="h-full py-4"
+                  />
                 ) : chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
@@ -116,9 +128,12 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-gray-400 italic">
-                    Aucune donnée
-                  </div>
+                  <NotFound
+                    Icon={BarChart3}
+                    title="Aucune donnée"
+                    message="Aucune statistique disponible pour le moment."
+                    className="h-full py-4"
+                  />
                 )}
                 {chartData.length > 0 && (
                   <div className="flex justify-between text-[10px] text-gray-400 mt-2 px-1">
@@ -129,7 +144,8 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
               </div>
             </div>
             <div>
-              <h3 className="font-bold text-lg text-gray-800 mb-4">
+              <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+                <Users className="text-[#E8524D]" size={20} />
                 Dernière personnes contactées
               </h3>
               <div className="flex flex-col gap-4">

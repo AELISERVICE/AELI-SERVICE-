@@ -10,7 +10,7 @@ import { FavoriteList } from '../components/modal/FavoriteList';
 import { Confirmation } from '../components/modal/Confirmation';
 import { ProviderMessaging } from '../components/modal/ProviderMessaging/ProviderMessaging';
 import { Banner } from '../components/modal/Banner';
-import { Loading } from '../components/global/Loading';
+import { useGlobalLoading } from '../context/GlobalLoadingContext';
 
 
 export function Base() {
@@ -19,7 +19,7 @@ export function Base() {
     const [activeModal2, setActiveModal2] = useState(8); // Par défaut, le banner est actif
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // État pour le burger
     const [openSidebar, isOpenSidebar] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const { isLoading } = useGlobalLoading();
     const [confirmConfig, setConfirmConfig] = useState({ onConfirm: () => { }, isPending: false, title: "", description: "" });
     const [dataProviderToRate, setDataProviderToRate] = useState(null);
     const [filters, setFilters] = useState({
@@ -48,24 +48,18 @@ export function Base() {
                 />
             </aside>
             <main className="relative h-screen overflow-y-auto">
-                {isLoading && (
-                    <div className="fixed inset-0 z-40 bg-[#FAFAFB] flex items-center justify-center">
-                        <Loading />
-                    </div>
-                )}
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
                         <Header
                             onOpenMenu={() => setIsSidebarOpen(true)}
                             openSidebar={openSidebar}
-                            setFilters={setFilters} // On passe setFilters au lieu de setSearch
+                            setFilters={setFilters} 
                             filters={filters}
                         />
                         <div className="mt-6 ">
                             <Outlet context={{
                                 filters,
                                 setFilters,
-                                setIsLoading,
                                 setConfirmConfig,
                                 setDataContact,
                                 openContact: () => setActiveModal2(MODALS.CONTACT),

@@ -3,7 +3,9 @@ import { useOutletContext } from 'react-router-dom';
 import { ReviewCard } from '../../ui/ReviewCard';
 import { CountItems } from '../global/CountItems';
 import { ActionMenu } from '../global/ActionMenu';
-import { MoreHorizontal, Star } from 'lucide-react';
+import { Loading } from '../global/Loading';
+import { NotFound } from '../global/Notfound';
+import { MoreHorizontal, Star, AlertCircle } from 'lucide-react';
 import { useGetReviewByProvider, useDeleteReview } from '../../hooks/useReview';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { toast } from 'react-toastify';
@@ -17,7 +19,7 @@ export function ReviewList({ closeReview, idProvider }) {
     const { data: userData } = useInfoUserConnected();
     const user = userData?.data?.user;
 
-    const { data: dataReview, isLoading } = useGetReviewByProvider(idProvider);
+    const { data: dataReview, isLoading, isError } = useGetReviewByProvider(idProvider);
 
     // Mutation de suppression
     const {
@@ -76,28 +78,30 @@ export function ReviewList({ closeReview, idProvider }) {
     };
 
     if (isLoading) {
+        return <Loading className="h-40" size="small" title="Chargement des avis..." />;
+    }
+
+    if (isError) {
         return (
-            <div className="flex justify-center items-center h-40">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-            </div>
+            <NotFound
+                Icon={AlertCircle}
+                title="Erreur de chargement"
+                message="Une erreur est survenue lors de la récupération des avis."
+                className="bg-gray-100 h-[300px] flex-1"
+            />
         );
     }
 
     return (
         <div className="w-full">
-            {summary && reviews.length > 0 && (
-                <div className="flex items-center gap-2 mb-4 px-1">
-                    <div className="flex items-center text-amber-500">
-                        <Star size={14} fill="currentColor" />
-                        <span className="text-xs font-bold ml-1">{summary.averageRating}</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400">({summary.totalReviews} avis)</span>
-                </div>
-            )}
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-6">
+                <Star className="text-[#E8524D]" size={20} />
+                Avis clients
+            </h2>
 
             <div
                 ref={scrollRef}
-                className="flex-1 flex gap-6 overflow-x-auto h-full pb-5 md:pb-10 no-scrollbar scroll-smooth"
+                className="flex-1 flex gap-6 overflow-x-auto  h-full pb-5 md:pb-10 no-scrollbar scroll-smooth"
             >
                 {reviews.length > 0 ? (
                     reviews.map((review, index) => {
@@ -139,9 +143,12 @@ export function ReviewList({ closeReview, idProvider }) {
                         )
                     })
                 ) : (
-                    <div className="w-full text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                        <p className="text-xs text-gray-400 font-medium">Aucun avis pour le moment</p>
-                    </div>
+                    <NotFound
+                        Icon={Star}
+                        title="Aucun avis trouvé"
+                        message="Aucun avis pour le moment."
+                        className="bg-gray-100 h-[300px] flex-1"
+                    />
                 )}
             </div>
 

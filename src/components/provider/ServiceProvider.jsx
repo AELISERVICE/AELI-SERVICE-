@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { ProductCard } from '../../ui/productCard';
 import { Button, CategoryTag } from '../../ui/Button';
-import { MoreHorizontal, Star, MapPin, ShoppingBag } from 'lucide-react';
+import { MoreHorizontal, Star, MapPin, ShoppingBag, AlertCircle } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { NotFound } from '../global/Notfound';
 import { Pagination } from '../global/Pagination';
@@ -11,13 +11,14 @@ import { ReviewList } from './ReviewList';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { useGetServicesByProvider, useDeleteServices } from '../../hooks/useServices';
 import { useGetProviderByid } from '../../hooks/useProvider';
+import { Loading } from '../global/Loading';
 
 
 export function ServiceProvider({ mode, dataConsult }) {
     const navigate = useNavigate();
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
-    const { openContact, openFeedback, openConfirm, setConfirmConfig, closeModal2, setIsLoading, setDataContact } = useOutletContext();
+    const { openContact, openFeedback, openConfirm, setConfirmConfig, closeModal2, setDataContact } = useOutletContext();
     const [rating, setRating] = useState(5);
     const [customerContact, SetcustomerContact] = useState(false);
 
@@ -25,10 +26,10 @@ export function ServiceProvider({ mode, dataConsult }) {
     const { data: userData } = useInfoUserConnected();
     const provider = userData?.data?.provider;
 
-    const { data: providerResponse, isLoading: isLoadingProvider } = useGetProviderByid(dataConsult?.id);
+    const { data: providerResponse, isLoading: isLoadingProvider, isError: isErrorProvider } = useGetProviderByid(dataConsult?.id);
     const providerDetail = providerResponse?.data?.provider;
 
-    const { data: servicesData, refetch: refetchService } = useGetServicesByProvider(provider?.id);
+    const { data: servicesData, isLoading: isLoadingServices, isError: isErrorServices, refetch: refetchService } = useGetServicesByProvider(provider?.id);
 
     // --- LOGIQUE DE REGROUPEMENT DES SERVICES PAR CATÉGORIE (MODE CONSULTATION) ---
     const apiCategories = useMemo(() => {
@@ -105,14 +106,28 @@ export function ServiceProvider({ mode, dataConsult }) {
     }, [isSuccessDeleteService, dataDeleteService, closeModal2, refetchService]);
 
     useEffect(() => {
-        setIsLoading(mode === "consultationCustomers" ? isLoadingProvider : !servicesData);
-    }, [servicesData, isLoadingProvider, mode, setIsLoading]);
-
-    useEffect(() => {
         if (providerDetail?.averageRating) {
             setRating(Math.round(parseFloat(providerDetail.averageRating)));
         }
     }, [providerDetail]);
+
+    const isComponentLoading = mode === "consultationCustomers" ? isLoadingProvider : isLoadingServices;
+    const isComponentError = mode === "consultationCustomers" ? isErrorProvider : isErrorServices;
+
+    if (isComponentLoading) {
+        return <Loading className="h-64" size="small" title="Chargement des services..." />;
+    }
+
+    if (isComponentError) {
+        return (
+            <NotFound
+                Icon={AlertCircle}
+                title="Erreur de chargement"
+                message="Une erreur est survenue lors de la récupération des services."
+                className="bg-gray-100 h-[300px] flex-1"
+            />
+        );
+    }
 
     return (
         <>
@@ -201,7 +216,8 @@ export function ServiceProvider({ mode, dataConsult }) {
             </div>
 
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <ShoppingBag className="text-[#E8524D]" size={20} />
                     {currentCategory?.name || "Sélectionnez une catégorie"}
                 </h2>
                 {mode !== "consultationCustomers" && (
@@ -257,8 +273,8 @@ export function ServiceProvider({ mode, dataConsult }) {
                 ) : (
                     <NotFound
                         Icon={ShoppingBag}
-                        title="Aucun services trouvé"
-                        message="  Aucun service disponible dans cette catégorie."
+                        title="Aucun service trouvé"
+                        message="Aucun service disponible dans cette catégorie."
                         className="bg-gray-100 h-[300px] flex-1"
                     />
                 )}

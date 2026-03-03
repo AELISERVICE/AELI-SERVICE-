@@ -1,29 +1,110 @@
 import React, { useState, useEffect } from 'react' // Ajout de useState
-import { useTheme } from 'next-themes'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Star, Mail, LogOut, Store, Search, MessageSquare, X, ChevronRight, ChevronLeft } from 'lucide-react'
+import { X, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Button } from '../../ui/Button';
 import { useInfoUserConnected } from '../../hooks/useUser';
+import { useLogout } from '../../hooks/useAuth';
+
+const IconBase = ({ className = '', children }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {children}
+  </svg>
+)
+
+const DashboardIcon = ({ className }) => (
+  <IconBase className={className}>
+    <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" opacity="0.22" stroke="none" />
+    <rect x="13" y="3" width="8" height="6" rx="2" />
+    <rect x="13" y="11" width="8" height="10" rx="2" fill="currentColor" opacity="0.16" stroke="none" />
+    <rect x="3" y="13" width="8" height="8" rx="2" />
+  </IconBase>
+)
+
+const SearchIcon = ({ className }) => (
+  <IconBase className={className}>
+    <circle cx="11" cy="11" r="6" fill="currentColor" opacity="0.2" stroke="none" />
+    <circle cx="11" cy="11" r="5" />
+    <path d="M15 15L20 20" />
+  </IconBase>
+)
+
+const StoreIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path d="M4 10L5.6 5.8C5.9 5 6.6 4.5 7.5 4.5H16.5C17.4 4.5 18.1 5 18.4 5.8L20 10" fill="currentColor" opacity="0.2" stroke="none" />
+    <path d="M4 10H20V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V10Z" />
+    <path d="M9 14H15" />
+  </IconBase>
+)
+
+const MailIcon = ({ className }) => (
+  <IconBase className={className}>
+    <rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity="0.16" stroke="none" />
+    <rect x="3" y="5" width="18" height="14" rx="3" />
+    <path d="M4.5 7.5L12 13L19.5 7.5" />
+  </IconBase>
+)
+
+const StarIcon = ({ className }) => (
+  <IconBase className={className}>
+    <path
+      d="M12 3.8L14.5 8.8L20 9.6L16 13.5L17 19.2L12 16.6L7 19.2L8 13.5L4 9.6L9.5 8.8L12 3.8Z"
+      fill="currentColor"
+      opacity="0.2"
+      stroke="none"
+    />
+    <path d="M12 4.2L14.4 9L19.7 9.8L15.8 13.6L16.7 19L12 16.5L7.3 19L8.2 13.6L4.3 9.8L9.6 9L12 4.2Z" />
+  </IconBase>
+)
+
+const LogoutIcon = ({ className }) => (
+  <IconBase className={className}>
+    <rect x="3" y="4" width="9" height="16" rx="2" fill="currentColor" opacity="0.18" stroke="none" />
+    <path d="M10 12H21" />
+    <path d="M17.5 8.5L21 12L17.5 15.5" />
+    <path d="M12 5H6C4.9 5 4 5.9 4 7V17C4 18.1 4.9 19 6 19H12" />
+  </IconBase>
+)
 
 
 export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { data: userData } = useInfoUserConnected();
+  const { mutate: logout, isPending: isLogoutPending } = useLogout();
   const user = userData?.data?.user;
 
   // État pour gérer l'agrandissement sur ordinateur
   const [isCollapsed, setIsCollapsed] = useState(true)
 
   const navLinks = [
-    { icon: LayoutDashboard, path: '/home', label: 'Accueil' },
-    { icon: Search, path: '/search', label: 'Recherche' },
-    user?.role === "provider" && { icon: Store, path: '/provider', label: 'Prestataires' },
+    { icon: DashboardIcon, path: '/home', label: 'Accueil' },
+    { icon: SearchIcon, path: '/search', label: 'Recherche' },
+    user?.role === "provider" && { icon: StoreIcon, path: '/provider', label: 'Prestataires' },
   ].filter(Boolean);
 
   useEffect(() => {
     isOpenSidebar(isCollapsed)
   }, [isCollapsed])
+
+  const handleLogout = () => {
+    logout(undefined, {
+      onSettled: () => {
+        localStorage.clear();
+        onClose();
+        closeModal();
+        navigate('/login');
+      },
+    });
+  };
 
   return (
     <>
@@ -85,7 +166,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
                   ${isActive ? 'bg-purple-50 text-[#E8524D] shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}
                 `}
               >
-                <link.icon className="w-5 h-5 flex-shrink-0" />
+                <link.icon className="w-6 h-6 flex-shrink-0" />
                 <span className={`text-sm font-semibold truncate ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
                   {link.label}
                 </span>
@@ -101,9 +182,8 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
 
           {/* Boutons Modales */}
           {[
-            { icon: Mail, label: 'Messages', onClick: onOpenMessage, id: MODALS.MESSAGE },
-            // { icon: MessageSquare, label: 'Avis', onClick: onOpenReview, id: MODALS.REVIEW },
-            { icon: Star, label: 'Favoris', onClick: onOpenFavorite, id: MODALS.FAVORITE }
+            { icon: MailIcon, label: 'Messages', onClick: onOpenMessage, id: MODALS.MESSAGE },
+            { icon: StarIcon, label: 'Favoris', onClick: onOpenFavorite, id: MODALS.FAVORITE }
           ].map((item, idx) => (
             <button
               key={idx}
@@ -114,7 +194,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
                 ${activeModal === item.id ? 'bg-purple-50 text-[#E8524D] shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}
               `}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
+              <item.icon className="w-6 h-6 flex-shrink-0" />
               <span className={`text-sm font-semibold truncate ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
                 {item.label}
               </span>
@@ -125,14 +205,16 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
         {/* Footer */}
         <div className="flex flex-col gap-6 w-full px-4 mt-auto">
           <div className="w-full h-px bg-gray-100" />
-          <button onClick={() => navigate('/login')} className={`p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-4 ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}`}>
-            <LogOut className="w-5 h-5 flex-shrink-0" />
+          <button
+            disabled={isLogoutPending}
+            onClick={handleLogout}
+            className={`p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-4 disabled:opacity-50 disabled:cursor-not-allowed ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}`}
+          >
+            <LogoutIcon className="w-6 h-6 flex-shrink-0" />
             <span className={`text-sm font-semibold truncate ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
-              Déconnexion
+              {isLogoutPending ? 'Déconnexion...' : 'Déconnexion'}
             </span>
           </button>
-
-
         </div>
       </aside>
     </>

@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
-import { Star } from 'lucide-react';
+import { Star, Loader2, AlertCircle } from 'lucide-react';
 import { ModalCard } from '../../ui/ModalCard';
 import { FavoriteCard } from '../../ui/FavoriteCard';
 import { CountItems } from '../global/CountItems';
+import { Loading } from '../global/Loading';
 import { NotFound } from '../global/Notfound';
 import { Button } from '../../ui/Button';
 import { useGetFavorites, useDeleteFavorites } from '../../hooks/useFavorites';
@@ -14,7 +15,7 @@ export function FavoriteList({ closeFavorite }) {
     const navigate = useNavigate();
 
     // 1. Récupération des données réelles
-    const { data: dataFavorite } = useGetFavorites();
+    const { data: dataFavorite, isLoading, isError } = useGetFavorites();
     const { mutate: deleteFavorite, isPending: isPendinDeleteFavorite, isSuccess: isSuccessDeleteFavorite, isError: isErrorDeleteFavorite, data: dataDeleteFavorite, error: errorDeleteFavorite } = useDeleteFavorites();
     const favorites = dataFavorite?.data?.favorites || [];
 
@@ -42,76 +43,94 @@ export function FavoriteList({ closeFavorite }) {
 
     return (
         <ModalCard
-            title="Favoris"
+            title={
+                <div className="flex items-center gap-2">
+                    <Star className="text-yellow-500" size={20} />
+                    Favoris
+                </div>
+            }
             closeModal={closeFavorite}
         >
-            {/* On passe la longueur dynamique au compteur */}
-            <CountItems count={favorites.length} scrollContainerRef={scrollRef} />
+            {isLoading ? (
+                <Loading className="h-64" size="small" title="Chargement de vos favoris..." />
+            ) : isError ? (
+                <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Une erreur est survenue lors de la récupération de vos favoris."
+                    className="bg-none h-[300px] border-none"
+                />
+            ) : (
+                <>
+                    {/* On passe la longueur dynamique au compteur */}
+                    <CountItems count={favorites.length} scrollContainerRef={scrollRef} />
 
-            <div
-                ref={scrollRef}
-                className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-5 md:pb-10 custom-scrollbar no-scrollbar"
-            >
-                {favorites.length > 0 ? (
-                    favorites.map((fav) => {
-                        // On extrait le prestataire pour plus de clarté
-                        const provider = fav.provider;
+                    <div
+                        ref={scrollRef}
+                        className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-5 md:pb-10 custom-scrollbar no-scrollbar"
+                    >
+                        {favorites.length > 0 ? (
+                            favorites.map((fav) => {
+                                // On extrait le prestataire pour plus de clarté
+                                const provider = fav.provider;
 
-                        return (
-                            <div key={fav.id} className="flex-shrink-0">
-                                <FavoriteCard
-                                    // Mapping des données de l'API vers les props de FavoriteCard
-                                    name={provider.businessName}
-                                    image={provider.photos?.[0] || 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000'}
-                                    rating={provider.averageRating}
-                                    description={provider.description}
-                                    location={provider.location}
-                                    dateAdded={new Date(fav.createdAt).toLocaleDateString('fr-FR', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                    })}
-                                    activities={provider.activities}
-                                    actions={[
-                                        <button
-                                            key="heart-btn"
-                                            onClick={() => handleRemoveFavorite(provider.id)}
-                                            disabled={isPendinDeleteFavorite}
-                                            className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
-                                            aria-label="Remove from favorites"
-                                        >
-                                            {/* Si on veut être précis, on pourrait gérer un loader par item, 
+                                return (
+                                    <div key={fav.id} className="flex-shrink-0">
+                                        <FavoriteCard
+                                            // Mapping des données de l'API vers les props de FavoriteCard
+                                            name={provider.businessName}
+                                            image={provider.photos?.[0] || 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=1000'}
+                                            rating={provider.averageRating}
+                                            description={provider.description}
+                                            location={provider.location}
+                                            dateAdded={new Date(fav.createdAt).toLocaleDateString('fr-FR', {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric'
+                                            })}
+                                            activities={provider.activities}
+                                            actions={[
+                                                <button
+                                                    key="heart-btn"
+                                                    onClick={() => handleRemoveFavorite(provider.id)}
+                                                    disabled={isPendinDeleteFavorite}
+                                                    className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                                    aria-label="Remove from favorites"
+                                                >
+                                                    {/* Si on veut être précis, on pourrait gérer un loader par item, 
                                             mais ici on change juste l'icône pendant la suppression globale */}
-                                            <Star className="w-4 h-4 text-yellow-500 fill-current hover:scale-110 transition-transform" />
-                                        </button>,
-                                        <Button
-                                            key="consult-btn"
-                                            variant="softRed"
-                                            size="sm"
-                                            onClick={() => {
-                                                navigate('/consult-provider', {
-                                                    state: { mode: "consultationCustomers", data: provider }
-                                                });
-                                                closeFavorite();
-                                            }}
-                                            className="rounded-xl px-5"
-                                        >
-                                            Consulter
-                                        </Button>
-                                    ]}
-                                />
-                            </div>
-                        );
-                    })
-                ) : (
-                    <NotFound
-                        Icon={Star}
-                        title="Aucun favorie trouvé"
-                        message="  Vous n'avez pas encore de favoris."
-                        className="bg-none h-[300px] border-none"
-                    />
-                )}
-            </div>
+                                                    <Star className="w-4 h-4 text-yellow-500 fill-current hover:scale-110 transition-transform" />
+                                                </button>,
+                                                <Button
+                                                    key="consult-btn"
+                                                    variant="softRed"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        navigate('/consult-provider', {
+                                                            state: { mode: "consultationCustomers", data: provider }
+                                                        });
+                                                        closeFavorite();
+                                                    }}
+                                                    className="rounded-xl px-5"
+                                                >
+                                                    Consulter
+                                                </Button>
+                                            ]}
+                                        />
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <NotFound
+                                Icon={Star}
+                                title="Aucun favorie trouvé"
+                                message="  Vous n'avez pas encore de favoris."
+                                className="bg-none h-[300px] border-none"
+                            />
+                        )}
+                    </div>
+                </>
+            )}
         </ModalCard>
     );
 }

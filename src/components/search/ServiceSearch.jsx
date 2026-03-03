@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { ProductCard } from '../../ui/productCard';
 import { Pagination } from '../global/Pagination';
+import { NotFound } from '../global/Notfound';
 import { Button } from '../../ui/Button';
 
 export function ServiceSearch({ providers }) {
@@ -16,9 +17,12 @@ export function ServiceSearch({ providers }) {
 
     if (!providers || providers.length === 0) {
         return (
-            <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200">
-                <p className="text-gray-500 font-medium">Aucun prestataire ne correspond à vos critères de recherche.</p>
-            </div>
+            <NotFound
+                Icon={Search}
+                title="Aucun prestataire trouvé"
+                message="Aucun prestataire ne correspond à vos critères de recherche."
+                className="bg-gray-100 h-[300px] flex-1"
+            />
         );
     }
 
@@ -36,9 +40,9 @@ export function ServiceSearch({ providers }) {
                         rating={item.averageRating || 0}
                         // On prend la première photo de l'array 'photos' ou le profil, sinon le placeholder
                         image={
-                            (item.photos && item.photos.length > 0) 
-                            ? item.photos[0] 
-                            : (item.profilePhoto || 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000')
+                            (item.photos && item.photos.length > 0)
+                                ? item.photos[0]
+                                : (item.profilePhoto || 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000')
                         }
                         isStructure={true}
                         onContact={() => openContact(item)}
@@ -48,8 +52,8 @@ export function ServiceSearch({ providers }) {
                                 key="btn-consult"
                                 variant="gradient"
                                 size="md"
-                                onClick={() => navigate('/consult-provider', { 
-                                    state: { mode: "consultationCustomers", data: item } 
+                                onClick={() => navigate('/consult-provider', {
+                                    state: { mode: "consultationCustomers", data: item }
                                 })}
                                 className="rounded-full px-6 flex items-center justify-center"
                             >
@@ -62,7 +66,7 @@ export function ServiceSearch({ providers }) {
                     />
                 ))}
             </div>
-            
+
             {/* Pagination à lier avec ton état de page si nécessaire */}
             <div className="mt-8">
                 <Pagination />

@@ -4,7 +4,9 @@ import { ServiceSearch } from '../components/search/ServiceSearch';
 import { MapSearch } from '../components/search/MapSearch';
 import { Button } from '../ui/Button';
 import { useGetProviderList } from '../hooks/useProvider';
-import { Loader2 } from 'lucide-react';
+import { Loading } from '../components/global/Loading';
+import { NotFound } from '../components/global/Notfound';
+import { Search, Loader2, AlertCircle } from 'lucide-react';
 
 export function SearchScreen() {
     const [activeTab, setActiveTab] = useState('service');
@@ -25,7 +27,10 @@ export function SearchScreen() {
         <div className="w-full">
             <div className="md:px-2 mt-22 md:mt-16">
                 <div className="mb-8 flex flex-row justify-between items-center">
-                    <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Recherche</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
+                        <Search className="text-[#E8524D]" size={32} />
+                        Recherche
+                    </h2>
 
                     {/* Switch Tabs */}
                     <div className="flex rounded-2xl bg-gray-100 p-1 gap-1">
@@ -48,13 +53,21 @@ export function SearchScreen() {
 
                 {/* Gestion des états de chargement / erreur */}
                 {isLoading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="animate-spin text-red-500 w-10 h-10" />
-                    </div>
+                    <Loading className="py-20" title="Chargement des prestataires..."/>
                 ) : isError ? (
-                    <div className="text-center py-10 text-red-500">
-                        Une erreur est survenue lors de la récupération des prestataires.
-                    </div>
+                    <NotFound
+                        Icon={AlertCircle}
+                        title="Erreur de chargement"
+                        message="Une erreur est survenue lors de la récupération des prestataires."
+                        className="bg-gray-100 h-[300px] flex-1"
+                    />
+                ) : providers.length === 0 ? (
+                    <NotFound
+                        Icon={Search}
+                        title="Aucun prestataire trouvé"
+                        message="Aucun prestataire ne correspond à vos critères de recherche."
+                        className="bg-gray-100 h-[300px] flex-1"
+                    />
                 ) : (
                     <>
                         {/* Affichage conditionnel selon l'onglet actif */}

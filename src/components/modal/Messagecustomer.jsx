@@ -2,15 +2,17 @@ import React, { useRef, useMemo } from 'react';
 import { ModalCard } from '../../ui/ModalCard';
 import { Button } from '../../ui/Button';
 import { CountItems } from '../global/CountItems';
+import { Loading } from '../global/Loading';
+import { NotFound } from '../global/Notfound';
 import { MessageCard } from '../../ui/MessageCustomerCard';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, MessageSquare, Loader2, Send, AlertCircle } from 'lucide-react';
 import { useGetContactSend } from '../../hooks/useContact';
 
 export function Messagecustomer({ closeMessage, onConfirmation }) {
     const scrollRef = useRef(null);
 
     // 1. Récupération des données réelles
-    const { data: contactResponse, isLoading } = useGetContactSend();
+    const { data: contactResponse, isLoading, isError } = useGetContactSend();
 
     // 2. Extraction et formatage des données
     const contactsList = useMemo(() => {
@@ -39,15 +41,24 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
 
     return (
         <ModalCard
-            title="Messages envoyés"
+            title={
+                <div className="flex items-center gap-2">
+                    <Send className="text-[#E8524D]" size={20} />
+                    Messages envoyés
+                </div>
+            }
             closeModal={closeMessage}
             isWide={true}
         >
             {isLoading ? (
-                <div className="flex flex-col items-center justify-center h-64 gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-                    <p className="text-sm text-gray-500">Chargement de vos messages...</p>
-                </div>
+                <Loading className="h-64" size="small" title="Chargement de vos messages..." />
+            ) : isError ? (
+                <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Une erreur est survenue lors de la récupération de vos messages."
+                    className="h-40"
+                />
             ) : (
                 <>
                     <CountItems count={totalItems} scrollContainerRef={scrollRef} />
@@ -61,23 +72,26 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
                                 <div key={msg.id} data-index={index} className="flex-shrink-0">
                                     <MessageCard
                                         {...msg}
-                                        // actions={
-                                        //     <Button
-                                        //         variant="secondary"
-                                        //         className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
-                                        //         onClick={() => onConfirmation(msg.id)}
-                                        //         aria-label="Supprimer"
-                                        //     >
-                                        //         <Trash2 className="w-4 h-4" />
-                                        //     </Button>
-                                        // }
+                                    // actions={
+                                    //     <Button
+                                    //         variant="secondary"
+                                    //         className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
+                                    //         onClick={() => onConfirmation(msg.id)}
+                                    //         aria-label="Supprimer"
+                                    //     >
+                                    //         <Trash2 className="w-4 h-4" />
+                                    //     </Button>
+                                    // }
                                     />
                                 </div>
                             ))
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-40 text-gray-500 italic">
-                                Aucun message envoyé pour le moment.
-                            </div>
+                            <NotFound
+                                Icon={MessageSquare}
+                                title="Aucun message envoyé"
+                                message="Vous n'avez pas encore envoyé de messages."
+                                className="h-40"
+                            />
                         )}
                     </div>
                 </>

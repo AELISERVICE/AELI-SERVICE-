@@ -1,98 +1,80 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ShoppingBag } from 'lucide-react'
 import { Button } from '../../ui/Button'
-import { RecommendationCard } from '../../ui/RecommendationCard'
-
-const DATA = [
-    {
-        id: 1,
-        name: 'ONLINE SHOP',
-        image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000',
-        description: '5,000 years ago, Black Adam was empowered by the Egyptian gods...',
-        location: 'Yaounde, Nkolbisson',
-        rating: 4.2,
-        activities: ["activites3"]
-    },
-    {
-        id: 2,
-        name: 'SUMMER TRENDS',
-        image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1000',
-        description: 'Explore the latest fashion trends for the upcoming summer season.',
-        location: 'Yaounde, Melen',
-        rating: 3.0,
-        activities: ["Ménage", "Plomberie", "Électricité", "Imobilier", "Import/export"]
-    },
-    {
-        id: 3,
-        name: 'TECH DEALS',
-        image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1000',
-        description: 'Get the best discounts on high-end technology and gadgets.',
-        location: 'Douala,Bepanda',
-        rating: 4.5,
-        activities: ["Mécanique", "Cours d'appui"]
-    },
-    {
-        id: 4,
-        name: 'NEW LOOK',
-        image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000',
-        description: 'Discover our new collection for 2026.',
-        location: 'Douala, deido',
-        rating: 2.5,
-        activities: ["Ménage"]
-    },
-]
+import { RecommendationCard } from '../../ui/RecommendationCard';
+import { useGetProviderList } from '../../hooks/useProvider';
+import { Loading } from '../global/Loading';
 
 export function RecommendationSection() {
     const navigate = useNavigate()
     const [activeIndex, setActiveIndex] = useState(0)
-    const [rating, setRating] = useState(5);
     const scrollRef = useRef(null)
 
-    // 1. Gérer l'intervalle automatique
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setActiveIndex((prev) => (prev + 1) % DATA.length)
-        }, 5000)
-        return () => clearInterval(interval)
-    }, [])
+    // 1. Récupération des données réelles
+    const { data: providersResponse, isLoading } = useGetProviderList({
+        limit: 50 // On prend une large limite pour filtrer côté client si besoin
+    });
 
-    // 2. SCROLL AUTOMATIQUE : Cette partie déplace le scroll quand activeIndex change
+    const allProviders = providersResponse?.data?.data?.providers || providersResponse?.data?.providers || [];
+    const featuredProviders = allProviders.filter(provider => provider.isFeatured === true);
+
+    // 3. Intervalle automatique (uniquement s'il y a des données)
     useEffect(() => {
-        if (scrollRef.current) {
+        if (featuredProviders.length > 0) {
+            const interval = setInterval(() => {
+                setActiveIndex((prev) => (prev + 1) % featuredProviders.length)
+            }, 5000)
+            return () => clearInterval(interval)
+        }
+    }, [featuredProviders.length])
+
+    // 4. Scroll automatique vers la carte active
+    useEffect(() => {
+        if (scrollRef.current && featuredProviders.length > 0) {
             const container = scrollRef.current
             const activeItem = container.children[activeIndex]
 
             if (activeItem) {
-                // On calcule la position pour centrer la carte active
                 const scrollLeft = activeItem.offsetLeft - (container.offsetWidth / 2) + (activeItem.offsetWidth / 2)
-
                 container.scrollTo({
                     left: scrollLeft,
                     behavior: 'smooth'
                 })
             }
         }
-    }, [activeIndex])
+    }, [activeIndex, featuredProviders.length])
+
+    if (isLoading) return (
+        <Loading className="py-10" size="small" title="Chargement des recommandations..." />
+    );
+
+    if (featuredProviders.length === 0) return null; // Cache la section s'il n'y a rien à recommander
 
     return (
-        <div >
+        <div>
+            <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2 mb-8">
+                <ShoppingBag className="text-[#E8524D]" size={32} />
+                Recommandations
+            </h2>
             <div
                 ref={scrollRef}
                 className="flex items-center gap-4 overflow-x-auto pb-10 no-scrollbar scroll-smooth"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-                {DATA.map((item, index) => (
+                {featuredProviders.map((item, index) => (
                     <RecommendationCard
                         key={item.id}
-                        title={item.name}
-                        image={item.image}
+                        title={item.businessName}
+                        // Utilise la première photo de l'array ou un placeholder
+                        image={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000'}
                         description={item.description}
-                        location={item.location}
-                        rating={item.rating}
+                        location={item.location.split(',')[0]} // Ville simplifiée
+                        rating={parseFloat(item.averageRating)}
                         isActive={index === activeIndex}
                         actions={[
                             <Button
+                                key="btn-consult"
                                 variant={index === activeIndex ? 'gradient' : 'ghost'}
                                 size={index === activeIndex ? 'lg' : 'sm'}
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
@@ -106,13 +88,14 @@ export function RecommendationSection() {
                 ))}
             </div>
 
-            {/* Pagination Dots */}
+            {/* Pagination Dots dynamiques */}
             <div className="flex gap-4 justify-center">
-                {DATA.map((_, index) => (
+                {featuredProviders.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => setActiveIndex(index)}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${index === activeIndex ? 'w-12 bg-purple-600' : 'w-4 bg-gray-300'}`}
+                        className={`h-1.5 rounded-full transition-all duration-500 ${index === activeIndex ? 'w-12 bg-[#E8524D]' : 'w-4 bg-gray-300'
+                            }`}
                     />
                 ))}
             </div>

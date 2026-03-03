@@ -33,6 +33,18 @@ export const useLogin = () => {
     });
 };
 
+// logout
+export const useLogout = () => {
+    return useMutation({
+        mutationKey: ["useLogout"],
+        mutationFn: () => {
+            const refreshToken = localStorage.getItem("refreshToken");
+            const payload = refreshToken ? { refreshToken } : null;
+            return request("/api/auth/logout", "POST", payload);
+        },
+    });
+};
+
 // forgot password
 export const useForgotPassword = () => {
     return useMutation({
@@ -41,10 +53,3 @@ export const useForgotPassword = () => {
     });
 };
 
-// logout
-export const useLogout = () => {
-    return useMutation({
-        mutationKey: ["useLogout"],
-        mutationFn: (formData) => request("/api/auth/logout", "POST", formData),
-    });
-};

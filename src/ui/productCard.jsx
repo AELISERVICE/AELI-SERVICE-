@@ -64,12 +64,12 @@ export function ProductCard({
             </>
           }
 
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between mt-4  pt-3">
+            <div className="flex items-center justify-center gap-2 bg-white/15 border border-white/25 rounded-full px-1 text-center py-1.5">
               <Heart
-                className={`cursor-pointer transition-all duration-300 ${isFavorite
-                  ? "fill-red-500 text-red-500 scale-110"
-                  : "fill-white text-white hover:scale-110"
+                className={`cursor-pointer transition-all duration-300 ml-[7px] ${isFavorite
+                  ? "fill-rose-500 text-rose-500 scale-110 drop-shadow-[0_0_8px_rgba(244,63,94,0.9)]"
+                  : "fill-white text-white hover:scale-110 hover:text-rose-200"
                   }`}
                 size={16}
                 onClick={(e) => {
@@ -77,9 +77,8 @@ export function ProductCard({
                   onFavorite();
                 }}
               />
-              <span className="text-sm font-medium">{likes}</span>
+              <span className="text-sm font-semibold text-white">{likes}</span>
             </div>
-
             {actions && actions[0]}
             {actions && actions[1]}
           </div>

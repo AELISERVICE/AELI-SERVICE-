@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { Badge } from '../../ui/Badge';
 import { Mail, CheckCircle2, Save, X } from 'lucide-react';
+import { Loading } from '../global/Loading';
 import { useInfoUserConnected, useUpdateProfile } from '../../hooks/useUser';
 
 
 export function ProfileSection({ setIsRole }) {
     const navigate = useNavigate();
-    const { setIsLoading } = useOutletContext();
     const [isEditing, setIsEditing] = useState(false);
-    const { data: userData } = useInfoUserConnected();
+    const { data: userData, isLoading: isLoadingUser } = useInfoUserConnected();
     const user = userData?.data?.user;
     const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProfile();
 
@@ -24,10 +24,6 @@ export function ProfileSection({ setIsRole }) {
         phone: "",
         profilePhoto: null
     });
-
-    useEffect(() => {
-        setIsLoading(!userData);
-    }, [userData, setIsLoading]);
 
     useEffect(() => {
         if (user) {
@@ -85,6 +81,10 @@ export function ProfileSection({ setIsRole }) {
         }
 
     }, [isSuccessUpdate, isErrorUpdate, dataUpdate, errorUpdate]);
+
+    if (isLoadingUser) {
+        return <Loading className="h-64" size="small" title="Chargement du profil..." />;
+    }
 
     return (
         <div className="space-y-6">
@@ -231,19 +231,6 @@ export function ProfileSection({ setIsRole }) {
                         </Badge>
                     </div>
                 </div>
-                {user?.role !== "provider" && (
-                    <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
-
-                        <Button
-                            onClick={() => navigate("/become-service-provider")}
-                            variant="gradient"
-                            className="py-3 w-full sm:w-auto"
-                        >
-                            Devenir prestataire
-                        </Button>
-
-                    </div>
-                )}
             </Card>
         </div>
     );

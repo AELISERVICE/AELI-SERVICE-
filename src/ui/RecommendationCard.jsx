@@ -34,7 +34,7 @@ export function RecommendationCard({ title, description, location, rating, isAct
                     <h3 className={`font-bold text-white mb-2 ${isActive ? 'text-3xl' : 'text-xl'}`}>
                         {title}
                     </h3>
-                    <p className={`text-gray-200 text-sm leading-relaxed transition-all duration-500 ${isActive ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                    <p className={`text-gray-200 text-sm line-clamp-2 leading-relaxed  transition-all duration-500 ${isActive ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                         {description}
                     </p>
                     <div className={`flex ${isActive ? 'opacity-100' : 'opacity-0 overflow-hidden'}`}>
