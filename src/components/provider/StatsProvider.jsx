@@ -6,7 +6,7 @@ import { Button } from '../../ui/Button';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Loading } from '../global/Loading';
 import { NotFound } from '../global/Notfound';
-import { useGetStatDaily } from '../../hooks/useContact';
+import { useGetStatDaily, useGetReceivedContact } from '../../hooks/useContact';
 
 const data = [
   { name: '1-10', value: 65 },
@@ -16,25 +16,6 @@ const data = [
   { name: '11-20', value: 55 },
 ]
 
-const contacts = [
-  {
-    name: 'Ava Chen',
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop',
-  },
-  {
-    name: 'Zaila Karim',
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop',
-  },
-  {
-    name: 'Izzy Toledo',
-    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop',
-  },
-  {
-    name: 'Christine Rob',
-    img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop',
-  },
-]
-
 /**
  * UI component responsible for rendering stats provider.
  */
@@ -42,6 +23,11 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   const { openMessaging } = useOutletContext()
 
   const { data: statsResponse, isLoading, isError } = useGetStatDaily();
+  const {
+    data: receivedContactsResponse,
+    isLoading: isLoadingReceivedContacts,
+    isError: isErrorReceivedContacts,
+  } = useGetReceivedContact();
 
   const dailyStats = statsResponse?.data?.dailyStats || [];
   const totalContacts = statsResponse?.data?.totalContacts || 0;
@@ -56,6 +42,35 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
       value: parseInt(item.count, 10)
     }));
   }, [dailyStats]);
+
+  const latestContacts = useMemo(() => {
+    const rawContacts = receivedContactsResponse?.data?.contacts || [];
+    if (!rawContacts.length) return [];
+
+    const sortedContacts = [...rawContacts].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    const uniqueBySender = new Map();
+
+    sortedContacts.forEach((contact) => {
+      const key = contact.senderEmail || contact.sender?.id || contact.id;
+
+      if (!uniqueBySender.has(key)) {
+        uniqueBySender.set(key, {
+          id: key,
+          name:
+            `${contact.sender?.firstName || ''} ${contact.sender?.lastName || ''}`.trim() ||
+            contact.senderName ||
+            contact.senderEmail ||
+            'Utilisateur',
+          img: contact.sender?.profilePhoto || `https://ui-avatars.com/api/?name=${contact.sender?.firstName} ${contact.sender?.lastName}&background=random`,
+        });
+      }
+    });
+
+    return Array.from(uniqueBySender.values()).slice(0, 5);
+  }, [receivedContactsResponse]);
 
   return (
     <div className={`
@@ -149,25 +164,43 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                 Dernière personnes contactées
               </h3>
               <div className="flex flex-col gap-4">
-                {contacts.map((contact, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={contact.img}
-                        alt={contact.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <span className="font-medium text-sm text-gray-700">
-                        {contact.name}
-                      </span>
+                {isLoadingReceivedContacts ? (
+                  <Loading size="small" title="Chargement des contacts..." className="h-24" />
+                ) : isErrorReceivedContacts ? (
+                  <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Impossible de récupérer les derniers contacts."
+                    className="h-24 border-none py-2"
+                  />
+                ) : latestContacts.length === 0 ? (
+                  <NotFound
+                    Icon={Users}
+                    title="Aucun contact"
+                    message="Vous n'avez encore reçu aucun contact."
+                    className="h-24 border-none py-2"
+                  />
+                ) : (
+                  latestContacts.map((contact) => (
+                    <div key={contact.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={contact.img}
+                          alt={contact.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <span className="font-medium text-sm text-gray-700">
+                          {contact.name}
+                        </span>
+                      </div>
+                      <button
+                        onClick={openMessaging}
+                        className="px-3 py-1 rounded-full border border-purple-200 text-purple-600 text-xs font-medium hover:bg-purple-50 transition-colors">
+                        Consulter
+                      </button>
                     </div>
-                    <button
-                      onClick={openMessaging}
-                      className="px-3 py-1 rounded-full border border-purple-200 text-purple-600 text-xs font-medium hover:bg-purple-50 transition-colors">
-                      Consulter
-                    </button>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
             <div className="mt-auto">
