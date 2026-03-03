@@ -278,7 +278,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                         Icon={ShoppingBag}
                         title="Aucun service trouvé"
                         message="Aucun service disponible dans cette catégorie."
-                        className="bg-gray-100 h-[300px] flex-1"
+                        className="bg-gray-100 h-[300px] flex-1 mb-4"
                     />
                 )}
             </div>

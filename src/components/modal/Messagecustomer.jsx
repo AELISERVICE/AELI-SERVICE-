@@ -81,7 +81,7 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
                                 Icon={MessageSquare}
                                 title="Aucun message envoyé"
                                 message="Vous n'avez pas encore envoyé de messages."
-                                className="h-40"
+                                className="bg-none h-[300px] border-none"
                             />
                         )}
                     </div>
