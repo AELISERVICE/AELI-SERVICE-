@@ -16,7 +16,12 @@ beforeAll(async () => {
         await sequelize.authenticate();
         console.log('✅ Test database connected');
         // Sync schema to update column sizes for encrypted fields
-        await sequelize.sync({ alter: true });
+        try {
+            await sequelize.sync({ alter: true });
+        } catch (alterError) {
+            // ALTER can fail on ENUM columns in PostgreSQL, fallback to basic sync
+            await sequelize.sync();
+        }
     } catch (error) {
         console.error('❌ Test database connection failed:', error.message);
         throw error;

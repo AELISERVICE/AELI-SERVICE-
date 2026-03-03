@@ -13,7 +13,11 @@ describe('Subscription Integration Tests', () => {
     let authToken;
 
     beforeAll(async () => {
-        await sequelize.sync({ alter: true });
+        try {
+            await sequelize.sync({ alter: true });
+        } catch {
+            await sequelize.sync();
+        }
     });
 
     beforeEach(async () => {
