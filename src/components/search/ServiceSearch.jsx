@@ -5,6 +5,7 @@ import { ProductCard } from '../../ui/productCard';
 import { Pagination } from '../global/Pagination';
 import { NotFound } from '../global/Notfound';
 import { Button } from '../../ui/Button';
+import { useAddToFavorites } from '../../hooks/useFavorites';
 
 /**
  * UI component responsible for rendering service search.
@@ -12,12 +13,13 @@ import { Button } from '../../ui/Button';
 export function ServiceSearch({ providers }) {
     const navigate = useNavigate();
     const { openContact, openSidebar } = useOutletContext();
+    const { mutate: addToFavorites, isSuccess: isSuccessAddFavorite, isError: isErrorAddFavorite, data: dataAddFavorite, error: errorAddFavorite } = useAddToFavorites();
 
     /**
      * Handles handle favorite click behavior.
      */
-    const handleFavoriteClick = (id) => {
-        console.log("Ajout au favoris du prestataire ID:", id);
+    const handleFavoriteClick = (providerId) => {
+        addToFavorites({ providerId });
     };
 
     if (!providers || providers.length === 0) {
@@ -41,14 +43,8 @@ export function ServiceSearch({ providers }) {
                         name={item.businessName}
                         description={item.description}
                         location={item.location}
-
                         rating={item.averageRating || 0}
-
-                        image={
-                            (item.photos && item.photos.length > 0)
-                                ? item.photos[0]
-                                : (item.profilePhoto || 'https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1000')
-                        }
+                        image={item.profilePhoto}
                         isStructure={true}
                         onContact={() => openContact(item)}
                         onFavorite={() => handleFavoriteClick(item.id)}
@@ -72,7 +68,7 @@ export function ServiceSearch({ providers }) {
                 ))}
             </div>
 
-            {}
+            { }
             <div className="mt-8">
                 <Pagination />
             </div>
