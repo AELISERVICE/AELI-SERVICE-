@@ -16,7 +16,8 @@ const {
     reviewProviderDocuments,
     getFeaturedProviders,
     deleteUser,
-    toggleProviderStatus
+    toggleProviderStatus,
+    getAllProvidersAdmin
 } = require('../../src/controllers/adminController');
 
 // Mock dependencies
@@ -78,7 +79,8 @@ jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn(),
     getPaginationParams: jest.fn(),
     getPaginationData: jest.fn(),
-    sendEmailSafely: jest.fn()
+    sendEmailSafely: jest.fn(),
+    buildSortOrder: jest.fn().mockReturnValue([['createdAt', 'DESC']])
 }));
 
 jest.mock('../../src/config/email', () => ({
@@ -99,7 +101,7 @@ jest.mock('../../src/config/redis', () => ({
 }));
 
 const { User, Provider, Service, Review, Contact, Payment, ProviderApplication } = require('../../src/models');
-const { i18nResponse, getPaginationParams, getPaginationData, sendEmailSafely } = require('../../src/utils/helpers');
+const { i18nResponse, getPaginationParams, getPaginationData, sendEmailSafely, buildSortOrder } = require('../../src/utils/helpers');
 const { sendEmail } = require('../../src/config/email');
 const { delByPattern } = require('../../src/config/redis');
 
@@ -655,6 +657,136 @@ describe('Admin Controller', () => {
             User.findByPk.mockResolvedValue({ id: 'other-admin', role: 'admin' });
 
             await expect(deleteUser(mockReq, mockRes, mockNext)).rejects.toThrow('admin.cannotDeleteAdmin');
+        });
+    });
+
+    describe('getAllProvidersAdmin', () => {
+        it('should get all providers (active + inactive) with no filters', async () => {
+            mockReq.query = { page: 1, limit: 12 };
+
+            const mockProviders = {
+                count: 3,
+                rows: [
+                    { toJSON: () => ({ id: 'p1', businessName: 'Active Provider', isActive: true, isVerified: true, services: [] }) },
+                    { toJSON: () => ({ id: 'p2', businessName: 'Inactive Provider', isActive: false, isVerified: true, services: [] }) },
+                    { toJSON: () => ({ id: 'p3', businessName: 'Unverified Provider', isActive: true, isVerified: false, services: [] }) }
+                ]
+            };
+
+            Provider.findAndCountAll.mockResolvedValue(mockProviders);
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            // Should NOT force isActive or isVerified in where clause
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            expect(callArgs.where).not.toHaveProperty('isActive');
+            expect(callArgs.where).not.toHaveProperty('isVerified');
+            expect(i18nResponse).toHaveBeenCalledWith(mockReq, mockRes, 200, 'provider.list', expect.objectContaining({
+                providers: expect.any(Array),
+                pagination: expect.any(Object)
+            }));
+        });
+
+        it('should filter by isActive=false when specified', async () => {
+            mockReq.query = { page: 1, limit: 12, isActive: 'false' };
+
+            Provider.findAndCountAll.mockResolvedValue({ count: 1, rows: [
+                { toJSON: () => ({ id: 'p2', businessName: 'Inactive', isActive: false, services: [] }) }
+            ]});
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            expect(callArgs.where.isActive).toBe(false);
+        });
+
+        it('should filter by isVerified=true when specified', async () => {
+            mockReq.query = { page: 1, limit: 12, isVerified: 'true' };
+
+            Provider.findAndCountAll.mockResolvedValue({ count: 1, rows: [
+                { toJSON: () => ({ id: 'p1', businessName: 'Verified', isVerified: true, services: [] }) }
+            ]});
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            expect(callArgs.where.isVerified).toBe(true);
+        });
+
+        it('should support search filter', async () => {
+            mockReq.query = { page: 1, limit: 12, search: 'salon' };
+
+            Provider.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            const symbols = Object.getOwnPropertySymbols(callArgs.where);
+            expect(symbols.some(s => s.toString() === 'Symbol(or)')).toBe(true);
+        });
+
+        it('should support location filter', async () => {
+            mockReq.query = { page: 1, limit: 12, location: 'Douala' };
+
+            Provider.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            expect(callArgs.where.location).toBeDefined();
+        });
+
+        it('should extract unique categories from services', async () => {
+            mockReq.query = { page: 1, limit: 12 };
+
+            const mockProviders = {
+                count: 1,
+                rows: [{
+                    toJSON: () => ({
+                        id: 'p1',
+                        businessName: 'Provider',
+                        services: [
+                            { category: { id: 'cat1', name: 'Coiffure', slug: 'coiffure', icon: '✂️' } },
+                            { category: { id: 'cat1', name: 'Coiffure', slug: 'coiffure', icon: '✂️' } },
+                            { category: { id: 'cat2', name: 'Maquillage', slug: 'maquillage', icon: '💄' } }
+                        ]
+                    })
+                }]
+            };
+
+            Provider.findAndCountAll.mockResolvedValue(mockProviders);
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            const responseData = i18nResponse.mock.calls[0][4];
+            expect(responseData.providers[0].categories).toHaveLength(2);
+            expect(responseData.providers[0]).not.toHaveProperty('services');
+        });
+
+        it('should include user email in results', async () => {
+            mockReq.query = { page: 1, limit: 12 };
+
+            Provider.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            const userInclude = callArgs.include.find(i => i.as === 'user');
+            expect(userInclude.attributes).toContain('email');
+        });
+
+        it('should use pagination correctly', async () => {
+            mockReq.query = { page: 2, limit: 5 };
+            getPaginationParams.mockReturnValue({ limit: 5, offset: 5 });
+
+            Provider.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
+
+            await getAllProvidersAdmin(mockReq, mockRes, mockNext);
+
+            expect(getPaginationParams).toHaveBeenCalledWith(2, 5);
+            const callArgs = Provider.findAndCountAll.mock.calls[0][0];
+            expect(callArgs.limit).toBe(5);
+            expect(callArgs.offset).toBe(5);
         });
     });
 

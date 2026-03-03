@@ -13,7 +13,8 @@ const {
     getFeaturedProviders,
     reviewProviderDocuments,
     deleteUser,
-    toggleProviderStatus
+    toggleProviderStatus,
+    getAllProvidersAdmin
 } = require('../controllers/adminController');
 const {
     updateUserStatusValidation,
@@ -60,6 +61,7 @@ router.get('/provider-applications/:id', getApplicationDetails);
 router.put('/provider-applications/:id/review', reviewApplication);
 
 // Providers management (existing providers)
+router.get('/providers', getAllProvidersAdmin);
 router.get('/providers/pending', getPendingProviders);
 router.get('/providers/under-review', getProvidersUnderReview);
 router.get('/providers/featured', getFeaturedProviders);

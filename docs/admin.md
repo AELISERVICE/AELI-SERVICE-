@@ -400,6 +400,79 @@ Décision initiale sur une candidature. Cet endpoint transforme le Client en Pre
 
 ## 🏪 4. GESTION DES PRESTATAIRES
 
+### `GET /providers` - Liste complète des prestataires (Admin)
+
+**Description :**  
+Clone admin de la route publique `GET /api/providers`. Retourne **tous** les prestataires (actifs + inactifs, vérifiés + non vérifiés) avec les mêmes filtres, pagination et tri que la route publique.
+
+**Différence avec `GET /api/providers` (public) :**
+| | Public | Admin |
+|--|--------|-------|
+| `isActive` | Forcé à `true` | Tous par défaut, filtrable |
+| `isVerified` | Forcé à `true` | Tous par défaut, filtrable |
+| `user.email` | Non exposé | Inclus |
+
+**Paramètres query :**
+| Param | Type | Description |
+|-------|------|-------------|
+| `page` | int | Page (défaut: 1) |
+| `limit` | int | Résultats par page (défaut: 12) |
+| `search` | string | Recherche sur nom, description, services |
+| `category` | string | Slug de catégorie |
+| `location` | string | Filtre par localisation |
+| `minRating` | float | Note minimum |
+| `minPrice` | float | Prix minimum |
+| `maxPrice` | float | Prix maximum |
+| `sort` | string | Tri : `recent`, `rating`, `price_asc`, `price_desc` |
+| `isActive` | boolean | Filtrer par statut actif/inactif |
+| `isVerified` | boolean | Filtrer par statut vérifié/non vérifié |
+
+**Exemples :**
+```
+GET /api/admin/providers                           → Tous les prestataires
+GET /api/admin/providers?isActive=false             → Seulement les désactivés
+GET /api/admin/providers?isVerified=true&search=sal → Vérifiés contenant "sal"
+```
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "data": {
+    "providers": [
+      {
+        "id": "uuid",
+        "businessName": "Salon Marie Coiffure",
+        "location": "Douala",
+        "isActive": false,
+        "isVerified": true,
+        "averageRating": 4.5,
+        "totalReviews": 12,
+        "min_price": 5000,
+        "user": {
+          "id": "uuid",
+          "firstName": "Marie",
+          "lastName": "Dupont",
+          "profilePhoto": "url",
+          "email": "marie@example.com"
+        },
+        "categories": [
+          { "id": "uuid", "name": "Coiffure", "slug": "coiffure", "icon": "✂️" }
+        ]
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 58,
+      "itemsPerPage": 12
+    }
+  }
+}
+```
+
+---
+
 ### `GET /providers/pending` - Prestataires non vérifiés
 
 **Description :**  

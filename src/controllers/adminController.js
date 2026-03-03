@@ -15,6 +15,7 @@ const {
   getPaginationParams,
   getPaginationData,
   sendEmailSafely,
+  buildSortOrder,
 } = require("../utils/helpers");
 const {
   accountVerifiedEmail,
@@ -946,6 +947,154 @@ const toggleProviderStatus = asyncHandler(async (req, res) => {
   );
 });
 
+/**
+ * @desc    Get all providers for admin (active + inactive, verified + unverified)
+ * @route   GET /api/admin/providers
+ * @access  Private (admin)
+ */
+const getAllProvidersAdmin = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 12,
+    category,
+    location,
+    minRating,
+    minPrice,
+    maxPrice,
+    search,
+    sort = "recent",
+    isActive,
+    isVerified,
+  } = req.query;
+
+  const { limit: queryLimit, offset } = getPaginationParams(page, limit);
+
+  // Build where clause - no isActive/isVerified forced, admin sees everything
+  const where = {};
+
+  // Optional filters for admin
+  if (isActive !== undefined) {
+    where.isActive = isActive === 'true';
+  }
+  if (isVerified !== undefined) {
+    where.isVerified = isVerified === 'true';
+  }
+
+  if (location) {
+    where.location = { [Op.iLike]: `%${location}%` };
+  }
+
+  if (minRating) {
+    where.averageRating = { [Op.gte]: parseFloat(minRating) };
+  }
+
+  if (search) {
+    const searchPattern = `%${search}%`;
+    where[Op.or] = [
+      { businessName: { [Op.iLike]: searchPattern } },
+      { description: { [Op.iLike]: searchPattern } },
+      {
+        id: {
+          [Op.in]: literal(
+            `(SELECT DISTINCT provider_id FROM services WHERE name ILIKE '${searchPattern}' OR description ILIKE '${searchPattern}')`
+          ),
+        },
+      },
+    ];
+  }
+
+  // Price Range Filter
+  if (minPrice || maxPrice) {
+    const minP = parseFloat(minPrice) || 0;
+    const maxP = parseFloat(maxPrice) || 999999999;
+
+    where[Op.and] = where[Op.and] || [];
+    where[Op.and].push({
+      id: {
+        [Op.in]: literal(
+          `(SELECT DISTINCT provider_id FROM services WHERE price >= ${minP} AND price <= ${maxP} AND is_active = true)`
+        ),
+      },
+    });
+  }
+
+  // Build include for category filter
+  const include = [
+    {
+      model: User,
+      as: "user",
+      attributes: ["id", "firstName", "lastName", "profilePhoto", "email"],
+    },
+    {
+      model: Service,
+      as: 'services',
+      attributes: ['id', 'name', 'price'],
+      where: { isActive: true },
+      required: false,
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name', 'slug', 'icon'],
+        }
+      ]
+    },
+  ];
+
+  // If category filter, add where condition
+  if (category) {
+    where[Op.and] = where[Op.and] || [];
+    where[Op.and].push({
+      id: {
+        [Op.in]: literal(
+          `(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`
+        ),
+      },
+    });
+  }
+
+  const { count, rows: providersObj } = await Provider.findAndCountAll({
+    where,
+    include,
+    attributes: {
+      include: [
+        [
+          literal(`(SELECT MIN(price) FROM services WHERE services.provider_id = "Provider".id AND services.is_active = true)`),
+          'min_price'
+        ]
+      ]
+    },
+    order: buildSortOrder(sort),
+    limit: queryLimit,
+    offset,
+    distinct: true,
+  });
+
+  // Format the providers to extract unique categories from services
+  const providers = providersObj.map(provider => {
+    const providerJSON = provider.toJSON();
+
+    // Extract unique categories
+    const categoriesMap = new Map();
+    if (providerJSON.services) {
+      providerJSON.services.forEach(service => {
+        if (service.category && !categoriesMap.has(service.category.id)) {
+          categoriesMap.set(service.category.id, service.category);
+        }
+      });
+    }
+
+    providerJSON.categories = Array.from(categoriesMap.values());
+    delete providerJSON.services;
+
+    return providerJSON;
+  });
+
+  const pagination = getPaginationData(page, queryLimit, count);
+
+  i18nResponse(req, res, 200, "provider.list", { providers, pagination });
+});
+
 module.exports = {
   getStats,
   getPendingProviders,
@@ -960,4 +1109,5 @@ module.exports = {
   reviewProviderDocuments,
   deleteUser,
   toggleProviderStatus,
+  getAllProvidersAdmin,
 };

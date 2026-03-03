@@ -225,6 +225,121 @@ paths:
         '400':
           description: Décision invalide ou motif de rejet manquant
 
+  /admin/providers:
+    get:
+      tags:
+        - Admin
+      summary: Liste complète des prestataires (actifs + inactifs)
+      description: |
+        Clone admin de la route publique `GET /api/providers`.
+        Retourne **tous** les prestataires sans forcer `isActive` ni `isVerified`.
+        Supporte les mêmes filtres, pagination et tri que la route publique,
+        plus des filtres optionnels `isActive` et `isVerified`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 12
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Recherche sur nom, description, services
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Slug de catégorie
+        - in: query
+          name: location
+          schema:
+            type: string
+          description: Filtre par localisation
+        - in: query
+          name: minRating
+          schema:
+            type: number
+          description: Note minimum
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+          description: Prix minimum
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+          description: Prix maximum
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [recent, rating, price_asc, price_desc]
+            default: recent
+        - in: query
+          name: isActive
+          schema:
+            type: boolean
+          description: Filtrer par statut actif/inactif (tous par défaut)
+        - in: query
+          name: isVerified
+          schema:
+            type: boolean
+          description: Filtrer par statut vérifié/non vérifié (tous par défaut)
+      responses:
+        '200':
+          description: Liste paginée des prestataires
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      providers:
+                        type: array
+                        items:
+                          allOf:
+                            - $ref: '#/components/schemas/Provider'
+                            - type: object
+                              properties:
+                                min_price:
+                                  type: number
+                                user:
+                                  type: object
+                                  properties:
+                                    id:
+                                      type: string
+                                      format: uuid
+                                    firstName:
+                                      type: string
+                                    lastName:
+                                      type: string
+                                    profilePhoto:
+                                      type: string
+                                    email:
+                                      type: string
+                                      format: email
+                                categories:
+                                  type: array
+                                  items:
+                                    $ref: '#/components/schemas/Category'
+                      pagination:
+                        $ref: '#/components/schemas/Pagination'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
   /admin/providers/pending:
     get:
       tags:
