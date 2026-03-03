@@ -14,7 +14,7 @@ const Webhook = require('./Webhook');
 const ApiUsage = require('./ApiUsage');
 const Payment = require('./Payment');
 const ProviderStats = require('./ProviderStats');
-const Banner = require('./Banner')(sequelize);
+const Banner = require('./Banner');
 
 // ==================== ASSOCIATIONS ====================
 
