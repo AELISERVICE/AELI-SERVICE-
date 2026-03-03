@@ -2,6 +2,9 @@ import React from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import animationData from '../../assets/Loading.json';
 
+/**
+ * UI component responsible for rendering loading.
+ */
 export function Loading({ className = "", size = "default", title }) {
     const sizeClasses = {
         small: "w-20 h-20",

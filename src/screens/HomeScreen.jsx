@@ -3,11 +3,11 @@ import { ToastContainer } from 'react-toastify';
 import { RecommendationSection } from "../components/home/RecommendationSection";
 import { ServicesSection } from '../components/home/ServicesSection';
 
-
-
+/**
+ * UI component responsible for rendering home screen.
+ */
 export function HomeScreen() {
     const [activeTab, setActiveTab] = useState('service')
-
 
     return (
         <div className="w-full ">

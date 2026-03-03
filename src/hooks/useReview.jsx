@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-
-// get review by provider
+/**
+ * Custom hook that manages get review by provider.
+ */
 export const useGetReviewByProvider = (id) => {
     return useQuery({
         queryKey: ["useGetReviewByProvider", id],
@@ -11,7 +12,9 @@ export const useGetReviewByProvider = (id) => {
     });
 };
 
-// create review
+/**
+ * Custom hook that manages create review.
+ */
 export const useCreateReview = () => {
     return useMutation({
         mutationKey: ["useCreateReview"],
@@ -19,7 +22,9 @@ export const useCreateReview = () => {
     });
 };
 
-// udate review
+/**
+ * Custom hook that manages update review.
+ */
 export const useUpdateReview = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -31,7 +36,9 @@ export const useUpdateReview = () => {
     });
 };
 
-// delete review
+/**
+ * Custom hook that manages delete review.
+ */
 export const useDeleteReview = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -42,5 +49,4 @@ export const useDeleteReview = () => {
         },
     });
 };
-
 

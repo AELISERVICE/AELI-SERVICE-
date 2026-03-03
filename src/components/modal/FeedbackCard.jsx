@@ -5,6 +5,9 @@ import { RatingStars } from "../../ui/RatingStars";
 import { Button } from "../../ui/Button";
 import { useCreateReview, useUpdateReview } from '../../hooks/useReview';
 
+/**
+ * UI component responsible for rendering feedback card.
+ */
 export function FeedbackCard({ closeFeedback, providerData }) {
   const [hoverRating, setHoverRating] = useState(0);
   const isEditing = !!providerData?.userId;
@@ -35,18 +38,17 @@ export function FeedbackCard({ closeFeedback, providerData }) {
     comment: ""
   });
 
-  // Initialisation et Correction de la persistence des données
   useEffect(() => {
     if (providerData) {
       if (isEditing) {
-        // Mode ÉDITION : pré-remplissage avec les données existantes
+
         setFormData({
           providerId: providerData.providerId || "",
           rating: providerData.rating || 0,
           comment: providerData.comment || ""
         });
       } else {
-        // Mode CRÉATION : Reset complet des champs pour le nouveau prestataire
+
         setFormData({
           providerId: providerData.id || "",
           rating: 0,
@@ -56,7 +58,6 @@ export function FeedbackCard({ closeFeedback, providerData }) {
     }
   }, [providerData, isEditing]);
 
-  // Logique de feedback centralisée (Ajout + Update)
   useEffect(() => {
     const isSuccess = (isSuccessAddFeedback && dataAddFeedback?.success) || (isSuccessUpdateFeedback && dataUpdateFeedback?.success);
     const isError = isErrorAddFeedback || isErrorUpdateFeedback;
@@ -90,10 +91,13 @@ export function FeedbackCard({ closeFeedback, providerData }) {
     isSuccessUpdateFeedback, isErrorUpdateFeedback, dataUpdateFeedback, errorUpdateFeedback, resetUpdate
   ]);
 
+  /**
+   * Handles handle submit behavior.
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isEditing) {
-      // Pour l'update, on envoie l'ID de la review et les nouvelles datas
+
       mutateUpdateFeedback({
         id: providerData.id,
         formData: {

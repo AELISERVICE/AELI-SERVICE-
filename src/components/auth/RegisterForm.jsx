@@ -7,7 +7,9 @@ import { Button } from '../../ui/Button';
 import { AuthCard } from '../../ui/AuthCard';
 import { useRegister } from '../../hooks/useAuth';
 
-
+/**
+ * UI component responsible for rendering register form.
+ */
 export function RegisterForm() {
   const navigate = useNavigate()
   const { mutate, isPending, isError, error, isSuccess, data } = useRegister();
@@ -29,6 +31,9 @@ export function RegisterForm() {
     !formData.password ||
     !formData.confirmPassword;
 
+  /**
+   * Handles handle change behavior.
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -45,6 +50,9 @@ export function RegisterForm() {
     passwordsMatch: formData.password === formData.confirmPassword && formData.confirmPassword !== ""
   };
 
+  /**
+   * Handles handle submit behavior.
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     mutate(formData)

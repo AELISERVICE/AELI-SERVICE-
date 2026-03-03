@@ -1,5 +1,8 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+/**
+ * UI component responsible for rendering pagination.
+ */
 export function Pagination() {
   return (
     <div className="flex items-center justify-center gap-2 py-8">

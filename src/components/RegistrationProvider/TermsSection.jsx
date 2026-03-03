@@ -2,8 +2,9 @@ import React from 'react'
 import { FileText, Check } from 'lucide-react'
 import { SectionHeader } from '../../ui/SectionHeader'
 
-
-
+/**
+ * UI component responsible for rendering terms section.
+ */
 export function TermsSection({ agreed, onToggle }) {
     return (
         <section>

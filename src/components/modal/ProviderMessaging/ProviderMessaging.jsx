@@ -7,6 +7,9 @@ import { NotFound } from '../../global/Notfound'
 import { MessageSquare, Users, AlertCircle } from 'lucide-react'
 import { useGetReceivedContact } from '../../../hooks/useContact'
 
+/**
+ * UI component responsible for rendering provider messaging.
+ */
 export function ProviderMessaging({ closeMessaging }) {
     const { data: dataRecivedContact, isLoading, isError } = useGetReceivedContact();
     const [selectedId, setSelectedId] = useState(null);

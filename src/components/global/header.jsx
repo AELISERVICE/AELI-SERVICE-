@@ -5,6 +5,9 @@ import { SelectFilter } from './SelectFilter';
 import { Button } from '../../ui/Button';
 import { useInfoUserConnected } from '../../hooks/useUser';
 
+/**
+ * UI component responsible for rendering header.
+ */
 export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -12,21 +15,21 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
   const { data: userData } = useInfoUserConnected();
   const user = userData?.data?.user;
 
-  // États de base
   const [query, setQuery] = useState("")
   const [rating, setRating] = useState('Tout')
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
-  // Vérification de la page actuelle
   const isSearchPage = location.pathname === '/search'
 
-  // Gestion du redimensionnement pour détecter le mode téléphone
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768)
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  /**
+   * Handles handle search change behavior.
+   */
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setQuery(value);
@@ -36,10 +39,16 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
     }
   };
 
+  /**
+   * Handles handle price change behavior.
+   */
   const handlePriceChange = (e) => {
     setFilters(prev => ({ ...prev, maxPrice: e.target.value }));
   };
 
+  /**
+   * Handles handle rating change behavior.
+   */
   const handleRatingChange = (val) => {
     setRating(val);
     const numericRating = val.replace('+', ''); // Transforme "4.0+" en "4.0"

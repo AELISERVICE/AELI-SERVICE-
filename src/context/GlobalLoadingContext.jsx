@@ -2,6 +2,9 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 const GlobalLoadingContext = createContext(null);
 
+/**
+ * UI component responsible for rendering global loading provider.
+ */
 export function GlobalLoadingProvider({ children }) {
     const [loadingByKey, setLoadingByKey] = useState({});
 
@@ -47,6 +50,9 @@ export function GlobalLoadingProvider({ children }) {
     );
 }
 
+/**
+ * Custom hook that manages global loading.
+ */
 export function useGlobalLoading() {
     const context = useContext(GlobalLoadingContext);
 

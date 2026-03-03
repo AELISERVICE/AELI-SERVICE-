@@ -5,7 +5,6 @@ import L from 'leaflet';
 import { Button } from '../../ui/Button';
 import { ArrowRight, MapPin, Navigation, AlertTriangle } from 'lucide-react';
 
-// Icônes personnalisées
 const providerIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -22,7 +21,9 @@ const userIcon = new L.Icon({
     popupAnchor: [1, -34],
 });
 
-// --- COMPOSANT DE GESTION DES ITINÉRAIRES ---
+/**
+ * UI component responsible for rendering route handler.
+ */
 function RouteHandler({ providers, userPos, setRoutes }) {
     const map = useMap();
 
@@ -40,7 +41,7 @@ function RouteHandler({ providers, userPos, setRoutes }) {
             bounds.extend([lat, lng]);
 
             try {
-                // Utilisation de l'API OSRM pour le tracé routier réel
+
                 const url = `https://router.project-osrm.org/route/v1/driving/${userPos.lng},${userPos.lat};${lng},${lat}?overview=full&geometries=geojson`;
                 const response = await fetch(url);
                 const data = await response.json();
@@ -65,13 +66,15 @@ function RouteHandler({ providers, userPos, setRoutes }) {
     return null;
 }
 
+/**
+ * UI component responsible for rendering map search.
+ */
 export function MapSearch({ providers }) {
     const navigate = useNavigate();
     const [userPos, setUserPos] = useState(null);
     const [routes, setRoutes] = useState([]);
     const [geoError, setGeoError] = useState(false);
 
-    // Récupération forcée de la position
     useEffect(() => {
         if (!navigator.geolocation) {
             setGeoError(true);
@@ -88,7 +91,7 @@ export function MapSearch({ providers }) {
             (err) => {
                 console.error("Erreur Géo:", err);
                 setGeoError(true);
-                // Position par défaut (ex: Douala) si échec
+
                 setUserPos({ lat: 4.051, lng: 9.767 });
             },
             options

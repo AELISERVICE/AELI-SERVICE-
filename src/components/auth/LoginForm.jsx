@@ -6,7 +6,9 @@ import { Button } from '../../ui/Button';
 import { AuthCard } from '../../ui/AuthCard';
 import { useLogin } from '../../hooks/useAuth';
 
-
+/**
+ * UI component responsible for rendering login form.
+ */
 export function LoginForm() {
     const navigate = useNavigate()
     const { mutate, isPending, isError, error, isSuccess, data } = useLogin();
@@ -19,6 +21,9 @@ export function LoginForm() {
         !formData.email ||
         !formData.password;
 
+    /**
+     * Handles handle change behavior.
+     */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -27,6 +32,9 @@ export function LoginForm() {
         }));
     };
 
+    /**
+     * Handles handle submit behavior.
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
         mutate(formData)
@@ -53,7 +61,6 @@ export function LoginForm() {
             }
         }
     }, [isSuccess, isError, data, error]);
-
 
     return (
         <AuthCard

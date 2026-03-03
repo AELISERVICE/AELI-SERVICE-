@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-// register
+/**
+ * Custom hook that manages register.
+ */
 export const useRegister = () => {
     return useMutation({
         mutationKey: ["useRegister"],
@@ -9,7 +11,9 @@ export const useRegister = () => {
     });
 };
 
-// otp
+/**
+ * Custom hook that manages otp.
+ */
 export const useOtp = () => {
     return useMutation({
         mutationKey: ["useOtp"],
@@ -17,7 +21,9 @@ export const useOtp = () => {
     });
 };
 
-// resend otp
+/**
+ * Custom hook that manages resend otp.
+ */
 export const useResendOtp = () => {
     return useMutation({
         mutationKey: ["useResendOtp"],
@@ -25,7 +31,9 @@ export const useResendOtp = () => {
     });
 };
 
-// login
+/**
+ * Custom hook that manages login.
+ */
 export const useLogin = () => {
     return useMutation({
         mutationKey: ["useLogin"],
@@ -33,7 +41,9 @@ export const useLogin = () => {
     });
 };
 
-// logout
+/**
+ * Custom hook that manages logout.
+ */
 export const useLogout = () => {
     return useMutation({
         mutationKey: ["useLogout"],
@@ -45,7 +55,9 @@ export const useLogout = () => {
     });
 };
 
-// forgot password
+/**
+ * Custom hook that manages forgot password.
+ */
 export const useForgotPassword = () => {
     return useMutation({
         mutationKey: ["forgot-password"],

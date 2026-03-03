@@ -6,19 +6,18 @@ import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { useGetAbonnementProvider } from '../../hooks/useSouscription';
 
-
+/**
+ * UI component responsible for rendering abonnement.
+ */
 export function Abonnement({ isRole }) {
     const navigate = useNavigate();
     const { data: response } = useGetAbonnementProvider();
 
-    // Mapping exact sur ta structure reçue : response.data.xxx
     const sub = response?.data?.subscription;
     const plans = response?.data?.plans;
 
-    // Récupération des détails du plan actuel depuis l'objet "plans"
     const currentPlanInfo = plans && sub?.plan ? plans[sub.plan] : null;
 
-    // Calcul de la progression basé sur les jours totaux du plan reçus dans "plans"
     const totalDays = currentPlanInfo?.days || 30;
     const progress = sub ? Math.min(100, (sub.daysRemaining / totalDays) * 100) : 0;
 

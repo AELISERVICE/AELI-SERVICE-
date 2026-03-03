@@ -6,13 +6,14 @@ import { Input } from '../../ui/Input';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { useContact } from '../../hooks/useContact';
 
-
+/**
+ * UI component responsible for rendering contact customer.
+ */
 export function ContactCustomer({ closeContact, dataContact }) {
-  // 1. Récupération des infos utilisateur
+
   const { data: userData } = useInfoUserConnected();
   const user = userData?.data?.user;
 
-  // 2. Hook de contact
   const {
     mutate: mutateContact,
     isPending: isPendingContact,
@@ -22,7 +23,6 @@ export function ContactCustomer({ closeContact, dataContact }) {
     error: errorResponse
   } = useContact();
 
-  // 3. État du formulaire
   const [formData, setFormData] = useState({
     providerId: "",
     message: "",
@@ -31,7 +31,6 @@ export function ContactCustomer({ closeContact, dataContact }) {
     senderPhone: ""
   });
 
-  // 4. Remplissage automatique (Prévisualisation)
   useEffect(() => {
     setFormData((prev) => ({
       ...prev,
@@ -42,19 +41,22 @@ export function ContactCustomer({ closeContact, dataContact }) {
     }));
   }, [user, dataContact]);
 
-  // 5. Gestion des changements
+  /**
+   * Handles handle change behavior.
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 6. Soumission du formulaire
+  /**
+   * Handles handle submit behavior.
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     mutateContact(formData);
   };
 
-  // 7. Gestion des retours (Toasts)
   useEffect(() => {
     if (isSuccessContact && dataResponse?.success) {
       toast.success(dataResponse.message);
@@ -96,7 +98,7 @@ export function ContactCustomer({ closeContact, dataContact }) {
           </div>
 
           <form className="p-6 md:p-10 space-y-6" onSubmit={handleSubmit}>
-            {/* Champs pré-remplis (affichés pour modification éventuelle) */}
+            {}
             <div className="hidden  grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="Nom complet"
@@ -173,9 +175,9 @@ export function ContactCustomer({ closeContact, dataContact }) {
           </form>
         </div>
 
-        {/* Contact Options Grid */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* WhatsApp Card */}
+          {}
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="font-bold text-lg text-gray-700 pacifico-regular">WhatsApp</h3>
@@ -192,10 +194,8 @@ export function ContactCustomer({ closeContact, dataContact }) {
                 if (dataContact?.whatsapp) {
                   const cleanNumber = dataContact.whatsapp.replace(/\D/g, '');
 
-                  // Récupération des détails du service sélectionné
                   const s = dataContact?.selectedService;
 
-                  // Construction du message structuré
                   const messageBrut = `
 Salut, je suis intéressé par votre service sur Aeli Service :
 *Service :* ${s?.name || 'Non spécifié'}
@@ -204,7 +204,6 @@ Salut, je suis intéressé par votre service sur Aeli Service :
 
 J'aimerais avoir plus d'informations à ce sujet. Merci !`;
 
-                  // Encodage pour l'URL
                   const messageEncoded = encodeURIComponent(messageBrut);
 
                   window.open(`https://wa.me/${cleanNumber}?text=${messageEncoded}`, '_blank');
@@ -217,8 +216,7 @@ J'aimerais avoir plus d'informations à ce sujet. Merci !`;
             </Button>
           </div>
 
-
-          {/* Direct Call Card */}
+          {}
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="font-bold text-lg text-gray-700 pacifico-regular">Appel direct</h3>
@@ -232,7 +230,7 @@ J'aimerais avoir plus d'informations à ce sujet. Merci !`;
               className={`w-full gap-2 py-3 ${!dataContact?.phone ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={!dataContact?.phone}
               onClick={() => {
-                  // Supprime les espaces ou caractères spéciaux pour le lien tel:
+
                   const cleanPhone = dataContact.phone.replace(/\s/g, '');
                   window.location.href = `tel:${cleanPhone}`;
               }}

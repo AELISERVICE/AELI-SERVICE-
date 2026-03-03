@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 
+/**
+ * UI component responsible for rendering count items.
+ */
 export function CountItems({ count = 0, scrollContainerRef, className, clasNameChild }) {
     const [activeIndex, setActiveIndex] = useState(0)
 
@@ -13,6 +16,9 @@ export function CountItems({ count = 0, scrollContainerRef, className, clasNameC
             rootMargin: '0px'
         }
 
+        /**
+         * Handles observer callback behavior.
+         */
         const observerCallback = (entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -26,7 +32,6 @@ export function CountItems({ count = 0, scrollContainerRef, className, clasNameC
 
         const observer = new IntersectionObserver(observerCallback, observerOptions)
 
-        // On cherche spécifiquement les enfants avec data-index
         const items = container.querySelectorAll('[data-index]')
         items.forEach((item) => observer.observe(item))
 

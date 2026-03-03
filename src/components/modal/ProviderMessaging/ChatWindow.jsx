@@ -6,8 +6,9 @@ import { Alert } from '../../../ui/Alert';
 import { StatusMenu } from '../../global/StatusMenu';
 import { useUpdateStatusMessage, useUnlockMessage } from '../../../hooks/useContact';
 
-
-
+/**
+ * UI component responsible for rendering chat window.
+ */
 export function ChatWindow({ chat, onBack }) {
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRefs = useRef({}); // Stocke les refs de chaque bouton
@@ -35,12 +36,18 @@ export function ChatWindow({ chat, onBack }) {
     const latestInfo = chat.messages[0].fullData;
     const isContactUnlocked = latestInfo.isUnlocked;
 
+    /**
+     * Handles handle update status behavior.
+     */
     const handleUpdateStatus = (messageId, newStatus) => {
         mutateUpdateStatus({
             id: messageId,
             formData: { status: newStatus }
         });
     };
+    /**
+     * Handles handle unlock behavior.
+     */
     const handleUnlock = (messageId) => {
         mutateUnlockMessage({
             id: messageId
@@ -137,7 +144,7 @@ export function ChatWindow({ chat, onBack }) {
                                     {msg.isUnlocked ? 'Débloqué' : 'Payant'}
                                 </span>
 
-                                {/* Bouton avec ref dynamique */}
+                                {}
                                 {msg.isUnlocked &&
                                     <button
                                         ref={el => triggerRefs.current[msg.id] = el}
@@ -158,9 +165,7 @@ export function ChatWindow({ chat, onBack }) {
                                     </button>
                                 )}
 
-
-
-                                {/* Menu d'action lié à ce message précis */}
+                                {}
                                 <StatusMenu
                                     isOpen={openMenuId === msg.id}
                                     onClose={() => setOpenMenuId(null)}

@@ -1,5 +1,8 @@
 import React, { useRef, forwardRef } from "react"
 
+/**
+ * UI component responsible for rendering button.
+ */
 export function Button({
   children,
   variant = 'primary',
@@ -42,11 +45,6 @@ export function Button({
   )
 }
 
-
-
-
-
-// Utilise forwardRef pour que la ref du parent arrive sur le span
 export const CategoryTag = forwardRef(({ cat, isConsult, onSelect, onPressMenu }, ref) => {
   return (
     <button

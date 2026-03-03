@@ -74,7 +74,9 @@ const LogoutIcon = ({ className }) => (
   </IconBase>
 )
 
-
+/**
+ * UI component responsible for rendering sidebar.
+ */
 export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -82,7 +84,6 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
   const { mutate: logout, isPending: isLogoutPending } = useLogout();
   const user = userData?.data?.user;
 
-  // État pour gérer l'agrandissement sur ordinateur
   const [isCollapsed, setIsCollapsed] = useState(true)
 
   const navLinks = [
@@ -95,6 +96,9 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
     isOpenSidebar(isCollapsed)
   }, [isCollapsed])
 
+  /**
+   * Handles handle logout behavior.
+   */
   const handleLogout = () => {
     logout(undefined, {
       onSettled: () => {
@@ -108,7 +112,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
 
   return (
     <>
-      {/* Overlay Mobile */}
+      {}
       {isOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 md:hidden" onClick={onClose} />
       )}
@@ -118,14 +122,14 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
         flex flex-col py-8 bg-white border-r border-gray-100
         transition-all duration-300 ease-in-out 
         
-        /* Gestion Largeur : Mobile toujours large (w-64). Desktop varie selon isCollapsed */
+        
         w-70 ${isCollapsed ? 'md:w-20' : 'md:w-64'}
         
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0
       `}>
 
-        {/* Bouton Toggle Desktop (Caché sur mobile) */}
+        {}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden md:flex absolute -right-3 top-10 bg-[#E8524D] border border-gray-100 rounded-full p-2 shadow-sm hover:text-purple-600 transition-colors z-50 "
@@ -133,11 +137,11 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
           {isCollapsed ? <ChevronRight size={16} className="text-white" /> : <ChevronLeft size={16} className="text-white" />}
         </button>
 
-        {/* Header : Logo + Titre */}
+        {}
         <div className={`flex items-center justify-between w-full px-6 mb-12 ${isCollapsed ? 'md:justify-center md:px-0' : 'md:justify-start md:px-6'}`}>
           <div className="flex items-center gap-3">
             <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />
-            {/* Texte affiché si mobile OU si desktop n'est pas réduit */}
+            {}
             <span className={`font-bold text-xl  md:transition-opacity pacifico-regular ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
               AELI Services
             </span>
@@ -180,7 +184,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
 
           <div className="w-full h-px bg-gray-100 " />
 
-          {/* Boutons Modales */}
+          {}
           {[
             { icon: MailIcon, label: 'Messages', onClick: onOpenMessage, id: MODALS.MESSAGE },
             { icon: StarIcon, label: 'Favoris', onClick: onOpenFavorite, id: MODALS.FAVORITE }
@@ -202,7 +206,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
           ))}
         </nav>
 
-        {/* Footer */}
+        {}
         <div className="flex flex-col gap-6 w-full px-4 mt-auto">
           <div className="w-full h-px bg-gray-100" />
           <button

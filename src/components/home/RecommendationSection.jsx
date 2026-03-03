@@ -6,12 +6,14 @@ import { RecommendationCard } from '../../ui/RecommendationCard';
 import { useGetProviderList } from '../../hooks/useProvider';
 import { Loading } from '../global/Loading';
 
+/**
+ * UI component responsible for rendering recommendation section.
+ */
 export function RecommendationSection() {
     const navigate = useNavigate()
     const [activeIndex, setActiveIndex] = useState(0)
     const scrollRef = useRef(null)
 
-    // 1. Récupération des données réelles
     const { data: providersResponse, isLoading } = useGetProviderList({
         limit: 50 // On prend une large limite pour filtrer côté client si besoin
     });
@@ -19,7 +21,6 @@ export function RecommendationSection() {
     const allProviders = providersResponse?.data?.data?.providers || providersResponse?.data?.providers || [];
     const featuredProviders = allProviders.filter(provider => provider.isFeatured === true);
 
-    // 3. Intervalle automatique (uniquement s'il y a des données)
     useEffect(() => {
         if (featuredProviders.length > 0) {
             const interval = setInterval(() => {
@@ -29,7 +30,6 @@ export function RecommendationSection() {
         }
     }, [featuredProviders.length])
 
-    // 4. Scroll automatique vers la carte active
     useEffect(() => {
         if (scrollRef.current && featuredProviders.length > 0) {
             const container = scrollRef.current
@@ -66,7 +66,7 @@ export function RecommendationSection() {
                     <RecommendationCard
                         key={item.id}
                         title={item.businessName}
-                        // Utilise la première photo de l'array ou un placeholder
+
                         image={item.photos && item.photos.length > 0 ? item.photos[0] : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000'}
                         description={item.description}
                         location={item.location.split(',')[0]} // Ville simplifiée
@@ -88,7 +88,7 @@ export function RecommendationSection() {
                 ))}
             </div>
 
-            {/* Pagination Dots dynamiques */}
+            {}
             <div className="flex gap-4 justify-center">
                 {featuredProviders.map((_, index) => (
                     <button

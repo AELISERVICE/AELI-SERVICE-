@@ -11,13 +11,14 @@ import { MapPicker } from '../global/MapPicker';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { useApplyProvider } from '../../hooks/useProvider';
 
-
 const availableActivities = [
     "Ménage", "Plomberie", "Électricité", "Jardinage",
     "Coiffure", "Esthétique", "Mécanique", "Cours d'appui"
 ]
 
-
+/**
+ * UI component responsible for rendering provider info form.
+ */
 export function ProviderInfoForm() {
     const navigate = useNavigate()
     const [agreed, setAgreed] = useState(false)
@@ -81,7 +82,9 @@ export function ProviderInfoForm() {
         formData.description
     ].some(value => !value) || formData.activities.length === 0;
 
-    // Ajouter une activité
+    /**
+     * Handles handle add activity behavior.
+     */
     const handleAddActivity = (e) => {
         const selected = e.target.value
         if (selected && !formData.activities.includes(selected)) {
@@ -90,11 +93,13 @@ export function ProviderInfoForm() {
                 activities: [...prev.activities, selected]
             }))
         }
-        // Reset le select après sélection
+
         e.target.value = ""
     }
 
-    // Supprimer une activité
+    /**
+     * Handles remove activity behavior.
+     */
     const removeActivity = (activityToRemove) => {
         setFormData(prev => ({
             ...prev,
@@ -102,6 +107,9 @@ export function ProviderInfoForm() {
         }))
     }
 
+    /**
+     * Handles handle confirm location behavior.
+     */
     const handleConfirmLocation = (mapData) => {
         setFormData(prev => ({
             ...prev,
@@ -112,6 +120,9 @@ export function ProviderInfoForm() {
         setShowMapModal(false)
     }
 
+    /**
+     * Handles handle get current location behavior.
+     */
     const handleGetCurrentLocation = () => {
         if (!navigator.geolocation) {
             toast.error("La géolocalisation n'est pas supportée par votre navigateur");
@@ -130,17 +141,15 @@ export function ProviderInfoForm() {
             async (position) => {
                 const { latitude, longitude, accuracy } = position.coords;
 
-                // Log pour debug en console
                 console.log(`Précision : ${accuracy} mètres`);
 
                 try {
-                    // On utilise Nominatim pour transformer les coordonnées en adresse
+
                     const response = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
                     );
                     const data = await response.json();
 
-                    // On met à jour le formulaire avec les données précises
                     setFormData(prev => ({
                         ...prev,
                         location: data.display_name || `Position (${accuracy}m)`,
@@ -172,6 +181,9 @@ export function ProviderInfoForm() {
         );
     };
 
+    /**
+     * Handles handle change behavior.
+     */
     const handleChange = (e) => {
         const { name, value, type, files } = e.target;
         if (type === 'file') {
@@ -181,6 +193,9 @@ export function ProviderInfoForm() {
         }
     };
 
+    /**
+     * Handles handle submit behavior.
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
         const dataToSend = new FormData();
@@ -195,11 +210,9 @@ export function ProviderInfoForm() {
             }
         });
 
-
-        // --- AFFICHAGE EN CONSOLE ---
         console.log("--- Contenu du FormData envoyé ---");
         for (let [key, value] of dataToSend.entries()) {
-            // Si c'est un fichier, on affiche son nom pour plus de clarté
+
             if (value instanceof File) {
                 console.log(`${key}: [Fichier] ${value.name} (${value.size} octets)`);
             } else {
@@ -406,7 +419,7 @@ export function ProviderInfoForm() {
                                 </div>
                             </div>
                         </div>
-                        {/* --- MODAL DE LA CARTE --- */}
+                        {}
                         {showMapModal && (
                             <MapPicker
                                 onClose={() => setShowMapModal(false)}
@@ -428,7 +441,7 @@ export function ProviderInfoForm() {
                                 ]}
                             />
 
-                            {/* Affichage des tags (activités sélectionnées) */}
+                            {}
                             <div className="flex flex-wrap gap-2">
                                 {formData.activities.map((act) => (
                                     <span

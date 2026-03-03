@@ -10,6 +10,9 @@ import { useGetReviewByProvider, useDeleteReview } from '../../hooks/useReview';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { toast } from 'react-toastify';
 
+/**
+ * UI component responsible for rendering review list.
+ */
 export function ReviewList({ closeReview, idProvider }) {
     const { openFeedback, openConfirm, setConfirmConfig, closeModal2 } = useOutletContext();
     const scrollRef = useRef(null)
@@ -21,7 +24,6 @@ export function ReviewList({ closeReview, idProvider }) {
 
     const { data: dataReview, isLoading, isError } = useGetReviewByProvider(idProvider);
 
-    // Mutation de suppression
     const {
         mutate: mutateDeleteReview,
         isPending: isPendingDelete,
@@ -35,7 +37,6 @@ export function ReviewList({ closeReview, idProvider }) {
     const reviews = dataReview?.data?.reviews || [];
     const summary = dataReview?.summary;
 
-    // TON PATTERN : Gestion des retours de suppression
     useEffect(() => {
         const isSuccess = isSuccessDelete && dataDelete?.success;
         const isError = isErrorDelete;
@@ -66,6 +67,9 @@ export function ReviewList({ closeReview, idProvider }) {
         }
     }, [isSuccessDelete, isErrorDelete, dataDelete, errorDelete, closeModal2, resetDelete]);
 
+    /**
+     * Handles handle delete click behavior.
+     */
     const handleDeleteClick = (review) => {
         setOpenMenuId(null);
         setConfirmConfig({

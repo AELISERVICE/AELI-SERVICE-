@@ -8,7 +8,9 @@ import { Button } from '../../ui/Button';
 import { FormCard } from '../../ui/FormCard';
 import { useGetCategory, useCreateServices, useUpdateServices } from '../../hooks/useServices';
 
-
+/**
+ * UI component responsible for rendering service info form.
+ */
 export function ServiceInfoForm() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -42,7 +44,9 @@ export function ServiceInfoForm() {
         !formData.name ||
         !formData.description;
 
-
+    /**
+     * Handles handle change behavior.
+     */
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         setFormData(prev => ({
@@ -51,6 +55,9 @@ export function ServiceInfoForm() {
         }));
     };
 
+    /**
+     * Handles file to base64 behavior.
+     */
     const fileToBase64 = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -60,6 +67,9 @@ export function ServiceInfoForm() {
         });
     };
 
+    /**
+     * Handles handle submit behavior.
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -71,7 +81,6 @@ export function ServiceInfoForm() {
         fData.append('categoryId', formData.categoryId);
         fData.append('priceType', "fixed");
 
-        // On envoie le fichier direct (pas le Base64)
         if (formData.photo instanceof File) {
             fData.append('photo', formData.photo);
         }

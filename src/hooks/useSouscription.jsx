@@ -1,7 +1,9 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-// get plans
+/**
+ * Custom hook that manages get plans.
+ */
 export const useGetPlans = () => {
     return useQuery({
         queryKey: ["useGetPlans"],
@@ -9,7 +11,9 @@ export const useGetPlans = () => {
     });
 };
 
-// get abonnement provider
+/**
+ * Custom hook that manages get abonnement provider.
+ */
 export const useGetAbonnementProvider = () => {
     return useQuery({
         queryKey: ["useGetAbonnementProvider"],
@@ -17,7 +21,9 @@ export const useGetAbonnementProvider = () => {
     });
 };
 
-// subscribe
+/**
+ * Custom hook that manages subscribe.
+ */
 export const useSubscribe = () => {
     return useMutation({
         mutationKey: ["useSubscribe"],

@@ -1,5 +1,8 @@
 import React from 'react'
 
+/**
+ * UI component responsible for rendering section header.
+ */
 export function SectionHeader({ icon: Icon, title, variant = 'blue' }) {
     const colors = {
         blue: { bg: 'bg-blue-100', text: 'text-blue-600' },

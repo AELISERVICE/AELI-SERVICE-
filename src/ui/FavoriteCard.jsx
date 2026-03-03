@@ -2,6 +2,9 @@ import React from 'react'
 import { Heart, MapPin, Star } from 'lucide-react'
 import { Button } from './Button' // Ajuste le chemin selon ton architecture
 
+/**
+ * UI component responsible for rendering favorite card.
+ */
 export function FavoriteCard({
     name,
     image,
@@ -25,7 +28,7 @@ export function FavoriteCard({
                 )}
             </div>
 
-            {/* Content */}
+            {}
             <div className="flex flex-col flex-1 p-5">
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-bold text-gray-900">{name}</h3>

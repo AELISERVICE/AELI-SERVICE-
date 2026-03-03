@@ -1,5 +1,8 @@
 import React from 'react'
 
+/**
+ * UI component responsible for rendering card.
+ */
 export function Card({ children, className = '', ...props }) {
   return (
     <div

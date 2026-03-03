@@ -8,13 +8,14 @@ import { Loading } from '../components/global/Loading';
 import { NotFound } from '../components/global/Notfound';
 import { Search, Loader2, AlertCircle } from 'lucide-react';
 
+/**
+ * UI component responsible for rendering search screen.
+ */
 export function SearchScreen() {
     const [activeTab, setActiveTab] = useState('service');
 
-    // On récupère tout ce qu'on a mis dans l'Outlet de Base.jsx
     const { filters, openContact } = useOutletContext();
 
-    // L'appel API est centralisé ici
     const { data: apiResponse, isLoading, isError } = useGetProviderList({
         search: filters?.search,
         maxPrice: filters?.maxPrice,
@@ -32,7 +33,7 @@ export function SearchScreen() {
                         Recherche
                     </h2>
 
-                    {/* Switch Tabs */}
+                    {}
                     <div className="flex rounded-2xl bg-gray-100 p-1 gap-1">
                         <Button
                             variant={activeTab === 'service' ? 'gradient' : 'ghost'}
@@ -51,7 +52,7 @@ export function SearchScreen() {
                     </div>
                 </div>
 
-                {/* Gestion des états de chargement / erreur */}
+                {}
                 {isLoading ? (
                     <Loading className="py-20" title="Chargement des prestataires..."/>
                 ) : isError ? (
@@ -70,7 +71,7 @@ export function SearchScreen() {
                     />
                 ) : (
                     <>
-                        {/* Affichage conditionnel selon l'onglet actif */}
+                        {}
                         {activeTab === 'service' ? (
                             <ServiceSearch providers={providers} openContact={openContact} />
                         ) : (

@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-
-// get favorites
+/**
+ * Custom hook that manages get favorites.
+ */
 export const useGetFavorites = () => {
     return useQuery({
         queryKey: ["useGetFavorites"],
@@ -10,7 +11,9 @@ export const useGetFavorites = () => {
     });
 };
 
-// check favorites from user
+/**
+ * Custom hook that manages check favorites.
+ */
 export const useCheckFavorites = (id) => {
     return useQuery({
         queryKey: ["useCheckFavorites", id],
@@ -18,7 +21,9 @@ export const useCheckFavorites = (id) => {
     });
 };
 
-// add to favorites
+/**
+ * Custom hook that manages add to favorites.
+ */
 export const useAddToFavorites = () => {
     const queryClient = useQueryClient();
 
@@ -37,7 +42,9 @@ export const useAddToFavorites = () => {
     });
 };
 
-//  delete favorites
+/**
+ * Custom hook that manages delete favorites.
+ */
 export const useDeleteFavorites = () => {
     const queryClient = useQueryClient();
 
@@ -47,7 +54,7 @@ export const useDeleteFavorites = () => {
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ["useGetFavorites"] });
             queryClient.invalidateQueries({ queryKey: ["useGetProviderList"] });
-            // On force le "CHECK" à se rafraîchir pour ce prestataire précis
+
             if (variables?.id) {
                 queryClient.invalidateQueries({
                     queryKey: ["useCheckFavorites", variables.id]

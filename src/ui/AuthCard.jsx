@@ -1,6 +1,9 @@
 import React from 'react'
 import { Footer } from '../components/global/footer'
 
+/**
+ * UI component responsible for rendering auth card.
+ */
 export function AuthCard({
     title,
     subtitle,
@@ -15,7 +18,7 @@ export function AuthCard({
 
             <div className="flex flex-col items-center  min-h-screen w-full">
                 <main className="w-full px-4 py-4 flex flex-col items-center ">
-                    {/* Header Section */}
+                    {}
                     <div className="w-full bg-slate-700 rounded-3xl min-h-[400px] p-8 pb-32 md:pb-48 text-center relative overflow-hidden shadow-lg">
                         <img
                             src="https://img.freepik.com/photos-gratuite/gros-plan-deux-jeunes-femmes-africaines-gaies-ordinateur-portable_181624-43845.jpg?semt=ais_user_personalization&w=740&q=80"
@@ -29,7 +32,7 @@ export function AuthCard({
                         </div>
                     </div>
 
-                    {/* Floating Card dynamique */}
+                    {}
                     <div className={` relative
                         w-full bg-white rounded-2xl shadow-xl -mt-24 md:-mt-50 relative z-20 p-6 md:p-10 lg:p-12 border border-slate-100 transition-all duration-300
                         ${isWide ? 'max-w-4xl' : 'max-w-4xl lg:max-w-[500px]'}

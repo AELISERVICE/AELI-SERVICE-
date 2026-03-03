@@ -4,7 +4,9 @@ import { ToastContainer } from 'react-toastify';
 import { StatsProvider } from '../components/provider/StatsProvider';
 import { ServiceProvider } from '../components/provider/ServiceProvider';
 
-
+/**
+ * UI component responsible for rendering provider screen.
+ */
 export function ProviderScreen() {
     const location = useLocation();
     const mode = location.state?.mode || "defaultMode";
@@ -18,7 +20,7 @@ export function ProviderScreen() {
                     <ServiceProvider mode={mode} dataConsult={data} />
                 </div>
             </div>
-            {/* Overlay sombre quand les stats sont ouvertes sur mobile */}
+            {}
             {showStats && (
                 <div
                     className="fixed inset-0 bg-black/20 backdrop-blur-sm  xl:hidden"

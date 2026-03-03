@@ -35,33 +35,33 @@ const contacts = [
   },
 ]
 
+/**
+ * UI component responsible for rendering stats provider.
+ */
 export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   const { openMessaging } = useOutletContext()
-  // 1. Appel au hook des statistiques
+
   const { data: statsResponse, isLoading, isError } = useGetStatDaily();
 
-  // AJUSTEMENT ICI : L'API renvoie les données dans statsResponse.data
   const dailyStats = statsResponse?.data?.dailyStats || [];
   const totalContacts = statsResponse?.data?.totalContacts || 0;
 
-  // 2. Transformation des données pour Recharts
-  // On inverse l'ordre (reverse) pour avoir la date la plus ancienne à gauche
   const chartData = useMemo(() => {
     if (!dailyStats.length) return [];
 
     return [...dailyStats].reverse().map(item => ({
-      // item.date est "2026-02-27"
+
       name: new Date(item.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
-      // item.count est une chaîne "2", on la convertit en nombre pour Recharts
+
       value: parseInt(item.count, 10)
     }));
   }, [dailyStats]);
 
   return (
     <div className={`
-      /* Mode Desktop (xl) */
+      
       xl:static xl:w-[350px] xl:translate-x-0 xl:flex 
-      /* Mode Mobile (Drawer) */
+      
       fixed right-0 top-0 h-full w-[85%] sm:w-[400px]
       bg-white xl:bg-transparent transition-transform duration-300 ease-in-out 
       ${showStats ? 'translate-x-0' : 'translate-x-full'}

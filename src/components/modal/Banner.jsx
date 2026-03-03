@@ -2,13 +2,16 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
+/**
+ * UI component responsible for rendering banner.
+ */
 export function Banner({ closeBanner }) {
     return (
         <div className="fixed z-4 -bottom-2 right-0 left-0 md:bottom-4 md:left-auto md:right-4 flex justify-center md:justify-end pointer-events-none p-4">
-            {/* Main Square Container */}
+            {}
             <div className="w-full max-w-[400px] aspect-square bg-[#1B1B1B] text-white overflow-hidden shadow-2xl flex flex-col group font-sans rounded-2xl pointer-events-auto border border-white/5">
 
-                {/* Header Section */}
+                {}
                 <div className="p-6 flex justify-between items-start z-30">
                     <div className="flex items-center gap-2">
                         <svg viewBox="0 0 50 50" className="w-8 h-8 text-white fill-current">
@@ -23,7 +26,7 @@ export function Banner({ closeBanner }) {
                     </button>
                 </div>
 
-                {/* Text Section */}
+                {}
                 <div className="px-8 flex-1 flex flex-col justify-center z-20">
                     <h2 className="text-2xl font-bold leading-tight mb-2">
                         Obtén un hosting <span className="text-[#00A4A6]">escalable</span> y seguro
@@ -33,7 +36,7 @@ export function Banner({ closeBanner }) {
                     </p>
                 </div>
 
-                {/* Image Section with Blurred Edges */}
+                {}
                 <div className="relative h-[45%] w-full">
                     <div
                         className="absolute inset-0 z-10"
@@ -49,11 +52,11 @@ export function Banner({ closeBanner }) {
                         />
                     </div>
 
-                    {/* Gradient Overlay (Extra Safety) */}
+                    {}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1B1B1B] via-transparent to-transparent z-20"></div>
                     <div className="absolute inset-0 bg-gradient-to-r from-[#1B1B1B] via-transparent to-transparent z-20"></div>
 
-                    {/* CTA Button */}
+                    {}
                     <div className="absolute bottom-6 left-8 z-30">
                         <Button
                             type="button"

@@ -1,3 +1,6 @@
+/**
+ * UI component responsible for rendering avatar.
+ */
 export function Avatar({ src, alt, isOnline, size = 'md' }) {
     const sizeClasses = {
         sm: 'w-8 h-8',

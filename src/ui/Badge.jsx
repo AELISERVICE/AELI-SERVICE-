@@ -1,5 +1,8 @@
 import React from 'react'
 
+/**
+ * UI component responsible for rendering badge.
+ */
 export function Badge({
   children,
   variant = 'neutral',

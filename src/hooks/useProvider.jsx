@@ -1,7 +1,9 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-// apply
+/**
+ * Custom hook that manages apply provider.
+ */
 export const useApplyProvider = () => {
     return useMutation({
         mutationKey: ["useApplyProvider"],
@@ -9,9 +11,11 @@ export const useApplyProvider = () => {
     });
 };
 
-// get providers list
+/**
+ * Custom hook that manages get provider list.
+ */
 export const useGetProviderList = (params = {}) => {
-    // On transforme l'objet { search: '...', maxPrice: 500 } en string query
+
     const queryString = new URLSearchParams(
         Object.fromEntries(Object.entries(params).filter(([_, v]) => v != null && v !== ""))
     ).toString();
@@ -24,7 +28,9 @@ export const useGetProviderList = (params = {}) => {
     });
 };
 
-// get provider by id
+/**
+ * Custom hook that manages get provider byid.
+ */
 export const useGetProviderByid = (id) => {
     return useQuery({
         queryKey: ["useGetProviderByid", id],

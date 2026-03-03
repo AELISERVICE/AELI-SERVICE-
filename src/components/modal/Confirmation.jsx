@@ -2,9 +2,14 @@ import React from 'react';
 import { TriangleAlert, Loader2 } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
-
+/**
+ * UI component responsible for rendering confirmation.
+ */
 export function Confirmation({ closeConfirm, onConfirm, isPending, title, description }) {
 
+  /**
+   * Handles handle confirm behavior.
+   */
   const handleConfirm = () => {
     onConfirm();
   };

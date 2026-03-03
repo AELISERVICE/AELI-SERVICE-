@@ -2,7 +2,9 @@ import React from 'react'
 import { X } from 'lucide-react'
 import { Button } from './Button'
 
-
+/**
+ * UI component responsible for rendering modal card.
+ */
 export function ModalCard({
     title = false,
     children,
@@ -15,7 +17,7 @@ export function ModalCard({
             className="fixed w-full bg-black/60 backdrop-blur-sm h-screen flex flex-col z-20 "
         >
             <div
-                // Empêche le clic à l'intérieur de fermer la modale ${isWide ? 'lg:w-[60%] xl:w-[55%]' : 'lg:w-[40%] xl:w-[30%]'} 
+
                 onClick={(e) => e.stopPropagation()}
                 className={`w-full md:w-fit   h-full flex flex-col bg-[#FAFAFB] px-4`}
             >

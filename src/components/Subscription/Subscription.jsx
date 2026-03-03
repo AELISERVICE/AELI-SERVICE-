@@ -5,7 +5,9 @@ import { Button } from '../../ui/Button';
 import { useGetPlans, useSubscribe } from '../../hooks/useSouscription';
 import { useInfoUserConnected } from '../../hooks/useUser';
 
-
+/**
+ * UI component responsible for rendering subscription.
+ */
 export function Subscription() {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const { data: response } = useGetPlans();
@@ -14,11 +16,12 @@ export function Subscription() {
     const { data: userData } = useInfoUserConnected();
     const provider = userData?.data?.provider?.id;
 
-
+    /**
+     * Handles handle subscribe behavior.
+     */
     const handleSubscribe = (tier) => {
         setSelectedPlan(tier.id);
 
-        // Construction de l'objet selon la doc
         const paymentData = {
             amount: tier.price,
             type: "subscription",
@@ -26,10 +29,8 @@ export function Subscription() {
             description: `Abonnement ${tier.name}`
         };
 
-        // On passe l'objet complet au mutate
         subscribe(paymentData);
     };
-
 
     useEffect(() => {
         if (isSuccess && dataSubscribe?.success) {

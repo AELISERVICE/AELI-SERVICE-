@@ -8,27 +8,27 @@ import { MessageCard } from '../../ui/MessageCustomerCard';
 import { Trash2, MessageSquare, Loader2, Send, AlertCircle } from 'lucide-react';
 import { useGetContactSend } from '../../hooks/useContact';
 
+/**
+ * UI component responsible for rendering messagecustomer.
+ */
 export function Messagecustomer({ closeMessage, onConfirmation }) {
     const scrollRef = useRef(null);
 
-    // 1. Récupération des données réelles
     const { data: contactResponse, isLoading, isError } = useGetContactSend();
 
-    // 2. Extraction et formatage des données
     const contactsList = useMemo(() => {
         return contactResponse?.data?.contacts || [];
     }, [contactResponse]);
 
     const totalItems = contactResponse?.data?.pagination?.totalItems || 0;
 
-    // 3. Transformation pour le composant MessageCard
     const formattedMessages = useMemo(() => {
         return contactsList.map((contact) => {
             const dateObj = new Date(contact.createdAt);
             return {
                 id: contact.id,
                 businessName: contact.provider?.businessName || 'Prestataire',
-                // On utilise la photo du profil si elle existe, sinon une image par défaut
+
                 image: contact.provider?.user?.profilePhoto || `https://ui-avatars.com/api/?name=${contact.provider?.businessName}&background=random`,
                 date: dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
                 time: dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
@@ -72,16 +72,7 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
                                 <div key={msg.id} data-index={index} className="flex-shrink-0">
                                     <MessageCard
                                         {...msg}
-                                    // actions={
-                                    //     <Button
-                                    //         variant="secondary"
-                                    //         className="text-red-400 hover:text-red-600 hover:bg-red-50 !p-2 !rounded-full border-0"
-                                    //         onClick={() => onConfirmation(msg.id)}
-                                    //         aria-label="Supprimer"
-                                    //     >
-                                    //         <Trash2 className="w-4 h-4" />
-                                    //     </Button>
-                                    // }
+
                                     />
                                 </div>
                             ))

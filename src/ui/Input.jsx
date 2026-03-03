@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { UploadCloud, ChevronDown, Check } from 'lucide-react'
 import { Button } from './Button'
 
+/**
+ * UI component responsible for rendering input.
+ */
 export function Input({
   label,
   error,
@@ -25,6 +28,9 @@ export function Input({
   const baseInputStyles = `w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 ${isreadOnly ? "cursor-default" : "focus:bg-white focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent transition-all"} outline-none text-slate-800 placeholder:text-slate-400`
 
   useEffect(() => {
+    /**
+     * Handles handle click outside behavior.
+     */
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setIsOpen(false)
@@ -42,6 +48,9 @@ export function Input({
     }
   }, [props.previewImage]);
 
+  /**
+   * Handles handle file change behavior.
+   */
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -51,7 +60,7 @@ export function Input({
       };
       reader.readAsDataURL(file);
     }
-    // On appelle toujours le onChange parent pour mettre à jour le formulaire
+
     if (onChange) onChange(e);
   };
 
@@ -64,7 +73,7 @@ export function Input({
       )}
 
       <div className="relative">
-        {/* CAS 1 : SELECT PERSONNALISÉ */}
+        {}
         {type === 'select' ? (
           <div className="relative w-full">
             <button
@@ -72,7 +81,7 @@ export function Input({
               onClick={() => setIsOpen(!isOpen)}
               className={`${baseInputStyles} flex items-center justify-between text-left ${className}`}
             >
-              {/* Correction de l'affichage du placeholder ici */}
+              {}
               <span className={!value ? "text-slate-400" : "text-slate-800"}>
                 {options.find(opt => opt.value === value)?.label || placeholder || "Choisir..."}
               </span>
@@ -109,12 +118,11 @@ export function Input({
                   }
                 </div>
 
-
               </div>
             )}
           </div>
         ) : type === 'textarea' ? (
-          /* CAS 2 : TEXTAREA (Ajout explicatif du placeholder) */
+          
           <textarea
             className={`${baseInputStyles} min-h-[100px] ${className}`}
             name={name}
@@ -124,10 +132,10 @@ export function Input({
             {...props}
           />
         ) : type === 'file' ? (
-          /* CAS 3 : FILE */
+          
           <div className={`group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white overflow-hidden ${className}`}>
 
-            {/* AFFICHAGE DE LA PREVIEW SI ELLE EXISTE */}
+            {}
             {filePreview ? (
               <div className="absolute inset-0 z-0">
                 <img
@@ -139,7 +147,7 @@ export function Input({
               </div>
             ) : null}
 
-            {/* CONTENU DE L'INPUT (Icône + Texte) */}
+            {}
             <div className="relative z-10 flex flex-col items-center justify-center space-y-2 text-center pointer-events-none">
               <div className="rounded-full bg-white p-2 shadow-sm group-hover:bg-purple-50">
                 <UploadCloud className="h-6 w-6 text-gray-400 group-hover:text-[#FCE0D6]" />
@@ -161,7 +169,7 @@ export function Input({
             />
           </div>
         ) : (
-          /* CAS PAR DÉFAUT (Ajout explicatif du placeholder) */
+          
           <input
             type={type}
             name={name}

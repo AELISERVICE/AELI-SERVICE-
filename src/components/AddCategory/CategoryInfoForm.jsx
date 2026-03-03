@@ -8,7 +8,9 @@ import { Button } from '../../ui/Button';
 import { FormCard } from '../../ui/FormCard';
 import { useCreateCategories } from '../../hooks/useServices';
 
-
+/**
+ * UI component responsible for rendering category info form.
+ */
 export function CategoryInfoForm() {
     const navigate = useNavigate()
     const { mutate: createCategory, isPending, isSuccess, isError, data, error } = useCreateCategories();
@@ -19,12 +21,17 @@ export function CategoryInfoForm() {
 
     const isInvalid = !formData.name;
 
+    /**
+     * Handles handle change behavior.
+     */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-
+    /**
+     * Handles handle submit behavior.
+     */
     const handleSubmit = (e) => {
         e.preventDefault()
         createCategory(formData);
@@ -48,7 +55,6 @@ export function CategoryInfoForm() {
             }
         }
     }, [isSuccess, isError, data, error]);
-
 
     return (
         <FormCard

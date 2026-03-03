@@ -11,7 +11,7 @@ const queryClient = new QueryClient()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider attribute="class" defaultTheme="light"> {/* Gère le mode sombre */}
+    <ThemeProvider attribute="class" defaultTheme="light"> {}
       <QueryClientProvider client={queryClient}>
         <GlobalLoadingProvider>
           <BrowserRouter>

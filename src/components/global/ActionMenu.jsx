@@ -3,17 +3,18 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { Portal } from '../../ui/Portal'
 
+/**
+ * UI component responsible for rendering action menu.
+ */
 export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete }) {
     const menuRef = useRef(null)
     const [coords, setCoords] = useState({ top: 0, left: 0 })
 
     useEffect(() => {
         if (isOpen && triggerRef?.current) {
-            // On récupère la position exacte du bouton sur l'écran
+
             const rect = triggerRef.current.getBoundingClientRect();
 
-            // On place le menu au dessus (ou en dessous) du bouton
-            // window.scrollY permet de gérer le scroll de la page
             setCoords({
                 top: rect.top + window.scrollY - 80, // -80 pour l'afficher juste au dessus
                 left: rect.left + window.scrollX - 100 // Ajuste selon la largeur de ton menu
@@ -24,6 +25,9 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onDelete }) {
     useEffect(() => {
         if (!isOpen) return;
 
+        /**
+         * Handles handle click outside behavior.
+         */
         function handleClickOutside(event) {
             if (
                 menuRef.current && !menuRef.current.contains(event.target) &&

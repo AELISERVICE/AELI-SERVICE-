@@ -3,11 +3,13 @@ import { MessageSquare, Clock, CheckCheck, SendHorizontal } from 'lucide-react' 
 import { Button } from '../../ui/Button'
 import { Portal } from '../../ui/Portal'
 
+/**
+ * UI component responsible for rendering status menu.
+ */
 export function StatusMenu({ isOpen, onClose, triggerRef, onUpdateStatus }) {
     const menuRef = useRef(null)
     const [coords, setCoords] = useState({ top: 0, left: 0 })
 
-    // Mise à jour avec les statuts réels du backend : pending, read, replied
     const STATUS_OPTIONS = [
         {
             id: 'pending',
@@ -33,7 +35,6 @@ export function StatusMenu({ isOpen, onClose, triggerRef, onUpdateStatus }) {
         if (isOpen && triggerRef?.current) {
             const rect = triggerRef.current.getBoundingClientRect();
 
-            // Calcul de la position (ajusté pour 3 options cette fois)
             setCoords({
                 top: rect.top + window.scrollY - 130,
                 left: rect.left + window.scrollX - 40
@@ -43,6 +44,9 @@ export function StatusMenu({ isOpen, onClose, triggerRef, onUpdateStatus }) {
 
     useEffect(() => {
         if (!isOpen) return;
+        /**
+         * Handles handle click outside behavior.
+         */
         const handleClickOutside = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target) && !triggerRef.current.contains(e.target)) {
                 onClose();

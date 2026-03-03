@@ -1,6 +1,9 @@
 import React from 'react'
 import { ShoppingBag, Star, MapPin } from 'lucide-react'
 
+/**
+ * UI component responsible for rendering recommendation card.
+ */
 export function RecommendationCard({ title, description, location, rating, isActive, actions, image }) {
     return (
         <div
@@ -12,14 +15,14 @@ export function RecommendationCard({ title, description, location, rating, isAct
                 }
             `}
         >
-            {/* Image d'arrière-plan */}
+            {}
             <div className="absolute inset-0 z-0">
                 <img
                     src={image}
                     alt={title}
                     className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-110 brightness-50' : 'brightness-[0.3] grayscale-[0.5]'}`}
                 />
-                {/* Overlay dégradé pour garantir la lisibilité du texte blanc */}
+                {}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             </div>
 
@@ -52,13 +55,12 @@ export function RecommendationCard({ title, description, location, rating, isAct
                     </p>
                 </div>
 
-
                 <div className="mt-4">
                     {actions && actions[0]}
                 </div>
             </div>
 
-            {/* Effet de lumière violette subtil uniquement si actif */}
+            {}
             {isActive && (
                 <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30 z-0"></div>
             )}

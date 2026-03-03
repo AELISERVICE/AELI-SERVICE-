@@ -1,6 +1,8 @@
 import { Star } from 'lucide-react'
 
-
+/**
+ * UI component responsible for rendering rating stars.
+ */
 export function RatingStars({ rating, hoverRating, onRate, onHover }) {
   return (
     <div className="flex flex-col items-center space-y-3">

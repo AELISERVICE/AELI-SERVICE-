@@ -6,7 +6,9 @@ import { Button } from '../../ui/Button';
 import { AuthCard } from '../../ui/AuthCard';
 import { useForgotPassword } from '../../hooks/useAuth';
 
-
+/**
+ * UI component responsible for rendering forgot password form.
+ */
 export function ForgotPasswordForm() {
     const navigate = useNavigate()
     const { mutate, isPending, isError, error, isSuccess, data } = useForgotPassword();
@@ -16,6 +18,9 @@ export function ForgotPasswordForm() {
 
     const isInvalid = !formData.email;
 
+    /**
+     * Handles handle change behavior.
+     */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -24,6 +29,9 @@ export function ForgotPasswordForm() {
         }));
     };
 
+    /**
+     * Handles handle submit behavior.
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
         mutate(formData)
@@ -39,7 +47,6 @@ export function ForgotPasswordForm() {
             toast.error(errorMessage);
         }
     }, [isSuccess, isError, data, error]);
-
 
     return (
         <AuthCard

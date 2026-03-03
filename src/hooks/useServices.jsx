@@ -1,8 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-
-// create categories
+/**
+ * Custom hook that manages create categories.
+ */
 export const useCreateCategories = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -14,7 +15,9 @@ export const useCreateCategories = () => {
     });
 };
 
-// get category
+/**
+ * Custom hook that manages get category.
+ */
 export const useGetCategory = () => {
     return useQuery({
         queryKey: ["useGetCategory"],
@@ -23,7 +26,9 @@ export const useGetCategory = () => {
     });
 };
 
-// get services by provider
+/**
+ * Custom hook that manages get services by provider.
+ */
 export const useGetServicesByProvider = (id) => {
     return useQuery({
         queryKey: ["useGetServicesByProvider", id],
@@ -32,7 +37,9 @@ export const useGetServicesByProvider = (id) => {
     });
 };
 
-// create services
+/**
+ * Custom hook that manages create services.
+ */
 export const useCreateServices = () => {
     return useMutation({
         mutationKey: ["useCreateServices"],
@@ -40,7 +47,9 @@ export const useCreateServices = () => {
     });
 };
 
-// update services
+/**
+ * Custom hook that manages update services.
+ */
 export const useUpdateServices = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -52,7 +61,9 @@ export const useUpdateServices = () => {
     });
 };
 
-// delete services
+/**
+ * Custom hook that manages delete services.
+ */
 export const useDeleteServices = () => {
     const queryClient = useQueryClient();
     return useMutation({

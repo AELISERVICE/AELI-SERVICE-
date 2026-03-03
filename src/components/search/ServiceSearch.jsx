@@ -6,11 +6,16 @@ import { Pagination } from '../global/Pagination';
 import { NotFound } from '../global/Notfound';
 import { Button } from '../../ui/Button';
 
+/**
+ * UI component responsible for rendering service search.
+ */
 export function ServiceSearch({ providers }) {
     const navigate = useNavigate();
     const { openContact, openSidebar } = useOutletContext();
 
-    // Fonction pour gérer les favoris (à lier à ton hook de favoris plus tard)
+    /**
+     * Handles handle favorite click behavior.
+     */
     const handleFavoriteClick = (id) => {
         console.log("Ajout au favoris du prestataire ID:", id);
     };
@@ -36,9 +41,9 @@ export function ServiceSearch({ providers }) {
                         name={item.businessName}
                         description={item.description}
                         location={item.location}
-                        // Utilise la note de l'API ou 0 par défaut
+
                         rating={item.averageRating || 0}
-                        // On prend la première photo de l'array 'photos' ou le profil, sinon le placeholder
+
                         image={
                             (item.photos && item.photos.length > 0)
                                 ? item.photos[0]
@@ -67,7 +72,7 @@ export function ServiceSearch({ providers }) {
                 ))}
             </div>
 
-            {/* Pagination à lier avec ton état de page si nécessaire */}
+            {}
             <div className="mt-8">
                 <Pagination />
             </div>

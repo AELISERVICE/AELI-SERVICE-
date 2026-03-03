@@ -6,13 +6,15 @@ import { Messagecustomer } from '../components/modal/Messagecustomer';
 import { ContactCustomer } from '../components/modal/ContactCustomer';
 import { FeedbackCard } from '../components/modal/FeedbackCard';
 import { FavoriteList } from '../components/modal/FavoriteList';
-// import { ReviewList } from '../components/modal/ReviewList';
+
 import { Confirmation } from '../components/modal/Confirmation';
 import { ProviderMessaging } from '../components/modal/ProviderMessaging/ProviderMessaging';
 import { Banner } from '../components/modal/Banner';
 import { useGlobalLoading } from '../context/GlobalLoadingContext';
 
-
+/**
+ * UI component responsible for rendering base.
+ */
 export function Base() {
     const MODALS = { NONE: 0, MESSAGE: 1, FEEDBACK: 2, CONTACT: 3, FAVORITE: 4, REVIEW: 5, MESSAGING: 6, CONFIRM: 7, BANNER: 8 };
     const [activeModal, setActiveModal] = useState(null);
@@ -94,9 +96,7 @@ export function Base() {
                             onContact={() => setActiveModal2(MODALS.CONTACT)}
                         />
                     )}
-                    {/* {activeModal === MODALS.REVIEW && (
-                        <ReviewList closeReview={closeModal} />
-                    )} */}
+                    {}
                     {activeModal === MODALS.MESSAGING && (
                         <ProviderMessaging closeMessaging={closeModal} />
                     )}

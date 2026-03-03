@@ -13,6 +13,9 @@ import { AddCategorycreen } from './screens/AddCategory';
 import { AddServiceScreen } from "./screens/AddServiceScreen";
 import { SubscriptionScreen } from "./screens/SubscriptionScreen";
 
+/**
+ * UI component responsible for rendering app.
+ */
 function App() {
   return (
     <Routes>
@@ -25,7 +28,7 @@ function App() {
       <Route path="/add-category" element={<AddCategorycreen />} />
       <Route path="/add-service" element={<AddServiceScreen />} />
 
-      {/* Toutes ces routes seront injectées dans le composant Base */}
+      {}
       <Route element={<Base />}>
         <Route path="/home" element={<HomeScreen />} />
         <Route path="/profile" element={<ProfileScreen />} />

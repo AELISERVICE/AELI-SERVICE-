@@ -1,7 +1,9 @@
 import React from 'react'
 import { Clock, Trash2 } from 'lucide-react'
 
-
+/**
+ * UI component responsible for rendering message card.
+ */
 export function MessageCard({
     businessName,
     image,

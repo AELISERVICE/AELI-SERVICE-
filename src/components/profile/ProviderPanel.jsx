@@ -5,7 +5,9 @@ import { Badge } from '../../ui/Badge';
 import { Alert } from '../../ui/Alert';
 import { useInfoUserConnected } from '../../hooks/useUser';
 
-
+/**
+ * UI component responsible for rendering provider panel.
+ */
 export function ProviderPanel() {
   const { data, refetch } = useInfoUserConnected();
   const provider = data?.data?.provider;
@@ -14,7 +16,7 @@ export function ProviderPanel() {
     <div className="h-full">
       <Card className="h-full overflow-hidden flex flex-col shadow-sm border-slate-100">
         <div className="p-6 flex-1 flex flex-col gap-6">
-          {/* Business Info Section */}
+          {}
           <div className="text-center space-y-2">
             <div className="relative mx-auto w-20 h-20 mb-4">
               <img
@@ -36,7 +38,7 @@ export function ProviderPanel() {
               <span className="truncate max-w-[200px]">Yaoundé, Cameroun</span>
             </div>
           </div>
-          {/* Rating & Performance */}
+          {}
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-md border border-slate-100">
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-slate-500 text-xs font-bold uppercase">
@@ -64,7 +66,7 @@ export function ProviderPanel() {
               ))}
             </div>
           </div>
-          {/* Subscription & Activity */}
+          {}
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-1">
               <Calendar className="w-4 h-4 text-slate-400" />

@@ -7,7 +7,9 @@ import { AuthCard } from '../../ui/AuthCard';
 import { useOtp } from '../../hooks/useAuth';
 import { useResendOtp } from '../../hooks/useAuth';
 
-
+/**
+ * UI component responsible for rendering otp form.
+ */
 export function OtpForm() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -22,21 +24,25 @@ export function OtpForm() {
         data: dataResend
     } = useResendOtp();
 
-    // Passage à 6 cases
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [formData, setFormData] = useState({
         email: location.state?.email || "",
         otp: ""
     });
 
-    // Création dynamique des refs pour 6 cases
     const inputRefs = useRef([]);
 
+    /**
+     * Handles handle input change behavior.
+     */
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    /**
+     * Handles handle otp change behavior.
+     */
     const handleOtpChange = (value, index) => {
         const char = value.slice(-1);
         const newOtp = [...otp];
@@ -46,18 +52,23 @@ export function OtpForm() {
         const fullOtp = newOtp.join('');
         setFormData(prev => ({ ...prev, otp: fullOtp }));
 
-        // Focus vers la case suivante (jusqu'à la 6ème)
         if (char && index < 5) {
             inputRefs.current[index + 1]?.focus();
         }
     };
 
+    /**
+     * Handles handle key down behavior.
+     */
     const handleKeyDown = (e, index) => {
         if (e.key === 'Backspace' && !otp[index] && index > 0) {
             inputRefs.current[index - 1]?.focus();
         }
     };
 
+    /**
+     * Handles handle paste behavior.
+     */
     const handlePaste = (e) => {
         const pasteData = e.clipboardData.getData('text').trim().slice(0, 6).split('');
         if (pasteData.length > 0) {
@@ -68,17 +79,22 @@ export function OtpForm() {
             setOtp(newOtp);
             setFormData(prev => ({ ...prev, otp: newOtp.join('') }));
 
-            // Focus la dernière case remplie ou la 6ème
             const nextFocus = pasteData.length >= 6 ? 5 : pasteData.length;
             inputRefs.current[nextFocus]?.focus();
         }
     };
 
+    /**
+     * Handles handle submit behavior.
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
         mutate(formData);
     };
 
+    /**
+     * Handles handle resend otp behavior.
+     */
     const handleResendOtp = () => {
         if (!formData.email) {
             return toast.error("Veuillez renseigner votre email pour renvoyer le code");

@@ -1,6 +1,9 @@
 import React from "react"
 import { Twitter, Instagram, Globe, Github } from "lucide-react"
 
+/**
+ * UI component responsible for rendering footer.
+ */
 export function Footer() {
     return (
         <div className="mt-12 mb-8 flex flex-col items-center space-y-4">

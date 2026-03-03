@@ -4,7 +4,6 @@ import { MapPin, Search, Loader2, X, Check } from 'lucide-react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Correction icônes Leaflet
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 
@@ -16,7 +15,9 @@ const DefaultIcon = L.icon({
 })
 L.Marker.prototype.options.icon = DefaultIcon
 
-// --- Sous-composants internes ---
+/**
+ * UI component responsible for rendering location marker.
+ */
 function LocationMarker({ position, setPosition }) {
     useMapEvents({
         click(e) { setPosition(e.latlng) },
@@ -24,6 +25,9 @@ function LocationMarker({ position, setPosition }) {
     return position ? <Marker position={position} /> : null
 }
 
+/**
+ * UI component responsible for rendering map controller.
+ */
 function MapController({ center, zoom }) {
     const map = useMap()
     useEffect(() => {
@@ -32,6 +36,9 @@ function MapController({ center, zoom }) {
     return null
 }
 
+/**
+ * UI component responsible for rendering map picker.
+ */
 export function MapPicker({ onConfirm, onClose }) {
     const [mapCenter, setMapCenter] = useState([3.848, 11.502])
     const [tempPos, setTempPos] = useState(null)
@@ -39,6 +46,9 @@ export function MapPicker({ onConfirm, onClose }) {
     const [suggestions, setSuggestions] = useState([])
     const [isLoading, setIsLoading] = useState(false)
 
+    /**
+     * Handles handle search behavior.
+     */
     const handleSearch = async (query) => {
         setSearchQuery(query)
         if (query.length < 3) return setSuggestions([])
@@ -49,6 +59,9 @@ export function MapPicker({ onConfirm, onClose }) {
         } catch (e) { console.error(e) }
     }
 
+    /**
+     * Handles handle confirm behavior.
+     */
     const handleConfirm = async () => {
         if (!tempPos) return
         setIsLoading(true)
@@ -68,7 +81,7 @@ export function MapPicker({ onConfirm, onClose }) {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
             <div className="bg-white rounded-xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col">
                 <div className="h-[500px] relative">
-                    {/* Barre de recherche */}
+                    {}
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] md:w-2/3 z-[1000]">
                         <div className="bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden">
                             <div className="flex items-center px-3">

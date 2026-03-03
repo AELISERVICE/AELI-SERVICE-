@@ -12,6 +12,9 @@ import { useGetCategory } from '../../hooks/useServices';
 import { useGetProviderList } from '../../hooks/useProvider';
 import { useAddToFavorites } from '../../hooks/useFavorites';
 
+/**
+ * UI component responsible for rendering services section.
+ */
 export function ServicesSection() {
     const navigate = useNavigate();
     const { openContact, openSidebar, filters } = useOutletContext();
@@ -30,8 +33,6 @@ export function ServicesSection() {
         search: filters?.search
     });
 
-    // --- LOGIQUE DE DÉTECTION ROBUSTE ---
-    // On cherche d'abord dans .data.data (ton JSON récent), sinon dans .data
     const responseData = providersResponse?.data?.data || providersResponse?.data;
     const providers = responseData?.providers || [];
     const pagination = responseData?.pagination;
@@ -48,9 +49,11 @@ export function ServicesSection() {
         }))
     ];
 
-    // ... (Logique favorites inchangée)
     const { mutate: addToFavorites, isSuccess: isSuccessAddFavorite, isError: isErrorAddFavorite, data: dataAddFavorite, error: errorAddFavorite } = useAddToFavorites();
 
+    /**
+     * Handles handle favorite click behavior.
+     */
     const handleFavoriteClick = (providerId) => {
         addToFavorites({ providerId });
     };

@@ -4,7 +4,9 @@ import { ProfileSection } from '../components/profile/ProfileSection';
 import { ProviderPanel } from '../components/profile/ProviderPanel';
 import { Abonnement } from '../components/profile/Abonnement';
 
-
+/**
+ * UI component responsible for rendering profile screen.
+ */
 export function ProfileScreen() {
   const [isRole, setIsRole] = useState()
   return (

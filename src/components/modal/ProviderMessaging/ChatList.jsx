@@ -1,6 +1,9 @@
 import React from 'react';
 import { Avatar } from '../../../ui/Avatar';
 
+/**
+ * UI component responsible for rendering chat list.
+ */
 export function ChatList({ contacts, onSelectContact, selectedId }) {
     return (
         <div className="flex flex-col h-full md:border-r md:border-gray-200 overflow-hidden w-full">

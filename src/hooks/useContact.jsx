@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-// create reviews
+/**
+ * Custom hook that manages contact.
+ */
 export const useContact = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -13,7 +15,9 @@ export const useContact = () => {
     });
 };
 
-// stats daily 
+/**
+ * Custom hook that manages get stat daily.
+ */
 export const useGetStatDaily = () => {
     return useQuery({
         queryKey: ["useGetStatDaily"],
@@ -21,7 +25,9 @@ export const useGetStatDaily = () => {
     });
 };
 
-// get contact send by user connected
+/**
+ * Custom hook that manages get contact send.
+ */
 export const useGetContactSend = () => {
     return useQuery({
         queryKey: ["useGetContactSend"],
@@ -29,7 +35,9 @@ export const useGetContactSend = () => {
     });
 };
 
-// get contact recived by provider
+/**
+ * Custom hook that manages get received contact.
+ */
 export const useGetReceivedContact = () => {
     return useQuery({
         queryKey: ["useGetReceivedContact"],
@@ -37,7 +45,9 @@ export const useGetReceivedContact = () => {
     });
 };
 
-
+/**
+ * Custom hook that manages update status message.
+ */
 export const useUpdateStatusMessage = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -49,7 +59,9 @@ export const useUpdateStatusMessage = () => {
     });
 };
 
-
+/**
+ * Custom hook that manages unlock message.
+ */
 export const useUnlockMessage = () => {
     const queryClient = useQueryClient();
     return useMutation({

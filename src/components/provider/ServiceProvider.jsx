@@ -13,7 +13,9 @@ import { useGetServicesByProvider, useDeleteServices } from '../../hooks/useServ
 import { useGetProviderByid } from '../../hooks/useProvider';
 import { Loading } from '../global/Loading';
 
-
+/**
+ * UI component responsible for rendering service provider.
+ */
 export function ServiceProvider({ mode, dataConsult }) {
     const navigate = useNavigate();
     const [openMenuId, setOpenMenuId] = useState(null);
@@ -22,7 +24,6 @@ export function ServiceProvider({ mode, dataConsult }) {
     const [rating, setRating] = useState(5);
     const [customerContact, SetcustomerContact] = useState(false);
 
-    // --- DATA FETCHING ---
     const { data: userData } = useInfoUserConnected();
     const provider = userData?.data?.provider;
 
@@ -31,12 +32,10 @@ export function ServiceProvider({ mode, dataConsult }) {
 
     const { data: servicesData, isLoading: isLoadingServices, isError: isErrorServices, refetch: refetchService } = useGetServicesByProvider(provider?.id);
 
-    // --- LOGIQUE DE REGROUPEMENT DES SERVICES PAR CATÉGORIE (MODE CONSULTATION) ---
     const apiCategories = useMemo(() => {
         if (mode === "consultationCustomers") {
             if (!providerDetail?.services) return [];
 
-            // On transforme la liste de services en liste de catégories avec services imbriqués
             const categoriesMap = providerDetail.services.reduce((acc, service) => {
                 const cat = service.category;
                 if (!cat) return acc;
@@ -56,7 +55,6 @@ export function ServiceProvider({ mode, dataConsult }) {
             return Object.values(categoriesMap);
         }
 
-        // Mode manager (garde la structure existante)
         return servicesData?.data?.categories || [];
     }, [mode, providerDetail, servicesData]);
 
@@ -73,7 +71,9 @@ export function ServiceProvider({ mode, dataConsult }) {
     const currentCategory = apiCategories.find(c => c.id === activeCatId);
     const currentServices = currentCategory?.services || [];
 
-    // --- LOGIQUE SUPPRESSION ---
+    /**
+     * Handles handle delete click behavior.
+     */
     const handleDeleteClick = (service) => {
         setOpenMenuId(null);
         setConfirmConfig({
@@ -85,6 +85,9 @@ export function ServiceProvider({ mode, dataConsult }) {
         openConfirm();
     };
 
+    /**
+     * Handles open contact with data behavior.
+     */
     const openContactWithData = (provider, service) => {
         setDataContact({
             ...provider,
