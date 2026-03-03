@@ -56,8 +56,6 @@ const logAudit = async (options) => {
     logger.error("Audit log error:", {
       error: error.message,
       stack: error.stack,
-      eventType,
-      userId,
     });
     // Don't throw - audit failures shouldn't break main flow
   }
@@ -67,6 +65,18 @@ const logAudit = async (options) => {
  * Specific audit loggers for common operations
  */
 const auditLogger = {
+  adminAction: (req, action, entityType, entityId, oldValues = null, newValues = null, metadata = null, description = null) =>
+    logAudit({
+      req,
+      action,
+      entityType,
+      entityId,
+      oldValues,
+      newValues,
+      metadata,
+      description: description || `${action} on ${entityType}#${entityId}`,
+    }),
+
   // Provider operations
   providerCreated: (req, provider) =>
     logAudit({

@@ -136,6 +136,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/banners', bannerRoutes);
+app.use('/api/admin/banners', bannerRoutes);
 
 // Search endpoint (combined search across providers)
 app.get('/api/search', require('./controllers/providerController').getProviders);

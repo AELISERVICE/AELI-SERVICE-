@@ -730,6 +730,9 @@ Historique des actions effectuées sur la plateforme (création, modification, s
 
 ## 📢 10. GESTION DES BANNIÈRES
 
+**Note :** Les bannières sont montées sur la base `/api/banners` (avec routes publiques + routes admin protégées).
+Un alias est également disponible sur `/api/admin/banners`.
+
 ### `POST /banners` - Créer une bannière (Admin)
 
 **Description :**  
