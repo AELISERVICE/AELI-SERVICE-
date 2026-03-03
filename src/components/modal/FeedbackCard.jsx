@@ -110,9 +110,9 @@ export function FeedbackCard({ closeFeedback, providerData }) {
     }
   };
 
-  const displayName = isEditing ? providerData?.user?.firstName : providerData?.businessName;
-  const displayImage = isEditing ? providerData?.user?.profilePhoto : providerData?.photos?.[0];
-
+  const displayName = isEditing ? providerData?.businessName : providerData?.businessName;
+  const displayImage = isEditing ? providerData?.profilePhoto : providerData?.profilePhoto;
+  console.log("prov:", providerData)
   return (
     <div
       onClick={closeFeedback}

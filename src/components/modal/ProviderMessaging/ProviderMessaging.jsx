@@ -79,7 +79,7 @@ export function ProviderMessaging({ closeMessaging }) {
                 />
             ) : (
                 <div className="flex overflow-hidden font-sans h-[500px]">
-                    <div className={`${showMobileChat ? 'hidden' : 'flex'} md:flex w-full lg:max-w-sm md:max-w-[250px] flex-shrink-0 h-full border-r border-gray-100`}>
+                    <div className={`${showMobileChat ? 'hidden' : 'flex'} md:flex w-full md:w-auto lg:max-w-sm md:max-w-[250px] flex-shrink-0 h-full border-r border-gray-100`}>
                         <ChatList
                             contacts={chatGroups.map(group => ({
                                 ...group,
@@ -90,7 +90,7 @@ export function ProviderMessaging({ closeMessaging }) {
                             selectedId={selectedId}
                         />
                     </div>
-                    <div className={`${showMobileChat ? 'flex' : 'hidden'} md:flex flex-1 h-full bg-gray-50/30`}>
+                    <div className={`${showMobileChat ? 'flex' : 'hidden'} md:flex flex-1 h-full bg-gray-50/30 md:w-[400px]`}>
                         <ChatWindow
                             chat={selectedChat}
                             onBack={() => setShowMobileChat(false)}

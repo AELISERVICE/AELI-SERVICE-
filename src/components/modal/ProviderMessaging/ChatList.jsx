@@ -16,7 +16,7 @@ export function ChatList({ contacts, onSelectContact, selectedId }) {
                                 className={`w-full flex items-start p-4 transition-all relative text-left hover:bg-gray-50 
                                 ${isSelected ? 'bg-orange-50/50' : ''}`}>
                                 {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500" />}
-                                <Avatar src={contact.avatar} alt={contact.name} isOnline={contact.isOnline} />
+                                <Avatar src={contact.avatar || `https://ui-avatars.com/api/?name=${contact.name}&background=random`} alt={contact.name} isOnline={contact.isOnline} />
                                 <div className="ml-3 flex-1 min-w-0">
                                     <div className="flex justify-between items-baseline">
                                         <h3 className="text-sm font-bold text-gray-900 truncate">{contact.name}</h3>

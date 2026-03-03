@@ -37,7 +37,7 @@ export function ModalCard({
                     </header>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] flex-1 min-h-0">
+                <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] flex-1 min-h-0 ">
                     {children}
                 </div>
             </div>
