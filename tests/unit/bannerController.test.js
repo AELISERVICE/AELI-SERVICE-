@@ -32,7 +32,7 @@ jest.mock('../../src/middlewares/errorHandler', () => ({
     }
 }));
 
-jest.mock('../../src/middlewares/i18n', () => ({
+jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn()
 }));
 
@@ -45,7 +45,7 @@ jest.mock('../../src/config/redis', () => ({
 }));
 
 const { Banner } = require('../../src/models');
-const { i18nResponse } = require('../../src/middlewares/i18n');
+const { i18nResponse } = require('../../src/utils/helpers');
 const { deleteImage } = require('../../src/config/cloudinary');
 const { delByPattern } = require('../../src/config/redis');
 
