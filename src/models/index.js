@@ -14,6 +14,7 @@ const Webhook = require('./Webhook');
 const ApiUsage = require('./ApiUsage');
 const Payment = require('./Payment');
 const ProviderStats = require('./ProviderStats');
+const Banner = require('./Banner')(sequelize);
 
 // ==================== ASSOCIATIONS ====================
 
@@ -230,7 +231,8 @@ module.exports = {
     Payment,
     ProviderStats,
     Subscription,
-    ProviderApplication
+    ProviderApplication,
+    Banner
 };
 
 
