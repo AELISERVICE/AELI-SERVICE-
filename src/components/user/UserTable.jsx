@@ -20,7 +20,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
     const triggerRef = useRef(null);
 
     const { mutate: mutateDesactivate, isSuccess, data: dataDesactivate, isError, error, reset } = useDeactivateAccount();
-    const { mutate: mutateExport, isLoading: isLoadingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportUsers();
+    const { mutate: mutateExport, isPending: isPendingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportUsers();
 
     const handleStatusChange = (user) => {
         mutateDesactivate({
@@ -101,11 +101,11 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
                 <Button
                     variant="primary"
                     size={"icon"}
-                    disabled={isLoadingExport}
+                    disabled={isPendingExport}
                     onClick={handleExport}
                     className="p-2.5 md:px-3"
                 >
-                    {isLoadingExport ? (
+                    {isPendingExport ? (
                         <span key="loading-state" className="flex items-center gap-2">
                             <ButtonLoader />
                             <span className="hidden md:inline">Exportation...</span>

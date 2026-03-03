@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
@@ -56,9 +56,14 @@ export const useReviewProviderDocuments = () => {
 
 // Désactiver un compte providers
 export const useDeactivateAccountProvider = () => {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationKey: ["useDeactivateAccountProvider"],
         mutationFn: ({ id, formData }) => request(`/api/admin/providers/${id}/status`, "PUT", formData),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ["useGetProviderList"] });
+            queryClient.invalidateQueries({ queryKey: ["useProviderApplications"] });
+        },
     });
 };
 

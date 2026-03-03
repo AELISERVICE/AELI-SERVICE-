@@ -14,11 +14,6 @@ export function FeatureProviderScreen() {
             <div className="max-w-7xl mx-auto space-y-12">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div className="lg:col-span-8 space-y-6">
-
-                        {/* <div className="flex gap-3">
-                            <Input placeholder="Rechercher un prestataire..." icon={Search} />
-                            <Button variant="secondary" className="whitespace-nowrap">Filtrer</Button>
-                        </div> */}
                         <div className="space-y-4">
                             <ProviderListItem
                                 setSelectedProvider={setSelectedProvider}

@@ -9,7 +9,7 @@ import { useExportContacts } from '../../hooks/useExport';
 
 export const ContactAnalytics = () => {
   const { data: statsResponse } = useStats();
-  const { mutate: mutateExport, isLoading: isLoadingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportContacts();
+  const { mutate: mutateExport, isPending: isPendingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportContacts();
 
   // Extraction sécurisée des données avec valeurs par défaut
   const contacts = statsResponse?.data?.contacts;
@@ -85,11 +85,11 @@ export const ContactAnalytics = () => {
           <Button
             variant="primary"
             size={"icon"}
-            disabled={isLoadingExport}
+            disabled={isPendingExport}
             onClick={handleExport}
             className="p-[14px] rounded-lg"
           >
-            {isLoadingExport ? (
+            {isPendingExport ? (
               <span className="flex items-center gap-2">
                 <ButtonLoader />
               </span>

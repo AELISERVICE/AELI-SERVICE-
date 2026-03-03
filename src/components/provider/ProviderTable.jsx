@@ -25,10 +25,10 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
 
     // --- TES HOOKS (Inchangés) ---
     const { mutate: mutateStatus, isSuccess: isSuccessStatus, data: dataStatus, isError: isErrorStatus, error: errorStatus, reset: resetStatus } = useDeactivateAccountProvider();
-    const { mutate: mutateExport, isLoading: isLoadingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportProviders();
+    const { mutate: mutateExport, isPending: isPendingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportProviders();
 
     const handleStatusChange = (app) => {
-        mutateStatus({ id: app.id, formData: { isActive: !app.isActive } });
+        mutateStatus({ id: app.id, formData: { isActive: !app.isActive, reason: "Non-respect des conditions d'utilisation de la plateforme. Veuillez contacter le service client." } });
     };
 
     const handleExport = () => mutateExport();
@@ -81,11 +81,11 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                 <Button
                     variant="primary"
                     size={"icon"}
-                    disabled={isLoadingExport}
+                    disabled={isPendingExport}
                     onClick={handleExport}
                     className="p-2.5 md:px-3"
                 >
-                    {isLoadingExport ? (
+                    {isPendingExport ? (
                         <span className="flex items-center gap-2">
                             <ButtonLoader />
                             <span className="hidden md:inline">Exportation...</span>
@@ -182,7 +182,15 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                             <td className="px-6 py-4">
                                 <Badge
                                     status={app.status || app.verificationStatus}
-                                    variant={app.status === 'approved' ? 'green' : app.status === 'pending' ? 'yellow' : 'red'}
+                                    variant={
+                                        app.verificationStatus === 'approved'
+                                            ? 'green'
+                                            : app.status === 'approved'
+                                                ? 'green'
+                                                : app.verificationStatus === 'pending' || app.status === 'pending'
+                                                    ? 'yellow'
+                                                    : 'red'
+                                    }
                                 />
                             </td>
 

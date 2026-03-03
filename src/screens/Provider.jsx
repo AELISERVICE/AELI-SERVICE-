@@ -17,7 +17,7 @@ export function Provider() {
     const itemsPerPage = 5;
 
     // 2. Appels API (On récupère tout, ou on passe le search si ton API le gère)
-    const { data: dataProviderPublic } = useGetProviderList();
+    const { data: dataProvider, isLoading: loadingProvider, refetch: refetchProvider } = useGetProviderList();
     const { data: allData, isLoading: loadingAll, refetch } = useProviderApplications({ search: filters?.search });
     const { data: pendingData, isLoading: loadingPending, refetch: refetchPending } = useProviderPending({ search: filters?.search });
 
@@ -29,13 +29,14 @@ export function Provider() {
         }
 
         const allApps = allData?.data?.applications || [];
+        const providerList = dataProvider?.data?.providers || dataProvider?.data || [];
 
         // Filtrage en fonction du libellé de l'onglet
         switch (actifTabs) {
             case 'Actifs':
-                return allApps.filter(app => app.status === 'approved');
+                return providerList.filter(app => app.isActive === true);
             case 'Bloquer':
-                return allApps.filter(app => app.status === 'blocked');
+                return providerList.filter(app => app.isActive === false);
             case 'Attente':
                 return allApps.filter(app => app.status === 'pending');
             default:
@@ -71,9 +72,15 @@ export function Provider() {
 
             <ProviderTable
                 applications={currentItems} // On passe les éléments découpés (max 5)
-                isLoading={actifTabs === 'Doc verification' ? loadingPending : loadingAll}
+                isLoading={
+                    actifTabs === 'Doc verification'
+                        ? loadingPending
+                        : actifTabs === 'Actifs' || actifTabs === 'Bloquer'
+                            ? loadingProvider
+                            : loadingAll
+                }
                 actifTabs={actifTabs}
-                refetch={refetch}
+                refetch={actifTabs === 'Actifs' || actifTabs === 'Bloquer' ? refetchProvider : refetch}
                 refetchPending={refetchPending}
             />
 
