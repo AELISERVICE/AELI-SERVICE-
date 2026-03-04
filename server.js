@@ -58,10 +58,12 @@ const startServer = async () => {
         // Initialize Socket.IO
         initSocketIO(server);
 
-        // Sync database models (use { alter: true } in development, { force: false } in production)
-        const syncOptions = process.env.NODE_ENV === 'development'
-            ? { alter: true }
-            : { force: false };
+        // Sync database models
+        // IMPORTANT: Never run { alter: true } in production (PostgreSQL ENUM alters can crash startup).
+        // Use DB_SYNC_ALTER=true explicitly in development if you want auto-alter.
+        const isProduction = process.env.NODE_ENV === 'production';
+        const enableAlter = process.env.DB_SYNC_ALTER === 'true';
+        const syncOptions = (!isProduction && enableAlter) ? { alter: true } : { force: false };
 
         await sequelize.sync(syncOptions);
         logger.info('✅ Database models synchronized');

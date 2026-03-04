@@ -45,6 +45,9 @@ services:
       redis:
         condition: service_healthy
     env_file: .env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DB_SYNC_ALTER: ${DB_SYNC_ALTER:-false}
     ports:
       - "5000:5000"
     networks:
