@@ -41,6 +41,8 @@ const defaultOrigins = [
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5174",
   "http://localhost:5174",
+  "https://aeli-service-admin.onrender.com",
+  "https://aeli-service.onrender.com"
 ];
 
 const envOrigins = parseFrontendUrls(process.env.FRONTEND_URL);
