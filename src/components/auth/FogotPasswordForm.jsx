@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { toast } from "react-toastify";
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
@@ -76,7 +77,16 @@ export function ForgotPasswordForm() {
                                 className="w-full"
                                 disabled={isPending || isInvalid}
                             >
-                                {isPending ? "Envoi en cours..." : "Confirmer"}
+                                {isPending ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Envoi en cours...
+                                    </span>
+                                ) : (
+                                    <span key="loading-state" className="flex items-center gap-2">
+                                        Confirmer
+                                    </span>
+                                )}
                             </Button>
                             <div className="text-center pt-2">
                                 <p className="text-sm text-slate-500">

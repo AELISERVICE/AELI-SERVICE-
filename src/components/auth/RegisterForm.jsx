@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import { toast } from "react-toastify";
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
@@ -197,7 +197,16 @@ export function RegisterForm() {
               disabled={isPending || isInvalid}
               className="w-full"
             >
-              {isPending ? "Inscription..." : "Confirmer"}
+              {isPending ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Inscription...
+                </span>
+              ) : (
+                <span key="loading-state" className="flex items-center gap-2">
+                  Confirmer
+                </span>
+              )}
             </Button>
 
             <div className="relative flex items-center justify-center">

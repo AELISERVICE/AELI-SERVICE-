@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { toast } from "react-toastify";
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
@@ -187,7 +188,16 @@ export function OtpForm() {
                     className="w-full py-4 text-xs tracking-widest uppercase"
                     disabled={isPending || otp.some((d) => d === '')}
                 >
-                    {isPending ? "Vérification..." : "Vérifier"}
+                    {isPending ? (
+                        <span className="flex items-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Vérification...
+                        </span>
+                    ) : (
+                        <span key="loading-state" className="flex items-center gap-2">
+                            Vérifier
+                        </span>
+                    )}
                 </Button>
 
                 <div className="text-center">
@@ -198,7 +208,16 @@ export function OtpForm() {
                             disabled={isPendingResend}
                             onClick={handleResendOtp}
                             className="text-[#E8524D] font-bold hover:underline disabled:opacity-50">
-                            {isPendingResend ? "Envoi..." : "Renvoyer"}
+                            {isPendingResend ? (
+                                <span className="flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Envoi...
+                                </span>
+                            ) : (
+                                <span key="loading-state" className="flex items-center gap-2">
+                                    Renvoyer
+                                </span>
+                            )}
                         </button>
                     </p>
                 </div>
