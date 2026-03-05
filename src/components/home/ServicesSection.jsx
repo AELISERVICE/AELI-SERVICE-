@@ -86,7 +86,7 @@ export function ServicesSection() {
             </div>
 
             {isLoading ? (
-                <Loading className="py-10" title="Chargement des services..." />
+                <Loading className="py-10" size="small" title="Chargement des services..." />
             ) : isError ? (
                 <NotFound
                     Icon={AlertCircle}

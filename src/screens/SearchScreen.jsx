@@ -64,7 +64,7 @@ export function SearchScreen() {
 
                 { }
                 {isLoading ? (
-                    <Loading className="py-20" title="Chargement des prestataires..." />
+                    <Loading className="py-20" size="small" title="Chargement des prestataires..." />
                 ) : isError ? (
                     <NotFound
                         Icon={AlertCircle}
