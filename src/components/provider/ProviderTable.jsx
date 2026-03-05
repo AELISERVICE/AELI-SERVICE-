@@ -3,7 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
 import {
     MapPin, Upload, FileText, MoreVertical,
-    Users, Phone, MessageSquare, ShieldCheck, Briefcase
+    Users, Phone, MessageSquare, ShieldCheck, Briefcase, AlertCircle
 } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
@@ -15,7 +15,7 @@ import { Loader, ButtonLoader } from '../global/Loader';
 import { useExportProviders } from '../../hooks/useExport';
 import { useDeactivateAccountProvider } from '../../hooks/useProvider';
 
-export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, refetchPending }) => {
+export const ProviderTable = ({ applications, isLoading, isError, actifTabs, refetch, refetchPending }) => {
     // Headers adaptés aux prestataires
     const headers = ["Prestataire", "Contact", "Activités", "Localisation", "Documents", "Statut", "Compte", "Actions"];
 
@@ -72,7 +72,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
         resetExport();
     }, [isSuccessExport, isErrorExport, dataExport, errorExport, resetExport, isSuccessStatus, isErrorStatus, dataStatus, errorStatus, resetStatus, refetch, refetchPending]);
 
-    if (isLoading) return <Loader variant="default" message="Chargement..." />;
+    if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
     return (
         <Card>
@@ -99,7 +99,13 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                 </Button>
             </div>
 
-            {applications.length > 0 ? (
+            {isError ? (
+                <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Impossible de récupérer la répartition des événements."
+                />
+            ) : applications.length > 0 ? (
                 <Table headers={headers}>
                     {applications.map((app) => (
                         <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors">
@@ -109,7 +115,7 @@ export const ProviderTable = ({ applications, isLoading, actifTabs, refetch, ref
                                     {/* Suppression de w-full ici et ajout de flex-shrink-0 */}
                                     <div className="relative flex-shrink-0">
                                         <img
-                                            src={app.user?.profilePhoto || `https://ui-avatars.com/api/?name=${app.businessName}&background=random`}
+                                            src={app?.profilePhoto || `https://ui-avatars.com/api/?name=${app.businessName}&background=random`}
                                             className="h-10 w-10 rounded-full object-cover border border-slate-200"
                                             alt="avatar"
                                         />

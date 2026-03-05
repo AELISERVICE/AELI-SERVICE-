@@ -3,11 +3,12 @@ import React from 'react';
 export const NotFound = ({
     Icon,
     title = "Aucun élément trouvé",
-    message = "Il n'y a aucune donnée à afficher pour le moment."
+    message = "Il n'y a aucune donnée à afficher pour le moment.",
+    className
 }) => {
     return (
 
-        <div className="flex flex-col items-center justify-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 z-2">
+        <div className={`flex flex-col items-center justify-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 z-50 ${className}`}>
             <Icon className="text-gray-300 mb-2" size={32} />
             <h2 className="text-2xl font-bold text-gray-400 mb-2 text-center">
                 {title}

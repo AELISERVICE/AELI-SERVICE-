@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Flag, ArrowRight, Star, Eye, EyeOff, Check, Trash2 } from 'lucide-react';
+import { Flag, ArrowRight, Star, Eye, EyeOff, Check, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
 import { Pagination } from '../global/Pagination';
@@ -17,7 +17,8 @@ export function ReviewsList() {
     // 1. Appel avec l'objet de configuration (Vérifie que useGetReviews traite cet objet)
     const {
         data: dataReview,
-        isLoading
+        isLoading,
+        isError
     } = useGetReviews({
         page: page,
         limit: 5, // On force à 2 pour tester la pagination
@@ -100,7 +101,14 @@ export function ReviewsList() {
     return (
         <div className="mx-auto">
             <div className="space-y-4">
-                {reviews.length > 0 ? (
+                {isError ? (
+                    <NotFound
+                        Icon={AlertCircle}
+                        title="Erreur de chargement"
+                        message="Impossible de récupérer la répartition des événements."
+                        className="flex z-2"
+                    />
+                ) : reviews.length > 0 ? (
                     reviews.map((item) => {
                         const isProcessing = processingId === item.id;
                         return (

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
-import { MoreVertical, Image as ImageIcon, Plus } from 'lucide-react';
+import { MoreVertical, Image as ImageIcon, Plus, AlertCircle } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
@@ -18,7 +18,7 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
 
-    const { data: apiResponse, isLoading, refetch } = useGetBanners();
+    const { data: apiResponse, isLoading, isError, refetch } = useGetBanners();
     const banners = apiResponse?.data?.banners || apiResponse?.data || [];
 
     const { mutate: mutateDelete, isSuccess: isSuccessDelete, data: dataDelete, isError: isErrorDelete, error: errorDelete, reset: resetDelete } = useDeleteBanner();
@@ -87,7 +87,7 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
         });
     };
 
-    if (isLoading) return <Loader variant="default" message="Chargement..." />;
+    if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
     return (
         <Card>
@@ -110,10 +110,10 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
                         <tr key={banner.id} className="group hover:bg-slate-50/50 transition-colors">
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
-                                    {banner.bannerImage ? (
+                                    {banner.imageUrl ? (
                                         <img
-                                            src={banner.bannerImage}
-                                            className="h-16 w-24 rounded-lg object-cover border border-slate-200"
+                                            src={banner.imageUrl}
+                                            className="h-16 w-32 md:w-40 rounded-lg object-cover border border-slate-200 shadow-sm"
                                             alt={banner.title}
                                         />
                                     ) : (
@@ -134,7 +134,7 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
                             </td>
 
                             <td className="px-6 py-4">
-                                <span className="text-xs font-medium px-2 py-1 rounded bg-purple-100 text-purple-700">
+                                <span className="text-xs font-medium px-2 py-1 rounded bg-purple-100 text-purple-700 truncate">
                                     {getTypeLabel(banner.type)}
                                 </span>
                             </td>
@@ -158,11 +158,15 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
                                 <div className="flex flex-col gap-1">
                                     <div>
                                         <span className="text-slate-400">Début: </span>
-                                        <span>{formatDate(banner.startDate)}</span>
+                                        <span className="truncate">{formatDate(banner.startDate)}</span>
                                     </div>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 text-xs text-slate-600">
+                                <div className="flex flex-col gap-1">
                                     <div>
                                         <span className="text-slate-400">Fin: </span>
-                                        <span>{formatDate(banner.endDate)}</span>
+                                        <span className="truncate">{formatDate(banner.endDate)}</span>
                                     </div>
                                 </div>
                             </td>
@@ -204,6 +208,12 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
                         </tr>
                     ))}
                 </Table>
+            ) : isError ? (
+                <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Impossible de récupérer la répartition des événements."
+                />
             ) : (
                 <NotFound
                     Icon={ImageIcon}

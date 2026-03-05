@@ -1,13 +1,14 @@
 import React from 'react';
-import { MapPin, User, ShieldCheck, Briefcase, FileText } from 'lucide-react';
+import { MapPin, User, ShieldCheck, Briefcase, FileText, AlertCircle } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
 import { useStats } from '../../hooks/useStats';
 import { NotFound } from '../global/NotFound';
+import { Loader } from '../global/Loader';
 
 export const LastusersRegister = () => {
-  const { data: statsResponse, isLoading } = useStats();
+  const { data: statsResponse, isLoading, isError } = useStats();
   const recentUsers = statsResponse?.data?.recentUsers || [];
   const recentProviders = statsResponse?.data?.recentProviders || [];
 
@@ -23,7 +24,15 @@ export const LastusersRegister = () => {
               5 derniers utilisateurs inscrit
             </h3>
           </div>
-          {recentUsers.length > 0 ? (
+          {isLoading ? (
+            <Loader message="Chargement des utilisateurs récents..." />
+          ) : isError ? (
+            <NotFound
+              Icon={AlertCircle}
+              title="Erreur de chargement"
+              message="Impossible de récupérer les utilisateurs récents."
+            />
+          ) : recentUsers.length > 0 ? (
             <Table headers={headersUser}>
               {recentUsers.map((item) => (
                 <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">
@@ -100,7 +109,15 @@ export const LastusersRegister = () => {
             </h3>
           </div>
 
-          {recentProviders.length > 0 ? (
+          {isLoading ? (
+            <Loader message="Chargement des prestataires récents..." />
+          ) : isError ? (
+            <NotFound
+              Icon={AlertCircle}
+              title="Erreur de chargement"
+              message="Impossible de récupérer les prestataires récents."
+            />
+          ) : recentProviders.length > 0 ? (
             <Table headers={headers}>
               {recentProviders.map((item) => (
                 <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">

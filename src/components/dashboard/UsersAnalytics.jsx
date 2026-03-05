@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
+import { AlertCircle, BarChart3 } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { AreaCharts } from '../../ui/AreaChart';
 import { useGetUsers } from '../../hooks/useUser';
+import { Loader } from '../global/Loader';
+import { NotFound } from '../global/NotFound';
 
 export const UsersAnalytics = () => {
-    const { data: usersResponse, isLoading } = useGetUsers();
+    const { data: usersResponse, isLoading, isError } = useGetUsers();
 
     const chartData = useMemo(() => {
         const users = usersResponse?.data?.users || [];
@@ -54,11 +57,29 @@ export const UsersAnalytics = () => {
             </div>
 
             <div className="h-[250px] w-full">
-                <AreaCharts
-                    data={chartData}
-                    dataKey="users"
-                    color="#8b5cf6"
-                />
+                {isLoading ? (
+                    <Loader variant="centered" message="Chargement des inscriptions..." className="h-full" />
+                ) : isError ? (
+                    <NotFound
+                        Icon={AlertCircle}
+                        title="Erreur de chargement"
+                        message="Impossible de récupérer les inscriptions récentes."
+                        className="h-full"
+                    />
+                ) : chartData.some((item) => item.users > 0) ? (
+                    <AreaCharts
+                        data={chartData}
+                        dataKey="users"
+                        color="#8b5cf6"
+                    />
+                ) : (
+                    <NotFound
+                        Icon={BarChart3}
+                        title="Aucune donnée"
+                        message="Aucune inscription n'est disponible sur les 7 derniers jours."
+                        className="h-full"
+                    />
+                )}
             </div>
         </Card>
     );

@@ -17,9 +17,9 @@ export function Provider() {
     const itemsPerPage = 5;
 
     // 2. Appels API (On récupère tout, ou on passe le search si ton API le gère)
-    const { data: dataProvider, isLoading: loadingProvider, refetch: refetchProvider } = useGetProviderList();
-    const { data: allData, isLoading: loadingAll, refetch } = useProviderApplications({ search: filters?.search });
-    const { data: pendingData, isLoading: loadingPending, refetch: refetchPending } = useProviderPending({ search: filters?.search });
+    const { data: dataProvider, isLoading: loadingProvider, isError: isErrorProvider, refetch: refetchProvider } = useGetProviderList();
+    const { data: allData, isLoading: loadingAll, isError: isErrorAll, refetch } = useProviderApplications({ search: filters?.search });
+    const { data: pendingData, isLoading: loadingPending, isError: isErrorPending, refetch: refetchPending } = useProviderPending({ search: filters?.search });
 
     // 3. TA LOGIQUE DE FILTRAGE PAR STATUT (Client-side)
     const getFilteredData = () => {
@@ -78,6 +78,13 @@ export function Provider() {
                         : actifTabs === 'Actifs' || actifTabs === 'Bloquer'
                             ? loadingProvider
                             : loadingAll
+                }
+                isError={
+                    actifTabs === 'Doc verification'
+                        ? isErrorPending
+                        : actifTabs === 'Actifs' || actifTabs === 'Bloquer'
+                            ? isErrorProvider
+                            : isErrorAll
                 }
                 actifTabs={actifTabs}
                 refetch={actifTabs === 'Actifs' || actifTabs === 'Bloquer' ? refetchProvider : refetch}

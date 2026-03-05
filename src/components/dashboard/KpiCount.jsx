@@ -65,6 +65,8 @@ export function KpiCount() {
                     trend={kpi.trend}
                     trendUp={true}
                     rating={kpi.rating}
+                    isLoading={isLoading}
+                    isError={isError}
                 />
             ))}
         </div>

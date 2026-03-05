@@ -60,6 +60,8 @@ export function Kpicount() {
                     subtitle={kpi.subtitle}
                     iconColor={kpi.iconColor}
                     iconBg={kpi.iconBg}
+                    isLoading={isLoading}
+                    isError={isError}
                 />
             ))}
         </div>

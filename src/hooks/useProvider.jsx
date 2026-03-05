@@ -78,7 +78,7 @@ export const useGetProviderList = (params = {}) => {
 
     return useQuery({
         queryKey: ["useGetProviderList", params], // La clé change quand les filtres changent
-        queryFn: () => request(`/api/providers?${queryString}`, "GET"),
+        queryFn: () => request(`/api/admin/providers?${queryString}`, "GET"),
         refetchOnWindowFocus: false,
         enabled: true
     });

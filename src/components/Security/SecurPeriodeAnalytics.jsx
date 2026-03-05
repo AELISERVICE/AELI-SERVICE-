@@ -1,11 +1,14 @@
 import React, { useMemo } from 'react';
+import { AlertCircle, BarChart3 } from 'lucide-react';
 import { AreaCharts } from '../../ui/AreaChart';
 import { Card } from '../../ui/Card';
 import { useSecurityLogs } from "../../hooks/useStats";
+import { Loader } from '../global/Loader';
+import { NotFound } from '../global/NotFound';
 
 
 export const SecurPeriodeAnalytics = () => {
-    const { data: logsResponse, isLoading } = useSecurityLogs();
+    const { data: logsResponse, isLoading, isError } = useSecurityLogs();
 
     const chartData = useMemo(() => {
         const logs = logsResponse?.data?.logs || [];
@@ -60,11 +63,29 @@ export const SecurPeriodeAnalytics = () => {
                 )}
             </div>
             <div className="h-[250px] w-full">
-                <AreaCharts
-                    data={chartData}
-                    dataKey="events"
-                    color="#8b5cf6"
-                />
+                {isLoading ? (
+                    <Loader variant="centered" message="Chargement des événements..." className="h-full" />
+                ) : isError ? (
+                    <NotFound
+                        Icon={AlertCircle}
+                        title="Erreur de chargement"
+                        message="Impossible de récupérer les événements de sécurité."
+                        className="h-full"
+                    />
+                ) : chartData.some((item) => item.events > 0) ? (
+                    <AreaCharts
+                        data={chartData}
+                        dataKey="events"
+                        color="#8b5cf6"
+                    />
+                ) : (
+                    <NotFound
+                        Icon={BarChart3}
+                        title="Aucune donnée"
+                        message="Aucun événement n'est disponible sur les 7 derniers jours."
+                        className="h-full"
+                    />
+                )}
             </div>
         </Card>
     );

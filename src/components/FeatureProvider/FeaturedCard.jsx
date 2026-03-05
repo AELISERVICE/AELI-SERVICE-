@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'; // Ajout de useEffect ici
 import { toast } from "react-toastify";
 import { useOutletContext } from 'react-router-dom';
-import { X, Star } from 'lucide-react';
+import { X, Star, AlertCircle } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Loader, ButtonLoader } from '../global/Loader';
@@ -11,7 +11,7 @@ import { useGetFeatured, useFeature } from '../../hooks/useBoost';
 export const FeaturedCard = () => {
     // Note: onActiveModal semble être ta fonction pour ouvrir un modal de confirmation
     const { closeConfirm, onActiveModal } = useOutletContext();
-    const { data: dataFeatured, isLoading: isLoadingFeatured } = useGetFeatured();
+    const { data: dataFeatured, isLoading: isLoadingFeatured, isError: isErrorFeatured } = useGetFeatured();
     const { mutate: mutateFeature, isPending, isSuccess, isError, data, error } = useFeature();
     const providers = dataFeatured?.data?.providers || [];
 
@@ -81,14 +81,22 @@ export const FeaturedCard = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {providers.length > 0 ? (
+                {isErrorFeatured ? (
+                    <div className="col-span-full">
+                        <NotFound
+                            Icon={AlertCircle}
+                            title="Erreur de chargement"
+                            message="Impossible de récupérer la répartition des événements."
+                        />
+                    </div>
+                ) : providers.length > 0 ? (
                     providers.map((item) => (
                         <Card className="group border-violet-50 hover:border-[#E8524D]/20 transition-colors" key={item.id}>
                             <div className="flex items-center gap-4">
                                 <div className="relative">
                                     <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-violet-50">
                                         <img
-                                            src={item.user?.profilePhoto || `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
+                                            src={item.profilePhoto || `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
                                             alt={item.businessName}
                                             className="w-full h-full object-cover"
                                         />

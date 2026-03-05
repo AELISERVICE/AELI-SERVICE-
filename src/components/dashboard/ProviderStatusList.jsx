@@ -1,11 +1,13 @@
 import React from 'react';
-import { CheckCircle2, Clock, Crown } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, Crown } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { useStats } from '../../hooks/useStats';
+import { Loader } from '../global/Loader';
+import { NotFound } from '../global/NotFound';
 
 
 export const ProviderStatusList = () => {
-  const { data: statsResponse } = useStats();
+  const { data: statsResponse, isLoading, isError } = useStats();
   const providers = statsResponse?.data?.providers;
 
   const providerStatuses = [
@@ -44,24 +46,34 @@ export const ProviderStatusList = () => {
       </div>
 
       <div className="space-y-5">
-        {providerStatuses.map((item, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-full ${item.bg}`}>
-                <item.icon className={`w-4 h-4 ${item.color}`} />
+        {isLoading ? (
+          <Loader variant="centered" message="Chargement des statuts..." />
+        ) : isError ? (
+          <NotFound
+            Icon={AlertCircle}
+            title="Erreur de chargement"
+            message="Impossible de récupérer les statuts des prestataires."
+          />
+        ) : (
+          providerStatuses.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-full ${item.bg}`}>
+                  <item.icon className={`w-4 h-4 ${item.color}`} />
+                </div>
+                <span className="text-sm text-gray-600 font-medium">
+                  {item.label}
+                </span>
               </div>
-              <span className="text-sm text-gray-600 font-medium">
-                {item.label}
+              <span className="font-bold text-gray-900">
+                {item.count?.toLocaleString() || 0}
               </span>
             </div>
-            <span className="font-bold text-gray-900">
-              {item.count?.toLocaleString() || 0}
-            </span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </Card>
   );

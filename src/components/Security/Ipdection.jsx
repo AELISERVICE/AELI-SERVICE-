@@ -1,14 +1,15 @@
 import React, { useState } from "react";
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, AlertCircle } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
 import { Pagination } from '../global/Pagination';
 import { NotFound } from '../global/NotFound';
+import { Loader } from '../global/Loader';
 import { useSecurityLogs } from "../../hooks/useStats";
 
 export function IpDetection() {
-    const { data: logsResponse, isLoading } = useSecurityLogs();
+    const { data: logsResponse, isLoading, isError } = useSecurityLogs();
     const logs = logsResponse?.data?.logs || [];
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
@@ -43,7 +44,15 @@ export function IpDetection() {
                         Logs de securite ressent
                     </h3>
                 </div>
-                {logs.length > 0 ? (
+                {isLoading ? (
+                    <Loader message="Chargement des logs de sécurité..." />
+                ) : isError ? (
+                    <NotFound
+                        Icon={AlertCircle}
+                        title="Erreur de chargement"
+                        message="Impossible de récupérer les logs de sécurité."
+                    />
+                ) : logs.length > 0 ? (
                     <Table headers={headers}>
                         {currentItems.map((log) => {
                             const dateObj = new Date(log.createdAt);
@@ -100,17 +109,18 @@ export function IpDetection() {
                     />
                 )}
             </Card>
-
-            <div className="mt-6 overflow-x-auto ">
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => {
-                        setCurrentPage(page);
-                        window.scrollTo({ top: 0, behavior: 'smooth' }); // Optionnel : remonte en haut
-                    }}
-                />
-            </div>
+            {totalPages &&
+                <div className="mt-6 overflow-x-auto ">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => {
+                            setCurrentPage(page);
+                            window.scrollTo({ top: 0, behavior: 'smooth' }); // Optionnel : remonte en haut
+                        }}
+                    />
+                </div>
+            }
         </>
     );
 }

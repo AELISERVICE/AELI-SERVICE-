@@ -1,5 +1,5 @@
 import React, { useMemo } from "react"
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert, AlertCircle } from 'lucide-react';
 import { PieCharts } from '../../ui/PieChart';
 import { Card } from '../../ui/Card';
 import { Loader } from '../global/Loader';
@@ -7,7 +7,7 @@ import { NotFound } from '../global/NotFound';
 import { useSecurityLogs } from "../../hooks/useStats";
 
 export function RiskLevelDistribution() {
-    const { data: logsResponse, isLoading } = useSecurityLogs();
+    const { data: logsResponse, isLoading, isError } = useSecurityLogs();
 
     const compositionData = useMemo(() => {
         const logs = logsResponse?.data?.logs || [];
@@ -47,15 +47,21 @@ export function RiskLevelDistribution() {
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800">Composition des événements</h3>
                 {!isLoading && (
-                    <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                    <span className="flex flex-row text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded">
                         {logsResponse?.data?.logs?.length || 0} logs
                     </span>
                 )}
             </div>
 
-            <div className="h-[250px] w-full flex items-center justify-center relative">
+            <div className="h-[250px] w-full flex items-center justify-center relative pb-4">
                 {isLoading ? (
                     <Loader variant="inline" message="Chargement..." />
+                ) : isError ? (
+                    <NotFound
+                        Icon={AlertCircle}
+                        title="Erreur de chargement"
+                        message="Impossible de récupérer la répartition des événements."
+                    />
                 ) : compositionData.length > 0 ? (
                     <PieCharts data={compositionData} />
                 ) : (

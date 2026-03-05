@@ -1,5 +1,5 @@
 import React from 'react'
-import { BoxIcon } from 'lucide-react'
+import { Loader2, AlertCircle } from 'lucide-react'
 
 export function StatsCard({
     title,
@@ -13,6 +13,9 @@ export function StatsCard({
     trendUp,
     footerText,
     rating,
+    isLoading = false,
+    isError = false,
+    errorText = 'Erreur de chargement',
 }) {
     return (
         <div className="relative overflow-hidden bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full transition-all hover:shadow-md">
@@ -33,7 +36,19 @@ export function StatsCard({
             </div>
 
             <div>
-                <h3 className={`text-3xl font-bold text-gray-900 mb-1 ${valueCol}`}>{value}</h3>
+                {isLoading ? (
+                    <div className="flex items-center gap-2 mb-1">
+                        <Loader2 className="w-6 h-6 animate-spin text-[#E8524D]" />
+                        <span className="text-sm text-gray-500">Chargement...</span>
+                    </div>
+                ) : isError ? (
+                    <div className="flex items-center gap-2 mb-1 text-red-600">
+                        <AlertCircle className="w-5 h-5" />
+                        <span className="text-sm font-medium">{errorText}</span>
+                    </div>
+                ) : (
+                    <h3 className={`text-3xl font-bold text-gray-900 mb-1 ${valueCol}`}>{value}</h3>
+                )}
                 <p className="text-sm text-gray-500 font-medium mb-2">{title}</p>
 
                 <div className="flex items-center text-xs text-gray-400">

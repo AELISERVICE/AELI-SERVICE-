@@ -48,9 +48,8 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                 isActive: banner.isActive !== undefined ? banner.isActive : true,
                 order: banner.order || 0
             });
-            if (banner.bannerImage) {
-                setImagePreview(banner.bannerImage);
-            }
+            setImageFile(null);
+            setImagePreview(banner.imageUrl || banner.bannerImage || null);
         }
     }, [banner, isEditMode]);
 
@@ -94,18 +93,6 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Vérifier le type de fichier
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-            if (!validTypes.includes(file.type)) {
-                toast.error("Format d'image non supporté. Utilisez JPG, PNG ou WebP.");
-                return;
-            }
-
-            // Vérifier la taille (5MB max)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error("L'image est trop volumineuse. Taille maximale : 5MB.");
-                return;
-            }
 
             setImageFile(file);
             const reader = new FileReader();
@@ -124,23 +111,35 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
             return;
         }
 
-        // Pour la création, l'image est requise
+        // Pour la création, l'image est obligatoire
         if (!isEditMode && !imageFile) {
             toast.error("L'image de la bannière est requise");
             return;
         }
 
-        // Préparer FormData
+        // ON UTILISE FORCÉMENT FORMDATA POUR LE MULTIPART
         const submitData = new FormData();
-        submitData.append('title', formData.title);
-        if (formData.description) submitData.append('description', formData.description);
-        if (imageFile) submitData.append('bannerImage', imageFile);
-        if (formData.linkUrl) submitData.append('linkUrl', formData.linkUrl);
+
+        // 1. On ajoute le fichier (impératif pour Multer)
+        if (imageFile instanceof File) {
+            submitData.append('bannerImage', imageFile);
+        }
+
+        // 2. On ajoute les autres champs (ils seront convertis en string par FormData)
+        submitData.append('title', formData.title.trim());
         submitData.append('type', formData.type);
+        submitData.append('isActive', String(formData.isActive));
+        submitData.append('order', String(formData.order || 0));
+
+        if (formData.description) submitData.append('description', formData.description);
+        if (formData.linkUrl) submitData.append('linkUrl', formData.linkUrl);
         if (formData.startDate) submitData.append('startDate', formData.startDate);
         if (formData.endDate) submitData.append('endDate', formData.endDate);
-        submitData.append('isActive', formData.isActive);
-        submitData.append('order', formData.order.toString());
+
+        // DEBUG : Vérifiez bien dans la console que 'bannerImage' contient un objet File/Blob
+        for (let [key, value] of submitData.entries()) {
+            console.log(`${key}:`, value);
+        }
 
         if (isEditMode) {
             mutateUpdate({ id: banner.id, formData: submitData });
@@ -153,7 +152,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[100]">
-            <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto !p-8 no-scrollbar">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold text-gray-900">
                         {isEditMode ? 'Modifier la bannière' : 'Créer une bannière'}
@@ -170,6 +169,20 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Image */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                Image de la bannière {!isEditMode && <span className="text-red-500">*</span>}
+                            </label>
+                            <Input
+                                type="file"
+                                name="bannerImage"
+                                onChange={handleFileChange}
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                disabled={isLoading}
+                            />
+                        </div>
+
                         {/* Titre */}
                         <div className="md:col-span-2">
                             <Input
@@ -194,43 +207,6 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                                 placeholder="Description optionnelle"
                                 disabled={isLoading}
                             />
-                        </div>
-
-                        {/* Image */}
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                Image de la bannière {!isEditMode && <span className="text-red-500">*</span>}
-                            </label>
-                            {imagePreview ? (
-                                <div className="relative">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="w-full h-48 object-cover rounded-lg border border-slate-200"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="danger"
-                                        size="sm"
-                                        onClick={() => {
-                                            setImagePreview(null);
-                                            setImageFile(null);
-                                        }}
-                                        className="absolute top-2 right-2"
-                                        disabled={isLoading}
-                                    >
-                                        <X size={16} />
-                                    </Button>
-                                </div>
-                            ) : (
-                                <Input
-                                    type="file"
-                                    name="bannerImage"
-                                    onChange={handleFileChange}
-                                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                                    disabled={isLoading}
-                                />
-                            )}
                         </div>
 
                         {/* Type */}
@@ -313,11 +289,11 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex flex-col-reverse md:flex-row gap-3 pt-4 border-t border-gray-200">
                         <Button
                             type="button"
                             variant="outline"
-                            className="flex-1"
+                            className="flex-1 py3"
                             onClick={onClose}
                             disabled={isLoading}
                         >
@@ -326,7 +302,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                         <Button
                             type="submit"
                             variant="primary"
-                            className="flex-1"
+                            className="flex-1 py-3"
                             disabled={isLoading}
                         >
                             {isLoading ? (
@@ -344,4 +320,3 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
         </div>
     );
 };
-

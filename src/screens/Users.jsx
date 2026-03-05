@@ -11,7 +11,7 @@ export function Users() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 15;
 
-    const { data: apiResponse, isLoading, refetch } = useGetUsers();
+    const { data: apiResponse, isLoading, isError, refetch } = useGetUsers();
     const allUsers = apiResponse?.data?.users || [];
 
     // --- LOGIQUE DE FILTRAGE ---
@@ -49,14 +49,17 @@ export function Users() {
                 isLoading={isLoading}
                 refetch={refetch}
                 actifTabs={actifTabs}
+                isError={isError}
             />
-            <div className="mt-6">
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={(page) => setCurrentPage(page)}
-                />
-            </div>
+            {totalPages > 1 && (
+                <div className="mt-6">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            )}
             <ToastContainer position="bottom-center" />
         </>
     );

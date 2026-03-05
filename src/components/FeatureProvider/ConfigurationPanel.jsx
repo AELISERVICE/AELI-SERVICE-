@@ -79,12 +79,12 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
             </span>
           </div>
 
-          <div className="flex justify-between text-sm border-t border-violet-100 pt-3">
+          {/* <div className="flex justify-between text-sm border-t border-violet-100 pt-3">
             <span className="text-slate-500">Prix de la prestation :</span>
             <span className="text-[#E8524D] font-bold text-lg">
               {estimatedPrice.toFixed(2)} €
             </span>
-          </div>
+          </div> */}
         </div>
 
         <p className="text-[11px] text-slate-400 italic leading-relaxed">

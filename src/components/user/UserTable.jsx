@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
-import { MoreVertical, Upload, ShieldCheck, Users } from 'lucide-react';
+import { MoreVertical, Upload, ShieldCheck, Users, AlertCircle } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { Table } from '../../ui/Table';
 import { Badge } from '../../ui/Badge';
@@ -12,14 +12,14 @@ import { Loader, ButtonLoader } from '../global/Loader';
 import { useDeactivateAccount } from '../../hooks/useUser';
 import { useExportUsers } from '../../hooks/useExport';
 
-export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
+export const UserTable = ({ users, isLoading, refetch, actifTabs, isError }) => {
     const headers = ["Utilisateur", "Rôle", "Genre", "Contact", "Localisation", "Vérifié", "Dernière Connexion", "Status", "Actions"];
 
     const { onActiveModal } = useOutletContext();
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
 
-    const { mutate: mutateDesactivate, isSuccess, data: dataDesactivate, isError, error, reset } = useDeactivateAccount();
+    const { mutate: mutateDesactivate, isSuccess, data: dataDesactivate, isError: isErrorDesactivate, error, reset } = useDeactivateAccount();
     const { mutate: mutateExport, isPending: isPendingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportUsers();
 
     const handleStatusChange = (user) => {
@@ -73,7 +73,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
             toast.success("Exportation réussie !");
         }
 
-        if (isError || isErrorExport) {
+        if (isErrorDesactivate || isErrorExport) {
             const mainMessage = error?.message || errorExport?.message;
             toast.error(mainMessage);
 
@@ -88,9 +88,9 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
         reset();
         resetExport();
 
-    }, [isSuccess, isError, dataDesactivate, error, refetch, isSuccessExport, isErrorExport, dataExport, errorExport]);
+    }, [isSuccess, isErrorDesactivate, dataDesactivate, error, refetch, isSuccessExport, isErrorExport, dataExport, errorExport]);
 
-    if (isLoading) return <Loader variant="default" message="Chargement..." />;
+    if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
     return (
         <Card>
@@ -118,7 +118,13 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs }) => {
                     )}
                 </Button>
             </div>
-            {users.length > 0 ? (
+            {isError ? (
+                <NotFound
+                    Icon={AlertCircle}
+                    title="Erreur de chargement"
+                    message="Impossible de récupérer la liste des utilisateurs."
+                />
+            ) : users.length > 0 ? (
                 <Table headers={headers}>
                     {users.map((user) => (
                         <tr key={user.id} className="group hover:bg-slate-50/50 transition-colors">

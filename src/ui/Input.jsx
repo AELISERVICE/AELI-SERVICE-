@@ -17,6 +17,7 @@ export function Input({
     ...props
 }) {
     const [isOpen, setIsOpen] = useState(false)
+    const [filePreview, setFilePreview] = useState(null)
     const containerRef = useRef(null)
 
     // STYLES EXACTS : Fond slate-50, bordure slate-200, focus Saumon (#FCE0D6)
@@ -39,6 +40,28 @@ export function Input({
         }
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [type])
+
+    const handleFileChange = (e) => {
+        const file = e?.target?.files?.[0]
+
+        if (file) {
+            setFilePreview(URL.createObjectURL(file))
+        } else {
+            setFilePreview(null)
+        }
+
+        if (typeof onChange === 'function') {
+            onChange(e)
+        }
+    }
+
+    useEffect(() => {
+        return () => {
+            if (filePreview) {
+                URL.revokeObjectURL(filePreview)
+            }
+        }
+    }, [filePreview])
 
     return (
         <div ref={containerRef} className={`w-full group ${type === 'textarea' ? 'col-span-1 sm:col-span-2' : ''}`}>
@@ -104,21 +127,33 @@ export function Input({
                     />
                 ) : type === 'file' ? (
                     /* CAS 3 : FILE (Style pointillé Saumon au survol) */
-                    <div className={`group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white ${className}`}>
-                        <div className="flex flex-col items-center justify-center space-y-2 text-center">
+                    <div className={`group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white overflow-hidden ${className}`}>
+                        {filePreview ? (
+                            <div className="absolute inset-0 z-0">
+                                <img
+                                    src={filePreview}
+                                    alt="Preview"
+                                    className="h-full w-full object-cover opacity-40 transition-opacity group-hover:opacity-20"
+                                />
+                                <div className="absolute inset-0 bg-white/20 transition-colors group-hover:bg-transparent" />
+                            </div>
+                        ) : null}
+
+                        <div className="relative z-10 flex flex-col items-center justify-center space-y-2 text-center pointer-events-none">
                             <div className="rounded-full bg-white p-2 shadow-sm group-hover:bg-purple-50">
                                 <UploadCloud className="h-6 w-6 text-gray-400 group-hover:text-[#FCE0D6]" />
                             </div>
                             <div className="text-xs text-gray-500">
-                                <span className="font-medium text-[#E8524D]">Click to upload</span> or drag and drop
+                                <span className="font-medium text-[#E8524D]">{filePreview ? 'Changer la photo' : 'Click to upload'}</span> or drag and drop
                             </div>
                             <p className="text-[10px] text-gray-400 uppercase">PNG, JPG up to 5MB</p>
                         </div>
+
                         <input
                             type="file"
                             name={name}
-                            className="absolute inset-0 cursor-pointer opacity-0"
-                            onChange={onChange}
+                            className="absolute inset-0 z-20 cursor-pointer opacity-0"
+                            onChange={handleFileChange}
                             {...props}
                         />
                     </div>

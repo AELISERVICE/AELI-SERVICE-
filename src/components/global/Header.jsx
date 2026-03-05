@@ -33,6 +33,9 @@ export function Header({ onMenuClick, filters, setFilters }) {
         if (pathname.startsWith('/security')) {
             return { title: "Sécurité", subtitle: "Paramètres d'accès et logs système" };
         }
+        if (pathname.startsWith('/banners')) {
+            return { title: "Bannière", subtitle: "Gérez vos bannières" };
+        }
         return { title: "Administration", subtitle: "Bienvenue sur votre espace de gestion" };
     };
 
