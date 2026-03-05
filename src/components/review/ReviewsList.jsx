@@ -106,7 +106,6 @@ export function ReviewsList() {
                         Icon={AlertCircle}
                         title="Erreur de chargement"
                         message="Impossible de récupérer la répartition des événements."
-                        className="flex z-2"
                     />
                 ) : reviews.length > 0 ? (
                     reviews.map((item) => {

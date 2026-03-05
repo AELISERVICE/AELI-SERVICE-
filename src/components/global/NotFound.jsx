@@ -9,7 +9,7 @@ export const NotFound = ({
     // Return the rendered UI for this component.
     return (
 
-        <div className={`flex flex-col items-center justify-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 z-50 ${className}`}>
+        <div className={`flex flex-col items-center justify-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 relative z-2 ${className}`}>
             <Icon className="text-gray-300 mb-2" size={32} />
             <h2 className="text-2xl font-bold text-gray-400 mb-2 text-center">
                 {title}

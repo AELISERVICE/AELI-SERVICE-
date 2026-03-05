@@ -49,6 +49,7 @@ export const ProviderListItem = ({ setSelectedProvider }) => {
                     Icon={AlertCircle}
                     title="Erreur de chargement"
                     message="Impossible de récupérer la répartition des événements."
+                    className="h-full"
                 />
             ) : providers.length > 0 ? (
                 providers.map((item) => (
