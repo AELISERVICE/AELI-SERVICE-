@@ -9,7 +9,8 @@ export const request = async (endpoint, method = "GET", body = null) => {
     const options = {
         method,
         headers: {
-            "Authorization": `Bearer ${accessToken}`
+            "Authorization": `Bearer ${accessToken}`,
+            "ngrok-skip-browser-warning": "true"
         },
     };
 
@@ -33,8 +34,8 @@ export const request = async (endpoint, method = "GET", body = null) => {
             try {
                 const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
                     method: 'POST',
-                    headers: { 
-                        "Content-Type": "application/json" ,
+                    headers: {
+                        "Content-Type": "application/json",
                         'ngrok-skip-browser-warning': 'true'
                     },
                     body: JSON.stringify({ refreshToken })
