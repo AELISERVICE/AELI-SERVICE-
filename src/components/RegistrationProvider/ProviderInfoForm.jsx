@@ -21,8 +21,8 @@ export function ProviderInfoForm() {
     const [agreed, setAgreed] = useState(false)
     const [showMapModal, setShowMapModal] = useState(false)
     const { data: userData } = useInfoUserConnected();
-    const { mutate: mutateApply, isPending: isPendingApply, isError: isErrorApply, error: errorApply, isSuccess: isSuccessApply, data: dataApply } = useApplyProvider();
-    const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate } = useUpdateProviderProfile();
+    const { mutate: mutateApply, isPending: isPendingApply, isError: isErrorApply, error: errorApply, isSuccess: isSuccessApply, data: dataApply, reset: resetApply } = useApplyProvider();
+    const { mutate: mutateUpdate, isPending: isPendingUpdate, isError: isErrorUpdate, error: errorUpdate, isSuccess: isSuccessUpdate, data: dataUpdate, reset: resetUpdate } = useUpdateProviderProfile();
 
     const user = userData?.data?.user;
     const provider = userData?.data?.provider;
@@ -99,10 +99,9 @@ export function ProviderInfoForm() {
         }
     }, [provider]);
 
-    const hasPhotos = Array.isArray(formData.photos) ? formData.photos.length > 0 : Boolean(formData.photos);
     const isInvalidBase = [formData.businessName, formData.location, formData.description].some(v => !v) || formData.activities.length === 0;
     const isInvalidIdentity = !isEditMode && [formData.cniNumber, formData.imgcnirecto, formData.imgcniverso].some(v => !v);
-    const isInvalid = isInvalidBase || (isInvalidIdentity || (!isEditMode && !hasPhotos));
+    const isInvalid = isInvalidBase || (isInvalidIdentity);
     const isPending = isPendingApply || isPendingUpdate;
 
     const handleAddActivity = (e) => {
@@ -162,7 +161,6 @@ export function ProviderInfoForm() {
             if (formData.photos instanceof File) dataToSend.append('logo', formData.photos);
             mutateUpdate({ id: providerId, formData: dataToSend });
         } else {
-            if (formData.photos instanceof File) dataToSend.append('profilePhoto', formData.photos);
             dataToSend.append('firstName', formData.firstName);
             dataToSend.append('lastName', formData.lastName);
             dataToSend.append('email', formData.email);
@@ -181,7 +179,24 @@ export function ProviderInfoForm() {
         }
         const error = errorApply || errorUpdate;
         if (error) toast.error(error.response?.data?.message || error.message);
-    }, [isSuccessApply, isSuccessUpdate, isErrorApply, isErrorUpdate, navigate, dataApply, dataUpdate, errorApply, errorUpdate]);
+
+
+        if (isErrorApply || isErrorApply) {
+            const mainMessage = errorApply?.message || errorUpdate?.message;
+            toast.error(mainMessage);
+
+            const backendErrors = errorApply?.response?.errors || errorUpdate?.response?.errors;
+            if (Array.isArray(backendErrors)) {
+                backendErrors.forEach((err) => {
+                    toast.info(err.message);
+                });
+            }
+        }
+
+        resetApply()
+        resetUpdate()
+
+    }, [isSuccessApply, isSuccessUpdate, isErrorApply, isErrorUpdate, resetApply, dataApply, dataUpdate, errorApply, errorUpdate, resetUpdate]);
 
     return (
         <FormCard
@@ -238,16 +253,17 @@ export function ProviderInfoForm() {
                             </div>
                         </div>
 
-                        <Input
-                            name="photos"
-                            label="Photo / Logo"
-                            type="file"
-                            previewImage={typeof formData.photos === 'string' ? formData.photos : undefined}
-                            onChange={handleChange}
-                            required={!isEditMode}
-                            accept="image/*"
-                            className="h-[250px]"
-                        />
+                        {isEditMode && (
+                            <Input
+                                name="photos"
+                                label="Photo / Logo"
+                                type="file"
+                                previewImage={typeof formData.photos === 'string' ? formData.photos : undefined}
+                                onChange={handleChange}
+                                accept="image/*"
+                                className="h-[250px]"
+                            />
+                        )}
                         <Input name="businessName" label="Entreprise" value={formData.businessName} onChange={handleChange} required />
                         <Input name="businessContact" label="Contact Pro" type="number" value={formData.businessContact} onChange={handleChange} required />
                         <Input name="whatsapp" label="Contact whatsapp" type="text" value={formData.whatsapp} onChange={handleChange} required />

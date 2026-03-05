@@ -19,6 +19,7 @@ import { Loading } from '../global/Loading';
 export function ServiceProvider({ mode, dataConsult }) {
     const navigate = useNavigate();
     const [openMenuId, setOpenMenuId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
     const triggerRef = useRef(null);
     const { openContact, openFeedback, openConfirm, setConfirmConfig, closeModal2, setDataContact } = useOutletContext();
     const [rating, setRating] = useState(5);
@@ -70,6 +71,16 @@ export function ServiceProvider({ mode, dataConsult }) {
 
     const currentCategory = apiCategories.find(c => c.id === activeCatId);
     const currentServices = currentCategory?.services || [];
+    const itemsPerPage = 8;
+    const totalPages = Math.ceil(currentServices.length / itemsPerPage);
+    const paginatedServices = currentServices.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCatId, mode]);
 
     /**
      * Handles handle delete click behavior.
@@ -232,13 +243,14 @@ export function ServiceProvider({ mode, dataConsult }) {
 
             <div className={`grid grid-cols-1 ${mode === "consultationCustomers" && currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3" : "flex"} gap-6 mb-4`}>
                 {currentServices.length > 0 ? (
-                    currentServices.map((service) => (
+                    paginatedServices.map((service) => (
                         <ProductCard
                             key={service.id}
                             title={service.name}
                             description={service.description}
                             price={service.price}
                             image={service.photo}
+                            isShowFavorie={false}
                             isAdmin={mode !== "consultationCustomers"}
                             actions={mode === "consultationCustomers"
                                 ? [
@@ -283,7 +295,11 @@ export function ServiceProvider({ mode, dataConsult }) {
                 )}
             </div>
             {currentServices.length > 0 &&
-                <Pagination />
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                />
             }
         </>
     )

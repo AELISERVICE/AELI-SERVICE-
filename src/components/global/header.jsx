@@ -117,7 +117,7 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
             <div className="flex-1">
               <SelectFilter
                 label="Note"
-                options={['4.0+', '4.5+', '5.0']}
+                options={['0.0', '1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0']}
                 value={rating}
                 onChange={handleRatingChange}
                 className="w-full border-none shadow-none"

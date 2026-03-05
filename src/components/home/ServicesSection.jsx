@@ -21,17 +21,23 @@ export function ServicesSection() {
 
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; // Remets une valeur normale ici
+    const itemsPerPage = 12; // Remets une valeur normale ici
 
     const { data: categoryData } = useGetCategory();
     const categoriesFromApi = categoryData?.data?.categories || [];
 
-    const { data: providersResponse, isLoading, isError } = useGetProviderList({
+    const queryParams = {
         page: currentPage,
         limit: itemsPerPage,
-        category: selectedCategoryId,
-        search: filters?.search
-    });
+        search: filters?.search,
+    };
+
+    // N'ajoute le categoryId que s'il y a une valeur sélectionnée
+    if (selectedCategoryId) {
+        queryParams.categoryId = selectedCategoryId;
+    }
+
+    const { data: providersResponse, isLoading, isError } = useGetProviderList(queryParams);
 
     const responseData = providersResponse?.data?.data || providersResponse?.data;
     const providers = responseData?.providers || [];
@@ -80,7 +86,7 @@ export function ServicesSection() {
             </div>
 
             {isLoading ? (
-                <Loading className="py-20" title="Chargement des services..." />
+                <Loading className="py-10" title="Chargement des services..." />
             ) : isError ? (
                 <NotFound
                     Icon={AlertCircle}

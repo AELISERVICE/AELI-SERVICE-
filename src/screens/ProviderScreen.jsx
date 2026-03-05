@@ -16,11 +16,10 @@ export function ProviderScreen() {
     return (
         <main className="flex-1 flex flex-col xl:flex-row h-screen md:overflow-hidden relative">
             <div className="flex-1 h-full md:overflow-y-auto py-4 md:p-2 md:pr-4 no-scrollbar">
-                <div className="mx-auto">
+                <div className="mx-auto pb-4 md:pb-0">
                     <ServiceProvider mode={mode} dataConsult={data} />
                 </div>
             </div>
-            {}
             {showStats && (
                 <div
                     className="fixed inset-0 bg-black/20 backdrop-blur-sm  xl:hidden"

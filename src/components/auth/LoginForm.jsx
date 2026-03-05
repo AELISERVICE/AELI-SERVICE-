@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { toast } from "react-toastify";
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
@@ -99,7 +100,16 @@ export function LoginForm() {
                                 className="w-full"
                                 disabled={isPending || isInvalid}
                             >
-                                {isPending ? "Connexion..." : "Confirmer"}
+                                {isPending ? (
+                                    <span className="flex items-center gap-2">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Connexion...
+                                    </span>
+                                ) : (
+                                    <span key="loading-state" className="flex items-center gap-2">
+                                        Confirmer
+                                    </span>
+                                )}
                             </Button>
                             <div className="flex justify-end mt-2">
                                 <button

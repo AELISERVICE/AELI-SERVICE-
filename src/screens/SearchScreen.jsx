@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { ServiceSearch } from '../components/search/ServiceSearch';
 import { MapSearch } from '../components/search/MapSearch';
@@ -13,16 +13,26 @@ import { Search, Loader2, AlertCircle } from 'lucide-react';
  */
 export function SearchScreen() {
     const [activeTab, setActiveTab] = useState('service');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
 
     const { filters, openContact } = useOutletContext();
 
     const { data: apiResponse, isLoading, isError } = useGetProviderList({
+        page: currentPage,
+        limit: itemsPerPage,
         search: filters?.search,
         maxPrice: filters?.maxPrice,
         minRating: filters?.minRating
     });
 
-    const providers = apiResponse?.data?.providers || [];
+    const responseData = apiResponse?.data?.data || apiResponse?.data;
+    const providers = responseData?.providers || [];
+    const pagination = responseData?.pagination;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters?.search, filters?.maxPrice, filters?.minRating]);
 
     return (
         <div className="w-full">
@@ -33,7 +43,7 @@ export function SearchScreen() {
                         Recherche
                     </h2>
 
-                    {}
+                    { }
                     <div className="flex rounded-2xl bg-gray-100 p-1 gap-1">
                         <Button
                             variant={activeTab === 'service' ? 'gradient' : 'ghost'}
@@ -52,9 +62,9 @@ export function SearchScreen() {
                     </div>
                 </div>
 
-                {}
+                { }
                 {isLoading ? (
-                    <Loading className="py-20" title="Chargement des prestataires..."/>
+                    <Loading className="py-20" title="Chargement des prestataires..." />
                 ) : isError ? (
                     <NotFound
                         Icon={AlertCircle}
@@ -71,9 +81,16 @@ export function SearchScreen() {
                     />
                 ) : (
                     <>
-                        {}
+                        { }
                         {activeTab === 'service' ? (
-                            <ServiceSearch providers={providers} openContact={openContact} />
+                            <ServiceSearch
+                                providers={providers}
+                                pagination={pagination}
+                                onPageChange={(page) => {
+                                    setCurrentPage(page);
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                            />
                         ) : (
                             <MapSearch providers={providers} />
                         )}

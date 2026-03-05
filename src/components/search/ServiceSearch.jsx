@@ -10,7 +10,7 @@ import { useAddToFavorites } from '../../hooks/useFavorites';
 /**
  * UI component responsible for rendering service search.
  */
-export function ServiceSearch({ providers }) {
+export function ServiceSearch({ providers, pagination, onPageChange }) {
     const navigate = useNavigate();
     const { openContact, openSidebar } = useOutletContext();
     const { mutate: addToFavorites, isSuccess: isSuccessAddFavorite, isError: isErrorAddFavorite, data: dataAddFavorite, error: errorAddFavorite } = useAddToFavorites();
@@ -68,10 +68,15 @@ export function ServiceSearch({ providers }) {
                 ))}
             </div>
 
-            { }
-            <div className="mt-8">
-                <Pagination />
-            </div>
+            {pagination && pagination.totalPages > 1 && (
+                <div className="mt-8">
+                    <Pagination
+                        currentPage={Number(pagination.currentPage)}
+                        totalPages={Number(pagination.totalPages)}
+                        onPageChange={onPageChange}
+                    />
+                </div>
+            )}
         </>
     );
 }

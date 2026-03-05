@@ -125,7 +125,7 @@ export function FeedbackCard({ closeFeedback, providerData }) {
         <div className="p-6 sm:p-8">
           <div className="flex justify-center mb-6">
             <img
-              src={displayImage || "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&q=80&w=200"}
+              src={displayImage || `https://ui-avatars.com/api/?name=${displayName}&background=random`}
               alt={displayName}
               className="w-20 h-20 rounded-full ring-4 ring-white shadow-lg object-cover"
             />
