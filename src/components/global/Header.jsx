@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom'; // Ajout de useNavigate
-import { Search, Bell, Menu, X } from 'lucide-react'; // Ajout de X pour effacer
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Search, Bell, Menu, X } from 'lucide-react';
 import { Button } from '../../ui/Button';
 
 export function Header({ onMenuClick, filters, setFilters }) {
@@ -8,7 +8,6 @@ export function Header({ onMenuClick, filters, setFilters }) {
     const navigate = useNavigate();
     const pathname = location.pathname;
 
-    // État local pour l'input (pour un contrôle fluide)
     const [query, setQuery] = useState(filters?.search || "");
 
     const getHeaderContent = () => {
@@ -41,15 +40,12 @@ export function Header({ onMenuClick, filters, setFilters }) {
 
     const { title, subtitle } = getHeaderContent();
 
-    // LOGIQUE DE RECHERCHE
     const handleSearchChange = (e) => {
         const value = e.target.value;
         setQuery(value);
 
-        // Met à jour les filtres globaux
         setFilters(prev => ({ ...prev, search: value }));
 
-        // Redirection vers 'feature' si on tape quelque chose (sauf si on y est déjà)
         if (value.length > 0 && pathname !== '/feature') {
             navigate('/feature');
         }
@@ -60,6 +56,7 @@ export function Header({ onMenuClick, filters, setFilters }) {
         setFilters(prev => ({ ...prev, search: "" }));
     };
 
+    // Return the rendered UI for this component.
     return (
         <header className="p-4 lg:p-8 z-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -83,12 +80,12 @@ export function Header({ onMenuClick, filters, setFilters }) {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            value={query} // Input contrôlé
-                            onChange={handleSearchChange} // Appel de la fonction
+                            value={query}
+                            onChange={handleSearchChange}
                             placeholder="Rechercher..."
                             className="pl-10 pr-10 py-[10px] rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent w-full md:w-64 shadow-sm border border-gray-100"
                         />
-                        {/* Bouton pour effacer la recherche si non vide */}
+
                         {query.length > 0 && (
                             <button
                                 onClick={clearSearch}

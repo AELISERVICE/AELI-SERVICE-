@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
-// Export Utilisateurs CSV
+// useExportUsers encapsulates data access and state management for its feature domain.
 export const useExportUsers = () => {
     return useMutation({
         mutationKey: ["useExportUsers"],
@@ -10,7 +10,7 @@ export const useExportUsers = () => {
     });
 };
 
-// Export Prestataires CSV
+// useExportProviders encapsulates data access and state management for its feature domain.
 export const useExportProviders = () => {
     return useMutation({
         mutationKey: ["useExportProviders"],
@@ -18,7 +18,7 @@ export const useExportProviders = () => {
     });
 };
 
-// Export Avis CSV
+// useExportReviews encapsulates data access and state management for its feature domain.
 export const useExportReviews = () => {
     return useMutation({
         mutationKey: ["useExportReviews"],
@@ -26,7 +26,7 @@ export const useExportReviews = () => {
     });
 };
 
-// Export Contacts CSV
+// useExportContacts encapsulates data access and state management for its feature domain.
 export const useExportContacts = () => {
     return useMutation({
         mutationKey: ["useExportContacts"],
@@ -34,7 +34,7 @@ export const useExportContacts = () => {
     });
 };
 
-// Rapport PDF Global
+// useExportGlobalReport encapsulates data access and state management for its feature domain.
 export const useExportGlobalReport = () => {
     return useMutation({
         mutationKey: ["useExportGlobalReport"],

@@ -12,10 +12,8 @@ export const ContactAnalytics = () => {
   const { data: statsResponse, isLoading, isError } = useStats();
   const { mutate: mutateExport, isPending: isPendingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportContacts();
 
-  // Extraction sécurisée des données avec valeurs par défaut
   const contacts = statsResponse?.data?.contacts;
 
-  // Calcul dynamique du pourcentage (évite la division par zéro)
   const pendingPercentage = contacts?.total > 0
     ? Math.round((contacts?.pending / contacts?.total) * 100) : 0;
 
@@ -29,14 +27,11 @@ export const ContactAnalytics = () => {
     if (isSuccessExport && dataExport) {
       const csvContent = dataExport.message;
 
-      // Créer le Blob (avec le BOM "\ufeff" pour la compatibilité Excel/Accents)
       const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
 
-      // Créer le lien de téléchargement
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
 
-      // Nom du fichier (ex: export-prestataires-19-02-2026.csv)
       const now = new Date();
       const date = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
       const hours = now.getHours().toString().padStart(2, '0');
@@ -45,15 +40,12 @@ export const ContactAnalytics = () => {
 
       const time = `${hours}h${minutes}m${seconds}s`;
 
-      // Configurer le nom du fichier
       link.href = url;
       link.setAttribute('download', `export-prestataires-${date}-${time}.csv`);
 
-      // Déclenchement automatique du téléchargement
       document.body.appendChild(link);
       link.click();
 
-      // Nettoyage de la mémoire et du DOM
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
@@ -76,6 +68,7 @@ export const ContactAnalytics = () => {
 
   }, [isSuccessExport, isErrorExport, dataExport, errorExport]);
 
+  // Return the rendered UI for this component.
   return (
     <Card className="h-full">
       {isLoading ? (

@@ -54,6 +54,7 @@ export function LoginForm() {
     }, [isSuccess, isError, data, error]);
 
 
+    // Return the rendered UI for this component.
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
@@ -84,13 +85,11 @@ export function LoginForm() {
                             className="w-full"
                         >
                             {isPending ? (
-                                // Utiliser une clé unique pour l'état de chargement
                                 <span key="loading-state" className="flex items-center gap-2">
                                     <ButtonLoader />
                                     Verification...
                                 </span>
                             ) : (
-                                // Utiliser une clé unique pour l'état initial
                                 <span key="idle-state">Se connecter</span>
                             )}
                         </Button>

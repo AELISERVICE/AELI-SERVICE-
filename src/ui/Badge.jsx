@@ -1,6 +1,5 @@
 import React from "react"
 
-// Un petit sous-composant pour les badges de statut réutilisables
 export const Badge = ({ status, variant }) => {
     const styles = {
         green: "bg-green-50 text-green-700",
@@ -15,6 +14,7 @@ export const Badge = ({ status, variant }) => {
         yellow: "bg-yellow-400"
     };
 
+    // Return the rendered UI for this component.
     return (
         <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${styles[variant]}`}>
             <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${dotStyles[variant]}`} />

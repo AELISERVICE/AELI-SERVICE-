@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'; // Ajout de useEffect ici
+import React, { useEffect } from 'react';
 import { toast } from "react-toastify";
 import { useOutletContext } from 'react-router-dom';
 import { X, Star, AlertCircle } from 'lucide-react';
@@ -9,7 +9,6 @@ import { NotFound } from '../global/NotFound';
 import { useGetFeatured, useFeature } from '../../hooks/useBoost';
 
 export const FeaturedCard = () => {
-    // Note: onActiveModal semble être ta fonction pour ouvrir un modal de confirmation
     const { closeConfirm, onActiveModal } = useOutletContext();
     const { data: dataFeatured, isLoading: isLoadingFeatured, isError: isErrorFeatured } = useGetFeatured();
     const { mutate: mutateFeature, isPending, isSuccess, isError, data, error } = useFeature();
@@ -47,6 +46,7 @@ export const FeaturedCard = () => {
             const timer = setTimeout(() => {
                 if (closeConfirm) closeConfirm();
             }, 500);
+            // Return the rendered UI for this component.
             return () => clearTimeout(timer);
         }
 
@@ -68,6 +68,7 @@ export const FeaturedCard = () => {
         return <Loader variant="centered" message="Chargement..." />;
     }
 
+    // Return the rendered UI for this component.
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -101,7 +102,7 @@ export const FeaturedCard = () => {
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
-                                    {/* Petit indicateur de chargement si cette carte précise est en cours de modif */}
+
                                     {isPending && (
                                         <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-xl">
                                             <ButtonLoader />
@@ -127,7 +128,7 @@ export const FeaturedCard = () => {
                                         size="icon"
                                         disabled={isPending}
                                         className="h-8 w-8 text-slate-300 hover:text-red-500 transition-colors"
-                                        onClick={() => handleRemoveFeature(item)} // INTEGRATION ICI
+                                        onClick={() => handleRemoveFeature(item)}
                                     >
                                         <X size={14} />
                                     </Button>

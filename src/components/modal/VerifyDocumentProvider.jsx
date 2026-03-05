@@ -8,19 +8,16 @@ import { useReviewProviderDocuments } from '../../hooks/useProvider';
 
 
 export function VerifyDocumentProvider({ closeView, providerData }) {
-    // 1. Déterminer si on est en lecture seule
     const isAlreadyApproved = providerData?.status === 'approved';
     const { mutate: reviewDocuments, isLoading, isSuccess, data, isError, error } = useReviewProviderDocuments();
 
     const app = providerData;
     console.log('donnees', app)
 
-    // 3. États pour le formulaire de révision
-    const [decision, setDecision] = useState("approved"); // "approved", "rejected", "under_review"
+    const [decision, setDecision] = useState("approved");
     const [adminNotes, setAdminNotes] = useState("");
-    const [docStates, setDocStates] = useState({}); // { [index]: { approved: bool, reason: string } }
+    const [docStates, setDocStates] = useState({});
 
-    // Action : Approuver ou Rejeter un document spécifique
     const handleToggleDoc = (index, isApproved) => {
         setDocStates(prev => ({
             ...prev,
@@ -31,7 +28,6 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
         }));
     };
 
-    // Action : Saisir le motif de rejet pour un document précis
     const handleReasonChange = (index, reason) => {
         setDocStates(prev => ({
             ...prev,
@@ -39,7 +35,6 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
         }));
     };
 
-    // Soumission finale vers PUT /providers/:id/review-documents
     const submitReview = () => {
         const approvedDocuments = [];
         const rejectedDocuments = [];
@@ -90,6 +85,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
         }
     }, [isSuccess, isError, data, error]);
 
+    // Return the rendered UI for this component.
     return (
         <main
             onClick={closeView}
@@ -100,7 +96,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                     onClick={(e) => e.stopPropagation()}
                     className="w-full lg:w-3/4 max-w-5xl space-y-6"
                 >
-                    {/* --- HEADER --- */}
+
                     <div className="bg-white rounded-[1.5rem] p-6 border border-white shadow-sm flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-[#E8524D]/10 flex items-center justify-center text-[#E8524D]">
@@ -116,7 +112,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                         </button>
                     </div>
 
-                    {/* --- DOCUMENTS GRID --- */}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 bg-white rounded-[1.5rem]">
                         {app?.documents?.map((doc, index) => {
                             const currentState = docStates[index];
@@ -125,6 +121,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                                 ? (currentState.approved ? 'approved' : 'rejected')
                                 : doc.status;
 
+                            // Return the rendered UI for this component.
                             return (
                                 <section
                                     key={index}
@@ -138,7 +135,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
                                                 {doc.type.replace('_', ' ')}
                                             </span>
-                                            {/* Petit badge indicatif du statut actuel */}
+
                                             <span className={`text-[8px] px-2 py-0.5 rounded-[1.5rem] font-bold ${doc.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                                                 }`}>
                                                 {doc.status}
@@ -179,7 +176,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                                         </a>
                                     </div>
 
-                                    {/* Affichage du champ "Raison" si le document est marqué comme rejeté par l'admin */}
+
                                     {currentState?.approved === false && (
                                         <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2">
                                             <label className="text-[10px] font-black text-[#E8524D] ml-1 uppercase flex items-center gap-1">
@@ -198,7 +195,7 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                         })}
                     </div>
 
-                    {/* --- ACTIONS FINALES --- */}
+
                     {!isAlreadyApproved && (
                         <div className="bg-white rounded-[1.5rem] p-8 border border-white shadow-xl space-y-6">
                             <div className="flex flex-col gap-8">
@@ -237,7 +234,6 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                             <div className="flex flex-col md:flex-row gap-4 pt-4">
                                 <Button
                                     onClick={submitReview}
-                                    // disabled={isLoading || Object.keys(docStates).length < (app?.documents?.length || 0)}
                                     className={`flex-1 py-4 rounded-[1.5rem] font-bold text-white transition-all shadow-lg ${decision === 'approved' ? 'bg-emerald-500 shadow-emerald-200' :
                                         decision === 'rejected' ? 'bg-[#E8524D] shadow-red-200' : 'bg-slate-800 shadow-slate-200'
                                         }`}

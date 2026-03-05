@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
-// get reviews
+// useGetReviews encapsulates data access and state management for its feature domain.
 export const useGetReviews = (params = {}) => {
     const queryString = new URLSearchParams(
         Object.fromEntries(Object.entries(params).filter(([_, v]) => v != null && v !== ""))
@@ -14,7 +14,7 @@ export const useGetReviews = (params = {}) => {
     });
 };
 
-// hidde or show review
+// useHideShowReview encapsulates data access and state management for its feature domain.
 export const useHideShowReview = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -26,7 +26,7 @@ export const useHideShowReview = () => {
     });
 };
 
-// delete review
+// useDeleteReview encapsulates data access and state management for its feature domain.
 export const useDeleteReview = () => {
     const queryClient = useQueryClient();
     return useMutation({

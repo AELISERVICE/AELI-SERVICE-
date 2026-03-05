@@ -1,12 +1,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-/**
- * Composant Loader standardisé
- * @param {string} variant - Variante du loader: 'default' | 'centered' | 'inline' | 'fullscreen'
- * @param {string} message - Message optionnel à afficher sous le loader
- * @param {string} className - Classes CSS supplémentaires
- */
+
 export const Loader = ({
     variant = 'centered',
     message = null,
@@ -24,6 +19,7 @@ export const Loader = ({
     );
 
     if (variant === 'inline') {
+        // Return the rendered UI for this component.
         return (
             <span className={variantStyles[variant]}>
                 {loaderElement}
@@ -32,6 +28,7 @@ export const Loader = ({
         );
     }
 
+    // Return the rendered UI for this component.
     return (
         <div className={`${variantStyles[variant]} ${className}`}>
             {loaderElement}
@@ -42,9 +39,7 @@ export const Loader = ({
     );
 };
 
-/**
- * Composant Loader pour les boutons (taille fixe small)
- */
+
 export const ButtonLoader = ({ className = '' }) => {
     return <Loader2 className={`w-6 h-6 animate-spin text-[#E8524D] ${className}`} />;
 };

@@ -8,7 +8,6 @@ import {
 } from 'lucide-react'
 
 export function Sidebar({ isOpen, onClose }) {
-    // État pour la réduction desktop
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     const menuItems = [
@@ -22,9 +21,10 @@ export function Sidebar({ isOpen, onClose }) {
         { icon: Image, label: 'Bannières', path: '/banners' },
     ]
 
+    // Return the rendered UI for this component.
     return (
         <>
-            {/* Overlay Mobile */}
+
             <div
                 className={`fixed inset-0 bg-zinc-900/20 backdrop-blur-sm z-[60] lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                     }`}
@@ -35,13 +35,13 @@ export function Sidebar({ isOpen, onClose }) {
                 className={`
                     fixed top-0 left-0 z-[70] h-full bg-white border-r border-slate-100 flex flex-col transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
                     lg:sticky lg:translate-x-0
-                    /* Largeur dynamique */
+
                     ${isCollapsed ? 'w-[80px]' : 'w-[280px]'}
-                    /* Translation mobile */
+
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
                 `}
             >
-                {/* --- Bouton Toggle Desktop --- */}
+
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className="hidden lg:flex absolute -right-3 top-12 bg-zinc-900 text-white rounded-full p-2 shadow-lg z-[80] hover:scale-110 transition-transform"
@@ -49,7 +49,7 @@ export function Sidebar({ isOpen, onClose }) {
                     {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                 </button>
 
-                {/* --- HEADER LOGO --- */}
+
                 <div className={`p-6 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
                     <div className="flex items-center gap-3">
                         <img src="./logo.svg" className="w-10 h-10 flex-shrink-0" />
@@ -65,7 +65,7 @@ export function Sidebar({ isOpen, onClose }) {
                     </Button>
                 </div>
 
-                {/* --- NAVIGATION --- */}
+
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto overflow-x-hidden">
                     {menuItems.map((item, index) => (
                         <NavLink
@@ -91,10 +91,10 @@ export function Sidebar({ isOpen, onClose }) {
                     ))}
                 </nav>
 
-                {/* Section Aide Décorée */}
+
                 <div className={`${isCollapsed ? "py-6" : "p-6"} relative z-10`}>
                     <div className={`relative overflow-hidden bg-white/40 border border-white  shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] group ${isCollapsed ? "px-0" : "px-6 rounded-[2.5rem]"}`}>
-                        {/* Background décoratif interne */}
+
                         <div className="absolute top-0 right-0 p-2 opacity-5">
                             <Sparkles size={80} />
                         </div>
@@ -116,7 +116,7 @@ export function Sidebar({ isOpen, onClose }) {
                     </div>
                 </div>
 
-                {/* Petit badge de version décoratif en bas */}
+
                 <div className="px-8 pb-4">
                     <div className="flex items-center gap-2 text-[9px] font-bold text-zinc-300 tracking-[0.3em] uppercase">
                         <div className="w-1 h-1 bg-green-400 rounded-full animate-ping" />

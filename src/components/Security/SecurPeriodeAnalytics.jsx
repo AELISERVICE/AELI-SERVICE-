@@ -20,13 +20,11 @@ export const SecurPeriodeAnalytics = () => {
 
             return {
                 name: days[d.getDay()],
-                // la date brute (YYYY-MM-DD) pour la comparaison
                 dateString: d.toISOString().split('T')[0],
                 events: 0
             };
         });
 
-        // compter les logs pour chaque jour correspondant
         logs.forEach(log => {
             if (log.createdAt) {
                 const logDate = log.createdAt.split('T')[0];
@@ -44,6 +42,7 @@ export const SecurPeriodeAnalytics = () => {
         return chartData.reduce((acc, curr) => acc + curr.events, 0);
     }, [chartData]);
 
+    // Return the rendered UI for this component.
     return (
         <Card className="h-full">
             <div className="flex justify-between items-start mb-6">

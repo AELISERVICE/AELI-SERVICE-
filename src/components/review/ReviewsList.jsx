@@ -14,14 +14,13 @@ export function ReviewsList() {
     const [page, setPage] = useState(1);
     const [processingId, setProcessingId] = useState(null);
 
-    // 1. Appel avec l'objet de configuration (Vérifie que useGetReviews traite cet objet)
     const {
         data: dataReview,
         isLoading,
         isError
     } = useGetReviews({
         page: page,
-        limit: 5, // On force à 2 pour tester la pagination
+        limit: 5,
         search: filters?.search
     });
 
@@ -46,7 +45,6 @@ export function ReviewsList() {
     const reviews = dataReview?.data?.reviews || [];
     const pagination = dataReview?.data?.pagination;
 
-    // 2. Reset de la page si la recherche change
     useEffect(() => {
         setPage(1);
     }, [filters?.search]);
@@ -61,6 +59,7 @@ export function ReviewsList() {
             const timer = setTimeout(() => {
                 closeConfirm();
             }, 1000);
+            // Return the rendered UI for this component.
             return () => clearTimeout(timer);
         }
 
@@ -98,6 +97,7 @@ export function ReviewsList() {
         return <Loader variant="centered" message="Chargement..." />;
     }
 
+    // Return the rendered UI for this component.
     return (
         <div className="mx-auto">
             <div className="space-y-4">
@@ -111,6 +111,7 @@ export function ReviewsList() {
                 ) : reviews.length > 0 ? (
                     reviews.map((item) => {
                         const isProcessing = processingId === item.id;
+                        // Return the rendered UI for this component.
                         return (
                             <Card
                                 key={item.id}
@@ -199,7 +200,7 @@ export function ReviewsList() {
                 )}
             </div>
 
-            {/* 3. Pagination Dynamique */}
+
             {pagination && pagination.totalPages > 1 && (
                 <div className="mt-8">
                     <Pagination

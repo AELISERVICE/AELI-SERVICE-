@@ -17,6 +17,7 @@ export function Base() {
     });
 
 
+    // Return the rendered UI for this component.
     return (
         <div className="flex h-screen bg-gray-50 font-sans text-gray-900 relative">
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden ">
@@ -44,7 +45,7 @@ export function Base() {
                     </div>
                 </div>
             </main>
-            {/* Modales de confirmation */}
+
             {activeModal?.type === MODALS.CONFIRM && (
                 <Confirmation
                     closeConfirm={closeModal}
@@ -57,7 +58,7 @@ export function Base() {
                 />
             )}
 
-            {/* Modale de détails - On vérifie le .type */}
+
             {activeModal?.type === MODALS.VIEWINFOPROVIDER &&
                 <ViewInfoProvider
                     closeView={closeModal}

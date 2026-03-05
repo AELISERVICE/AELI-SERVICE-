@@ -27,6 +27,7 @@ export function BannerScreen() {
         setEditingBanner(null);
     };
 
+    // Return the rendered UI for this component.
     return (
         <>
             <div>

@@ -39,7 +39,6 @@ export const UserComposition = () => {
       { women: 0, men: 0, unknown: 0 }
     );
 
-    // On calcule le pourcentage pour chaque catégorie
     return [
       {
         name: 'Femmes',
@@ -59,6 +58,7 @@ export const UserComposition = () => {
     ];
   }, [users]);
 
+  // Return the rendered UI for this component.
   return (
     <Card
       noPadding={true}

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
-// Liste des prestataires
+// useProviders encapsulates data access and state management for its feature domain.
 export const useProviders = () => {
     return useQuery({
         queryKey: ["useProviders"],
@@ -11,7 +11,7 @@ export const useProviders = () => {
     });
 };
 
-// Liste des candidatures
+// useProviderApplications encapsulates data access and state management for its feature domain.
 export const useProviderApplications = () => {
     return useQuery({
         queryKey: ["useProviderApplications"],
@@ -20,7 +20,7 @@ export const useProviderApplications = () => {
     });
 };
 
-// Détail d'une candidature
+// useProviderApplicationsDetail encapsulates data access and state management for its feature domain.
 export const useProviderApplicationsDetail = (id) => {
     return useQuery({
         queryKey: ["useProviderApplicationsDetail", id],
@@ -29,7 +29,7 @@ export const useProviderApplicationsDetail = (id) => {
     });
 };
 
-// Prestataires non vérifiés
+// useProviderPending encapsulates data access and state management for its feature domain.
 export const useProviderPending = () => {
     return useQuery({
         queryKey: ["useProviderApplicationsDetail"],
@@ -38,7 +38,7 @@ export const useProviderPending = () => {
     });
 };
 
-// Valider/Rejeter un prestataire
+// useProvidersCreation encapsulates data access and state management for its feature domain.
 export const useProvidersCreation = () => {
     return useMutation({
         mutationKey: ["useProvidersCreation"],
@@ -46,7 +46,7 @@ export const useProvidersCreation = () => {
     });
 };
 
-// Verifier documents provider
+// useReviewProviderDocuments encapsulates data access and state management for its feature domain.
 export const useReviewProviderDocuments = () => {
     return useMutation({
         mutationKey: ["useReviewProviderDocuments"],
@@ -54,7 +54,7 @@ export const useReviewProviderDocuments = () => {
     });
 };
 
-// Désactiver un compte providers
+// useDeactivateAccountProvider encapsulates data access and state management for its feature domain.
 export const useDeactivateAccountProvider = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -69,15 +69,14 @@ export const useDeactivateAccountProvider = () => {
 
 
 
-// get provider public route
+// useGetProviderList encapsulates data access and state management for its feature domain.
 export const useGetProviderList = (params = {}) => {
-    // On transforme l'objet { search: '...', maxPrice: 500 } en string query
     const queryString = new URLSearchParams(
         Object.fromEntries(Object.entries(params).filter(([_, v]) => v != null && v !== ""))
     ).toString();
 
     return useQuery({
-        queryKey: ["useGetProviderList", params], // La clé change quand les filtres changent
+        queryKey: ["useGetProviderList", params],
         queryFn: () => request(`/api/admin/providers?${queryString}`, "GET"),
         refetchOnWindowFocus: false,
         enabled: true

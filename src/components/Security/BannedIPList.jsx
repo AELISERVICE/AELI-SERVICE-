@@ -10,10 +10,8 @@ export function BannedIPList() {
     const { data: bannedIpsResponse, isLoading, refetch } = usebannedIps();
     const { mutate: mutateUnban, data: dataUnban, isSuccess, isError, error } = useUnbanIP();
 
-    // Extraction de la liste depuis la structure de ton JSON
     const bannedList = bannedIpsResponse?.data?.bannedIPs || [];
 
-    // Fonction pour formater la durée (secondes -> heures/jours)
     const formatDuration = (seconds) => {
         if (!seconds) return "Permanent";
         if (seconds >= 86400) return `${Math.floor(seconds / 86400)}j restant`;
@@ -21,7 +19,6 @@ export function BannedIPList() {
     };
 
 
-    // 3. Logique de suppression
     const handleUnban = (ip) => {
         if (window.confirm(`Voulez-vous vraiment débloquer l'IP ${ip} ?`)) {
             mutateUnban(ip);
@@ -47,6 +44,7 @@ export function BannedIPList() {
         }
     }, [isSuccess, isError, dataUnban, error]);
 
+    // Return the rendered UI for this component.
     return (
         <Card className="w-full flex flex-col">
             <div className="flex items-center justify-between mb-6">

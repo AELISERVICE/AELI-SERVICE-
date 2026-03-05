@@ -50,6 +50,7 @@ export function KpiCount() {
         },
     ];
 
+    // Return the rendered UI for this component.
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {kpiCards.map((kpi, index) => (

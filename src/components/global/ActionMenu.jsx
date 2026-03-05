@@ -12,7 +12,6 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, o
     const [coords, setCoords] = useState({ top: 0, left: 0 });
     const [isBlocked, setIsBlocked] = useState(initialStatus);
 
-    // GESTION DES COORDONNÉES (Positionnement)
     useLayoutEffect(() => {
         if (isOpen && triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
@@ -23,7 +22,6 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, o
         }
     }, [isOpen, triggerRef]);
 
-    // SYNCHRONISATION DU STATUT
     useEffect(() => {
         if (isOpen) {
             setIsBlocked(initialStatus);
@@ -33,13 +31,13 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, o
     const handleToggle = (e) => {
         e.stopPropagation();
         onStatusChange?.();
-        // On met à jour localement pour l'animation visuelle avant la fermeture
         setIsBlocked(!isBlocked);
         onClose();
     };
 
     if (!isOpen) return null;
 
+    // Return the rendered UI for this component.
     return (
         <Portal>
             <div className="fixed inset-0 z-[90]" onClick={onClose} />
@@ -49,7 +47,7 @@ export function ActionMenu({ isOpen, onClose, triggerRef, onEdit, onVerifyDoc, o
                     position: 'absolute',
                     top: `${coords.top}px`,
                     left: `${coords.left}px`,
-                    width: '12rem' // w-48
+                    width: '12rem'
                 }}
                 className="bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] animate-in fade-in zoom-in-95 duration-200 origin-top-right overflow-hidden"
             >

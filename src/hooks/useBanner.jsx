@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-// Liste complète des bannières (Admin)
+// useGetBanners encapsulates data access and state management for its feature domain.
 export const useGetBanners = () => {
     return useQuery({
         queryKey: ["useGetBanners"],
@@ -10,7 +10,7 @@ export const useGetBanners = () => {
     });
 };
 
-// Liste publique des bannières (filtre actives et dates valides)
+// useGetPublicBanners encapsulates data access and state management for its feature domain.
 export const useGetPublicBanners = () => {
     return useQuery({
         queryKey: ["useGetPublicBanners"],
@@ -19,7 +19,7 @@ export const useGetPublicBanners = () => {
     });
 };
 
-// Créer une bannière
+// useCreateBanner encapsulates data access and state management for its feature domain.
 export const useCreateBanner = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -32,7 +32,7 @@ export const useCreateBanner = () => {
     });
 };
 
-// Modifier une bannière
+// useUpdateBanner encapsulates data access and state management for its feature domain.
 export const useUpdateBanner = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -45,7 +45,7 @@ export const useUpdateBanner = () => {
     });
 };
 
-// Supprimer une bannière
+// useDeleteBanner encapsulates data access and state management for its feature domain.
 export const useDeleteBanner = () => {
     const queryClient = useQueryClient();
     return useMutation({

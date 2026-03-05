@@ -61,6 +61,7 @@ export const SubscriptionList = () => {
     const { data: paymentsResponse, isLoading, isError } = usePayments();
     const payments = paymentsResponse?.data?.payments || [];
 
+    // Return the rendered UI for this component.
     return (
         <div className="w-full">
             <div className="space-y-4 max-w-6xl">
@@ -84,7 +85,7 @@ export const SubscriptionList = () => {
                             key={item.id}
                             className="backdrop-blur-sm p-4 sm:p-5 "
                         >
-                            {/* Version Mobile */}
+
                             <div className="flex flex-col sm:hidden gap-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -106,7 +107,7 @@ export const SubscriptionList = () => {
                                 </div>
                             </div>
 
-                            {/* Version Desktop */}
+
                             <div className="hidden sm:flex items-center gap-4 lg:gap-6">
                                 <div className="flex items-center gap-3 min-w-[160px] lg:min-w-[200px]">
                                     <img src={item.avatar} className="w-12 h-12 lg:w-14 lg:h-14 rounded-full object-cover" alt="" />

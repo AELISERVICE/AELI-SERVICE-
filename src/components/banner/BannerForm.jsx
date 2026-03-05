@@ -111,21 +111,17 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
             return;
         }
 
-        // Pour la création, l'image est obligatoire
         if (!isEditMode && !imageFile) {
             toast.error("L'image de la bannière est requise");
             return;
         }
 
-        // ON UTILISE FORCÉMENT FORMDATA POUR LE MULTIPART
         const submitData = new FormData();
 
-        // 1. On ajoute le fichier (impératif pour Multer)
         if (imageFile instanceof File) {
             submitData.append('bannerImage', imageFile);
         }
 
-        // 2. On ajoute les autres champs (ils seront convertis en string par FormData)
         submitData.append('title', formData.title.trim());
         submitData.append('type', formData.type);
         submitData.append('isActive', String(formData.isActive));
@@ -136,7 +132,6 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
         if (formData.startDate) submitData.append('startDate', formData.startDate);
         if (formData.endDate) submitData.append('endDate', formData.endDate);
 
-        // DEBUG : Vérifiez bien dans la console que 'bannerImage' contient un objet File/Blob
         for (let [key, value] of submitData.entries()) {
             console.log(`${key}:`, value);
         }
@@ -150,6 +145,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
 
     const isLoading = isPendingCreate || isPendingUpdate;
 
+    // Return the rendered UI for this component.
     return (
         <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[100]">
             <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto !p-8 no-scrollbar">
@@ -169,7 +165,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Image */}
+
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1.5">
                                 Image de la bannière {!isEditMode && <span className="text-red-500">*</span>}
@@ -183,7 +179,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Titre */}
+
                         <div className="md:col-span-2">
                             <Input
                                 label="Titre"
@@ -196,7 +192,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Description */}
+
                         <div className="md:col-span-2">
                             <Input
                                 type="textarea"
@@ -209,7 +205,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Type */}
+
                         <div>
                             <Input
                                 type="select"
@@ -223,7 +219,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Ordre */}
+
                         <div>
                             <Input
                                 type="number"
@@ -236,7 +232,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* URL de redirection */}
+
                         <div className="md:col-span-2">
                             <Input
                                 type="url"
@@ -249,7 +245,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Date de début */}
+
                         <div>
                             <Input
                                 type="date"
@@ -261,7 +257,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Date de fin */}
+
                         <div>
                             <Input
                                 type="date"
@@ -273,7 +269,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                             />
                         </div>
 
-                        {/* Statut actif */}
+
                         <div className="md:col-span-2">
                             <label className="flex items-center gap-3 cursor-pointer">
                                 <input

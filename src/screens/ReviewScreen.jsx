@@ -4,6 +4,7 @@ import { ReviewsList } from '../components/review/ReviewsList';
 
 
 export function ReviewsScreen() {
+    // Return the rendered UI for this component.
     return (
         <div>
             <div >

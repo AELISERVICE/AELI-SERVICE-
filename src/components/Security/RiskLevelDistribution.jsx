@@ -12,7 +12,6 @@ export function RiskLevelDistribution() {
     const compositionData = useMemo(() => {
         const logs = logsResponse?.data?.logs || [];
 
-        // Compter les occurrences de chaque type d'événement
         const counts = logs.reduce((acc, log) => {
             const type = log.eventType || 'Autre';
             acc[type] = (acc[type] || 0) + 1;
@@ -20,10 +19,10 @@ export function RiskLevelDistribution() {
         }, {});
 
         const colors = {
-            login_success: '#10b981', // Emeraude / Vert
-            login_failed: '#ef4444',  // Rouge
-            bot_detection: '#8b5cf6', // Violet
-            default: '#94a3b8'         // Gris
+            login_success: '#10b981',
+            login_failed: '#ef4444',
+            bot_detection: '#8b5cf6',
+            default: '#94a3b8'
         };
 
         const labels = {
@@ -39,6 +38,7 @@ export function RiskLevelDistribution() {
         }));
     }, [logsResponse]);
 
+    // Return the rendered UI for this component.
     return (
         <Card
             noPadding={true}

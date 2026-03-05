@@ -1,20 +1,20 @@
-import React, { useState } from 'react'; // Ajoute useState
+import React, { useState } from 'react';
 import { Button } from '../../ui/Button';
 import { Card } from '../../ui/Card';
 import { ButtonLoader } from '../global/Loader';
 
 export function Confirmation({ closeConfirm, title, description, onConfirm }) {
-  const [loading, setLoading] = useState(false); // État local interne
+  const [loading, setLoading] = useState(false);
 
   const handleConfirm = () => {
-    setLoading(true); // On lance le loader localement
+    setLoading(true);
     if (onConfirm) onConfirm();
-    // On ne remet pas loading à false car la modale va être fermée par le parent
   };
 
+  // Return the rendered UI for this component.
   return (
     <main
-      onClick={loading ? null : closeConfirm} // Désactive le clic extérieur pendant le chargement
+      onClick={loading ? null : closeConfirm}
       className="fixed inset-0 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-[100]">
       <Card
         onClick={(e) => e.stopPropagation()}

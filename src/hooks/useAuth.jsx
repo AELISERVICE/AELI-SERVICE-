@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
-// login
+// useLogin encapsulates data access and state management for its feature domain.
 export const useLogin = () => {
     return useMutation({
         mutationKey: ["useLogin"],

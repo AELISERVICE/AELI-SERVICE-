@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
-// Liste des abonnements
+// usePayments encapsulates data access and state management for its feature domain.
 export const usePayments = () => {
     return useQuery({
         queryKey: ["usePayments"],

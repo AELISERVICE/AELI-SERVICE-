@@ -3,7 +3,6 @@ import React from 'react';
 const variants = {
     primary: "bg-gray-900 text-white hover:bg-gray-800 shadow-sm",
     secondary: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm",
-    // ghost: "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
     outline: "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 focus:ring-gray-200",
     danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] focus:ring-red-500 shadow-sm',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-50 justify-start',
@@ -26,14 +25,15 @@ export const Button = ({
     icon: Icon,
     ...props
 }) => {
+    // Return the rendered UI for this component.
     return (
         <button
             className={`
-        inline-flex items-center justify-center gap-2 
+        inline-flex items-center justify-center gap-2
         font-medium rounded-xl transition-all duration-200
         active:scale-95 disabled:opacity-50 disabled:pointer-events-none
-        ${variants[variant]} 
-        ${sizes[size]} 
+        ${variants[variant]}
+        ${sizes[size]}
         ${className}
       `}
             {...props}

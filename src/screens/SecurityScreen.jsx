@@ -9,6 +9,7 @@ import { ProtectionList } from '../components/Security/ProtectionList';
 
 
 export function SecurityScreen() {
+    // Return the rendered UI for this component.
     return (
         <div className="flex-1 overflow-y-auto">
             <div className="max-w-7xl mx-auto space-y-6">

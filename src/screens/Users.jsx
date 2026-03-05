@@ -14,7 +14,6 @@ export function Users() {
     const { data: apiResponse, isLoading, isError, refetch } = useGetUsers();
     const allUsers = apiResponse?.data?.users || [];
 
-    // --- LOGIQUE DE FILTRAGE ---
     const getFilteredData = () => {
         switch (actifTabs) {
             case 'Actifs':
@@ -28,7 +27,6 @@ export function Users() {
 
     const fullFilteredData = getFilteredData();
 
-    // --- LOGIQUE DE PAGINATION ---
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = fullFilteredData.slice(indexOfFirstItem, indexOfLastItem);
@@ -36,9 +34,10 @@ export function Users() {
 
     const handleTabChange = (tab) => {
         setActifTabs(tab);
-        setCurrentPage(1); // Reset la page au changement d'onglet
+        setCurrentPage(1);
     };
 
+    // Return the rendered UI for this component.
     return (
         <>
             <div className="mb-6 flex flex-wrap gap-2">

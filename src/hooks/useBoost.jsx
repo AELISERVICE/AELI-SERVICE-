@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
-// get featured
+// useGetFeatured encapsulates data access and state management for its feature domain.
 export const useGetFeatured = () => {
     return useQuery({
         queryKey: ["useGetFeatured"],
@@ -11,7 +11,7 @@ export const useGetFeatured = () => {
     });
 };
 
-// put feature provider
+// useFeature encapsulates data access and state management for its feature domain.
 export const useFeature = () => {
     const queryClient = useQueryClient();
     return useMutation({

@@ -11,12 +11,13 @@ import { Users } from './screens/Users';
 import { BannerScreen } from './screens/BannerScreen';
 
 function App() {
+  // Return the rendered UI for this component.
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginScreen />} />
 
-      {/* Toutes ces routes seront injectées dans le composant Base */}
+
       <Route element={<Base />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/provider" element={<Provider />} />

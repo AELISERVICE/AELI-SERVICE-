@@ -12,6 +12,7 @@ export const Card = ({ children, className = '', variant = 'default', noPadding 
         green: 'bg-green-500 rounded-xl p-6 text-white shadow-lg relative overflow-hidden h-full'
     };
 
+    // Return the rendered UI for this component.
     return (
         <div
             className={`rounded-2xl transition-all duration-200 relative overflow-hidden ${variants[variant]} ${noPadding ? '' : 'p-5'} ${className}`}

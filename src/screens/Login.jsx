@@ -4,13 +4,14 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { Footer } from '../components/global/Footer';
 
 export function LoginScreen() {
+    // Return the rendered UI for this component.
     return (
         <div className="min-h-screen w-full bg-slate-50 font-sans text-slate-900 selection:bg-purple-100 selection:text-purple-900">
             <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-purple-100 via-slate-50 to-white opacity-60"></div>
 
             <div className="flex flex-col items-center justify-center min-h-screen w-full">
                 <main className="w-full px-4 py-4 flex flex-col items-center ">
-                    {/* Header Section */}
+
                     <div className="w-full bg-slate-700 rounded-3xl min-h-[400px] p-8 pb-32 md:pb-48 text-center relative overflow-hidden shadow-lg">
                         <img
                             src="https://static.vecteezy.com/ti/photos-gratuite/t2/41927557-ai-genere-une-souriant-africain-femme-habille-dans-traditionnel-tenue-les-usages-sa-telephone-intelligent-dans-une-vibrant-marche-reglage-gratuit-photo.jpg"
@@ -18,13 +19,10 @@ export function LoginScreen() {
                             className="absolute inset-0 w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[1px]"></div>
-                        {/* <div className="relative z-10">
-                            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">Content de te revoir!</h1>
-                            <p className="text-slate-300 text-sm md:text-base max-w-md mx-auto">Utilisez ce formulaire pour vous connecter à votre compte.</p>
-                        </div> */}
+
                     </div>
 
-                    {/* Floating Card dynamique */}
+
                     <div className={` relative
                     w-full bg-white rounded-2xl shadow-xl -mt-24 md:-mt-50 relative z-20 p-6 md:p-10 lg:p-12 border border-slate-100 transition-all duration-300
                     max-w-4xl lg:max-w-[500px]

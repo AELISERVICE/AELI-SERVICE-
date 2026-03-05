@@ -12,7 +12,6 @@ export const UsersAnalytics = () => {
     const chartData = useMemo(() => {
         const users = usersResponse?.data?.users || [];
 
-        // 1. Initialiser les derniers 7 jours
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const last7Days = Array.from({ length: 7 }).map((_, i) => {
             const d = new Date();
@@ -24,7 +23,6 @@ export const UsersAnalytics = () => {
             };
         });
 
-        // 2. Compter les inscriptions par jour
         users.forEach(user => {
             const userDate = user.createdAt.split('T')[0];
             const dayMatch = last7Days.find(d => d.dateString === userDate);
@@ -36,7 +34,7 @@ export const UsersAnalytics = () => {
         return last7Days;
     }, [usersResponse]);
 
-    // On évite le return isLoading pour ne pas casser le layout du dashboard
+    // Return the rendered UI for this component.
     return (
         <Card className="h-full">
             <div className="flex justify-between items-start mb-6">

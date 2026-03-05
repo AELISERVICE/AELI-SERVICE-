@@ -20,10 +20,9 @@ export function Input({
     const [filePreview, setFilePreview] = useState(null)
     const containerRef = useRef(null)
 
-    // STYLES EXACTS : Fond slate-50, bordure slate-200, focus Saumon (#FCE0D6)
     const baseInputStyles = `
-    w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200 
-    focus:bg-white focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent 
+    w-full px-4 py-3 rounded-lg bg-slate-50 border border-slate-200
+    focus:bg-white focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent
     transition-all outline-none text-slate-800 placeholder:text-slate-400
     ${Icon ? 'pl-11' : 'pl-4'}
     ${error ? 'border-red-500 focus:ring-red-100' : ''}
@@ -38,6 +37,7 @@ export function Input({
         if (type === 'select') {
             document.addEventListener('mousedown', handleClickOutside)
         }
+        // Return the rendered UI for this component.
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [type])
 
@@ -56,6 +56,7 @@ export function Input({
     }
 
     useEffect(() => {
+        // Return the rendered UI for this component.
         return () => {
             if (filePreview) {
                 URL.revokeObjectURL(filePreview)
@@ -63,6 +64,7 @@ export function Input({
         }
     }, [filePreview])
 
+    // Return the rendered UI for this component.
     return (
         <div ref={containerRef} className={`w-full group ${type === 'textarea' ? 'col-span-1 sm:col-span-2' : ''}`}>
             {label && (
@@ -72,14 +74,14 @@ export function Input({
             )}
 
             <div className="relative">
-                {/* ICÔNE : Positionnée exactement comme dans ton code avec la couleur Saumon au focus */}
+
                 {Icon && type !== 'file' && (
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#E8524D] transition-colors z-10">
                         <Icon size={18} />
                     </div>
                 )}
 
-                {/* CAS 1 : SELECT PERSONNALISÉ */}
+
                 {type === 'select' ? (
                     <div className="relative w-full">
                         <button
@@ -116,7 +118,7 @@ export function Input({
                         )}
                     </div>
                 ) : type === 'textarea' ? (
-                    /* CAS 2 : TEXTAREA */
+
                     <textarea
                         className={`${baseInputStyles} min-h-[100px] ${className}`}
                         name={name}
@@ -126,7 +128,7 @@ export function Input({
                         {...props}
                     />
                 ) : type === 'file' ? (
-                    /* CAS 3 : FILE (Style pointillé Saumon au survol) */
+
                     <div className={`group relative flex min-h-[138px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-slate-50 transition-colors hover:border-[#FCE0D6] hover:bg-white overflow-hidden ${className}`}>
                         {filePreview ? (
                             <div className="absolute inset-0 z-0">
@@ -158,7 +160,7 @@ export function Input({
                         />
                     </div>
                 ) : (
-                    /* CAS PAR DÉFAUT : TEXT, EMAIL, PASSWORD */
+
                     <input
                         type={type}
                         name={name}

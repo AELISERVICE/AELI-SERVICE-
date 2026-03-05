@@ -9,7 +9,6 @@ import { useFeature } from '../../hooks/useBoost';
 export const ConfigurationPanel = ({ selectedProvider }) => {
   const [duration, setDuration] = useState(7);
   const { mutate: mutateFeature, isPending, isSuccess, isError, data, error } = useFeature();
-  //  Calcul du prix fictif selon la durée (Exemple: 7€/semaine)
   const estimatedPrice = (duration / 7) * 49;
 
   useEffect(() => {
@@ -46,6 +45,7 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
     });
   };
 
+  // Return the rendered UI for this component.
   return (
     <Card variant="glass" className="flex flex-col border-dashed h-full border-violet-200">
       <div className="flex items-center gap-2 mb-6">
@@ -79,12 +79,7 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
             </span>
           </div>
 
-          {/* <div className="flex justify-between text-sm border-t border-violet-100 pt-3">
-            <span className="text-slate-500">Prix de la prestation :</span>
-            <span className="text-[#E8524D] font-bold text-lg">
-              {estimatedPrice.toFixed(2)} €
-            </span>
-          </div> */}
+
         </div>
 
         <p className="text-[11px] text-slate-400 italic leading-relaxed">

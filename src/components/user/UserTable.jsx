@@ -42,14 +42,11 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs, isError }) => 
         if (isSuccessExport && dataExport) {
             const csvContent = dataExport.message;
 
-            // Créer le Blob (avec le BOM "\ufeff" pour la compatibilité Excel/Accents)
             const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
 
-            // Créer le lien de téléchargement
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
 
-            // Nom du fichier (ex: export-prestataires-19-02-2026.csv)
             const now = new Date();
             const date = now.toLocaleDateString('fr-FR').replace(/\//g, '-');
             const hours = now.getHours().toString().padStart(2, '0');
@@ -58,15 +55,12 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs, isError }) => 
 
             const time = `${hours}h${minutes}m${seconds}s`;
 
-            // Configurer le nom du fichier
             link.href = url;
             link.setAttribute('download', `export-users-${date}-${time}.csv`);
 
-            // Déclenchement automatique du téléchargement
             document.body.appendChild(link);
             link.click();
 
-            // Nettoyage de la mémoire et du DOM
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
 
@@ -92,6 +86,7 @@ export const UserTable = ({ users, isLoading, refetch, actifTabs, isError }) => 
 
     if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
+    // Return the rendered UI for this component.
     return (
         <Card>
             <div className="flex justify-between mb-1">

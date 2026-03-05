@@ -9,6 +9,7 @@ import { UserComposition } from '../components/dashboard/UserComposition';
 import { LastusersRegister } from '../components/dashboard/LastusersRegister';
 
 export function Dashboard() {
+    // Return the rendered UI for this component.
     return (
         <div className="flex-1 overflow-y-auto">
             <div className="max-w-7xl mx-auto space-y-6">

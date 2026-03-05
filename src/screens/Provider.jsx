@@ -8,7 +8,6 @@ import { useProviderApplications, useProviderPending, useGetProviderList } from 
 
 
 export function Provider() {
-    // 1. Récupération des filtres (search) depuis le dashboard
     const { filters } = useOutletContext();
 
     const TABS = ['Tout', 'Attente', 'Doc verification', 'Actifs', 'Bloquer'];
@@ -16,14 +15,11 @@ export function Provider() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    // 2. Appels API (On récupère tout, ou on passe le search si ton API le gère)
     const { data: dataProvider, isLoading: loadingProvider, isError: isErrorProvider, refetch: refetchProvider } = useGetProviderList();
     const { data: allData, isLoading: loadingAll, isError: isErrorAll, refetch } = useProviderApplications({ search: filters?.search });
     const { data: pendingData, isLoading: loadingPending, isError: isErrorPending, refetch: refetchPending } = useProviderPending({ search: filters?.search });
 
-    // 3. TA LOGIQUE DE FILTRAGE PAR STATUT (Client-side)
     const getFilteredData = () => {
-        // Cas spécial pour les documents en attente
         if (actifTabs === 'Doc verification') {
             return pendingData?.data?.providers || [];
         }
@@ -31,7 +27,6 @@ export function Provider() {
         const allApps = allData?.data?.applications || [];
         const providerList = dataProvider?.data?.providers || dataProvider?.data || [];
 
-        // Filtrage en fonction du libellé de l'onglet
         switch (actifTabs) {
             case 'Actifs':
                 return providerList.filter(app => app.isActive === true);
@@ -40,13 +35,12 @@ export function Provider() {
             case 'Attente':
                 return allApps.filter(app => app.status === 'pending');
             default:
-                return allApps; // "Tout"
+                return allApps;
         }
     };
 
     const fullFilteredData = getFilteredData();
 
-    // 4. LOGIQUE DE PAGINATION (Slicing du tableau filtré)
     const totalItems = fullFilteredData.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -54,8 +48,6 @@ export function Provider() {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = fullFilteredData.slice(indexOfFirstItem, indexOfLastItem);
 
-    // 5. EFFETS DE BORD
-    // Reset la page à 1 si l'onglet ou la recherche change
     useEffect(() => {
         setCurrentPage(1);
     }, [actifTabs, filters?.search]);
@@ -64,6 +56,7 @@ export function Provider() {
         setActifTabs(tab);
     };
 
+    // Return the rendered UI for this component.
     return (
         <>
             <div className="flex mb-6 flex-wrap gap-2">
@@ -71,7 +64,7 @@ export function Provider() {
             </div>
 
             <ProviderTable
-                applications={currentItems} // On passe les éléments découpés (max 5)
+                applications={currentItems}
                 isLoading={
                     actifTabs === 'Doc verification'
                         ? loadingPending
@@ -91,7 +84,7 @@ export function Provider() {
                 refetchPending={refetchPending}
             />
 
-            {/* Affichage de la pagination uniquement s'il y a plusieurs pages */}
+
             {totalPages > 1 && (
                 <div className="mt-6">
                     <Pagination

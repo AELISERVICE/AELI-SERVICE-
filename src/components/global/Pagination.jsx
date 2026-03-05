@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 export function Pagination({ currentPage = 1, totalPages = 1, onPageChange }) {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+  // Return the rendered UI for this component.
   return (
     <div className="flex items-center justify-center gap-2 py-8">
       <button

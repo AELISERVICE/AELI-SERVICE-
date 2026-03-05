@@ -28,7 +28,6 @@ export const request = async (endpoint, method = "GET", body = null) => {
     let response = await fetch(`${API_URL}${endpoint}`, options);
     let data = await getSafeJson(response);
 
-    // LOGIQUE REFRESH TOKEN
     if (!response.ok && data.code === "TOKEN_EXPIRED") {
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {

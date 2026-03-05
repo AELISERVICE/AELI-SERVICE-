@@ -8,7 +8,6 @@ import { NotFound } from '../global/NotFound';
 export const PaymentSummary = () => {
   const { data: statsResponse, isLoading, isError } = useStats();
 
-  // 1. Définition de la fonction de formatage (indispensable)
   const formatAmount = (amount) => {
     if (!amount) return "0 FCFA";
     return new Intl.NumberFormat('fr-FR').format(amount) + " FCFA";
@@ -24,10 +23,11 @@ export const PaymentSummary = () => {
     { label: 'Annulé', value: payments?.cancelled || 0 },
   ];
 
+  // Return the rendered UI for this component.
   return (
     <Card
       variant="green"
-      noPadding={false} // Changé à false pour un meilleur espacement
+      noPadding={false}
       className="relative overflow-hidden"
     >
       {isLoading ? (
@@ -57,7 +57,7 @@ export const PaymentSummary = () => {
               <h2 className="text-3xl font-bold text-white mb-1">
                 {formatAmount(payments?.totalAmount)}
               </h2>
-              {/* CORRECTION : On affiche le total des transactions au lieu de paymentStats.label (qui était indéfini) */}
+
               <p className="text-green-100 text-sm">
                 Total de {payments?.total || 0} transactions
               </p>

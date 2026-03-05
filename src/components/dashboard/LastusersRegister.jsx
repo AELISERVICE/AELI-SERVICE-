@@ -15,6 +15,7 @@ export const LastusersRegister = () => {
   const headers = ["Prestataire", "Contact", "Activités", "Localisation", "Documents", "Statut métier", "Statut compte"];
   const headersUser = ["Utilisateur", "Rôle", "Genre", "Contact", "Localisation", "Vérifié", "Dernière Connexion", "Status"];
 
+  // Return the rendered UI for this component.
   return (
     <div className="f mb-2">
       <div className="flex flex-col gap-6 ">
@@ -121,7 +122,7 @@ export const LastusersRegister = () => {
             <Table headers={headers}>
               {recentProviders.map((item) => (
                 <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">
-                  {/* Prestataire (Image + Nom) */}
+
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="relative flex-shrink-0">
@@ -146,7 +147,7 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
 
-                  {/* Contact (Téléphone + WhatsApp) */}
+
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
                       <div className="text-xs text-slate-600">{item.phone || '-'}</div>
@@ -163,7 +164,7 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
 
-                  {/* Activités (Tags) */}
+
                   <td className="px-6 py-4">
                     <div className="flex gap-1 flex-wrap max-w-[150px]">
                       {item.activities?.slice(0, 2).map((act, idx) => (
@@ -176,7 +177,7 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
 
-                  {/* Localisation */}
+
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5 text-xs text-slate-600">
                       <MapPin size={12} className="text-red-400" />
@@ -184,7 +185,7 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
 
-                  {/* Documents */}
+
                   <td className="px-6 py-4">
                     <div className="flex -space-x-2">
                       {item.documents?.length > 0 ? (
@@ -206,7 +207,7 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
 
-                  {/* Statut Métier */}
+
                   <td className="px-6 py-4">
                     <Badge
                       status={item.status || item.verificationStatus || (item.isVerified ? 'approved' : 'pending')}
@@ -214,7 +215,7 @@ export const LastusersRegister = () => {
                     />
                   </td>
 
-                  {/* Statut Compte */}
+
                   <td className="px-6 py-4">
                     <Badge
                       status={item.isActive ? 'Actif' : 'Bloqué'}

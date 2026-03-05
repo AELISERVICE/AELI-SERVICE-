@@ -6,6 +6,7 @@ export const NotFound = ({
     message = "Il n'y a aucune donnée à afficher pour le moment.",
     className
 }) => {
+    // Return the rendered UI for this component.
     return (
 
         <div className={`flex flex-col items-center justify-center py-10 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 z-50 ${className}`}>

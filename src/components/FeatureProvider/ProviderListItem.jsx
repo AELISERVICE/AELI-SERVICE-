@@ -8,27 +8,22 @@ import { NotFound } from '../global/NotFound';
 import { useGetProviderList } from '../../hooks/useProvider';
 
 export const ProviderListItem = ({ setSelectedProvider }) => {
-    // 1. Récupération des filtres depuis le contexte du dashboard
     const { filters } = useOutletContext();
 
-    // 2. États pour la pagination et la sélection
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedId, setSelectedId] = useState(null);
 
-    // 3. Appel API avec filtres et pagination
     const { data: apiResponse, isLoading, isError } = useGetProviderList({
         search: filters?.search,
         page: currentPage,
-        limit: 5 // ou la limite souhaitée
+        limit: 5
     });
 
     const providers = apiResponse?.data?.providers || [];
     const pagination = apiResponse?.data?.pagination;
 
-    // 4. Gestion de la sélection du prestataire
     useEffect(() => {
         if (providers.length > 0) {
-            // Si rien n'est sélectionné, on prend le premier par défaut
             const initialSelection = selectedId
                 ? providers.find(p => p.id === selectedId)
                 : providers[0];
@@ -40,13 +35,13 @@ export const ProviderListItem = ({ setSelectedProvider }) => {
         }
     }, [providers, selectedId]);
 
-    // Reset de la page si la recherche change
     useEffect(() => {
         setCurrentPage(1);
     }, [filters?.search]);
 
     if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
+    // Return the rendered UI for this component.
     return (
         <div className="flex flex-col gap-4">
             {isError ? (
@@ -107,7 +102,7 @@ export const ProviderListItem = ({ setSelectedProvider }) => {
                 />
             )}
 
-            {/* 5. Pagination Dynamique */}
+
             {pagination && pagination.totalPages > 1 && (
                 <div className="mt-4">
                     <Pagination

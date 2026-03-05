@@ -2,17 +2,16 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { request } from "../api/apiClient";
 
 
-// Statistiques globales
+// useStats encapsulates data access and state management for its feature domain.
 export const useStats = () => {
     return useQuery({
         queryKey: ["useStats"],
         queryFn: () => request("/api/admin/stats", "GET"),
-        // Optionnel : ne pas rafraîchir à chaque clic sur la fenêtre
         refetchOnWindowFocus: false,
     });
 };
 
-// Statistiques de sécurité
+// useSecurityStats encapsulates data access and state management for its feature domain.
 export const useSecurityStats = () => {
     return useQuery({
         queryKey: ["useSecurityStats"],
@@ -21,7 +20,7 @@ export const useSecurityStats = () => {
     });
 };
 
-// Logs de sécurité récents
+// useSecurityLogs encapsulates data access and state management for its feature domain.
 export const useSecurityLogs = () => {
     return useQuery({
         queryKey: ["useSecurityLogs"],
@@ -30,7 +29,7 @@ export const useSecurityLogs = () => {
     });
 };
 
-// Liste des IP bannies
+// usebannedIps encapsulates data access and state management for its feature domain.
 export const usebannedIps = () => {
     return useQuery({
         queryKey: ["usebannedIps"],
@@ -39,7 +38,7 @@ export const usebannedIps = () => {
     });
 };
 
-// Débloquer une IP bannie
+// useUnbanIP encapsulates data access and state management for its feature domain.
 export const useUnbanIP = () => {
     return useMutation({
         mutationKey: ["useUnbanIP"],
@@ -47,7 +46,7 @@ export const useUnbanIP = () => {
     });
 };
 
-// Statistiques d'utilisation de l'API
+// useAnalyticsStatistiquesAPI encapsulates data access and state management for its feature domain.
 export const useAnalyticsStatistiquesAPI = () => {
     return useQuery({
         queryKey: ["useAnalyticsStatistiquesAPI"],

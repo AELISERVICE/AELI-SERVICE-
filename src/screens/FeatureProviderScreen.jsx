@@ -9,6 +9,7 @@ import { FeaturedCard } from '../components/FeatureProvider/FeaturedCard'
 export function FeatureProviderScreen() {
     const [selectedProvider, setSelectedProvider] = useState();
 
+    // Return the rendered UI for this component.
     return (
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto space-y-12">

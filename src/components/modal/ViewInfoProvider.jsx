@@ -69,6 +69,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
     }, [isSuccess, isError, data, error]);
 
 
+    // Return the rendered UI for this component.
     return (
         <main
             onClick={closeView}
@@ -77,7 +78,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
             <div className="flex w-full justify-center min-h-full">
                 <div onClick={(e) => e.stopPropagation()} className="w-full lg:w-3/4 space-y-8">
 
-                    {/* --- SECTION 1 : INFOS PERSONNELLES --- */}
+
                     <section className="bg-white rounded-[1.5rem] shadow-sm p-6 md:p-8 border border-white">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
@@ -104,7 +105,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
                         </div>
                     </section>
 
-                    {/* --- SECTION 2 : INFOS PROFESSIONNELLES --- */}
+
                     <section className="bg-white rounded-[1.5rem] shadow-sm p-6 md:p-8 border border-white">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
@@ -139,7 +140,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
                         </div>
                     </section>
 
-                    {/* --- SECTION 3 : LOCALISATION --- */}
+
                     <section className="bg-white rounded-[1.5rem] shadow-sm p-6 md:p-8 border border-white">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
@@ -157,7 +158,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
                         </div>
                     </section>
 
-                    {/* --- SECTION 4 : DOCUMENTS CNI --- */}
+
                     <section className="bg-white rounded-[1.5rem] shadow-sm p-6 md:p-8 border border-white">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
@@ -199,7 +200,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
                                     />
                                 </div>
 
-                                {/* On affiche le champ Raison du rejet uniquement si nécessaire ou en permanence pour la saisie */}
+
                                 <div>
                                     <label className="block text-sm font-bold text-zinc-700 mb-2 text-red-600">Motif du rejet (Envoyé au prestataire)</label>
                                     <textarea
@@ -230,7 +231,7 @@ export function ViewInfoProvider({ closeView, providerData }) {
                                         variant="danger"
                                         onClick={() => handleAction(false)}
                                         isLoading={isLoading}
-                                        disabled={isLoading || !formData.rejectionReason} // Désactivé si pas de motif de rejet
+                                        disabled={isLoading || !formData.rejectionReason}
                                         className="w-full py-3 border-red-200 text-red-600"
                                     >
                                         <XIcon size={18} /> Rejeter la candidature

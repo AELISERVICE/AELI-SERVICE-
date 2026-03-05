@@ -17,6 +17,7 @@ export function StatsCard({
     isError = false,
     errorText = 'Erreur de chargement',
 }) {
+    // Return the rendered UI for this component.
     return (
         <div className="relative overflow-hidden bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full transition-all hover:shadow-md">
             <div className="flex justify-between items-start mb-4">

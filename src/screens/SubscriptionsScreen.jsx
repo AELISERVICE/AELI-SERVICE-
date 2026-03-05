@@ -7,6 +7,7 @@ import { SubscriptionList } from '../components/Subscription/SubscriptionList';
 export function SubscriptionsScreen() {
     const TABS = ['Paiement', 'Attente', 'Revoque', 'Gratuit'];
 
+    // Return the rendered UI for this component.
     return (
         <div >
             <div className="mb-6 flex flex-wrap gap-2">

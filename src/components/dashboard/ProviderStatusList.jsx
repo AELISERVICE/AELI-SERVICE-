@@ -34,6 +34,7 @@ export const ProviderStatusList = () => {
     },
   ];
 
+  // Return the rendered UI for this component.
   return (
     <Card variant='stat'>
       <div className="flex justify-between items-center mb-6">

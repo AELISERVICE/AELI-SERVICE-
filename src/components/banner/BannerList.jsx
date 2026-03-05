@@ -89,6 +89,7 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
 
     if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
+    // Return the rendered UI for this component.
     return (
         <Card>
             <div className="flex justify-between mb-1">

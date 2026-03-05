@@ -28,14 +28,13 @@ export function IpDetection() {
         return "Aucun";
     };
 
-    // --- LOGIQUE DE PAGINATION MANUELLE ---
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
-    // On découpe les logs récupérés de l'API
     const currentItems = logs.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(logs.length / itemsPerPage);
 
+    // Return the rendered UI for this component.
     return (
         <>
             <Card>
@@ -62,6 +61,7 @@ export function IpDetection() {
                             const risklevel = getRiskDisplay(log.riskLevel);
                             const status = log.success ? "Succes" : "Echoué";
 
+                            // Return the rendered UI for this component.
                             return (
                                 <tr key={log.id} className="group hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
@@ -116,7 +116,7 @@ export function IpDetection() {
                         totalPages={totalPages}
                         onPageChange={(page) => {
                             setCurrentPage(page);
-                            window.scrollTo({ top: 0, behavior: 'smooth' }); // Optionnel : remonte en haut
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
                     />
                 </div>

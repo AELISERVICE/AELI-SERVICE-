@@ -8,7 +8,7 @@ import {
 import { Card } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Badge } from '../../ui/Badge';
-import { Table } from '../../ui/Table'; // On utilise ton composant Table
+import { Table } from '../../ui/Table';
 import { NotFound } from '../global/NotFound';
 import { ActionMenu } from '../global/ActionMenu';
 import { Loader, ButtonLoader } from '../global/Loader';
@@ -16,14 +16,12 @@ import { useExportProviders } from '../../hooks/useExport';
 import { useDeactivateAccountProvider } from '../../hooks/useProvider';
 
 export const ProviderTable = ({ applications, isLoading, isError, actifTabs, refetch, refetchPending }) => {
-    // Headers adaptés aux prestataires
     const headers = ["Prestataire", "Contact", "Activités", "Localisation", "Documents", "Statut", "Compte", "Actions"];
 
     const { onActiveModal } = useOutletContext();
     const [openMenuId, setOpenMenuId] = useState(null);
     const triggerRef = useRef(null);
 
-    // --- TES HOOKS (Inchangés) ---
     const { mutate: mutateStatus, isSuccess: isSuccessStatus, data: dataStatus, isError: isErrorStatus, error: errorStatus, reset: resetStatus } = useDeactivateAccountProvider();
     const { mutate: mutateExport, isPending: isPendingExport, isSuccess: isSuccessExport, data: dataExport, isError: isErrorExport, error: errorExport, reset: resetExport } = useExportProviders();
 
@@ -33,7 +31,6 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
 
     const handleExport = () => mutateExport();
 
-    // --- TON EFFECT D'EXPORT ET STATUS (Inchangé) ---
     useEffect(() => {
         if (isSuccessStatus) {
             toast.success(dataStatus?.message);
@@ -74,6 +71,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
 
     if (isLoading) return <Loader variant="centered" message="Chargement..." />;
 
+    // Return the rendered UI for this component.
     return (
         <Card>
             <div className="flex justify-between mb-1 items-center">
@@ -109,10 +107,10 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                 <Table headers={headers}>
                     {applications.map((app) => (
                         <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors">
-                            {/* Prestataire (Image + Nom) */}
+
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
-                                    {/* Suppression de w-full ici et ajout de flex-shrink-0 */}
+
                                     <div className="relative flex-shrink-0">
                                         <img
                                             src={app?.profilePhoto || `https://ui-avatars.com/api/?name=${app.businessName}&background=random`}
@@ -124,7 +122,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                         </div>
                                     </div>
 
-                                    {/* On ajoute min-w-0 pour que le truncate fonctionne bien dans le flex */}
+
                                     <div className="flex flex-col min-w-0">
                                         <span className="font-semibold text-slate-900 leading-none truncate">
                                             {app.businessName}
@@ -136,7 +134,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 </div>
                             </td>
 
-                            {/* Contact (Email + Phone) */}
+
                             <td className="px-6 py-4">
                                 <div className="flex flex-col gap-1">
                                     <div className="text-xs text-slate-600">{app.phone}</div>
@@ -146,7 +144,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 </div>
                             </td>
 
-                            {/* Activités (Tags) */}
+
                             <td className="px-6 py-4">
                                 <div className="flex gap-1 flex-wrap max-w-[150px]">
                                     {app.activities?.slice(0, 2).map((act, idx) => (
@@ -158,7 +156,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 </div>
                             </td>
 
-                            {/* Localisation */}
+
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-1.5 text-xs text-slate-600">
                                     <MapPin size={12} className="text-red-400" />
@@ -166,7 +164,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 </div>
                             </td>
 
-                            {/* Documents */}
+
                             <td className="px-6 py-4">
                                 <div className="flex -space-x-2">
                                     {app.documents?.map((doc, idx) => (
@@ -184,7 +182,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 </div>
                             </td>
 
-                            {/* Statut Métier (Approved, Pending, etc.) */}
+
                             <td className="px-6 py-4">
                                 <Badge
                                     status={app.status || app.verificationStatus}
@@ -200,7 +198,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 />
                             </td>
 
-                            {/* Statut Compte (Actif / Bloqué) */}
+
                             <td className="px-6 py-4">
                                 <Badge
                                     status={app.isActive ? 'Actif' : 'Bloqué'}
@@ -208,7 +206,7 @@ export const ProviderTable = ({ applications, isLoading, isError, actifTabs, ref
                                 />
                             </td>
 
-                            {/* Actions */}
+
                             <td className="relative px-6 py-4 text-right">
                                 <div className="flex justify-end">
                                     <Button

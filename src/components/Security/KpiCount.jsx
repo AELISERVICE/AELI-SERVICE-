@@ -7,7 +7,6 @@ export function Kpicount() {
     const { data: securityStatsResponse, isLoading, isError } = useSecurityStats();
     const statsData = securityStatsResponse?.data;
 
-    // Configuration des KPIs basée sur les données réelles de l'API
     const securityKpis = [
         {
             title: 'Tentatives échouées (24h)',
@@ -48,6 +47,7 @@ export function Kpicount() {
     ];
 
 
+    // Return the rendered UI for this component.
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {securityKpis.map((kpi, index) => (
@@ -55,7 +55,7 @@ export function Kpicount() {
                     key={index}
                     icon={kpi.icon}
                     title={kpi.title}
-                    value={kpi.value.toString()} // On s'assure que c'est une string
+                    value={kpi.value.toString()}
                     valueCol={kpi.valueCol}
                     subtitle={kpi.subtitle}
                     iconColor={kpi.iconColor}
