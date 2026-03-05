@@ -108,9 +108,40 @@ const listProvidersValidation = [
         .isFloat({ min: 0, max: 5 })
         .withMessage('La note minimum doit être entre 0 et 5'),
 
+    query('search')
+        .optional()
+        .isString()
+        .trim(),
+
+    query('location')
+        .optional()
+        .isString()
+        .trim(),
+
+    query('categoryId')
+        .optional()
+        .isUUID()
+        .withMessage('ID de catégorie invalide'),
+
+    // Category filter expects a category slug (see providerController: req.query.category)
+    query('category')
+        .optional()
+        .isString()
+        .trim(),
+
+    query('minPrice')
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage('Le prix minimum doit être un nombre positif'),
+
+    query('maxPrice')
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage('Le prix maximum doit être un nombre positif'),
+
     query('sort')
         .optional()
-        .isIn(['rating', 'recent', 'views', 'name'])
+        .isIn(['rating', 'recent', 'views', 'name', 'price_asc', 'price_desc'])
         .withMessage('Tri invalide')
 ];
 

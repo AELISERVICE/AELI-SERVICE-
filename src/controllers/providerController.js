@@ -91,6 +91,7 @@ const getProviders = asyncHandler(async (req, res) => {
   const {
     page = 1,
     limit = 12,
+    categoryId,
     category,
     location,
     minRating,
@@ -170,12 +171,15 @@ const getProviders = asyncHandler(async (req, res) => {
   ];
 
   // If category filter, add where condition
-  if (category) {
+  // Support both categoryId (UUID) and category (slug)
+  if (categoryId || category) {
     where[Op.and] = where[Op.and] || [];
     where[Op.and].push({
       id: {
         [Op.in]: literal(
-          `(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`
+          categoryId
+            ? `(SELECT DISTINCT provider_id FROM services WHERE category_id = '${categoryId}')`
+            : `(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`
         ),
       },
     });

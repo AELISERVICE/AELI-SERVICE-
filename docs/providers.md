@@ -29,7 +29,8 @@ Récupère la liste paginée des prestataires avec filtres et recherche. C'est l
 | `limit` | int | Éléments par page (défaut: 20, max: 50) |
 | `search` | string | Recherche dans nom, description du prestataire **ET des services** |
 | `location` | string | Filtrer par ville (Douala, Yaoundé, etc.) |
-| `categoryId` | UUID | Filtrer par catégorie de service |
+| `categoryId` | UUID | Filtrer par catégorie de service (via `services.category_id`) |
+| `category` | string | Filtrer par catégorie via le `slug` (alternative à `categoryId`) |
 | `minRating` | float | Note minimum (1-5) |
 | `minPrice` | float | Prix minimum d'un service du prestataire |
 | `maxPrice` | float | Prix maximum d'un service du prestataire |
