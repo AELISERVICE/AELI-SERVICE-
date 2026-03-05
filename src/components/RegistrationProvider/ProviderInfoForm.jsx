@@ -203,21 +203,23 @@ export function ProviderInfoForm() {
             title={isEditMode ? "Modification Prestataire" : "Inscription Prestataire"}
             subtitle={isEditMode ? "Consultez vos documents et modifiez votre activité" : "Complétez votre inscription"}
         >
-            <form onSubmit={handleSubmit} className="space-y-10">
-                <section>
-                    <SectionHeader icon={User} title="Informations Personnelles" colorClass="text-blue-600" />
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        <Input name="firstName" label="Nom" value={formData.firstName} isreadOnly readOnly />
-                        <Input name="lastName" label="Prénom" value={formData.lastName} isreadOnly readOnly />
-                        <Input name="gender" label="Genre" value={formData.gender} isreadOnly readOnly />
-                        <Input name="email" label="Adresse E-mail" value={formData.email} isreadOnly readOnly />
-                        <Input name="phone" label="Téléphone" value={formData.phone} isreadOnly readOnly />
-                    </div>
-                </section>
+            <form onSubmit={handleSubmit} className="relative space-y-10">
+                {!isEditMode &&
+                    <section>
+                        <SectionHeader icon={User} title="Informations Personnelles" colorClass="text-blue-600" />
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <Input name="firstName" label="Nom" value={formData.firstName} isreadOnly readOnly />
+                            <Input name="lastName" label="Prénom" value={formData.lastName} isreadOnly readOnly />
+                            <Input name="gender" label="Genre" value={formData.gender} isreadOnly readOnly />
+                            <Input name="email" label="Adresse E-mail" value={formData.email} isreadOnly readOnly />
+                            <Input name="phone" label="Téléphone" value={formData.phone} isreadOnly readOnly />
+                        </div>
+                    </section>
+                }
 
                 <section>
                     <SectionHeader icon={Briefcase} title="Informations sur la Structure" colorClass="text-purple-600" />
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 w-full">
                         {/* Champs CNI : Toujours visibles, mais bloqués en mode édition */}
                         <div className="flex flex-col gap-6">
                             <Input
@@ -266,10 +268,12 @@ export function ProviderInfoForm() {
                         )}
                         <Input name="businessName" label="Entreprise" value={formData.businessName} onChange={handleChange} required />
                         <Input name="businessContact" label="Contact Pro" type="number" value={formData.businessContact} onChange={handleChange} required />
-                        <Input name="whatsapp" label="Contact whatsapp" type="text" value={formData.whatsapp} onChange={handleChange} required />
+                        <div className={`space-y-3 ${!isEditMode ? "md:-mt-50" : ""}`}>
+                            <Input name="whatsapp" label="Contact whatsapp" type="text" value={formData.whatsapp} onChange={handleChange} required />
+                        </div>
                         <Input name="address" label="Address (optionel)" value={formData.address} onChange={handleChange} className="flex-1" />
 
-                        <div className="flex flex-col gap-2">
+                        <div className={`flex flex-col gap-2 ${!isEditMode ? "md:-mt-50" : ""}`}>
                             <label className="text-sm font-medium text-gray-700">Localisation *</label>
                             <div className="flex flex-col gap-4">
                                 <Input name="location" value={formData.location} isreadOnly readOnly className="flex-1" />
@@ -282,7 +286,7 @@ export function ProviderInfoForm() {
 
                         {showMapModal && <MapPicker onClose={() => setShowMapModal(false)} onConfirm={handleConfirmLocation} />}
 
-                        <div className="space-y-3">
+                        <div className={`space-y-3 `}>
                             <Input
                                 name="activities"
                                 label="Sélectionner vos activités"
@@ -301,10 +305,19 @@ export function ProviderInfoForm() {
                             </div>
                         </div>
 
-                        <Input name="description" label="Description " type="textarea" value={formData.description} onChange={handleChange} required />
                     </div>
                 </section>
-
+                <div className={` ${!isEditMode ? "-mt-7 md:-mt-0 md:absolute md:bottom-120 md:right-0 md:ml-8 md:w-[48.5%]" : "w-full -mt-4"}`}>
+                    <Input
+                        name="description"
+                        label="Description "
+                        type="textarea"
+                        value={formData.description}
+                        onChange={handleChange}
+                        required
+                        className={`${!isEditMode ? "md:h-45" : ""}`}
+                    />
+                </div>
                 {!isEditMode && <TermsSection agreed={agreed} onToggle={setAgreed} />}
 
                 <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">

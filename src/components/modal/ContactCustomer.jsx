@@ -98,7 +98,7 @@ export function ContactCustomer({ closeContact, dataContact }) {
           </div>
 
           <form className="p-6 md:p-10 space-y-6" onSubmit={handleSubmit}>
-            {}
+            { }
             <div className="hidden  grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="Nom complet"
@@ -175,9 +175,9 @@ export function ContactCustomer({ closeContact, dataContact }) {
           </form>
         </div>
 
-        {}
+        { }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {}
+          { }
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="font-bold text-lg text-gray-700 pacifico-regular">WhatsApp</h3>
@@ -216,7 +216,7 @@ J'aimerais avoir plus d'informations à ce sujet. Merci !`;
             </Button>
           </div>
 
-          {}
+          { }
           <div className="bg-white p-6 rounded-2xl shadow-lg flex flex-col transition-transform hover:-translate-y-1 duration-300">
             <div className="flex items-center gap-3 mb-4">
               <h3 className="font-bold text-lg text-gray-700 pacifico-regular">Appel direct</h3>
@@ -227,16 +227,16 @@ J'aimerais avoir plus d'informations à ce sujet. Merci !`;
 
             <Button
               variant="phone"
-              className={`w-full gap-2 py-3 ${!dataContact?.phone ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={!dataContact?.phone}
+              className={`w-full gap-2 py-3 ${!dataContact?.businessContact ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={!dataContact?.businessContact}
               onClick={() => {
 
-                  const cleanPhone = dataContact.phone.replace(/\s/g, '');
-                  window.location.href = `tel:${cleanPhone}`;
+                const cleanPhone = dataContact.businessContact.replace(/\s/g, '');
+                window.location.href = `tel:${cleanPhone}`;
               }}
             >
               <Phone className="w-6 h-6" />
-              {dataContact?.phone ? "Appeler maintenant" : "Indisponible"}
+              {dataContact?.businessContact ? "Appeler maintenant" : "Indisponible"}
             </Button>
           </div>
         </div>
