@@ -1,24 +1,23 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { LoginScreen } from './screens/Login';
-import { Base } from './screens/Base';
-import { Dashboard } from './screens/Dashboard';
-import { Provider } from './screens/Provider';
-import { SubscriptionsScreen } from './screens/SubscriptionsScreen';
-import { ReviewsScreen } from './screens/ReviewScreen';
-import { FeatureProviderScreen } from './screens/FeatureProviderScreen';
-import { SecurityScreen } from './screens/SecurityScreen';
-import { Users } from './screens/Users';
-import { BannerScreen } from './screens/BannerScreen';
-import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { LoginScreen } from "./screens/Login";
+import { Base } from "./screens/Base";
+import { Dashboard } from "./screens/Dashboard";
+import { Provider } from "./screens/Provider";
+import { SubscriptionsScreen } from "./screens/SubscriptionsScreen";
+import { ReviewsScreen } from "./screens/ReviewScreen";
+import { FeatureProviderScreen } from "./screens/FeatureProviderScreen";
+import { SecurityScreen } from "./screens/SecurityScreen";
+import { Users } from "./screens/Users";
+import { BannerScreen } from "./screens/BannerScreen";
+import { ForgotPasswordScreen } from "./screens/ForgotPasswordScreen";
 import { ResetPasswordScreen } from "./screens/ResetPasswordScreen";
 
 function App() {
-  // Return the rendered UI for this component.
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginScreen />} />
-      <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+      <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
       <Route path="/reset-password/:token" element={<ResetPasswordScreen />} />
 
       <Route element={<Base />}>
@@ -32,7 +31,7 @@ function App() {
         <Route path="/banners" element={<BannerScreen />} />
       </Route>
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;

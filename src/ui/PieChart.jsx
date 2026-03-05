@@ -1,10 +1,8 @@
-import React from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-
+import React from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
-    // Return the rendered UI for this component.
     return (
       <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg shadow-md border border-gray-100 flex items-center gap-2">
         <div
@@ -20,10 +18,12 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
+/**
+ * UI component responsible for rendering the pie charts section.
+ */
 export const PieCharts = ({ data }) => {
-  // Return the rendered UI for this component.
   return (
-    <div style={{ width: '100%', height: 400, position: 'relative' }}>
+    <div style={{ width: "100%", height: 400, position: "relative" }}>
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -42,9 +42,16 @@ export const PieCharts = ({ data }) => {
               const radius = outerRadius * 0.7;
               const x = cx + radius * Math.cos(-midAngle * RADIAN);
               const y = cy + radius * Math.sin(-midAngle * RADIAN);
-              // Return the rendered UI for this component.
               return (
-                <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="14" fontWeight="bold">
+                <text
+                  x={x}
+                  y={y}
+                  fill="white"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="14"
+                  fontWeight="bold"
+                >
                   {value}%
                 </text>
               );
@@ -55,8 +62,11 @@ export const PieCharts = ({ data }) => {
                 key={`cell-${index}`}
                 fill={entry.color}
                 outerRadius={
-                  entry.name === 'Medium' ? 110 :
-                    entry.name === 'High' ? 100 : 90
+                  entry.name === "Medium"
+                    ? 110
+                    : entry.name === "High"
+                      ? 100
+                      : 90
                 }
                 className="cursor-pointer transition-all duration-300 outline-none"
               />

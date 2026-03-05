@@ -1,29 +1,30 @@
-import React from 'react';
-import { Card } from '../../ui/Card';
-import { CreditCard, TrendingUp, AlertCircle } from 'lucide-react';
-import { useStats } from '../../hooks/useStats';
-import { Loader } from '../global/Loader';
-import { NotFound } from '../global/NotFound';
+import React from "react";
+import { Card } from "../../ui/Card";
+import { CreditCard, TrendingUp, AlertCircle } from "lucide-react";
+import { useStats } from "../../hooks/useStats";
+import { Loader } from "../global/Loader";
+import { NotFound } from "../global/NotFound";
 
+/**
+ * UI component responsible for rendering the payment summary section.
+ */
 export const PaymentSummary = () => {
   const { data: statsResponse, isLoading, isError } = useStats();
 
   const formatAmount = (amount) => {
     if (!amount) return "0 FCFA";
-    return new Intl.NumberFormat('fr-FR').format(amount) + " FCFA";
+    return new Intl.NumberFormat("fr-FR").format(amount) + " FCFA";
   };
-
 
   const payments = statsResponse?.data?.payments;
 
   const paymentStats = [
-    { label: 'Accepté', value: payments?.accepted || 0 },
-    { label: 'Attente', value: payments?.pending || 0 },
-    { label: 'Refusé', value: payments?.refused || 0 },
-    { label: 'Annulé', value: payments?.cancelled || 0 },
+    { label: "Accepté", value: payments?.accepted || 0 },
+    { label: "Attente", value: payments?.pending || 0 },
+    { label: "Refusé", value: payments?.refused || 0 },
+    { label: "Annulé", value: payments?.cancelled || 0 },
   ];
 
-  // Return the rendered UI for this component.
   return (
     <Card
       variant="green"
@@ -31,7 +32,11 @@ export const PaymentSummary = () => {
       className="relative overflow-hidden"
     >
       {isLoading ? (
-        <Loader variant="centered" message="Chargement du résumé des paiements..." className="py-16" />
+        <Loader
+          variant="centered"
+          message="Chargement du résumé des paiements..."
+          className="py-16"
+        />
       ) : isError ? (
         <NotFound
           Icon={AlertCircle}
@@ -71,8 +76,12 @@ export const PaymentSummary = () => {
                   key={index}
                   className="flex flex-col items-center py-2"
                 >
-                  <span className="text-xs font-bold block text-white">{item.value}</span>
-                  <span className="text-[10px] text-white/80">{item.label}</span>
+                  <span className="text-xs font-bold block text-white">
+                    {item.value}
+                  </span>
+                  <span className="text-[10px] text-white/80">
+                    {item.label}
+                  </span>
                 </Card>
               ))}
             </div>

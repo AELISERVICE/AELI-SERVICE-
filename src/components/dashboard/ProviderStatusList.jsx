@@ -1,42 +1,43 @@
-import React from 'react';
-import { AlertCircle, CheckCircle2, Clock, Crown } from 'lucide-react';
-import { Card } from '../../ui/Card';
-import { useStats } from '../../hooks/useStats';
-import { Loader } from '../global/Loader';
-import { NotFound } from '../global/NotFound';
+import React from "react";
+import { AlertCircle, CheckCircle2, Clock, Crown } from "lucide-react";
+import { Card } from "../../ui/Card";
+import { useStats } from "../../hooks/useStats";
+import { Loader } from "../global/Loader";
+import { NotFound } from "../global/NotFound";
 
-
+/**
+ * UI component responsible for rendering the provider status list section.
+ */
 export const ProviderStatusList = () => {
   const { data: statsResponse, isLoading, isError } = useStats();
   const providers = statsResponse?.data?.providers;
 
   const providerStatuses = [
     {
-      label: 'Vérifiés',
+      label: "Vérifiés",
       count: providers?.active,
       icon: CheckCircle2,
-      color: 'text-green-500',
-      bg: 'bg-green-100'
+      color: "text-green-500",
+      bg: "bg-green-100",
     },
     {
-      label: 'En attente',
+      label: "En attente",
       count: providers?.pending,
       icon: Clock,
-      color: 'text-yellow-500',
-      bg: 'bg-yellow-100'
+      color: "text-yellow-500",
+      bg: "bg-yellow-100",
     },
     {
-      label: 'Mis en avant',
+      label: "Mis en avant",
       count: providers?.featured,
       icon: Crown,
-      color: 'text-purple-500',
-      bg: 'bg-purple-100'
+      color: "text-purple-500",
+      bg: "bg-purple-100",
     },
   ];
 
-  // Return the rendered UI for this component.
   return (
-    <Card variant='stat'>
+    <Card variant="stat">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-sm font-semibold text-gray-700">
           Statut des prestataires
@@ -57,10 +58,7 @@ export const ProviderStatusList = () => {
           />
         ) : (
           providerStatuses.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between"
-            >
+            <div key={index} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-full ${item.bg}`}>
                   <item.icon className={`w-4 h-4 ${item.color}`} />

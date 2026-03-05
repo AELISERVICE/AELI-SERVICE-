@@ -1,22 +1,23 @@
-import React from 'react';
-import { Pagination } from '../components/global/Pagination';
-import { TabButton } from '../components/global/TabButton';
-import { SubscriptionList } from '../components/Subscription/SubscriptionList';
+import React from "react";
+import { Pagination } from "../components/global/Pagination";
+import { TabButton } from "../components/global/TabButton";
+import { SubscriptionList } from "../components/Subscription/SubscriptionList";
 
-
+/**
+ * UI component responsible for rendering the subscriptions screen section.
+ */
 export function SubscriptionsScreen() {
-    const TABS = ['Paiement', 'Attente', 'Revoque', 'Gratuit'];
+  const TABS = ["Paiement", "Attente", "Revoque", "Gratuit"];
 
-    // Return the rendered UI for this component.
-    return (
-        <div >
-            <div className="mb-6 flex flex-wrap gap-2">
-                <TabButton TABS={TABS} />
-            </div>
-            <SubscriptionList />
-            <div className="mt-6">
-                <Pagination />
-            </div>
-        </div>
-    );
-};
+  return (
+    <div>
+      <div className="mb-6 flex flex-wrap gap-2">
+        <TabButton TABS={TABS} />
+      </div>
+      <SubscriptionList />
+      <div className="mt-6">
+        <Pagination />
+      </div>
+    </div>
+  );
+}

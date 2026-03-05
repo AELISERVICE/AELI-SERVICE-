@@ -1,14 +1,16 @@
-import React from 'react';
-import { ToastContainer } from 'react-toastify';
-import { LoginForm } from '../components/auth/LoginForm';
-import { Footer } from '../components/global/Footer';
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import { LoginForm } from "../components/auth/LoginForm";
+import { Footer } from "../components/global/Footer";
 
+/**
+ * UI component responsible for rendering the login screen section.
+ */
 export function LoginScreen() {
-    // Return the rendered UI for this component.
-    return (
-        <>
-            <LoginForm />
-            <ToastContainer position="bottom-center" />
-        </>
-    )
+  return (
+    <>
+      <LoginForm />
+      <ToastContainer position="bottom-center" />
+    </>
+  );
 }

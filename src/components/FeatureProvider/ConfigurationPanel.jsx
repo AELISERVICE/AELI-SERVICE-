@@ -1,14 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { ChevronDown, Star, Sparkles } from 'lucide-react';
-import { Card } from '../../ui/Card';
-import { Button } from '../../ui/Button';
-import { ButtonLoader } from '../global/Loader';
-import { useFeature } from '../../hooks/useBoost';
+import { ChevronDown, Star, Sparkles } from "lucide-react";
+import { Card } from "../../ui/Card";
+import { Button } from "../../ui/Button";
+import { ButtonLoader } from "../global/Loader";
+import { useFeature } from "../../hooks/useBoost";
 
+/**
+ * UI component responsible for rendering the configuration panel section.
+ */
 export const ConfigurationPanel = ({ selectedProvider }) => {
   const [duration, setDuration] = useState(7);
-  const { mutate: mutateFeature, isPending, isSuccess, isError, data, error } = useFeature();
+  const {
+    mutate: mutateFeature,
+    isPending,
+    isSuccess,
+    isError,
+    data,
+    error,
+  } = useFeature();
   const estimatedPrice = (duration / 7) * 49;
 
   useEffect(() => {
@@ -29,6 +39,9 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
     }
   }, [isSuccess, isError, data, error]);
 
+  /**
+   * Handles activate feature behavior.
+   */
   const handleActivateFeature = () => {
     if (!selectedProvider?.id) {
       toast.warning("Veuillez sélectionner un prestataire");
@@ -36,18 +49,20 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
     }
     const payload = {
       isFeatured: true,
-      duration: Number(duration)
+      duration: Number(duration),
     };
 
     mutateFeature({
       id: selectedProvider.id,
-      formData: payload
+      formData: payload,
     });
   };
 
-  // Return the rendered UI for this component.
   return (
-    <Card variant="glass" className="flex flex-col border-dashed h-full border-violet-200">
+    <Card
+      variant="glass"
+      className="flex flex-col border-dashed h-full border-violet-200"
+    >
       <div className="flex items-center gap-2 mb-6">
         <Sparkles className="w-5 h-5 text-amber-500" />
         <h2 className="text-xl font-bold text-slate-800">Booster le profil</h2>
@@ -75,22 +90,24 @@ export const ConfigurationPanel = ({ selectedProvider }) => {
           <div className="flex justify-between text-sm">
             <span className="text-slate-500">Cible :</span>
             <span className="text-slate-900 font-bold truncate max-w-[150px]">
-              {selectedProvider?.businessName || '---'}
+              {selectedProvider?.businessName || "---"}
             </span>
           </div>
-
-
         </div>
 
         <p className="text-[11px] text-slate-400 italic leading-relaxed">
-          * En confirmant, ce prestataire apparaîtra en tête des résultats de recherche jusqu'au {new Date(Date.now() + duration * 86400000).toLocaleDateString()}.
+          * En confirmant, ce prestataire apparaîtra en tête des résultats de
+          recherche jusqu'au{" "}
+          {new Date(Date.now() + duration * 86400000).toLocaleDateString()}.
         </p>
       </div>
       <Button
         onClick={handleActivateFeature}
         variant="primary"
         className="w-full mt-6 py-4 shadow-lg bg-[#E8524D] hover:bg-[#d94742] text-white rounded-xl transition-all"
-        disabled={!selectedProvider || isPending || selectedProvider?.isFeatured}
+        disabled={
+          !selectedProvider || isPending || selectedProvider?.isFeatured
+        }
       >
         {isPending ? (
           <ButtonLoader className="mr-2" />

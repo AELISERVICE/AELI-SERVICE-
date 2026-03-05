@@ -1,17 +1,17 @@
-import React from 'react';
-import { ToastContainer } from 'react-toastify';
-import { ReviewsList } from '../components/review/ReviewsList';
+import React from "react";
+import { ToastContainer } from "react-toastify";
+import { ReviewsList } from "../components/review/ReviewsList";
 
-
+/**
+ * UI component responsible for rendering the reviews screen section.
+ */
 export function ReviewsScreen() {
-    // Return the rendered UI for this component.
-    return (
-        <div>
-            <div >
-                <ReviewsList />
-            </div>
-            <ToastContainer position="bottom-center" />
-        </div>
-
-    );
-};
+  return (
+    <div>
+      <div>
+        <ReviewsList />
+      </div>
+      <ToastContainer position="bottom-center" />
+    </div>
+  );
+}
