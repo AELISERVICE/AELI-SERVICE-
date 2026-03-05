@@ -9,6 +9,8 @@ import { FeatureProviderScreen } from './screens/FeatureProviderScreen';
 import { SecurityScreen } from './screens/SecurityScreen';
 import { Users } from './screens/Users';
 import { BannerScreen } from './screens/BannerScreen';
+import { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
+import { ResetPasswordScreen } from "./screens/ResetPasswordScreen";
 
 function App() {
   // Return the rendered UI for this component.
@@ -16,7 +18,8 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginScreen />} />
-
+      <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordScreen />} />
 
       <Route element={<Base />}>
         <Route path="/dashboard" element={<Dashboard />} />
