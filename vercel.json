@@ -1,9 +1,13 @@
 {
+  "build": {
+    "env": {
+      "DIST_DIR": "dist"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": "/dist/$1"
     }
-  ],
-  "cleanUrls": true
+  ]
 }
