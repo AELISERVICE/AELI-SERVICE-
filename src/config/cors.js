@@ -44,7 +44,7 @@ const defaultOrigins = [
   "https://aeli-service-admin.onrender.com",
   "https://aeli-service.onrender.com",
   "https://aeliservices.vercel.app",
-  "https://aeliservicesadmin.vercel.app"
+  "https://aeliserviceadmin.vercel.app"
 ];
 
 const envOrigins = parseFrontendUrls(process.env.FRONTEND_URL);
