@@ -10,7 +10,6 @@ export const request = async (endpoint, method = "GET", body = null) => {
         method,
         headers: {
             "Authorization": `Bearer ${accessToken}`,
-            'ngrok-skip-browser-warning': 'true'
         },
     };
 
@@ -36,7 +35,6 @@ export const request = async (endpoint, method = "GET", body = null) => {
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json",
-                        'ngrok-skip-browser-warning': 'true'
                     },
                     body: JSON.stringify({ refreshToken })
                 });
