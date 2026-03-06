@@ -45,6 +45,7 @@ const defaultOrigins = [
   "https://aeli-service.onrender.com",
   "https://aeliservices.vercel.app",
   "https://aeliservicesfrontuser.vercel.app",
+  "https://aeliserviceadmin.vercel.app",
   "https://aeliservicesfrontuser.vercel.app/#"
 ];
 
