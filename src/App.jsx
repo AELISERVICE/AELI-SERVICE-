@@ -13,6 +13,7 @@ import { AddCategorycreen } from './screens/AddCategory';
 import { AddServiceScreen } from "./screens/AddServiceScreen";
 import { SubscriptionScreen } from "./screens/SubscriptionScreen";
 import { ResetPasswordScreen } from "./screens/ResetPasswordScreen";
+import { PaymentCallbackHandlerScreen } from "./screens/PaymentCallbackHandlerScreen";
 
 /**
  * UI component responsible for rendering app.
@@ -29,6 +30,7 @@ function App() {
       <Route path="/add-category" element={<AddCategorycreen />} />
       <Route path="/add-service" element={<AddServiceScreen />} />
       <Route path="/reset-password/:token" element={<ResetPasswordScreen />} />
+      <Route path="/callback" element={<PaymentCallbackHandlerScreen />} />
 
       <Route element={<Base />}>
         <Route path="/home" element={<HomeScreen />} />
