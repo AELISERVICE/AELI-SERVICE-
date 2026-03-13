@@ -36,8 +36,8 @@ export function Subscription() {
         if (isSuccess && dataSubscribe?.success) {
             toast.success(dataSubscribe.message);
 
-            if (dataSubscribe.payment?.paymentUrl) {
-                window.location.href = dataSubscribe.payment.paymentUrl;
+            if (dataSubscribe.data?.paymentUrl) {
+                window.location.href = dataSubscribe.data.paymentUrl;
             }
         }
 
