@@ -66,7 +66,7 @@ export const LastusersRegister = () => {
                   key={item.id}
                   className="group hover:bg-slate-50/50 transition-colors"
                 >
-                  <td className="px-6 py-4">
+                  <td className="pl-6 pr-12 py-4">
                     <div className="flex items-center gap-3">
                       <img
                         src={
@@ -172,8 +172,8 @@ export const LastusersRegister = () => {
                   key={item.id}
                   className="group hover:bg-slate-50/50 transition-colors"
                 >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                  <td className="pl-6 pr-12 py-4">
+                    <div className="flex items-start justify-start gap-3">
                       <div className="relative flex-shrink-0">
                         <img
                           src={
@@ -187,15 +187,20 @@ export const LastusersRegister = () => {
                           <Briefcase size={10} className="text-red-500" />
                         </div>
                       </div>
-
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-semibold text-slate-900 leading-none truncate">
-                          {item.businessName || "-"}
-                        </span>
-                        <span className="text-[10px] text-slate-400 mt-1 truncate">
-                          {item.firstName || ""} {item.lastName || ""}
+                      <div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-slate-900 leading-none truncate">
+                            {item.businessName || "-"}
+                          </span>
+                          <span className="text-[10px] text-slate-400 mt-1 truncate">
+                            {item.firstName || ""} {item.lastName || ""}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-mono mt-1 italic">
+                          ID: {item.id?.slice(0, 8)}
                         </span>
                       </div>
+
                     </div>
                   </td>
 
