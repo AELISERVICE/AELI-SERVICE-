@@ -74,6 +74,18 @@ export const StarIcon = ({ className }) => (
   </IconBase>
 )
 
+export const StatsIcon = ({ className }) => (
+  <IconBase className={className}>
+    <rect x="4" y="10" width="3" height="10" rx="1" fill="currentColor" opacity="0.2" stroke="none" />
+    <rect x="10.5" y="6" width="3" height="14" rx="1" fill="currentColor" opacity="0.2" stroke="none" />
+    <rect x="17" y="3" width="3" height="17" rx="1" fill="currentColor" opacity="0.2" stroke="none" />
+    <path d="M4 20H20" />
+    <path d="M5.5 10V20" />
+    <path d="M12 6V20" />
+    <path d="M18.5 3V20" />
+  </IconBase>
+)
+
 export const LogoutIcon = ({ className }) => (
   <IconBase className={className}>
     <rect x="3" y="4" width="9" height="16" rx="2" fill="currentColor" opacity="0.18" stroke="none" />
@@ -86,7 +98,7 @@ export const LogoutIcon = ({ className }) => (
 /**
  * UI component responsible for rendering sidebar.
  */
-export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading, filters, setFilters }) {
+export function Sidebar({ isOpenSidebar, showStats, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading, filters, setFilters }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { data: userData } = useInfoUserConnected();
@@ -102,7 +114,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
   const navLinks = [
     { icon: DashboardIcon, path: '/home', label: 'Accueil' },
     { icon: SearchIcon, path: '/search', label: 'Recherche' },
-    user?.role === "provider" && { icon: StoreIcon, path: '/provider', label: 'Prestataires' },
+    user?.role === "provider" && { icon: StoreIcon, path: '/provider', label: 'Mon espace' },
     { icon: UserIcon, path: '/profile', label: 'Profil' },
   ].filter(Boolean);
 
@@ -241,6 +253,25 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
               </div>
             )}
           </div>
+
+          {user?.role === "provider" && (
+            <button
+              onClick={() => {
+                navigate('/provider', { state: { showStats: true } })
+                onClose()
+                closeModal()
+              }}
+              className={`lg:hidden p-3 rounded-xl transition-all duration-200 group relative flex items-center gap-4
+                ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}
+                ${showStats ? 'bg-purple-50 text-[#E8524D] shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}
+              `}
+            >
+              <StatsIcon className="w-6 h-6 flex-shrink-0" />
+              <span className={`text-sm font-semibold truncate ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
+                Mes stats
+              </span>
+            </button>
+          )}
 
           {navLinks.slice(2).map((link) => {
             const isActive = location.pathname === link.path

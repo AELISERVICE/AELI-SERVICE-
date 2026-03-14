@@ -12,6 +12,17 @@ export const useApplyProvider = () => {
 };
 
 /**
+ * Custom hook that consult apply .
+ */
+export const useGetProviderApplication = () => {
+    return useQuery({
+        queryKey: ["useGetProviderApplication"],
+        queryFn: () => request(`/api/providers/my-application`, "GET"),
+        refetchOnWindowFocus: false,
+    });
+};
+
+/**
  * Custom hook that manages get provider list.
  */
 export const useGetProviderList = (params = {}) => {

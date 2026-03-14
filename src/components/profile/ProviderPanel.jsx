@@ -6,6 +6,7 @@ import { Badge } from '../../ui/Badge';
 import { Alert } from '../../ui/Alert';
 import { Button } from '../../ui/Button';
 import { useInfoUserConnected } from '../../hooks/useUser';
+import { useGetProviderApplication } from '../../hooks/useProvider';
 
 /**
  * UI component responsible for rendering provider panel.
@@ -13,7 +14,11 @@ import { useInfoUserConnected } from '../../hooks/useUser';
 export function ProviderPanel() {
     const navigate = useNavigate();
     const { data, refetch } = useInfoUserConnected();
+    const { data: dataMyapply } = useGetProviderApplication();
     const provider = data?.data?.provider;
+    const application = dataMyapply?.data?.application;
+    const isPendingApplication = application?.status === 'pending';
+    const displayData = isPendingApplication ? application : provider;
 
     return (
         <div className="h-full">
@@ -22,7 +27,7 @@ export function ProviderPanel() {
                     <div className="text-center space-y-2">
                         <div className="relative mx-auto w-20 h-20 mb-4">
                             <img
-                                src={provider?.profilePhoto || `https://ui-avatars.com/api/?name=${provider?.businessName}&background=random`}
+                                src={displayData?.profilePhoto || `https://ui-avatars.com/api/?name=${displayData?.businessName || 'Profil'}&background=random`}
                                 className="w-full h-full rounded-2xl object-cover border-2 border-white shadow-md"
                                 alt="Profile"
                             />
@@ -33,40 +38,42 @@ export function ProviderPanel() {
                             )} */}
                         </div>
                         <h2 className="text-xl font-black text-slate-800 tracking-tight">
-                            {provider?.businessName || "Mon Entreprise"}
+                            {displayData?.businessName || "Mon Entreprise"}
                         </h2>
                         <div className="flex items-center justify-center gap-1.5 text-slate-500 text-xs font-medium uppercase tracking-wider">
                             <MapPin size={12} className="text-[#E8524D]" />
-                            <span className="truncate max-w-[200px]">Yaoundé, Cameroun</span>
+                            <span className="truncate max-w-[200px]">{displayData?.location || 'Yaoundé, Cameroun'}</span>
                         </div>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-md border border-slate-100">
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-slate-500 text-xs font-bold uppercase">
-                                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                Note Globale
+                    {!isPendingApplication && (
+                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-md border border-slate-100">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-slate-500 text-xs font-bold uppercase">
+                                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                    Note Globale
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-2xl font-black text-slate-900">
+                                        {parseFloat(provider?.averageRating || 0).toFixed(1)}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                        ({provider?.totalReviews || 0} avis)
+                                    </span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-2xl font-black text-slate-900">
-                                    {parseFloat(provider?.averageRating || 0).toFixed(1)}
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-medium">
-                                    ({provider?.totalReviews || 0} avis)
-                                </span>
+                            <div className="flex gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                        key={star}
+                                        className={`w-3.5 h-3.5 ${star <= Math.round(provider?.averageRating || 0)
+                                            ? "text-amber-400 fill-amber-400"
+                                            : "text-slate-200 fill-slate-200"
+                                            }`}
+                                    />
+                                ))}
                             </div>
                         </div>
-                        <div className="flex gap-0.5">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                    key={star}
-                                    className={`w-3.5 h-3.5 ${star <= Math.round(provider?.averageRating || 0)
-                                        ? "text-amber-400 fill-amber-400"
-                                        : "text-slate-200 fill-slate-200"
-                                        }`}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                    )}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 px-1">
                             <Calendar className="w-4 h-4 text-slate-400" />
@@ -74,17 +81,19 @@ export function ProviderPanel() {
                         </div>
 
                         <div className="bg-white rounded-md border border-slate-100 divide-y divide-slate-50">
-                            <div className="flex items-center justify-between p-3">
-                                <span className="text-slate-500 text-xs font-medium">Visibilité Profile</span>
-                                <Badge variant={provider?.isActive ? "success" : "danger"}>
-                                    {provider?.isActive ? "Public" : "Masqué"}
-                                </Badge>
-                            </div>
+                            {!isPendingApplication && (
+                                <div className="flex items-center justify-between p-3">
+                                    <span className="text-slate-500 text-xs font-medium">Visibilité Profile</span>
+                                    <Badge variant={provider?.isActive ? "success" : "danger"}>
+                                        {provider?.isActive ? "Public" : "Masqué"}
+                                    </Badge>
+                                </div>
+                            )}
                             <div className="flex items-center justify-between p-3">
                                 <span className="text-slate-500 text-xs font-medium">Vérification Documents</span>
                                 <div className="flex items-center gap-1.5">
-                                    <span className={`text-[10px] font-bold uppercase ${provider?.verificationStatus === 'approved' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                        {provider?.verificationStatus || 'En attente'}
+                                    <span className={`text-[10px] font-bold uppercase ${displayData?.verificationStatus === 'approved' || displayData?.status === 'approved' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                        {displayData?.verificationStatus || displayData?.status || 'En attente'}
                                     </span>
                                 </div>
                             </div>
@@ -92,7 +101,7 @@ export function ProviderPanel() {
                                 <div className="flex flex-col">
                                     <span className="text-slate-500 text-xs font-medium">Activités</span>
                                     <div className="flex gap-1 mt-1">
-                                        {provider?.activities?.slice(0, 2).map((act, i) => (
+                                        {displayData?.activities?.slice(0, 2).map((act, i) => (
                                             <span key={i} className="flex items-center gap-1 px-3 py-1 bg-[#E8524D]/10 text-[#E8524D] text-[12px] text-center font-medium rounded-full border border-[#E8524D]/20 animate-in zoom-in duration-200">
                                                 {act}
                                             </span>
@@ -101,7 +110,7 @@ export function ProviderPanel() {
                                 </div>
                             </div>
                         </div>
-                        {!provider?.isFeatured && (
+                        {!isPendingApplication && !provider?.isFeatured && (
                             <Alert
                                 variant="warning"
                                 title="Boostez votre activité"
@@ -109,25 +118,29 @@ export function ProviderPanel() {
                             />
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-3 mt-auto">
-                        <div className="p-3 bg-slate-50 rounded-md border border-slate-100 text-center">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">Vues</p>
-                            <p className="text-lg font-black text-slate-800">{provider?.viewsCount || 0}</p>
+                    {!isPendingApplication && (
+                        <div className="grid grid-cols-2 gap-3 mt-auto">
+                            <div className="p-3 bg-slate-50 rounded-md border border-slate-100 text-center">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Vues</p>
+                                <p className="text-lg font-black text-slate-800">{provider?.viewsCount || 0}</p>
+                            </div>
+                            <div className="p-3 bg-slate-50 rounded-md border border-slate-100 text-center">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">Contacts</p>
+                                <p className="text-lg font-black text-slate-800">{provider?.contactsCount || 0}</p>
+                            </div>
                         </div>
-                        <div className="p-3 bg-slate-50 rounded-md border border-slate-100 text-center">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">Contacts</p>
-                            <p className="text-lg font-black text-slate-800">{provider?.contactsCount || 0}</p>
-                        </div>
-                    </div>
-                    <Button
-                        type="button"
-                        variant="softRed"
-                        className="w-full gap-2 py-3"
-                        onClick={() => navigate('/become-service-provider')}
-                    >
-                        <Pencil size={16} />
-                        Modifier
-                    </Button>
+                    )}
+                    {!isPendingApplication && (
+                        <Button
+                            type="button"
+                            variant="softRed"
+                            className="w-full gap-2 py-3"
+                            onClick={() => navigate('/become-service-provider')}
+                        >
+                            <Pencil size={16} />
+                            Modifier
+                        </Button>
+                    )}
                 </div>
             </Card>
         </div>

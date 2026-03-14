@@ -22,6 +22,7 @@ export function Base() {
     const [activeModal2, setActiveModal2] = useState(8); // Par défaut, le banner est actif
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // État pour le burger
     const [openSidebar, isOpenSidebar] = useState(false);
+    const [providerShowStats, setProviderShowStats] = useState(false);
     const { isLoading } = useGlobalLoading();
     const [confirmConfig, setConfirmConfig] = useState({ onConfirm: () => { }, isPending: false, title: "", description: "" });
     const [dataProviderToRate, setDataProviderToRate] = useState(null);
@@ -40,6 +41,7 @@ export function Base() {
             <aside className="block">
                 <Sidebar
                     isOpenSidebar={isOpenSidebar}
+                    showStats={providerShowStats}
                     onOpenMessage={() => { setActiveModal(MODALS.MESSAGE); setIsSidebarOpen(false); }}
                     onOpenFavorite={() => { setActiveModal(MODALS.FAVORITE); setIsSidebarOpen(false); }}
                     onOpenReview={() => { setActiveModal(MODALS.REVIEW); setIsSidebarOpen(false); }}
@@ -74,6 +76,8 @@ export function Base() {
                                 openMessaging: () => setActiveModal(MODALS.MESSAGING),
                                 closeModal2: () => setActiveModal2(MODALS.NONE),
                                 openSidebar: openSidebar,
+                                providerShowStats,
+                                setProviderShowStats,
                                 openFeedback: (data) => {
                                     setDataProviderToRate(data); // Stocke les données quand on ouvre
                                     setActiveModal(MODALS.FEEDBACK);

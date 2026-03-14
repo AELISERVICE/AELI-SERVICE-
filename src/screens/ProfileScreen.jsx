@@ -3,12 +3,16 @@ import { ToastContainer } from 'react-toastify';
 import { ProfileSection } from '../components/profile/ProfileSection';
 import { ProviderPanel } from '../components/profile/ProviderPanel';
 import { Abonnement } from '../components/profile/Abonnement';
+import { useGetProviderApplication } from '../hooks/useProvider';
 
 /**
  * UI component responsible for rendering profile screen.
  */
 export function ProfileScreen() {
-  const [isRole, setIsRole] = useState()
+  const [isRole, setIsRole] = useState();
+  const { data: dataMyapply } = useGetProviderApplication();
+  const application = dataMyapply?.data?.application;
+  const isPendingApplication = application?.status === 'pending';
   return (
     <>
       <div className={`grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start`}>
@@ -17,10 +21,12 @@ export function ProfileScreen() {
         </div>
 
         <div className="lg:col-span-5 xl:col-span-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-2 space-y-6">
-          {isRole === "provider" &&
+          {(isRole === "provider" || isPendingApplication) &&
             <ProviderPanel />
           }
-          <Abonnement isRole={isRole} />
+          {!isPendingApplication &&
+            <Abonnement isRole={isRole} />
+          }
         </div>
       </div>
       <ToastContainer position="bottom-center" />

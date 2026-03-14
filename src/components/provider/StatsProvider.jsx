@@ -100,7 +100,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
               <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
                   <BarChart3 className="text-[#E8524D]" size={20} />
-                  Stats
+                  Mes stats
                 </h3>
                 <span className="bg-white px-2 py-1 rounded-lg text-xs font-bold text-purple-600 shadow-sm">
                   {totalContacts} au total

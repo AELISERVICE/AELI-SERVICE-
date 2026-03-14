@@ -19,7 +19,7 @@ export function BottomTab({ onOpenMessage, onOpenFavorite, activeModal, MODALS, 
     const navLinks = [
         { icon: DashboardIcon, path: '/home', label: 'Accueil' },
         { icon: SearchIcon, path: '/search', label: 'Recherche' },
-        user?.role === 'provider' && { icon: StoreIcon, path: '/provider', label: 'Prestataires' },
+        user?.role === 'provider' && { icon: StoreIcon, path: '/provider', label: 'Mon espace' },
     ].filter(Boolean);
 
     return (
