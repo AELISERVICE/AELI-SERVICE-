@@ -110,6 +110,12 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
     isOpenSidebar(isCollapsed)
   }, [isCollapsed])
 
+  useEffect(() => {
+    if (isOpen) {
+      setIsCollapsed(false)
+    }
+  }, [isOpen])
+
   const categoryOptions = useMemo(() => ([
     { value: '', label: 'Toutes les catégories' },
     ...categoriesFromApi.map(cat => ({ value: cat.id, label: cat.name }))
@@ -219,7 +225,7 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
               </span>
             </button>
 
-            {!isCollapsed && isCategoryOpen && (
+            {(!isCollapsed || isOpen) && isCategoryOpen && (
               <div className="mt-2 pl-12 flex flex-col gap-1">
                 {categoryOptions.map((cat) => (
                   <button
