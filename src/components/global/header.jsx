@@ -79,11 +79,11 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
           </h1>
           <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
         </div>
-        <div onClick={() => navigate("/profile")} className='w-14 cursor-pointer md:hidden'>
+        <div onClick={() => navigate("/profile")} className='cursor-pointer md:hidden'>
           <img
             src={user?.profilePhoto || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=random&color=fff&size=128`}
             alt="Profile"
-            className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm hover:scale-105 transition-transform"
+            className="w-10.5 h-10 rounded-xl object-cover border-2 border-white shadow-sm hover:scale-105 transition-transform"
           />
         </div>
       </div>
