@@ -248,7 +248,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                 )}
             </div>
 
-            <div className={`grid grid-cols-1 ${mode === "consultationCustomers" && currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3" : "flex"} gap-6 mb-4`}>
+            <div className={`grid grid-cols-1 ${mode === "consultationCustomers" && currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3" : "flex"} gap-6 mb-20 md:mb-4`}>
                 {currentServices.length > 0 ? (
                     paginatedServices.map((service) => (
                         <ProductCard

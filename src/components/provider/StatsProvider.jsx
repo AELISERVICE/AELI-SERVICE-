@@ -94,7 +94,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
           {showStats ? <ChevronRight size={28} /> : <ChevronLeft size={28} />}
         </Button>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar xl:py-0">
+        <div className="flex-1 overflow-y-auto no-scrollbar pb-18 md:pb-0 xl:py-0">
           <aside className="w-full xl:w-full bg-white p-6 flex flex-col gap-8 border-none md:border-2 md:border-gray-100 rounded-4xl xl:shadow-sm hover:shadow-xl transition-all duration-300 group md:mb-10">
             <div className="bg-pink-50/50 rounded-3xl p-6">
               <div className="flex justify-between items-center mb-6">
@@ -119,7 +119,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                 </div>
                 <h4 className="font-bold text-gray-800"> {provider?.businessName || "Mon Entreprise"}</h4>
                 <p className="text-xs text-gray-500 mt-1 ">
-                {provider?.description || "Mon Entreprise"}
+                  {provider?.description || "Mon Entreprise"}
                 </p>
               </div>
               <div className="h-32 w-full">

@@ -65,7 +65,7 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
 
                     <div
                         ref={scrollRef}
-                        className="flex flex-col gap-4 overflow-y-auto h-full pb-5 md:pb-10 no-scrollbar"
+                        className="flex flex-col gap-4 overflow-y-auto h-full pb-25 md:pb-10 no-scrollbar "
                     >
                         {formattedMessages.length > 0 ? (
                             formattedMessages.map((msg, index) => (

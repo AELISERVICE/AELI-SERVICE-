@@ -42,8 +42,6 @@ export function SearchScreen() {
                         <Search className="text-[#E8524D]" size={32} />
                         Recherche
                     </h2>
-
-                    { }
                     <div className="flex rounded-2xl bg-gray-100 p-1 gap-1">
                         <Button
                             variant={activeTab === 'service' ? 'gradient' : 'ghost'}
@@ -61,8 +59,6 @@ export function SearchScreen() {
                         </Button>
                     </div>
                 </div>
-
-                { }
                 {isLoading ? (
                     <Loading className="py-20" size="small" title="Chargement des prestataires..." />
                 ) : isError ? (
@@ -81,7 +77,6 @@ export function SearchScreen() {
                     />
                 ) : (
                     <>
-                        { }
                         {activeTab === 'service' ? (
                             <ServiceSearch
                                 providers={providers}

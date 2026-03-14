@@ -11,7 +11,7 @@ export function HomeScreen() {
 
     return (
         <div className="w-full ">
-            <div className=" pb-4 md:px-2">
+            <div className=" md:pb-4 md:px-2">
                 <div className="mt-16">
                     <RecommendationSection />
                 </div>

@@ -67,12 +67,11 @@ export function FavoriteList({ closeFavorite }) {
                 />
             ) : (
                 <>
-                    { }
                     <CountItems count={favorites.length} scrollContainerRef={scrollRef} />
 
                     <div
                         ref={scrollRef}
-                        className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-5 md:pb-10 custom-scrollbar no-scrollbar"
+                        className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-25 md:pb-10 custom-scrollbar no-scrollbar "
                     >
                         {favorites.length > 0 ? (
                             favorites.map((fav) => {
@@ -102,7 +101,6 @@ export function FavoriteList({ closeFavorite }) {
                                                     className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                                                     aria-label="Remove from favorites"
                                                 >
-                                                    { }
                                                     <Star className="w-4 h-4 text-yellow-500 fill-current hover:scale-110 transition-transform" />
                                                 </button>,
                                                 <Button

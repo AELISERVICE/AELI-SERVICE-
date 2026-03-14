@@ -196,13 +196,15 @@ export function ContactCustomer({ closeContact, dataContact }) {
 
                   const s = dataContact?.selectedService;
 
-                  const messageBrut = `
+                  const messageBrut = s
+                    ? `
 Salut, je suis intéressé par votre service sur Aeli Service :
-*Service :* ${s?.name || 'Non spécifié'}
-*Prix :* ${s?.price ? s.price + ' FCFA' : 'Sur devis'}
-*Description :* ${s?.description || '/'}
+*Service :* ${s.name}
+*Prix :* ${s.price ? s.price + ' FCFA' : 'Sur devis'}
+*Description :* ${s.description || '/'}
 
-J'aimerais avoir plus d'informations à ce sujet. Merci !`;
+J'aimerais avoir plus d'informations à ce sujet. Merci !`
+                    : `Salut, je suis intéressé par vos services sur Aeli Service. J'aimerais avoir plus d'informations. Merci !`;
 
                   const messageEncoded = encodeURIComponent(messageBrut);
 
