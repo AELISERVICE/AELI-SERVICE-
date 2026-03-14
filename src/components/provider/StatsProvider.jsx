@@ -7,6 +7,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Loading } from '../global/Loading';
 import { NotFound } from '../global/Notfound';
 import { useGetStatDaily, useGetReceivedContact } from '../../hooks/useContact';
+import { useInfoUserConnected } from '../../hooks/useUser';
 
 const data = [
   { name: '1-10', value: 65 },
@@ -21,6 +22,8 @@ const data = [
  */
 export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   const { openMessaging } = useOutletContext()
+  const { data, refetch } = useInfoUserConnected();
+  const provider = data?.data?.provider;
 
   const { data: statsResponse, isLoading, isError } = useGetStatDaily();
   const {
@@ -75,7 +78,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   return (
     <div className={`
       
-      xl:static xl:w-[350px] xl:translate-x-0 xl:flex 
+      xl:static xl:w-[350px] xl:translate-x-0 xl:flex z-3
       
       fixed right-0 top-0 h-full w-[85%] sm:w-[400px]
       bg-white xl:bg-transparent transition-transform duration-300 ease-in-out 
@@ -107,16 +110,16 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                 <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex items-center justify-center relative mb-4">
                   <div className="w-full h-full rounded-full overflow-hidden no-scrollbar">
                     <img
-                      src="https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=1000"
+                      src={provider?.profilePhoto || `https://ui-avatars.com/api/?name=${provider?.businessName}&background=random`}
                       alt="Stats"
                       className="w-full h-full object-cover opacity-80"
                     />
                   </div>
                   <div className="absolute inset-0 border-t-4 border-purple-500 rounded-full rotate-45" />
                 </div>
-                <h4 className="font-bold text-gray-800">Beautiful eyes</h4>
-                <p className="text-xs text-gray-500 mt-1 text-center">
-                  Continue your learning to as done your target
+                <h4 className="font-bold text-gray-800"> {provider?.businessName || "Mon Entreprise"}</h4>
+                <p className="text-xs text-gray-500 mt-1 ">
+                {provider?.description || "Mon Entreprise"}
                 </p>
               </div>
               <div className="h-32 w-full">

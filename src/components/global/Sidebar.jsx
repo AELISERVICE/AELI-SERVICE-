@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react' // Ajout de useState
+import React, { useState, useEffect, useMemo } from 'react' // Ajout de useState
 import { useLocation, useNavigate } from 'react-router-dom'
-import { X, ChevronRight, ChevronLeft } from 'lucide-react'
+import { X, ChevronRight, ChevronLeft, Filter as FilterIcon } from 'lucide-react'
 import { Button } from '../../ui/Button';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { useLogout } from '../../hooks/useAuth';
+import { useGetCategory } from '../../hooks/useServices';
 
 const IconBase = ({ className = '', children }) => (
   <svg
@@ -20,7 +21,7 @@ const IconBase = ({ className = '', children }) => (
   </svg>
 )
 
-const DashboardIcon = ({ className }) => (
+export const DashboardIcon = ({ className }) => (
   <IconBase className={className}>
     <rect x="3" y="3" width="8" height="8" rx="2" fill="currentColor" opacity="0.22" stroke="none" />
     <rect x="13" y="3" width="8" height="6" rx="2" />
@@ -29,7 +30,7 @@ const DashboardIcon = ({ className }) => (
   </IconBase>
 )
 
-const SearchIcon = ({ className }) => (
+export const SearchIcon = ({ className }) => (
   <IconBase className={className}>
     <circle cx="11" cy="11" r="6" fill="currentColor" opacity="0.2" stroke="none" />
     <circle cx="11" cy="11" r="5" />
@@ -37,7 +38,7 @@ const SearchIcon = ({ className }) => (
   </IconBase>
 )
 
-const StoreIcon = ({ className }) => (
+export const StoreIcon = ({ className }) => (
   <IconBase className={className}>
     <path d="M4 10L5.6 5.8C5.9 5 6.6 4.5 7.5 4.5H16.5C17.4 4.5 18.1 5 18.4 5.8L20 10" fill="currentColor" opacity="0.2" stroke="none" />
     <path d="M4 10H20V18C20 19.1 19.1 20 18 20H6C4.9 20 4 19.1 4 18V10Z" />
@@ -45,7 +46,7 @@ const StoreIcon = ({ className }) => (
   </IconBase>
 )
 
-const MailIcon = ({ className }) => (
+export const MailIcon = ({ className }) => (
   <IconBase className={className}>
     <rect x="3" y="5" width="18" height="14" rx="3" fill="currentColor" opacity="0.16" stroke="none" />
     <rect x="3" y="5" width="18" height="14" rx="3" />
@@ -53,7 +54,15 @@ const MailIcon = ({ className }) => (
   </IconBase>
 )
 
-const StarIcon = ({ className }) => (
+export const UserIcon = ({ className }) => (
+  <IconBase className={className}>
+    <circle cx="12" cy="8" r="4" fill="currentColor" opacity="0.2" stroke="none" />
+    <circle cx="12" cy="8" r="3.5" />
+    <path d="M4 20C4.6 16.6 7.8 14 12 14C16.2 14 19.4 16.6 20 20" />
+  </IconBase>
+)
+
+export const StarIcon = ({ className }) => (
   <IconBase className={className}>
     <path
       d="M12 3.8L14.5 8.8L20 9.6L16 13.5L17 19.2L12 16.6L7 19.2L8 13.5L4 9.6L9.5 8.8L12 3.8Z"
@@ -65,7 +74,7 @@ const StarIcon = ({ className }) => (
   </IconBase>
 )
 
-const LogoutIcon = ({ className }) => (
+export const LogoutIcon = ({ className }) => (
   <IconBase className={className}>
     <rect x="3" y="4" width="9" height="16" rx="2" fill="currentColor" opacity="0.18" stroke="none" />
     <path d="M10 12H21" />
@@ -77,24 +86,41 @@ const LogoutIcon = ({ className }) => (
 /**
  * UI component responsible for rendering sidebar.
  */
-export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading }) {
+export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenReview, activeModal, MODALS, isOpen, onClose, closeModal, isLoading, filters, setFilters }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { data: userData } = useInfoUserConnected();
   const { mutate: logout, isPending: isLogoutPending } = useLogout();
   const user = userData?.data?.user;
+  const { data: categoryData } = useGetCategory();
+  const categoriesFromApi = categoryData?.data?.categories || [];
 
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false)
+  const selectedCategoryId = filters?.categoryId || ''
 
   const navLinks = [
     { icon: DashboardIcon, path: '/home', label: 'Accueil' },
     { icon: SearchIcon, path: '/search', label: 'Recherche' },
     user?.role === "provider" && { icon: StoreIcon, path: '/provider', label: 'Prestataires' },
+    { icon: UserIcon, path: '/profile', label: 'Profil' },
   ].filter(Boolean);
 
   useEffect(() => {
     isOpenSidebar(isCollapsed)
   }, [isCollapsed])
+
+  const categoryOptions = useMemo(() => ([
+    { value: '', label: 'Toutes les catégories' },
+    ...categoriesFromApi.map(cat => ({ value: cat.id, label: cat.name }))
+  ]), [categoriesFromApi]);
+
+  const handleCategoryChange = (categoryId) => {
+    setFilters((prev) => ({
+      ...prev,
+      categoryId
+    }));
+  };
 
   /**
    * Handles handle logout behavior.
@@ -157,8 +183,63 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
           </Button>
         </div>
 
-        <nav className="flex-1 flex flex-col gap-4 w-full px-4">
-          {navLinks.map((link) => {
+        <nav className="flex-1 flex flex-col gap-4 w-full px-4 overflow-y-auto min-h-0">
+          {navLinks.slice(0, 2).map((link) => {
+            const isActive = location.pathname === link.path
+            return (
+              <button
+                key={link.path}
+                onClick={() => { navigate(link.path); onClose(); closeModal(); }}
+                className={`p-3 rounded-xl transition-all duration-200 group relative flex items-center gap-4
+                  ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}
+                  ${isActive ? 'bg-purple-50 text-[#E8524D] shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}
+                `}
+              >
+                <link.icon className="w-6 h-6 flex-shrink-0" />
+                <span className={`text-sm font-semibold truncate ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
+                  {link.label}
+                </span>
+
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#E8524D] rounded-r-full -ml-4" />
+                )}
+              </button>
+            )
+          })}
+
+          <div className="w-full">
+            <button
+              type="button"
+              onClick={() => setIsCategoryOpen((prev) => !prev)}
+              className={`w-full p-3 rounded-xl transition-all duration-200 flex items-center gap-4
+                ${isCollapsed ? 'md:justify-center' : 'md:justify-start'}
+                ${isCategoryOpen ? 'bg-purple-50 text-[#E8524D] shadow-sm' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-600'}
+              `}
+            >
+              <FilterIcon className="w-6 h-6 flex-shrink-0" />
+              <span className={`text-sm font-semibold truncate ${isCollapsed ? 'md:hidden' : 'md:block'}`}>
+                Catégories
+              </span>
+            </button>
+
+            {!isCollapsed && isCategoryOpen && (
+              <div className="mt-2 pl-12 flex flex-col gap-1">
+                {categoryOptions.map((cat) => (
+                  <button
+                    key={cat.value || 'all'}
+                    onClick={() => handleCategoryChange(cat.value)}
+                    className={`text-left text-xs font-semibold rounded-lg px-3 py-2 transition-colors
+                      ${selectedCategoryId === cat.value ? 'bg-red-50 text-[#E8524D]' : 'text-gray-500 hover:bg-gray-50'}
+                    `}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {navLinks.slice(2).map((link) => {
             const isActive = location.pathname === link.path
             return (
               <button

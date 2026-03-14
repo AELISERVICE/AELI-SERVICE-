@@ -68,7 +68,7 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
         <Button onClick={onOpenMenu}
           variant="secondary"
           size={false}
-          className="p-2.5 shadow-sm">
+          className="p-2.5 shadow-sm !hidden">
           <Menu className="w-6 h-6 " />
         </Button>
       </div>
@@ -78,6 +78,13 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
             Bienvenue, <span className="text-[#E8524D] pacifico-regular text-3xl"> {user?.firstName}</span>
           </h1>
           <p className="text-sm text-gray-500 mt-1">Lun, 26 jan 2026</p>
+        </div>
+        <div onClick={() => navigate("/profile")} className='w-14 cursor-pointer md:hidden'>
+          <img
+            src={user?.profilePhoto || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=random&color=fff&size=128`}
+            alt="Profile"
+            className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm hover:scale-105 transition-transform"
+          />
         </div>
       </div>
       <div className="relative flex w-auto items-center justify-end gap-4">
@@ -90,7 +97,7 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
               onChange={handleSearchChange}
               autoFocus={isSearchPage}
               placeholder="Rechercher un service..."
-              className="w-full pl-10 pr-10 py-2.5 bg-white md:border md:border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-[#FCE0D6] outline-none md:shadow-sm"
+              className="w-full pl-10 pr-10 py-2.5 h-[48px] bg-white md:border md:border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-[#FCE0D6] outline-none md:shadow-sm"
             />
             {isExpanded && (
               <Button
@@ -130,12 +137,12 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
         <Button
           variant="secondary"
           size={false}
-          className="relative p-2.5 shadow-sm "
+          className="relative p-2.5 shadow-sm !hidden"
         >
           <Bell className="w-5 h-5 text-gray-500" />
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
         </Button>
-        <div onClick={() => navigate("/profile")} className='w-14 cursor-pointer'>
+        <div onClick={() => navigate("/profile")} className='w-14 cursor-pointer hidden md:block'>
           <img
             src={user?.profilePhoto || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=random&color=fff&size=128`}
             alt="Profile"

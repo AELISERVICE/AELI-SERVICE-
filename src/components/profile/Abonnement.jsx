@@ -15,6 +15,7 @@ export function Abonnement({ isRole }) {
 
     const sub = response?.data?.subscription;
     const plans = response?.data?.plans;
+    const planEntries = plans ? Object.entries(plans) : [];
 
     const currentPlanInfo = plans && sub?.plan ? plans[sub.plan] : null;
 
@@ -125,28 +126,31 @@ export function Abonnement({ isRole }) {
                                 Historique de facturation
                             </h3>
                         </div>
-                        <div className={`bg-white divide-y divide-slate-50 ${sub?.history ? "" : "p-4"}`}>
-                            {sub?.history && sub.history.length > 0 ? (
-                                sub.history.map((item, i) => (
-                                    <div key={i} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                        <div className={`bg-white divide-y divide-slate-50 ${planEntries.length > 0 ? "" : "p-4"}`}>
+                            {planEntries.length > 0 ? (
+                                planEntries.map(([planKey, planData]) => (
+                                    <div key={planKey} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
                                         <div className="flex flex-col gap-1">
                                             <span className="text-slate-900 text-xs font-black uppercase tracking-tight">
-                                                Plan {item.plan}
+                                                Plan {planKey}
                                             </span>
                                             <span className="text-slate-400 text-[10px] font-bold uppercase">
-                                                Du {new Date(item.startDate).toLocaleDateString('fr-FR')} au {new Date(item.endDate).toLocaleDateString('fr-FR')}
+                                                Durée {planData?.days || 0} jours
                                             </span>
                                         </div>
 
                                         <div className="text-right">
-                                            {item.paymentId ? (
-                                                <div className="space-y-1">
-                                                    <Badge variant="success" className="text-[8px] px-1.5 py-0 uppercase">Complété</Badge>
-                                                    <p className="text-[9px] font-mono text-slate-400">#{item.paymentId.slice(0, 8)}</p>
-                                                </div>
-                                            ) : (
-                                                <Badge variant="secondary" className="text-[8px] px-1.5 py-0 uppercase italic">Période d'essai</Badge>
-                                            )}
+                                            <div className="space-y-1">
+                                                <Badge
+                                                    variant={(planData?.price || 0) > 0 ? "success" : "secondary"}
+                                                    className="text-[8px] px-1.5 py-0 uppercase"
+                                                >
+                                                    {(planData?.price || 0) > 0 ? "Payant" : "Gratuit"}
+                                                </Badge>
+                                                <p className="text-[9px] font-mono text-slate-400">
+                                                    {(planData?.price || 0).toLocaleString()} XAF
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 ))

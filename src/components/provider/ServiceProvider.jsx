@@ -181,10 +181,17 @@ export function ServiceProvider({ mode, dataConsult }) {
                             </div>
                             <div className="flex gap-4 mt-2 items-center">
                                 <Button
+                                    variant="gradient"
+                                    size="md"
+                                    onClick={() => openContactWithData(providerDetail, null)}
+                                >
+                                    contacter
+                                </Button>
+                                <Button
                                     variant="softRed"
                                     size="md"
                                     onClick={() => openFeedback(providerDetail)}
-                                    className={`${!customerContact && "bg-gray-300 hover:bg-gray-300 hover:text-white"}`}
+                                    className={`${customerContact && "bg-gray-300 hover:bg-gray-300 hover:text-white"}`}
                                 >
                                     noter
                                 </Button>

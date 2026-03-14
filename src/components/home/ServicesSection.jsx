@@ -17,9 +17,9 @@ import { useAddToFavorites } from '../../hooks/useFavorites';
  */
 export function ServicesSection() {
     const navigate = useNavigate();
-    const { openContact, openSidebar, filters } = useOutletContext();
+    const { openContact, openSidebar, filters, setFilters } = useOutletContext();
 
-    const [selectedCategoryId, setSelectedCategoryId] = useState('');
+    const selectedCategoryId = filters?.categoryId || '';
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12; // Remets une valeur normale ici
 
@@ -46,6 +46,7 @@ export function ServicesSection() {
     useEffect(() => {
         setCurrentPage(1);
     }, [selectedCategoryId, filters?.search]);
+
 
     const categoryOptions = [
         { value: '', label: 'Toutes les catégories' },
@@ -78,7 +79,13 @@ export function ServicesSection() {
                         name="selectCategory"
                         type="select"
                         value={selectedCategoryId}
-                        onChange={(e) => setSelectedCategoryId(e.target.value)}
+                        onChange={(e) => {
+                            const nextValue = e.target.value;
+                            setFilters((prev) => ({
+                                ...prev,
+                                categoryId: nextValue
+                            }));
+                        }}
                         options={categoryOptions}
                         className="bg-white text-gray-700 border border-gray-200 rounded-xl !font-semibold w-full pl-12 pr-4 py-3"
                     />

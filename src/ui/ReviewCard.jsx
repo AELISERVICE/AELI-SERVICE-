@@ -20,7 +20,7 @@ export function ReviewCard({ name, role, company, imageUrl, testimonial, rating 
             </div>
 
             { }
-            <div className="relative h-0 flex justify-center items-center z-10">
+            <div className="relative h-0 flex justify-center items-center z-2">
                 <div className="-top-4 absolute bg-white px-4 py-1.5 rounded-full shadow-sm flex gap-1 items-center">
                     {[...Array(5)].map((_, i) => (
                         <Star

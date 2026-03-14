@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from '../components/global/Sidebar';
 import { Header } from '../components/global/header';
+import { BottomTab } from '../components/global/BottomTab';
 import { Messagecustomer } from '../components/modal/Messagecustomer';
 import { ContactCustomer } from '../components/modal/ContactCustomer';
 import { FeedbackCard } from '../components/modal/FeedbackCard';
@@ -27,7 +28,8 @@ export function Base() {
     const [filters, setFilters] = useState({
         search: "",
         maxPrice: "",
-        minRating: ""
+        minRating: "",
+        categoryId: ""
     });
     const [dataContact, setDataContact] = useState(null);
     const closeModal = () => setActiveModal(MODALS.NONE);
@@ -35,7 +37,7 @@ export function Base() {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] min-h-screen bg-[#FAFAFB] font-sans text-slate-900 relative">
-            <aside>
+            <aside className="hidden md:block">
                 <Sidebar
                     isOpenSidebar={isOpenSidebar}
                     onOpenMessage={() => { setActiveModal(MODALS.MESSAGE); setIsSidebarOpen(false); }}
@@ -47,15 +49,17 @@ export function Base() {
                     onClose={() => setIsSidebarOpen(false)} // Prop pour fermer
                     closeModal={closeModal}
                     isLoading={isLoading}
+                    filters={filters}
+                    setFilters={setFilters}
                 />
             </aside>
-            <main className="relative h-screen overflow-y-auto">
+            <main className="relative h-screen overflow-y-auto pb-20 md:pb-0">
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
                         <Header
                             onOpenMenu={() => setIsSidebarOpen(true)}
                             openSidebar={openSidebar}
-                            setFilters={setFilters} 
+                            setFilters={setFilters}
                             filters={filters}
                         />
                         <div className="mt-6 ">
@@ -96,12 +100,20 @@ export function Base() {
                             onContact={() => setActiveModal2(MODALS.CONTACT)}
                         />
                     )}
-                    {}
+                    { }
                     {activeModal === MODALS.MESSAGING && (
                         <ProviderMessaging closeMessaging={closeModal} />
                     )}
                 </div>
             </main>
+            <BottomTab
+                onOpenMessage={() => setActiveModal(MODALS.MESSAGE)}
+                onOpenFavorite={() => setActiveModal(MODALS.FAVORITE)}
+                activeModal={activeModal}
+                MODALS={MODALS}
+                closeModal={closeModal}
+                isLoading={isLoading}
+            />
             {activeModal2 === MODALS.CONTACT && (
                 <ContactCustomer
                     closeContact={closeModal2}
