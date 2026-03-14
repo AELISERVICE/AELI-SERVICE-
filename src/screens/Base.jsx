@@ -37,7 +37,7 @@ export function Base() {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] min-h-screen bg-[#FAFAFB] font-sans text-slate-900 relative">
-            <aside className="hidden md:block">
+            <aside className="block">
                 <Sidebar
                     isOpenSidebar={isOpenSidebar}
                     onOpenMessage={() => { setActiveModal(MODALS.MESSAGE); setIsSidebarOpen(false); }}

@@ -116,6 +116,8 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
   ]), [categoriesFromApi]);
 
   const handleCategoryChange = (categoryId) => {
+    navigate("/home");
+    onClose();
     setFilters((prev) => ({
       ...prev,
       categoryId
@@ -138,7 +140,6 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
 
   return (
     <>
-      { }
       {isOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 md:hidden" onClick={onClose} />
       )}
@@ -154,16 +155,12 @@ export function Sidebar({ isOpenSidebar, onOpenMessage, onOpenFavorite, onOpenRe
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
         md:translate-x-0
       `}>
-
-        { }
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden md:flex absolute -right-3 top-10 bg-[#E8524D] border border-gray-100 rounded-full p-2 shadow-sm hover:text-purple-600 transition-colors z-50 "
         >
           {isCollapsed ? <ChevronRight size={16} className="text-white" /> : <ChevronLeft size={16} className="text-white" />}
         </button>
-
-        { }
         <div className={`flex items-center justify-between w-full px-6 mb-12 ${isCollapsed ? 'md:justify-center md:px-0' : 'md:justify-start md:px-6'}`}>
           <div className="flex items-center gap-3">
             <img src='./aelilogo.svg' alt='logo' className="w-10 h-10 flex-shrink-0" />

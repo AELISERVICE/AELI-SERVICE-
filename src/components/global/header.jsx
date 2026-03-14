@@ -68,7 +68,7 @@ export function Header({ onOpenMenu, openSidebar, filters, setFilters }) {
         <Button onClick={onOpenMenu}
           variant="secondary"
           size={false}
-          className="p-2.5 shadow-sm !hidden">
+          className="p-2.5 shadow-sm">
           <Menu className="w-6 h-6 " />
         </Button>
       </div>
