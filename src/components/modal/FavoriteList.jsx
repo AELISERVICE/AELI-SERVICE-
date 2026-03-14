@@ -69,17 +69,17 @@ export function FavoriteList({ closeFavorite }) {
                 <>
                     <CountItems count={favorites.length} scrollContainerRef={scrollRef} />
 
-                    <div
-                        ref={scrollRef}
-                        className="flex flex-col gap-4 overflow-y-auto h-full flex-1 pb-25 md:pb-10 custom-scrollbar no-scrollbar "
-                    >
+                        <div
+                            ref={scrollRef}
+                            className="flex flex-col gap-4 overflow-y-auto h-full min-h-0 flex-1 pb-25 md:pb-10 custom-scrollbar no-scrollbar "
+                        >
                         {favorites.length > 0 ? (
-                            favorites.map((fav) => {
+                            favorites.map((fav, index) => {
 
                                 const provider = fav.provider;
 
                                 return (
-                                    <div key={fav.id} className="flex-shrink-0">
+                                    <div key={fav.id} data-index={index} className="flex-shrink-0">
                                         <FavoriteCard
 
                                             name={provider.businessName}
