@@ -14,7 +14,7 @@ export function Abonnement({ isRole }) {
     const { data: response } = useGetAbonnementProvider();
 
     const sub = response?.data?.subscription;
-    const plans = response?.data?.plans;
+    const plans = response?.data?.history;
     const planEntries = plans ? Object.entries(plans) : [];
 
     const currentPlanInfo = plans && sub?.plan ? plans[sub.plan] : null;
