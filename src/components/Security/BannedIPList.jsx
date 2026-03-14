@@ -1,59 +1,77 @@
 import React, { useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Trash2, Plus, ShieldAlert } from "lucide-react";
 import { Card } from "../../ui/Card";
 import { Button } from "../../ui/Button";
 import { NotFound } from "../global/NotFound";
-import { usebannedIps, useUnbanIP } from "../../hooks/useStats";
+import { useGetIpBanned, useUnBanIps } from "../../hooks/useSecurity";
 
 /**
  * UI component responsible for rendering the banned i p list section.
  */
 export function BannedIPList() {
-  const { data: bannedIpsResponse, isLoading, refetch } = usebannedIps();
+  const { onActiveModal, closeConfirm } = useOutletContext();
+  const { data: bannedIpsResponse, isLoading, refetch } = useGetIpBanned();
   const {
-    mutate: mutateUnban,
-    data: dataUnban,
-    isSuccess,
-    isError,
-    error,
-  } = useUnbanIP();
+    mutate: mutateUnbanIps,
+    data: dataUnbanIps,
+    isSuccess: isSuccessUnBanIps,
+    isError: isErrorUnBanIps,
+    error: errorUnBanIps,
+  } = useUnBanIps();
 
   const bannedList = bannedIpsResponse?.data?.bannedIPs || [];
 
-  const formatDuration = (seconds) => {
-    if (!seconds) return "Permanent";
-    if (seconds >= 86400) return `${Math.floor(seconds / 86400)}j restant`;
-    return `${Math.floor(seconds / 3600)}h restant`;
+  const formatExpiresAt = (expiresAt) => {
+    if (!expiresAt) {
+      return "-";
+    }
+
+    const parsedDate = new Date(expiresAt);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return "-";
+    }
+
+    return parsedDate.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
   };
 
   /**
    * Handles unban behavior.
    */
-  const handleUnban = (ip) => {
-    if (window.confirm(`Voulez-vous vraiment débloquer l'IP ${ip} ?`)) {
-      mutateUnban(ip);
-    }
+  const handleUnban = (item) => {
+    onActiveModal(1, {
+      title: "Débloquer l'IP ?",
+      description: `Voulez-vous vraiment débloquer l'IP ${item.ipAddress} ? Cette action est irréversible.`,
+      onConfirm: () => {
+        mutateUnbanIps(item.id);
+      },
+    });
   };
 
   useEffect(() => {
-    if (isSuccess && dataUnban?.success) {
-      toast.success(dataUnban.message);
+    if (isSuccessUnBanIps && dataUnbanIps?.success) {
+      toast.success(dataUnbanIps.message);
       refetch();
+      if (closeConfirm) closeConfirm();
     }
 
-    if (isError) {
-      const mainMessage = error?.message;
+    if (isErrorUnBanIps) {
+      const mainMessage = errorUnBanIps?.message;
       toast.error(mainMessage);
 
-      const backendErrors = error?.response?.errors;
+      const backendErrors = errorUnBanIps?.response?.errors;
       if (Array.isArray(backendErrors)) {
         backendErrors.forEach((err) => {
           toast.info(err.message);
         });
       }
     }
-  }, [isSuccess, isError, dataUnban, error]);
+  }, [isSuccessUnBanIps, isErrorUnBanIps, dataUnbanIps, errorUnBanIps]);
 
   return (
     <Card className="w-full flex flex-col">
@@ -64,9 +82,6 @@ export function BannedIPList() {
             Liste des adresses restreintes par le système
           </p>
         </div>
-        <Button icon={Plus} variant={"primary"}>
-          Bannir IP
-        </Button>
       </div>
 
       <div className="space-y-3 flex-1">
@@ -84,11 +99,11 @@ export function BannedIPList() {
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-[11px] font-medium bg-gray-200 text-gray-600 px-2 py-1 rounded">
-                  {formatDuration(item.duration)}
+                  {formatExpiresAt(item.expiresAt)}
                 </span>
                 <button
                   className="text-gray-400 hover:text-red-500 p-1.5 transition-colors"
-                  onClick={() => handleUnban(item.id)}
+                  onClick={() => handleUnban(item)}
                 >
                   <Trash2 size={18} />
                 </button>

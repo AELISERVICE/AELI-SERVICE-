@@ -8,8 +8,12 @@ const variants = {
     "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 focus:ring-gray-200",
   danger:
     "bg-[#DC2626] text-white hover:bg-[#B91C1C] focus:ring-red-500 shadow-sm",
-  ghost: "bg-transparent text-gray-700 hover:bg-gray-50 justify-start",
-  ghostDanger: "bg-transparent text-red-600 hover:bg-red-50 justify-start",
+  softRed:
+    "bg-[#E8524D] text-white hover:bg-[#FCE0D6] hover:text-[#E8524D]",
+  ghost:
+    "bg-transparent text-gray-700 hover:bg-gray-50 justify-start",
+  ghostDanger:
+    "bg-transparent text-red-600 hover:bg-red-50 justify-start",
   recovery:
     "p-2 bg-green-500/20 hover:bg-green-500/30 rounded-full transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed",
 };
@@ -53,11 +57,10 @@ export const Button = ({
 export const ButtonTab = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 text-[12px] md:text-sm font-medium rounded-xl transition-all whitespace-nowrap ${
-      isActive
-        ? "bg-white text-[#E8524D] shadow-sm"
-        : "text-gray-600 hover:text-gray-800"
-    }`}
+    className={`px-4 py-2 text-[12px] md:text-sm font-medium rounded-xl transition-all whitespace-nowrap ${isActive
+      ? "bg-white text-[#E8524D] shadow-sm"
+      : "text-gray-600 hover:text-gray-800"
+      }`}
   >
     {label}
   </button>

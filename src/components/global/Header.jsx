@@ -88,8 +88,12 @@ export function Header({ onMenuClick, filters, setFilters }) {
 
   return (
     <header className="p-4 lg:p-8 z-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="w-full flex items-center justify-between gap-4 lg:hidden">
+          <div className="flex items-center gap-3">
+            <img src='./logo.png' alt='logo' className="w-10 h-10 flex-shrink-0" />
+            <span className="font-bold text-xl pacifico-regular">AELI Services</span>
+          </div>
           <Button
             variant="secondary"
             size={false}
@@ -98,46 +102,50 @@ export function Header({ onMenuClick, filters, setFilters }) {
           >
             <Menu className="w-6 h-6 text-gray-500" />
           </Button>
-          <div>
-            <h1 className="text-xl md:text-2xl text-gray-700 font-bold lg:pacifico-regular">
-              {title}
-            </h1>
-            <p className="text-sm text-gray-500">{subtitle}</p>
-          </div>
         </div>
+        <div className="flex flex-col md:flex-row w-full justify-between">
+          <div className="flex gap-4 mb-4 md:mb-0">
+            <div>
+              <h1 className="text-xl md:text-2xl text-gray-700 font-bold lg:pacifico-regular">
+                {title}
+              </h1>
+              <p className="text-sm text-gray-500">{subtitle}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative w-full block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={handleSearchChange}
+                placeholder="Rechercher..."
+                className="pl-10 pr-10 py-[10px] rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent w-full md:w-64 shadow-sm border border-gray-100"
+              />
 
-        <div className="flex items-center gap-4">
-          <div className="relative w-full block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={handleSearchChange}
-              placeholder="Rechercher..."
-              className="pl-10 pr-10 py-[10px] rounded-md bg-white text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#FCE0D6] focus:border-transparent w-full md:w-64 shadow-sm border border-gray-100"
-            />
+              {query.length > 0 && (
+                <button
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
 
-            {query.length > 0 && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            <div className="flex hidden items-center gap-2">
+              <Button
+                variant="secondary"
+                size={false}
+                className="relative p-2.5 shadow-sm"
               >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size={false}
-              className="relative p-2.5 shadow-sm"
-            >
-              <Bell className="w-5 h-5 text-gray-500" />
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </Button>
+                <Bell className="w-5 h-5 text-gray-500" />
+                <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              </Button>
+            </div>
           </div>
         </div>
+
       </div>
     </header>
   );

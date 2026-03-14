@@ -123,7 +123,7 @@ return <UserTable users={data} />;
 - Récupération des avis avec filtres (`useGetReviews`).
 - Masquer/Afficher un avis (`useHideShowReview`).
 - Suppression d’un avis (`useDeleteReview`).
-
+t
 ## 9) Abonnements & paiements
 
 - Consultation des paiements (`usePayments`).

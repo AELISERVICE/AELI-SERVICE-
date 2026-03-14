@@ -29,16 +29,15 @@ export function Sidebar({ isOpen, onClose }) {
     { icon: TrendingUp, label: "Boost", path: "/feature" },
     { icon: UserCircle, label: "Utilisateurs", path: "/users" },
     { icon: ShieldCheck, label: "Moderation", path: "/moderation" },
-    { icon: Lock, label: "Securite", path: "security" },
     { icon: Image, label: "Bannières", path: "/banners" },
+    { icon: Lock, label: "Securite", path: "security" },
   ];
 
   return (
     <>
       <div
-        className={`fixed inset-0 bg-zinc-900/20 backdrop-blur-sm z-[60] lg:hidden transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-zinc-900/20 backdrop-blur-sm z-[60] lg:hidden transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={onClose}
       />
 
@@ -63,7 +62,7 @@ export function Sidebar({ isOpen, onClose }) {
           className={`p-6 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
         >
           <div className="flex items-center gap-3">
-            <img src="./logo.svg" className="w-10 h-10 flex-shrink-0" />
+            <img src="./logo.png" className="w-10 h-10 flex-shrink-0" />
             <span
               className={`font-bold text-xl  md:transition-opacity pacifico-regular ${isCollapsed ? "hidden" : "flex"}`}
             >
@@ -91,21 +90,19 @@ export function Sidebar({ isOpen, onClose }) {
               className={({ isActive }) => `
                                 flex items-center gap-4 py-3 rounded-xl text-sm font-bold transition-all
                                 ${isCollapsed ? "justify-center px-0" : "px-4"}
-                                ${
-                                  isActive
-                                    ? "bg-zinc-900 text-white shadow-lg shadow-zinc-200"
-                                    : "text-zinc-500 hover:bg-zinc-50"
-                                }
+                                ${isActive
+                  ? "bg-zinc-900 text-white shadow-lg shadow-zinc-200"
+                  : "text-zinc-500 hover:bg-zinc-50"
+                }
                             `}
               title={isCollapsed ? item.label : ""}
             >
               <item.icon size={20} className="flex-shrink-0" />
               <span
-                className={`whitespace-nowrap transition-all duration-300 ${
-                  isCollapsed
-                    ? "hidden opacity-0 w-0 invisible"
-                    : "flex opacity-100 visible"
-                }`}
+                className={`whitespace-nowrap transition-all duration-300 ${isCollapsed
+                  ? "hidden opacity-0 w-0 invisible"
+                  : "flex opacity-100 visible"
+                  }`}
               >
                 {item.label}
               </span>

@@ -28,11 +28,14 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
   } = useReviewProviderDocuments();
 
   const app = providerData;
-  console.log("donnees", app);
 
   const [decision, setDecision] = useState("approved");
   const [adminNotes, setAdminNotes] = useState("");
   const [docStates, setDocStates] = useState({});
+
+  useEffect(() => {
+    providerData
+  }), [providerData];
 
   /**
    * Handles toggle doc behavior.
@@ -151,13 +154,12 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
               return (
                 <section
                   key={index}
-                  className={`p-6 transition-all duration-300  ${
-                    statusToShow === "approved"
-                      ? "bg-emerald-50/30"
-                      : statusToShow === "rejected"
-                        ? "bg-red-50/30"
-                        : ""
-                  }`}
+                  className={`p-6 transition-all duration-300  ${statusToShow === "approved"
+                    ? "bg-emerald-50/30"
+                    : statusToShow === "rejected"
+                      ? "bg-red-50/30"
+                      : ""
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
@@ -167,11 +169,10 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                       </span>
 
                       <span
-                        className={`text-[8px] px-2 py-0.5 rounded-[1.5rem] font-bold ${
-                          doc.status === "approved"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-amber-100 text-amber-700"
-                        }`}
+                        className={`text-[8px] px-2 py-0.5 rounded-[1.5rem] font-bold ${doc.status === "approved"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-amber-100 text-amber-700"
+                          }`}
                       >
                         {doc.status}
                       </span>
@@ -182,22 +183,20 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                         <button
                           type="button"
                           onClick={() => handleToggleDoc(index, true)}
-                          className={`p-2 rounded-xl transition-all ${
-                            currentState?.approved === true
-                              ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
-                              : "bg-slate-50 text-slate-400 hover:bg-emerald-50"
-                          }`}
+                          className={`p-2 rounded-xl transition-all ${currentState?.approved === true
+                            ? "bg-emerald-500 text-white shadow-lg shadow-emerald-200"
+                            : "bg-slate-50 text-slate-400 hover:bg-emerald-50"
+                            }`}
                         >
                           <CheckCircle2 size={20} />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleToggleDoc(index, false)}
-                          className={`p-2 rounded-xl transition-all ${
-                            currentState?.approved === false
-                              ? "bg-[#E8524D] text-white shadow-lg shadow-red-200"
-                              : "bg-slate-50 text-slate-400 hover:bg-red-50"
-                          }`}
+                          className={`p-2 rounded-xl transition-all ${currentState?.approved === false
+                            ? "bg-[#E8524D] text-white shadow-lg shadow-red-200"
+                            : "bg-slate-50 text-slate-400 hover:bg-red-50"
+                            }`}
                         >
                           <XCircle size={20} />
                         </button>
@@ -261,11 +260,10 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
                       <button
                         key={opt.id}
                         onClick={() => setDecision(opt.id)}
-                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${
-                          decision === opt.id
-                            ? "bg-white shadow-md text-slate-900"
-                            : "text-slate-400"
-                        }`}
+                        className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all ${decision === opt.id
+                          ? "bg-white shadow-md text-slate-900"
+                          : "text-slate-400"
+                          }`}
                       >
                         {opt.label}
                       </button>
@@ -288,13 +286,12 @@ export function VerifyDocumentProvider({ closeView, providerData }) {
               <div className="flex flex-col md:flex-row gap-4 pt-4">
                 <Button
                   onClick={submitReview}
-                  className={`flex-1 py-4 rounded-[1.5rem] font-bold text-white transition-all shadow-lg ${
-                    decision === "approved"
-                      ? "bg-emerald-500 shadow-emerald-200"
-                      : decision === "rejected"
-                        ? "bg-[#E8524D] shadow-red-200"
-                        : "bg-slate-800 shadow-slate-200"
-                  }`}
+                  className={`flex-1 py-4 rounded-[1.5rem] font-bold text-white transition-all shadow-lg ${decision === "approved"
+                    ? "bg-emerald-500 shadow-emerald-200"
+                    : decision === "rejected"
+                      ? "bg-[#E8524D] shadow-red-200"
+                      : "bg-slate-800 shadow-slate-200"
+                    }`}
                 >
                   {isLoading ? (
                     <ButtonLoader className="mx-auto" />

@@ -8,10 +8,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { ActionMenu } from "../global/ActionMenu";
-import { Table } from "../../ui/Table";
-import { Badge } from "../../ui/Badge";
 import { Button } from "../../ui/Button";
 import { Card } from "../../ui/Card";
+import { Badge } from "../../ui/Badge";
 import { NotFound } from "../global/NotFound";
 import { Loader } from "../global/Loader";
 import {
@@ -24,18 +23,7 @@ import {
  * UI component responsible for rendering the banner list section.
  */
 export const BannerList = ({ onAddBanner, onEditBanner }) => {
-  const headers = [
-    "Image",
-    "Titre",
-    "Type",
-    "URL",
-    "Dates",
-    "Ordre",
-    "Status",
-    "Actions",
-  ];
-
-  const { onActiveModal } = useOutletContext();
+  const { onActiveModal, closeConfirm } = useOutletContext();
   const [openMenuId, setOpenMenuId] = useState(null);
   const triggerRef = useRef(null);
 
@@ -86,6 +74,7 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
     if (isSuccessDelete && dataDelete?.success) {
       toast.success(dataDelete.message || "Bannière supprimée avec succès");
       refetch();
+      if (closeConfirm) closeConfirm();
     }
 
     if (isSuccessUpdate && dataUpdate?.success) {
@@ -159,124 +148,122 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
         </Button>
       </div>
       {banners.length > 0 ? (
-        <Table headers={headers}>
+        <div className="mt-4 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {banners.map((banner) => (
-            <tr
+            <div
               key={banner.id}
-              className="group hover:bg-slate-50/50 transition-colors"
+              className="flex justify-center md:justify-start"
             >
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-3">
-                  {banner.imageUrl ? (
+              <div className="w-full md:w-[400px] h-[400px] bg-[#1B1B1B] text-white overflow-hidden shadow-2xl flex flex-col group font-sans rounded-2xl border border-white/5">
+                <div className="p-6 h-[80px] flex justify-between items-start z-30">
+                  <div className="flex items-center gap-3">
                     <img
-                      src={banner.imageUrl}
-                      className="h-16 w-32 md:w-40 rounded-lg object-cover border border-slate-200 shadow-sm"
-                      alt={banner.title}
+                      src="/logo.png"
+                      alt="logo"
+                      className="w-10 h-10 flex-shrink-0"
                     />
-                  ) : (
-                    <div className="h-16 w-24 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
-                      <ImageIcon size={20} className="text-slate-400" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-xl pacifico-regular">
+                        AELI Services
+                      </span>
+                      {/* <span className="text-xs text-white/60">
+                        {getTypeLabel(banner.type)} · {formatDate(banner.startDate)}
+                      </span> */}
                     </div>
-                  )}
+                  </div>
+                  <div className="relative">
+                    <Button
+                      ref={openMenuId === banner.id ? triggerRef : null}
+                      onClick={() =>
+                        setOpenMenuId(
+                          openMenuId === banner.id ? null : banner.id
+                        )
+                      }
+                      className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-all border-none"
+                    >
+                      <MoreVertical size={18} />
+                    </Button>
+                    <ActionMenu
+                      isOpen={openMenuId === banner.id}
+                      onClose={() => setOpenMenuId(null)}
+                      triggerRef={triggerRef}
+                      initialStatus={!banner.isActive}
+                      onStatusChange={() => handleStatusChange(banner)}
+                      onEdit={() => {
+                        onEditBanner(banner);
+                        setOpenMenuId(null);
+                      }}
+                      onDelete={() => handleDeleteClick(banner)}
+                    />
+                  </div>
                 </div>
-              </td>
 
-              <td className="px-6 py-4">
-                <div className="flex flex-col">
-                  <span className="font-semibold text-slate-900 leading-none truncate max-w-[200px]">
+                <div className="px-8 flex-1 flex flex-col justify-center z-20 overflow-hidden">
+                  <h2 className="text-2xl font-bold leading-tight mb-2 line-clamp-2">
                     {banner.title}
-                  </span>
-                  {banner.description && (
-                    <span className="text-xs text-slate-400 mt-1 truncate max-w-[200px]">
-                      {banner.description}
-                    </span>
-                  )}
+                  </h2>
+                  <p className="text-gray-400 text-sm line-clamp-3">
+                    {banner.description || "Aucune description disponible."}
+                  </p>
                 </div>
-              </td>
 
-              <td className="px-6 py-4">
-                <span className="text-xs font-medium px-2 py-1 rounded bg-purple-100 text-purple-700 truncate">
-                  {getTypeLabel(banner.type)}
-                </span>
-              </td>
-
-              <td className="px-6 py-4">
-                {banner.linkUrl ? (
-                  <a
-                    href={banner.linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline truncate max-w-[150px] block"
+                <div className="relative h-[45%] w-full mt-auto">
+                  <div
+                    className="absolute inset-0 z-10"
+                    style={{
+                      maskImage:
+                        "radial-gradient(circle at 70% 50%, black 20%, transparent 90%)",
+                      WebkitMaskImage:
+                        "radial-gradient(circle at 70% 50%, black 20%, transparent 100%)",
+                    }}
                   >
-                    {banner.linkUrl}
-                  </a>
-                ) : (
-                  <span className="text-xs text-slate-400">Aucune URL</span>
-                )}
-              </td>
-
-              <td className="px-6 py-4 text-xs text-slate-600">
-                <div className="flex flex-col gap-1">
-                  <div>
-                    <span className="text-slate-400">Début: </span>
-                    <span className="truncate">
-                      {formatDate(banner.startDate)}
-                    </span>
+                    {banner.imageUrl ? (
+                      <img
+                        key={banner.imageUrl}
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        className="w-full h-full object-cover object-[80%_center] opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-white/5">
+                        <ImageIcon size={32} className="text-white/50" />
+                      </div>
+                    )}
                   </div>
-                </div>
-              </td>
-              <td className="px-6 py-4 text-xs text-slate-600">
-                <div className="flex flex-col gap-1">
-                  <div>
-                    <span className="text-slate-400">Fin: </span>
-                    <span className="truncate">
-                      {formatDate(banner.endDate)}
-                    </span>
-                  </div>
-                </div>
-              </td>
 
-              <td className="px-6 py-4 text-center">
-                <span className="text-sm font-semibold text-slate-700">
-                  {banner.order || 0}
-                </span>
-              </td>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1B1B1B] via-transparent to-transparent z-20"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#1B1B1B] via-transparent to-transparent z-20"></div>
 
-              <td className="px-6 py-4">
-                <Badge
-                  status={banner.isActive ? "Actif" : "Inactif"}
-                  variant={banner.isActive ? "green" : "gray"}
-                />
-              </td>
+                  <div className="absolute bottom-6 left-3 right-3 z-30 flex items-center justify-end gap-3">
 
-              <td className="relative px-6 py-4 text-right">
-                <div className="flex justify-end">
-                  <Button
-                    ref={openMenuId === banner.id ? triggerRef : null}
-                    onClick={() =>
-                      setOpenMenuId(openMenuId === banner.id ? null : banner.id)
+                    {
+                      banner.linkUrl &&
+                      <div className="flex flex-1">
+                        <Button
+                          type="button"
+                          variant="softRed"
+                          onClick={() =>
+                            banner.linkUrl &&
+                            window.open(banner.linkUrl, "_blank")
+                          }
+                          className="px-0 py-2 shadow-xl hover:scale-105 transition-transform"
+                        >
+                          En savoir plus
+                        </Button>
+                      </div>
                     }
-                    className="text-slate-400 hover:text-slate-600 border-none bg-transparent"
-                  >
-                    <MoreVertical size={18} />
-                  </Button>
+                    <div className="flex items-center gap-2 text-xs text-white/60">
+                      <Badge
+                        status={banner.isActive ? "Actif" : "Inactif"}
+                        variant={banner.isActive ? "green" : "gray"}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <ActionMenu
-                  isOpen={openMenuId === banner.id}
-                  onClose={() => setOpenMenuId(null)}
-                  triggerRef={triggerRef}
-                  initialStatus={!banner.isActive}
-                  onStatusChange={() => handleStatusChange(banner)}
-                  onEdit={() => {
-                    onEditBanner(banner);
-                    setOpenMenuId(null);
-                  }}
-                  onDelete={() => handleDeleteClick(banner)}
-                />
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </Table>
+        </div>
       ) : isError ? (
         <NotFound
           Icon={AlertCircle}

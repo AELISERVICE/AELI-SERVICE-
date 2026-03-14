@@ -1,8 +1,11 @@
-import React, { useState } from "react";
-import { ShieldAlert, AlertCircle } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { useOutletContext } from "react-router-dom";
+import { ShieldAlert, AlertCircle, MoreVertical } from "lucide-react";
 import { Card } from "../../ui/Card";
 import { Table } from "../../ui/Table";
 import { Badge } from "../../ui/Badge";
+import { Button } from '../../ui/Button';
+import { ActionMenu } from "../global/ActionMenu";
 import { Pagination } from "../global/Pagination";
 import { NotFound } from "../global/NotFound";
 import { Loader } from "../global/Loader";
@@ -12,9 +15,12 @@ import { useSecurityLogs } from "../../hooks/useStats";
  * UI component responsible for rendering the ip detection section.
  */
 export function IpDetection() {
+  const { onActiveModal } = useOutletContext();
   const { data: logsResponse, isLoading, isError } = useSecurityLogs();
   const logs = logsResponse?.data?.logs || [];
   const [currentPage, setCurrentPage] = useState(1);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const triggerRef = useRef(null);
   const itemsPerPage = 15;
 
   const headers = [
@@ -88,13 +94,12 @@ export function IpDetection() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded truncate ${
-                        eventtype === "Connexion échoué"
-                          ? "bg-red-50 text-red-700"
-                          : eventtype === "Detection bot"
-                            ? "bg-purple-50 text-purple-700"
-                            : "bg-green-100 text-green-700"
-                      }`}
+                      className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded truncate ${eventtype === "Connexion échoué"
+                        ? "bg-red-50 text-red-700"
+                        : eventtype === "Detection bot"
+                          ? "bg-purple-50 text-purple-700"
+                          : "bg-green-100 text-green-700"
+                        }`}
                     >
                       {eventtype}
                     </span>
@@ -124,6 +129,31 @@ export function IpDetection() {
                             ? "gray"
                             : "red"
                       }
+                    />
+                  </td>
+                  <td className="relative px-6 py-4 text-right">
+                    <div className="flex justify-end">
+                      <Button
+                        ref={openMenuId === log.id ? triggerRef : null}
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === log.id ? null : log.id)
+                        }
+                        className="text-slate-400 hover:text-slate-600 border-none bg-transparent"
+                      >
+                        <MoreVertical size={18} />
+                      </Button>
+                    </div>
+                    <ActionMenu
+                      isOpen={openMenuId === log.id}
+                      onClose={() => setOpenMenuId(null)}
+                      triggerRef={triggerRef}
+                      onBannerIp={() => {
+                        onActiveModal(5, {
+                          data: {
+                            ipAddress: log.ipAddress.replace("::ffff:", ""),
+                          },
+                        });
+                      }}
                     />
                   </td>
                 </tr>

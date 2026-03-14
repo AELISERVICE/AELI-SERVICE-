@@ -35,27 +35,6 @@ export const useSecurityLogs = () => {
 };
 
 /**
- * Custom hook that manages the banned ips workflow.
- */
-export const usebannedIps = () => {
-  return useQuery({
-    queryKey: ["usebannedIps"],
-    queryFn: () => request("/api/admin/banned-ips", "GET"),
-    refetchOnWindowFocus: false,
-  });
-};
-
-/**
- * Custom hook that manages the unban i p workflow.
- */
-export const useUnbanIP = () => {
-  return useMutation({
-    mutationKey: ["useUnbanIP"],
-    mutationFn: (ip) => request(`/api/admin/banned-ips/${ip}`, "DELETE"),
-  });
-};
-
-/**
  * Custom hook that manages the analytics statistiques a p i workflow.
  */
 export const useAnalyticsStatistiquesAPI = () => {

@@ -16,8 +16,8 @@ import {
 export function Provider() {
   const { filters } = useOutletContext();
 
-  const TABS = ["Tout", "Attente", "Doc verification", "Actifs", "Bloquer"];
-  const [actifTabs, setActifTabs] = useState("Tout");
+  const TABS = ["Actifs", "Attente", "Doc verification", "Bloquer"];
+  const [actifTabs, setActifTabs] = useState("Actifs");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 

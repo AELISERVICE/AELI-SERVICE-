@@ -88,26 +88,24 @@ export const LastusersRegister = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                        item.role === "admin"
-                          ? "bg-purple-100 text-purple-700"
-                          : item.role === "provider"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-slate-100 text-slate-600"
-                      }`}
+                      className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${item.role === "admin"
+                        ? "bg-purple-100 text-purple-700"
+                        : item.role === "provider"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-slate-100 text-slate-600"
+                        }`}
                     >
                       {item.role || "user"}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-xs capitalize text-slate-600">
                     <div
-                      className={`text-xs capitalize px-2 py-1 rounded-full w-fit truncate ${
-                        item.gender === "male"
-                          ? "bg-blue-50 text-blue-600"
-                          : item.gender === "female"
-                            ? "bg-pink-50 text-pink-600"
-                            : "bg-slate-50 text-slate-400"
-                      }`}
+                      className={`text-xs capitalize px-2 py-1 rounded-full w-fit truncate ${item.gender === "male"
+                        ? "bg-blue-50 text-blue-600"
+                        : item.gender === "female"
+                          ? "bg-pink-50 text-pink-600"
+                          : "bg-slate-50 text-slate-400"
+                        }`}
                     >
                       {item.gender || "Non défini"}
                     </div>
@@ -223,7 +221,7 @@ export const LastusersRegister = () => {
                     </div>
                   </td>
 
-                  <td className="px-6 py-4">
+                  {/* <td className="px-6 py-4">
                     <div className="flex gap-1 flex-wrap max-w-[150px]">
                       {item.activities?.slice(0, 2).map((act, idx) => (
                         <span
@@ -242,7 +240,7 @@ export const LastusersRegister = () => {
                         <span className="text-[10px] text-slate-400">-</span>
                       )}
                     </div>
-                  </td>
+                  </td> */}
 
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5 text-xs text-slate-600">
@@ -277,27 +275,25 @@ export const LastusersRegister = () => {
                   <td className="px-6 py-4">
                     <Badge
                       status={
-                        item.status ||
-                        item.verificationStatus ||
-                        (item.isVerified ? "approved" : "pending")
+                        item.verificationStatus
                       }
                       variant={
                         item.status === "approved" ||
-                        item.verificationStatus === "approved" ||
-                        item.isVerified
+                          item.verificationStatus === "approved"
                           ? "green"
-                          : item.status === "pending" ||
-                              item.verificationStatus === "pending"
+                          : item.verificationStatus === "pending"
                             ? "yellow"
-                            : "red"
+                            : item.verificationStatus === "under_review" // Nouvelle condition ajoutée ici
+                              ? "purple"
+                              : "red"
                       }
                     />
                   </td>
 
                   <td className="px-6 py-4">
                     <Badge
-                      status={item.isActive ? "Actif" : "Bloqué"}
-                      variant={item.isActive ? "green" : "red"}
+                      status={item.isActive ? "Bloqué" : "Actif"}
+                      variant={item.isActive ? "red" : "green"}
                     />
                   </td>
                 </tr>

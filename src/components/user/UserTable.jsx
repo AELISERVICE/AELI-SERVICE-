@@ -208,13 +208,12 @@ export const UserTable = ({
 
               <td className="px-6 py-4">
                 <span
-                  className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                    user.role === "admin"
+                  className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${user.role === "admin"
                       ? "bg-purple-100 text-purple-700"
                       : user.role === "provider"
                         ? "bg-amber-100 text-amber-700"
                         : "bg-slate-100 text-slate-600"
-                  }`}
+                    }`}
                 >
                   {user.role}
                 </span>
@@ -222,13 +221,12 @@ export const UserTable = ({
 
               <td className="px-6 py-4 text-xs capitalize text-slate-600">
                 <div
-                  className={`text-xs capitalize px-2 py-1 rounded-full w-fit truncate ${
-                    user.gender === "male"
+                  className={`text-xs capitalize px-2 py-1 rounded-full w-fit truncate ${user.gender === "male"
                       ? "bg-blue-50 text-blue-600"
                       : user.gender === "female"
                         ? "bg-pink-50 text-pink-600"
                         : "bg-slate-50 text-slate-400"
-                  }`}
+                    }`}
                 >
                   {user.gender || "Non défini"}
                 </div>
@@ -280,7 +278,7 @@ export const UserTable = ({
                   triggerRef={triggerRef}
                   initialStatus={!user.isActive}
                   onStatusChange={() => handleStatusChange(user)}
-                  onEdit={() => onActiveModal(3, user)}
+                  onEdit={false}
                   onDelete={false}
                 />
               </td>

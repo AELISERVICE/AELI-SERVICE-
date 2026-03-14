@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { Sidebar } from "../components/global/Sidebar";
 import { Header } from "../components/global/Header";
 import { Confirmation } from "../components/modal/Confirmation";
+import { BanIp } from "../components/modal/BanIp";
 import { ViewInfoProvider } from "../components/modal/ViewInfoProvider";
 import { VerifyDocumentProvider } from "../components/modal/VerifyDocumentProvider";
 
@@ -11,6 +12,7 @@ const MODALS = {
   RECOVERY: 2,
   VIEWINFOPROVIDER: 3,
   VERIFYDOCUMENTSPROVIDER: 4,
+  BANIP: 5,
 };
 
 /**
@@ -76,6 +78,13 @@ export function Base() {
         <VerifyDocumentProvider
           closeView={closeModal}
           providerData={activeModal.data}
+        />
+      )}
+
+      {activeModal?.type === MODALS.BANIP && (
+        <BanIp
+          closeView={closeModal}
+          defaultIp={activeModal?.data?.ipAddress || ""}
         />
       )}
     </div>

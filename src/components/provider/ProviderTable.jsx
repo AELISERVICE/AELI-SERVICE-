@@ -48,7 +48,7 @@ export const ProviderTable = ({
   const { onActiveModal } = useOutletContext();
   const [openMenuId, setOpenMenuId] = useState(null);
   const triggerRef = useRef(null);
-
+  console.log("etat:", actifTabs)
   const {
     mutate: mutateStatus,
     isSuccess: isSuccessStatus,
@@ -268,16 +268,18 @@ export const ProviderTable = ({
 
               <td className="px-6 py-4">
                 <Badge
-                  status={app.status || app.verificationStatus}
+                  status={app.verificationStatus}
                   variant={
                     app.verificationStatus === "approved"
                       ? "green"
                       : app.status === "approved"
                         ? "green"
-                        : app.verificationStatus === "pending" ||
+                        : app.verificationStatus === "under_review"
+                          ? "purple"
+                          : app.verificationStatus === "pending" ||
                             app.status === "pending"
-                          ? "yellow"
-                          : "red"
+                            ? "yellow"
+                            : "red"
                   }
                 />
               </td>
@@ -306,9 +308,21 @@ export const ProviderTable = ({
                   onClose={() => setOpenMenuId(null)}
                   triggerRef={triggerRef}
                   initialStatus={!app.isActive}
-                  onStatusChange={() => handleStatusChange(app)}
-                  onEdit={() => onActiveModal(3, { data: app })}
-                  onVerifyDoc={() => onActiveModal(4, { data: app })}
+                  onStatusChange={
+                    (actifTabs === "Actifs" || actifTabs === "Bloquer")
+                      ? () => handleStatusChange(app)
+                      : false
+                  }
+                  onConsult={
+                    actifTabs != "Attente"
+                      ? false
+                      : () => onActiveModal(3, { data: app })
+                  }
+                  onVerifyDoc={
+                    actifTabs != "Doc verification"
+                      ? false
+                      : () => onActiveModal(4, { data: app })
+                  }
                   onDelete={false}
                 />
               </td>
