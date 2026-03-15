@@ -5,7 +5,7 @@ import { FeatureCard } from '../ui/FeatureCard';
 
 export function FeatureCards() {
     return (
-        <section className="relative  w-full bg-white mt-20 md:mt-12" aria-label="Features">
+        <section className="relative  w-full bg-white mt-20 md:mt-25 lg:mt-12" aria-label="Features">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 md:-mt-12 lg:-mt-16 pb-12 md:pb-16">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                     <FeatureCard

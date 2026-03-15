@@ -42,15 +42,15 @@ export function HeroSection() {
                     </div>
 
                     {/* Right Image + Purple Background */}
-                    <div className="w-full lg:w-1/2 relative lg:-right-20 flex justify-center  h-[250px] md:h-auto lg:justify-end">
-                        <div className="absolute inset-0 lg:-top-20 lg:-bottom-20 h-[250px] md:h-auto ">
+                    <div className="w-full lg:w-1/2 relative lg:-right-20 flex justify-center  h-[250px] md:h-[400px] lg:h-auto lg:justify-end">
+                        <div className="absolute inset-0 lg:-top-20 lg:-bottom-20 h-[250px] md:h-[400px] lg:h-auto ">
                             <div
-                                className="w-full h-full bg-gradient-to-br from-purple-500 via-[#E8524D] to-[#E8524D] opacity-90"
+                                className="w-full h-full md:w-[500px] lg:w-full md:ml-[17%] lg:ml-auto bg-gradient-to-br from-purple-500 via-[#E8524D] to-[#E8524D] opacity-90"
                                 style={{ borderRadius: '80% 20% 63% 37% / 26% 88% 12% 74%' }}
                             />
                         </div>
-                        <div className="hidden md:flex absolute top-4 left-1/2 -translate-x-1/2 lg:top-8 lg:-left-8 lg:translate-x-0 w-16 h-16 md:w-20 md:h-20 border-4 border-gray-200 rounded-full z-10 bg-white/50 backdrop-blur-sm" />
-                        <div className="relative w-[1500px]  mt-8 md:mt-0 z-10 w-full max-w-md lg:max-w-none">
+                        <div className="hidden lg:flex absolute top-4 left-1/2 -translate-x-1/2 lg:top-8 lg:-left-8 lg:translate-x-0 w-16 h-16 md:w-20 md:h-20 border-4 border-gray-200 rounded-full z-10 bg-white/50 backdrop-blur-sm" />
+                        <div className="relative mt-8 md:mt-20 lg:mt-0 z-10 w-full max-w-md lg:max-w-none">
                             <img
                                 src="./presentation-app.png"
                                 alt="Person using E-Wallet digital payment on tablet"
