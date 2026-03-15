@@ -1,10 +1,10 @@
 {
   "name": "AELI Services Admin",
-  "short_name": "AELI Admin",
+  "short_name": "AELI Services Admin",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#7c3aed",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "/logo.png",
