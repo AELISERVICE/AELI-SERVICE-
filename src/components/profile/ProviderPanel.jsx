@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Star, Calendar, CheckCircle2, MapPin, Pencil } from 'lucide-react';
+import { Star, Calendar, FileText, MapPin, Pencil } from 'lucide-react';
 import { Card } from '../../ui/Card';
 import { Badge } from '../../ui/Badge';
 import { Alert } from '../../ui/Alert';
@@ -11,7 +11,7 @@ import { useGetProviderApplication } from '../../hooks/useProvider';
 /**
  * UI component responsible for rendering provider panel.
  */
-export function ProviderPanel() {
+export function ProviderPanel({ onOpenManageDocuments }) {
     const navigate = useNavigate();
     const { data, refetch } = useInfoUserConnected();
     const { data: dataMyapply } = useGetProviderApplication();
@@ -141,6 +141,16 @@ export function ProviderPanel() {
                             Modifier
                         </Button>
                     )}
+                    <div className="flex w-full justify-center">
+                        <button
+                            type="button"
+                            onClick={onOpenManageDocuments}
+                            className="flex gap-3 text-[10px] font-bold text-[#E8524D] uppercase text-center"
+                        >
+                            <FileText size={16} />
+                            Mes documents
+                        </button>
+                    </div>
                 </div>
             </Card>
         </div>

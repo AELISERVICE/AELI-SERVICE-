@@ -83,3 +83,45 @@ export const useDeleteProviderPhoto = () => {
         },
     });
 };
+
+
+/**
+ * Get my document.
+ */
+export const useGetMyDocuments = (id) => {
+    return useQuery({
+        queryKey: ["useGetMyDocuments", id],
+        queryFn: () => request(`/api/providers/${id}/documents`, "GET"),
+        refetchOnWindowFocus: false,
+    });
+};
+
+/**
+ * Upluoad documents.
+ */
+export const useUploadDocument = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["useUploadDocument"],
+        mutationFn: ({ id, formData }) => request(`/api/providers/${id}/documents`, "POST", formData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["useGetMyDocuments"] });
+        },
+    });
+};
+
+/**
+ * Delete documents from list.
+ */
+export const useDeleteDocument = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationKey: ["useDeleteDocument"],
+        mutationFn: ({ id, docIndex }) => request(`/api/providers/${id}/documents/${docIndex}`, "DELETE"),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["useGetMyDocuments"] });
+        },
+    });
+};

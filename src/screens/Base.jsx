@@ -7,6 +7,7 @@ import { Messagecustomer } from '../components/modal/Messagecustomer';
 import { ContactCustomer } from '../components/modal/ContactCustomer';
 import { FeedbackCard } from '../components/modal/FeedbackCard';
 import { FavoriteList } from '../components/modal/FavoriteList';
+import { ManageDocument } from '../components/modal/ManageDocument';
 
 import { Confirmation } from '../components/modal/Confirmation';
 import { ProviderMessaging } from '../components/modal/ProviderMessaging/ProviderMessaging';
@@ -17,7 +18,7 @@ import { useGlobalLoading } from '../context/GlobalLoadingContext';
  * UI component responsible for rendering base.
  */
 export function Base() {
-    const MODALS = { NONE: 0, MESSAGE: 1, FEEDBACK: 2, CONTACT: 3, FAVORITE: 4, REVIEW: 5, MESSAGING: 6, CONFIRM: 7, BANNER: 8 };
+    const MODALS = { NONE: 0, MESSAGE: 1, FEEDBACK: 2, CONTACT: 3, FAVORITE: 4, REVIEW: 5, MESSAGING: 6, CONFIRM: 7, BANNER: 8, MANAGE_DOCUMENT: 9 };
     const [activeModal, setActiveModal] = useState(null);
     const [activeModal2, setActiveModal2] = useState(8); // Par défaut, le banner est actif
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // État pour le burger
@@ -74,6 +75,7 @@ export function Base() {
                                 openConfirm: () => setActiveModal2(MODALS.CONFIRM),
                                 openFeedback: () => setActiveModal(MODALS.FEEDBACK),
                                 openMessaging: () => setActiveModal(MODALS.MESSAGING),
+                                openManageDocuments: () => setActiveModal(MODALS.MANAGE_DOCUMENT),
                                 closeModal2: () => setActiveModal2(MODALS.NONE),
                                 openSidebar: openSidebar,
                                 providerShowStats,
@@ -107,6 +109,14 @@ export function Base() {
                     { }
                     {activeModal === MODALS.MESSAGING && (
                         <ProviderMessaging closeMessaging={closeModal} />
+                    )}
+                    {activeModal === MODALS.MANAGE_DOCUMENT && (
+                        <ManageDocument
+                            closeManageDocument={closeModal}
+                            openConfirm={() => setActiveModal2(MODALS.CONFIRM)}
+                            setConfirmConfig={setConfirmConfig}
+                            closeModal2={closeModal2}
+                        />
                     )}
                 </div>
             </main>

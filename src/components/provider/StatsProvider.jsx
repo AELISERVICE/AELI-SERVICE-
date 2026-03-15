@@ -129,7 +129,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                   <NotFound
                     Icon={AlertCircle}
                     title="Erreur de chargement"
-                    message="Une erreur est survenue lors de la récupération des statistiques."
+                    // message="Une erreur est survenue lors de la récupération des statistiques."
                     className="h-full py-4"
                   />
                 ) : chartData.length > 0 ? (
@@ -149,7 +149,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                   <NotFound
                     Icon={BarChart3}
                     title="Aucune donnée"
-                    message="Aucune statistique disponible pour le moment."
+                    // message="Aucune statistique disponible pour le moment."
                     className="h-full py-4"
                   />
                 )}
@@ -173,14 +173,14 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                   <NotFound
                     Icon={AlertCircle}
                     title="Erreur de chargement"
-                    message="Impossible de récupérer les derniers contacts."
+                    // message="Impossible de récupérer les derniers contacts."
                     className="h-24 border-none py-2"
                   />
                 ) : latestContacts.length === 0 ? (
                   <NotFound
                     Icon={Users}
                     title="Aucun contact"
-                    message="Vous n'avez encore reçu aucun contact."
+                    // message="Vous n'avez encore reçu aucun contact."
                     className="h-24 border-none py-2"
                   />
                 ) : (

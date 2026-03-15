@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ToastContainer } from 'react-toastify';
+import { useOutletContext } from 'react-router-dom';
 import { ProfileSection } from '../components/profile/ProfileSection';
 import { ProviderPanel } from '../components/profile/ProviderPanel';
 import { Abonnement } from '../components/profile/Abonnement';
@@ -10,6 +11,7 @@ import { useGetProviderApplication } from '../hooks/useProvider';
  */
 export function ProfileScreen() {
   const [isRole, setIsRole] = useState();
+  const { openManageDocuments } = useOutletContext();
   const { data: dataMyapply } = useGetProviderApplication();
   const application = dataMyapply?.data?.application;
   const isPendingApplication = application?.status === 'pending';
@@ -22,7 +24,7 @@ export function ProfileScreen() {
 
         <div className="lg:col-span-5 xl:col-span-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pr-2 space-y-6">
           {(isRole === "provider" || isPendingApplication) &&
-            <ProviderPanel />
+            <ProviderPanel onOpenManageDocuments={openManageDocuments} />
           }
           {!isPendingApplication &&
             <Abonnement isRole={isRole} />

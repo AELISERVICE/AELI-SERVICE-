@@ -3,7 +3,7 @@ import React from 'react';
 export const NotFound = ({
     Icon,
     title = "Aucun élément trouvé",
-    message = "Il n'y a aucune donnée à afficher pour le moment.",
+    message = false,
     className = "",
 }) => {
     return (
