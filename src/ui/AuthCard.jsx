@@ -18,7 +18,7 @@ export function AuthCard({
 
       <div className="flex flex-col items-center  min-h-screen w-full">
         <main className="w-full px-4 py-4 flex flex-col items-center ">
-          {}
+          { }
           <div className="w-full bg-slate-700 rounded-3xl min-h-[400px] p-8 pb-32 md:pb-48 text-center relative overflow-hidden shadow-lg">
             <img
               src="https://static.vecteezy.com/ti/photos-gratuite/t2/41927557-ai-genere-une-souriant-africain-femme-habille-dans-traditionnel-tenue-les-usages-sa-telephone-intelligent-dans-une-vibrant-marche-reglage-gratuit-photo.jpg"
@@ -36,11 +36,11 @@ export function AuthCard({
             </div>
           </div>
 
-          {}
+          { }
           <div
             className={` relative
                         w-full bg-white rounded-2xl shadow-xl -mt-24 md:-mt-50 relative z-20 p-6 md:p-10 lg:p-12 border border-slate-100 transition-all duration-300
-                        ${isWide ? "max-w-4xl" : "max-w-4xl lg:max-w-[500px]"}
+                        ${isWide ? "max-w-4xl" : "max-w-4xl md:max-w-[500px]"}
                     `}
           >
             <div className="absolute -top-20 left-0 right-0 flex flex-col justify-center items-center mb-8 ">
