@@ -125,7 +125,7 @@ const getProviders = asyncHandler(async (req, res) => {
       {
         id: {
           [Op.in]: literal(
-            `(SELECT DISTINCT provider_id FROM services WHERE name ILIKE '${searchPattern}' OR description ILIKE '${searchPattern}')`
+            `(SELECT DISTINCT provider_id FROM services WHERE name ILIKE '${searchPattern}' OR description ILIKE '${searchPattern}')`,
           ),
         },
       },
@@ -141,7 +141,7 @@ const getProviders = asyncHandler(async (req, res) => {
     where[Op.and].push({
       id: {
         [Op.in]: literal(
-          `(SELECT DISTINCT provider_id FROM services WHERE price >= ${minP} AND price <= ${maxP} AND is_active = true)`
+          `(SELECT DISTINCT provider_id FROM services WHERE price >= ${minP} AND price <= ${maxP} AND is_active = true)`,
         ),
       },
     });
@@ -156,17 +156,17 @@ const getProviders = asyncHandler(async (req, res) => {
     },
     {
       model: Service,
-      as: 'services',
-      attributes: ['id', 'name', 'price'],
+      as: "services",
+      attributes: ["id", "name", "price"],
       where: { isActive: true },
       required: false,
       include: [
         {
           model: Category,
-          as: 'category',
-          attributes: ['id', 'name', 'slug', 'icon'],
-        }
-      ]
+          as: "category",
+          attributes: ["id", "name", "slug", "icon"],
+        },
+      ],
     },
   ];
 
@@ -179,7 +179,7 @@ const getProviders = asyncHandler(async (req, res) => {
         [Op.in]: literal(
           categoryId
             ? `(SELECT DISTINCT provider_id FROM services WHERE category_id = '${categoryId}')`
-            : `(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`
+            : `(SELECT DISTINCT provider_id FROM services WHERE category_id = (SELECT id FROM categories WHERE slug = '${category}'))`,
         ),
       },
     });
@@ -191,10 +191,12 @@ const getProviders = asyncHandler(async (req, res) => {
     attributes: {
       include: [
         [
-          literal(`(SELECT MIN(price) FROM services WHERE services.provider_id = "Provider".id AND services.is_active = true)`),
-          'min_price'
-        ]
-      ]
+          literal(
+            `(SELECT MIN(price) FROM services WHERE services.provider_id = "Provider".id AND services.is_active = true)`,
+          ),
+          "min_price",
+        ],
+      ],
     },
     order: buildSortOrder(sort),
     limit: queryLimit,
@@ -203,13 +205,13 @@ const getProviders = asyncHandler(async (req, res) => {
   });
 
   // Format the providers to extract unique categories from services
-  const providers = providersObj.map(provider => {
+  const providers = providersObj.map((provider) => {
     const providerJSON = provider.toJSON();
 
     // Extract unique categories
     const categoriesMap = new Map();
     if (providerJSON.services) {
-      providerJSON.services.forEach(service => {
+      providerJSON.services.forEach((service) => {
         if (service.category && !categoriesMap.has(service.category.id)) {
           categoriesMap.set(service.category.id, service.category);
         }
@@ -275,7 +277,15 @@ const getProviderById = asyncHandler(async (req, res) => {
   // Fetch services separately (optimized query)
   const services = await Service.findAll({
     where: { providerId: id, isActive: true },
-    attributes: ["id", "name", "description", "price", "priceType", "duration", "photo"],
+    attributes: [
+      "id",
+      "name",
+      "description",
+      "price",
+      "priceType",
+      "duration",
+      "photo",
+    ],
     include: [
       {
         model: Category,
@@ -321,7 +331,7 @@ const getProviderById = asyncHandler(async (req, res) => {
     }
     providerData.subscriptionExpired = true;
     providerData.subscriptionMessage = req.t(
-      "provider.subscriptionExpiredMessage"
+      "provider.subscriptionExpiredMessage",
     );
   }
 
@@ -513,7 +523,7 @@ const getMyDashboard = asyncHandler(async (req, res) => {
   if (!provider) {
     throw new AppError(
       req.t ? req.t("provider.notFound") : "Provider not found",
-      404
+      404,
     );
   }
 
@@ -692,7 +702,7 @@ const uploadDocuments = asyncHandler(async (req, res) => {
           documentsCount: uploadedDocs.length,
         }),
       },
-      "Documents received"
+      "Documents received",
     );
   }
 
@@ -766,7 +776,9 @@ const deleteDocument = asyncHandler(async (req, res) => {
     throw new AppError(req.t("documents.cannotDeleteAfterVerification"), 400);
   }
 
-  const documents = provider.documents || [];
+  const documents = Array.isArray(provider.documents)
+    ? [...provider.documents]
+    : [];
   const index = parseInt(docIndex);
 
   if (index < 0 || index >= documents.length) {
@@ -781,14 +793,28 @@ const deleteDocument = asyncHandler(async (req, res) => {
 
   // Remove from array
   documents.splice(index, 1);
-  provider.documents = documents;
+  provider.set("documents", documents);
+  provider.changed("documents", true);
 
   // Reset status if no documents left
   if (documents.length === 0) {
     provider.verificationStatus = "pending";
+    provider.verificationNotes = null;
+    provider.verifiedAt = null;
+    provider.verifiedBy = null;
+    provider.isVerified = false;
   }
 
-  await provider.save();
+  await provider.save({
+    fields: [
+      "documents",
+      "verificationStatus",
+      "verificationNotes",
+      "verifiedAt",
+      "verifiedBy",
+      "isVerified",
+    ],
+  });
   await cache.delByPattern("route:/api/providers*");
 
   i18nResponse(req, res, 200, "documents.deleted", {
