@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from "react-router-dom";
 import { Button } from '../../ui/Button';
 
 export function InstallBanner() {
+    const location = useLocation();
+    const pathname = location.pathname;
+    const login = pathname.startsWith("/login");
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isShown, setIsShown] = useState(false);
 
@@ -31,7 +35,7 @@ export function InstallBanner() {
         }
     };
 
-    if (!isShown) return null;
+    if (!isShown || !login) return null;
 
     return (
         <div className="fixed md:w-[400px] top-4 left-4 md:left-auto right-4 z-[9999] bg-white p-4 rounded-2xl shadow-2xl border border-purple-100 flex items-center justify-between animate-bounce">
