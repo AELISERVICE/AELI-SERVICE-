@@ -58,7 +58,7 @@ export function ChatWindow({ chat, onBack }) {
         if (isSuccessUpdateStatus && dataUpdateStatus?.success || isSuccessUnlock && dataUnlock?.success) {
             toast.success(dataUpdateStatus.message || dataUnlock.message);
 
-            if (dataUnlock.data?.paymentUrl) {
+            if (dataUnlock?.data?.paymentUrl) {
                 window.location.href = dataUnlock.data.paymentUrl;
             }
         }
