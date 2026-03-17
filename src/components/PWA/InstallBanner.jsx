@@ -73,7 +73,7 @@ export function InstallBanner() {
                     <p className="text-sm font-medium mt-2">
                         2. Faites défiler et appuyez sur <span className="font-bold">"Sur l'écran d'accueil"</span>.
                     </p>
-                    <div className="absolute -top-2 right-10 w-4 h-4 bg-purple-600 rotate-45"></div>
+                    <div className="absolute -top-2 right-10 w-4 h-4 bg-gray-700 rotate-45"></div>
                 </div>
             )}
         </div>
