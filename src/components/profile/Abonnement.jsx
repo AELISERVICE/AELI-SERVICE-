@@ -19,6 +19,7 @@ export function Abonnement({ isRole }) {
     const planEntries = plans ? Object.entries(plans) : [];
 
     const planpricesctif = planslis?.[sub?.plan]?.price || 0;
+    const planjouractif = planslis?.[sub?.plan]?.days || 0;
     const currentPlanInfo = plans && sub?.plan ? plans[sub.plan] : null;
 
     const totalDays = currentPlanInfo?.days || 30;
@@ -51,7 +52,7 @@ export function Abonnement({ isRole }) {
                                             {planpricesctif}
                                         </span>
                                         <span className="text-sm font-bold text-slate-500">
-                                            XAF / {currentPlanInfo?.days} jours
+                                            XAF / {planjouractif} jours
                                         </span>
                                     </div>
                                     <div className="text-right">
