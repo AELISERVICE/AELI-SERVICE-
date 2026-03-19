@@ -254,6 +254,7 @@ describe('PaymentController Unit Tests', () => {
         const { handleNotchPayWebhook } = require('../../src/controllers/paymentController');
 
         it('should process accepted NotchPay webhook', async () => {
+            req.method = 'POST'; // Simuler une requête POST
             req.headers = { 'x-notch-signature': null }; // Pas de signature en test
             req.body = {
                 event: 'payment.completed',
@@ -263,6 +264,7 @@ describe('PaymentController Unit Tests', () => {
                     status: 'complete' 
                 }
             };
+            req.rawBody = Buffer.from(JSON.stringify(req.body)); // Simuler le raw body
 
             const mockPayment = {
                 transactionId: 'AELI_TX_123',
