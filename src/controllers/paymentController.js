@@ -339,18 +339,12 @@ const handleNotchPayWebhook = asyncHandler(async (req, res) => {
   let rawBody;
   
   if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
-    // Mode JSON body
+    // Mode JSON body - NotchPay envoie les données dans req.body directement
     event = req.body;
     rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
     
-    // NotchPay envoie parfois data:{} et les infos sont dans le body principal
-    if (!event.data || Object.keys(event.data).length === 0) {
-      event.data = {
-        reference: req.query.reference || event.reference,
-        merchant_reference: req.query.trxref || req.query.notchpay_trxref || event.reference,
-        status: req.query.status || 'complete'
-      };
-    }
+    // NotchPay format: { event: "payment.complete", data: { merchant_reference, reference, status } }
+    // Pas besoin de transformation, les données sont déjà au bon format
   } else {
     // Mode query parameters (callback NotchPay)
     event = {
