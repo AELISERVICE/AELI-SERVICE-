@@ -325,13 +325,6 @@ const handleWebhook = asyncHandler(async (req, res) => {
  * POST /api/payments/notchpay/webhook
  */
 const handleNotchPayWebhook = asyncHandler(async (req, res) => {
-  console.log('🔔 NotchPay webhook handler reached!');
-  console.log('Method:', req.method);
-  console.log('Headers:', req.headers);
-  console.log('Query:', req.query);
-  console.log('Body:', req.body);
-  console.log('Raw body length:', req.rawBody?.length);
-  
   const signature = req.headers["x-notch-signature"];
   
   // Supporter JSON body OU query parameters
