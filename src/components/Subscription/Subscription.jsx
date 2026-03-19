@@ -23,10 +23,8 @@ export function Subscription() {
         setSelectedPlan(tier.id);
 
         const paymentData = {
-            amount: tier.price,
-            type: "subscription",
-            providerId: provider, // Ton id récupéré de userData
-            description: `Abonnement ${tier.name}`
+            plan: tier.id,
+            gateway: "notchpay"
         };
 
         subscribe(paymentData);

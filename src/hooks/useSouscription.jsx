@@ -27,6 +27,6 @@ export const useGetAbonnementProvider = () => {
 export const useSubscribe = () => {
     return useMutation({
         mutationKey: ["useSubscribe"],
-        mutationFn: (formData) => request("/api/payments/notchpay/initialize", "POST", formData),
+        mutationFn: (formData) => request("/api/subscriptions/subscribe", "POST", formData),
     });
 };
