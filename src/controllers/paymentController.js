@@ -326,6 +326,12 @@ const handleWebhook = asyncHandler(async (req, res) => {
  */
 const handleNotchPayWebhook = asyncHandler(async (req, res) => {
   console.log('🔔 NotchPay webhook handler reached!');
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
+  console.log('Query:', req.query);
+  console.log('Body:', req.body);
+  console.log('Raw body length:', req.rawBody?.length);
+  
   const signature = req.headers["x-notch-signature"];
   
   // Supporter JSON body OU query parameters
@@ -336,6 +342,15 @@ const handleNotchPayWebhook = asyncHandler(async (req, res) => {
     // Mode JSON body
     event = req.body;
     rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
+    
+    // NotchPay envoie parfois data:{} et les infos sont dans le body principal
+    if (!event.data || Object.keys(event.data).length === 0) {
+      event.data = {
+        reference: req.query.reference || event.reference,
+        merchant_reference: req.query.trxref || req.query.notchpay_trxref || event.reference,
+        status: req.query.status || 'complete'
+      };
+    }
   } else {
     // Mode query parameters (callback NotchPay)
     event = {
