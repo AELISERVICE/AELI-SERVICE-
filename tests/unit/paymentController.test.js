@@ -254,22 +254,32 @@ describe('PaymentController Unit Tests', () => {
         const { handleNotchPayWebhook } = require('../../src/controllers/paymentController');
 
         it('should process accepted NotchPay webhook', async () => {
-            req.headers = { 'x-notch-signature': 'valid-sig' };
+            req.headers = { 'x-notch-signature': null }; // Pas de signature en test
             req.body = {
-                event: 'payment.complete',
-                data: { reference: 'AELI_TX_123', status: 'complete' }
+                event: 'payment.completed',
+                data: { 
+                    reference: 'trx.test_123',
+                    merchant_reference: 'AELI_TX_123',
+                    status: 'complete' 
+                }
             };
 
             const mockPayment = {
                 transactionId: 'AELI_TX_123',
                 status: 'PENDING',
-                updateFromNotchPay: jest.fn().mockResolvedValue(true)
+                updateFromNotchPay: jest.fn().mockResolvedValue(true),
+                save: jest.fn().mockResolvedValue(true)
             };
             Payment.findByTransactionId.mockResolvedValue(mockPayment);
 
             await handleNotchPayWebhook(req, res, next);
 
-            expect(mockPayment.updateFromNotchPay).toHaveBeenCalled();
+            expect(Payment.findByTransactionId).toHaveBeenCalledWith('AELI_TX_123');
+            expect(mockPayment.updateFromNotchPay).toHaveBeenCalledWith({
+                reference: 'trx.test_123',
+                merchant_reference: 'AELI_TX_123',
+                status: 'complete'
+            });
             expect(res.status).toHaveBeenCalledWith(200);
         });
     });
