@@ -91,6 +91,15 @@ router.post('/notchpay/webhook', require('../controllers/paymentController').han
 
 /**
  * @swagger
+ * /api/payments/notchpay/webhook:
+ *   get:
+ *     summary: NotchPay webhook endpoint with query parameters (callback)
+ *     tags: [Payments]
+ */
+router.get('/notchpay/webhook', require('../controllers/paymentController').handleNotchPayWebhook);
+
+/**
+ * @swagger
  * /api/payments/webhook:
  *   post:
  *     summary: CinetPay webhook endpoint (called by CinetPay)

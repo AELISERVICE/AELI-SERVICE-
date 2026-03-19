@@ -325,24 +325,54 @@ const handleWebhook = asyncHandler(async (req, res) => {
  * POST /api/payments/notchpay/webhook
  */
 const handleNotchPayWebhook = asyncHandler(async (req, res) => {
+  console.log('🔔 NotchPay webhook handler reached!');
   const signature = req.headers["x-notch-signature"];
-  const event = req.body;
+  
+  // Supporter JSON body OU query parameters
+  let event;
+  let rawBody;
+  
+  if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
+    // Mode JSON body
+    event = req.body;
+    rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
+  } else {
+    // Mode query parameters (callback NotchPay)
+    event = {
+      event: 'payment.completed',
+      data: {
+        reference: req.query.reference,
+        merchant_reference: req.query.trxref || req.query.notchpay_trxref,
+        status: req.query.status
+      }
+    };
+    rawBody = Buffer.from(JSON.stringify(event));
+  }
+  
+  const webhookSecret = NOTCH_PAY_CONFIG.webhookSecret || NOTCH_PAY_CONFIG.secretKey;
 
   logger.info(
     `NotchPay Webhook received: ${event.event} for ref ${event.data?.reference}`
   );
+  logger.debug(`NotchPay signature header: ${signature}`);
+  logger.debug(`Webhook secret loaded: ${!!webhookSecret}`);
+  logger.debug(`Raw body length: ${rawBody.length}`);
 
   // Verify signature (Security best practice)
-  if (signature && NOTCH_PAY_CONFIG.secretKey) {
+  if (signature && webhookSecret) {
     const hash = crypto
-      .createHmac("sha256", NOTCH_PAY_CONFIG.secretKey)
-      .update(JSON.stringify(req.body))
+      .createHmac("sha256", webhookSecret)
+      .update(rawBody)
       .digest("hex");
+
+    logger.debug(`Calculated hash: ${hash}`);
 
     if (hash !== signature) {
       logger.warn("Invalid NotchPay signature");
       return res.status(401).send("Invalid signature");
     }
+  } else if (signature && !webhookSecret) {
+    logger.warn("NotchPay signature received but webhook secret is not configured");
   }
 
   const { reference, merchant_reference, status } = event.data || {};

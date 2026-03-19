@@ -93,8 +93,15 @@ app.use('/api', generalLimiter);
 
 // ============ BODY PARSING ============
 
-// Parse JSON bodies
-app.use(express.json({ limit: '10mb' }));
+// Parse JSON bodies and keep raw buffer for webhook signature verification
+app.use(express.json({
+    limit: '10mb',
+    verify: (req, res, buf) => {
+        if (buf && buf.length) {
+            req.rawBody = buf;
+        }
+    }
+}));
 
 // Parse URL-encoded bodies
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

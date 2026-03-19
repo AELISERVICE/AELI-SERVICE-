@@ -6,6 +6,7 @@
 const NOTCH_PAY_CONFIG = {
     publicKey: process.env.NOTCH_PAY_PUBLIC_KEY,
     secretKey: process.env.NOTCH_PAY_SECRET_KEY,
+    webhookSecret: process.env.NOTCH_PAY_WEBHOOK_SECRET,
 
     // API URLs
     baseUrl: 'https://api.notchpay.co',
