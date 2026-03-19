@@ -247,6 +247,9 @@ describe('Payment API Integration', () => {
         });
 
         it('should handle invalid signature', async () => {
+            // S'assurer que la clé secrète est définie pour ce test
+            process.env.NOTCH_PAY_SECRET_KEY = 'test_secret_key_for_signature_verification';
+            
             const res = await request(app)
                 .post('/api/payments/notchpay/webhook')
                 .set('x-notch-signature', 'invalid-signature')
