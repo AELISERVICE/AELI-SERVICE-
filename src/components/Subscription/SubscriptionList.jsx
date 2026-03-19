@@ -24,7 +24,7 @@ const formatDate = (dateString) => {
 
 const getStatusVariant = (status) => {
   const normalized = (status || "").toUpperCase();
-  if (["PAID", "SUCCESS", "COMPLETED"].includes(normalized)) return "green";
+  if (["PAID", "SUCCESS", "COMPLETED", "ACCEPTED"].includes(normalized)) return "green";
   if (["PENDING", "WAITING"].includes(normalized)) return "yellow";
   if (["REVOKED", "CANCELLED", "CANCELED", "FAILED"].includes(normalized)) {
     return "red";

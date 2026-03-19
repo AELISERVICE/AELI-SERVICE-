@@ -20,7 +20,7 @@ export function SubscriptionsScreen() {
     switch (actifTabs) {
       case "Paiement":
         return payments.filter((payment) =>
-          ["PAID", "SUCCESS", "COMPLETED"].includes(
+          ["PAID", "SUCCESS", "COMPLETED", "ACCEPTED"].includes(
             (payment.status || "").toUpperCase(),
           ),
         );
