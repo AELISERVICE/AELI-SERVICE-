@@ -14,9 +14,11 @@ export function Abonnement({ isRole }) {
     const { data: response } = useGetAbonnementProvider();
 
     const sub = response?.data?.subscription;
+    const planslis = response?.data?.plans;
     const plans = response?.data?.history;
     const planEntries = plans ? Object.entries(plans) : [];
 
+    const planpricesctif = planslis?.[sub?.plan]?.price || 0;
     const currentPlanInfo = plans && sub?.plan ? plans[sub.plan] : null;
 
     const totalDays = currentPlanInfo?.days || 30;
@@ -46,7 +48,7 @@ export function Abonnement({ isRole }) {
                                 <div className="flex items-baseline justify-between">
                                     <div className="flex items-baseline gap-1">
                                         <span className="text-3xl font-black text-slate-900">
-                                            {(currentPlanInfo?.price || 0).toLocaleString()}
+                                            {planpricesctif}
                                         </span>
                                         <span className="text-sm font-bold text-slate-500">
                                             XAF / {currentPlanInfo?.days} jours
