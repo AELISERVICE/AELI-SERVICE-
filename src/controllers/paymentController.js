@@ -387,6 +387,12 @@ const handleNotchPayWebhook = asyncHandler(async (req, res) => {
   const payment = await Payment.findByTransactionId(transactionId);
   if (!payment) return res.status(404).send("Payment not found");
 
+  // Validation supplémentaire pour les paiements subscription
+  if (payment.type === "subscription" && (!payment.providerId || !payment.metadata?.plan)) {
+    logger.warn(`Subscription payment missing required data: ${transactionId}`);
+    return res.status(400).send("Subscription payment incomplete");
+  }
+
   // If already processed, skip
   if (payment.status === "ACCEPTED" || payment.status === "REFUSED") {
     return res.status(200).send("OK");
@@ -439,8 +445,12 @@ const processPaymentSuccess = async (payment) => {
 
     case "subscription":
       // Handle subscription activation
-      await activateSubscription(payment);
-      logger.info(`Subscription activated for user ${payment.userId}`);
+      if (payment.providerId && payment.metadata?.plan) {
+        await activateSubscription(payment);
+        logger.info(`Subscription activated for provider ${payment.providerId}`);
+      } else {
+        logger.warn(`Cannot activate subscription - missing data for payment ${payment.transactionId}`);
+      }
       break;
   }
 
