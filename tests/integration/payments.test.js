@@ -1,9 +1,13 @@
 const request = require('supertest');
-const app = require('../../src/app');
 const { User, Provider, Payment, Category } = require('../../src/models');
 const { generateToken } = require('../../src/middlewares/auth');
 const nock = require('nock');
 const { CINETPAY_CONFIG } = require('../../src/config/cinetpay');
+
+// Définir la clé secrète NotchPay pour les tests de signature
+process.env.NOTCH_PAY_SECRET_KEY = 'test_secret_key_for_signature_verification';
+
+const app = require('../../src/app');
 const { NOTCH_PAY_CONFIG } = require('../../src/config/notchpay');
 
 describe('Payment API Integration', () => {
@@ -247,9 +251,6 @@ describe('Payment API Integration', () => {
         });
 
         it('should handle invalid signature', async () => {
-            // S'assurer que la clé secrète est définie pour ce test
-            process.env.NOTCH_PAY_SECRET_KEY = 'test_secret_key_for_signature_verification';
-            
             const res = await request(app)
                 .post('/api/payments/notchpay/webhook')
                 .set('x-notch-signature', 'invalid-signature')
