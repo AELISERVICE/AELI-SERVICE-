@@ -345,11 +345,14 @@ const handleNotchPayWebhook = asyncHandler(async (req, res) => {
     }
   }
 
-  const { reference, status } = event.data || {};
+  const { reference, merchant_reference, status } = event.data || {};
 
-  if (!reference) return res.status(400).send("Missing reference");
+  // Utiliser merchant_reference (notre référence interne) si disponible, sinon reference
+  const transactionId = merchant_reference || reference;
+  
+  if (!transactionId) return res.status(400).send("Missing reference");
 
-  const payment = await Payment.findByTransactionId(reference);
+  const payment = await Payment.findByTransactionId(transactionId);
   if (!payment) return res.status(404).send("Payment not found");
 
   // If already processed, skip
