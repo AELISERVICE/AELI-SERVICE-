@@ -4,53 +4,78 @@ import { Button } from '../../ui/Button';
 
 export function InstallBanner() {
     const location = useLocation();
-    const pathname = location.pathname;
-    const login = pathname.startsWith("/login");
+    const isLoginPage = location.pathname.startsWith("/login");
+
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isShown, setIsShown] = useState(false);
+    const [showIosInstruction, setShowIosInstruction] = useState(false);
+
+    // Détection si c'est un appareil iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
     useEffect(() => {
+        // Pour Android/Chrome
         const handleBeforeInstallPrompt = (e) => {
-            // Empêche le navigateur d'afficher sa propre bannière automatiquement
             e.preventDefault();
             setDeferredPrompt(e);
             setIsShown(true);
         };
 
+        // Pour iOS, on l'affiche d'office si on est sur la page de login
+        if (isIOS) {
+            setIsShown(true);
+        }
+
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    }, [isIOS]);
 
-        return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        };
-    }, []);
-
-    const handleInstall = async () => {
-        if (!deferredPrompt) return;
-
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-
-        if (outcome === 'accepted') {
-            setIsShown(false);
+    const handleInstallAction = async () => {
+        if (isIOS) {
+            // Sur iPhone, on bascule l'affichage des instructions
+            setShowIosInstruction(!showIosInstruction);
+        } else if (deferredPrompt) {
+            // Sur Android, on lance l'install native
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') setIsShown(false);
         }
     };
 
-    if (!isShown || !login) return null;
+    if (!isShown || !isLoginPage) return null;
 
     return (
-        <div className="fixed md:w-[400px] top-4 left-4 md:left-auto right-4 z-[9999] bg-white p-4 rounded-2xl shadow-2xl border border-purple-100 flex items-center justify-between animate-bounce">
-            <div>
-                <p className="font-bold text-gray-900">AELI Services</p>
-                <p className="text-sm text-gray-600">Installez l'app pour un accès rapide.</p>
+        <div className="fixed md:w-[450px] top-4 left-4 md:left-auto right-4 z-[9999] flex flex-col gap-2">
+            {/* La Bannière principale */}
+            <div className="bg-white p-4 rounded-2xl shadow-2xl border border-purple-100 flex items-center justify-between animate-bounce">
+                <div>
+                    <p className="font-bold text-gray-900">AELI Services</p>
+                    <p className="text-sm text-gray-600">
+                        {isIOS ? "Installez l'app sur votre iPhone" : "Accès rapide sur votre écran"}
+                    </p>
+                </div>
+                <Button
+                    variant="softRed"
+                    type="button"
+                    onClick={handleInstallAction}
+                    className="sm:w-auto px-4 py-3"
+                >
+                    {isIOS ? (showIosInstruction ? "Fermer" : "Installer") : "Installer"}
+                </Button>
             </div>
-            <Button
-                variant="softRed"
-                type="button"
-                onClick={handleInstall}
-                className="sm:w-auto gap-2 px-4 py-3"
-            >
-                Installer
-            </Button>
+
+            {/* Bulle d'instruction spécifique à l'iPhone */}
+            {isIOS && showIosInstruction && (
+                <div className="bg-white text-gray-600 p-4 rounded-2xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-300">
+                    <p className="text-sm font-medium">
+                        1. Cliquez sur le bouton <span className="font-bold">Partager</span> (le carré avec une flèche en bas de l'écran).
+                    </p>
+                    <p className="text-sm font-medium mt-2">
+                        2. Faites défiler et appuyez sur <span className="font-bold">"Sur l'écran d'accueil"</span>.
+                    </p>
+                    <div className="absolute -top-2 right-10 w-4 h-4 bg-gray-700 rotate-45"></div>
+                </div>
+            )}
         </div>
     );
 }
