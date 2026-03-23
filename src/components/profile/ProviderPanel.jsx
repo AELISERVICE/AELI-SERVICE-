@@ -27,7 +27,7 @@ export function ProviderPanel({ onOpenManageDocuments }) {
                     <div className="text-center space-y-2">
                         <div className="relative mx-auto w-20 h-20 mb-4">
                             <img
-                                src={displayData?.profilePhoto || `https://ui-avatars.com/api/?name=${displayData?.businessName || 'Profil'}&background=random`}
+                                src={displayData?.profilePhoto || `./defaultstructure.jpg`}
                                 className="w-full h-full rounded-2xl object-cover border-2 border-white shadow-md"
                                 alt="Profile"
                             />

@@ -84,7 +84,7 @@ export function ChatWindow({ chat, onBack }) {
             <header className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-20">
                 <div className="flex items-center">
                     <button onClick={onBack} className="mr-2 p-2 md:hidden text-gray-600 hover:bg-gray-100 rounded-full"><ArrowLeft size={20} /></button>
-                    <Avatar src={chat.avatar || `https://ui-avatars.com/api/?name=${chat.name}&background=random`} alt={chat.name} isOnline={chat.isOnline} />
+                    <Avatar src={chat.avatar || `./no-user.jpg`} alt={chat.name} isOnline={chat.isOnline} />
                     <div className="ml-3">
                         <h2 className="text-sm font-bold text-gray-900">{chat.name}</h2>
                         <p className="text-[10px] text-green-500 font-medium italic">Conversation groupée</p>
@@ -112,7 +112,7 @@ export function ChatWindow({ chat, onBack }) {
             <div className="flex-1 overflow-y-auto py-4 md:p-4 md:p-6 space-y-8 no-scrollbar">
                 {[...chat.messages].reverse().map((msg) => (
                     <div key={msg.id} className="flex items-start max-w-full">
-                        <Avatar src={chat.avatar || `https://ui-avatars.com/api/?name=${chat.name}&background=random`} size="sm" />
+                        <Avatar src={chat.avatar || `./no-user.jpg`} size="sm" />
                         <div className="ml-3 flex-1">
                             <div className="flex items-baseline mb-2 gap-2">
                                 <span className="font-bold text-gray-900 text-xs">{chat.name}</span>

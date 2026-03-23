@@ -28,11 +28,11 @@ export function MessageCard({
                         <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
                             <div className="flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
-                                <span>
+                                <span className="whitespace-nowrap">
                                     {date}, {time}
                                 </span>
                             </div>
-                            <span className="text-gray-400"># {displayId}</span>
+                            <span className="text-gray-400 whitespace-nowrap"># {displayId}</span>
                         </div>
                     </div>
                 </div>

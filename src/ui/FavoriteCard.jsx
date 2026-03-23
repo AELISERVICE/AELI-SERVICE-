@@ -26,9 +26,11 @@ export function FavoriteCard({
                 {actions && (
                     actions[0]
                 )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30 z-0"></div>
             </div>
 
-            {}
+            { }
             <div className="flex flex-col flex-1 p-5">
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-bold text-gray-900">{name}</h3>

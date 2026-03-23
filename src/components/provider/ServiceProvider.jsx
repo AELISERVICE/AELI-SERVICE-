@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { ProductCard } from '../../ui/productCard';
 import { Button, CategoryTag } from '../../ui/Button';
-import { MoreHorizontal, Star, MapPin, ShoppingBag, AlertCircle } from 'lucide-react';
+import { MoreVerticalIcon, Star, MapPin, ShoppingBag, AlertCircle, ChevronRight, MoreVertical } from 'lucide-react';
 import { ActionMenu } from '../global/ActionMenu';
 import { NotFound } from '../global/Notfound';
 import { Pagination } from '../global/Pagination';
@@ -151,7 +151,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                         <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex relative mb-4">
                             <div className="w-full h-full rounded-full overflow-hidden no-scrollbar">
                                 <img
-                                    src={providerDetail?.profilePhoto || `https://ui-avatars.com/api/?name=${providerDetail.businessName}&background=random`}
+                                    src={providerDetail?.profilePhoto || `./defaultstructure.jpg`}
                                     alt="Stats"
                                     className="w-full h-full object-cover opacity-80"
                                 />
@@ -261,25 +261,26 @@ export function ServiceProvider({ mode, dataConsult }) {
                             isAdmin={mode !== "consultationCustomers"}
                             actions={mode === "consultationCustomers"
                                 ? [
-                                    <Button
-                                        key="view"
-                                        variant="gradient"
-                                        size="sm"
+                                    <button
                                         onClick={() => openContactWithData(providerDetail, service)}
+                                        className="w-full bg-[#E8524D] transition-colors text-white px-4 py-3 flex justify-between items-center group/btn"
                                     >
-                                        Contacter
-                                    </Button>
+                                        <span className="font-semibold text-[14px]">
+                                            Contacter
+                                        </span>
+                                        <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                                    </button>
                                 ]
                                 : [
                                     <Button
                                         key="trigger"
-                                        variant="ghost"
-                                        size="sm"
+                                        variant="none"
+                                        size="none"
                                         ref={openMenuId === service.id ? triggerRef : null}
                                         onClick={() => setOpenMenuId(openMenuId === service.id ? null : service.id)}
-                                        className="text-white hover:bg-white/20 rounded-full p-2"
+                                        className="text-black "
                                     >
-                                        <MoreHorizontal size={20} />
+                                        <MoreVerticalIcon size={20} />
                                     </Button>,
                                     <ActionMenu
                                         isOpen={openMenuId === service.id}

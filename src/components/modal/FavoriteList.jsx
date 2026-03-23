@@ -69,10 +69,10 @@ export function FavoriteList({ closeFavorite }) {
                 <>
                     <CountItems count={favorites.length} scrollContainerRef={scrollRef} />
 
-                        <div
-                            ref={scrollRef}
-                            className="flex flex-col gap-4 overflow-y-auto h-full min-h-0 flex-1 pb-25 md:pb-10 custom-scrollbar no-scrollbar "
-                        >
+                    <div
+                        ref={scrollRef}
+                        className="flex flex-col gap-4 overflow-y-auto h-full min-h-0 flex-1 pb-25 md:pb-10 custom-scrollbar no-scrollbar "
+                    >
                         {favorites.length > 0 ? (
                             favorites.map((fav, index) => {
 
@@ -83,7 +83,7 @@ export function FavoriteList({ closeFavorite }) {
                                         <FavoriteCard
 
                                             name={provider.businessName}
-                                            image={provider.profilePhoto || `https://ui-avatars.com/api/?name=${provider.businessName}&background=random`}
+                                            image={provider.profilePhoto || `./defaultstructure.jpg`}
                                             rating={provider.averageRating}
                                             description={provider.description}
                                             location={provider.location}

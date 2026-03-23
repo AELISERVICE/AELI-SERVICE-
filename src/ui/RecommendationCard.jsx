@@ -15,14 +15,14 @@ export function RecommendationCard({ title, description, location, rating, isAct
                 }
             `}
         >
-            {}
+            { }
             <div className="absolute inset-0 z-0">
                 <img
                     src={image}
                     alt={title}
                     className={`w-full h-full object-cover transition-all duration-700 ${isActive ? 'scale-110 brightness-50' : 'brightness-[0.3] grayscale-[0.5]'}`}
                 />
-                {}
+                { }
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             </div>
 
@@ -49,10 +49,10 @@ export function RecommendationCard({ title, description, location, rating, isAct
                             />
                         ))}
                     </div>
-                    <p className={`flex mt-2 text-gray-200 text-sm leading-relaxed transition-all duration-500 items-center gap-2 ${isActive ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                    {/* <p className={`flex mt-2 text-gray-200 text-sm leading-relaxed transition-all duration-500 items-center gap-2 ${isActive ? 'max-h-24 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
                         <MapPin className=" text-white" size={16} />
                         {location}
-                    </p>
+                    </p> */}
                 </div>
 
                 <div className="mt-4">
@@ -60,7 +60,7 @@ export function RecommendationCard({ title, description, location, rating, isAct
                 </div>
             </div>
 
-            {}
+            { }
             {isActive && (
                 <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30 z-0"></div>
             )}

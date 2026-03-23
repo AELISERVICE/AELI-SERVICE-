@@ -29,7 +29,7 @@ export function Messagecustomer({ closeMessage, onConfirmation }) {
                 id: contact.id,
                 businessName: contact.provider?.businessName || 'Prestataire',
 
-                image: contact.provider?.user?.profilePhoto || `https://ui-avatars.com/api/?name=${contact.provider?.businessName}&background=random`,
+                image: contact.provider?.user?.profilePhoto || `./defaultstructure.jpg`,
                 date: dateObj.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
                 time: dateObj.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
                 displayId: contact.id.substring(0, 8), // Petit ID visuel

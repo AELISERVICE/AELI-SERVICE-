@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { toast } from "react-toastify";
 import { useNavigate, useOutletContext } from 'react-router-dom'
-import { ArrowRight, Filter, ShoppingBag, AlertCircle } from 'lucide-react'
+import { ArrowRight, Filter, ShoppingBag, AlertCircle, ChevronRight } from 'lucide-react'
 import { ProductCard } from '../../ui/productCard'
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
@@ -117,16 +117,15 @@ export function ServicesSection() {
                                 onContact={openContact}
                                 onFavorite={() => handleFavoriteClick(item.id)}
                                 actions={[
-                                    <Button
-                                        key="btn"
-                                        variant="gradient"
-                                        size="md"
+                                    <button
                                         onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                        className="rounded-full px-6"
+                                        className="w-full bg-[#E8524D] transition-colors text-white px-4 py-3 flex justify-between items-center group/btn"
                                     >
-                                        Consulter
-                                        <ArrowRight size={16} className="ml-2" />
-                                    </Button>
+                                        <span className="font-semibold text-[14px]">
+                                            Consulter catalogue
+                                        </span>
+                                        <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                                    </button>
                                 ]}
                             />
                         ))}

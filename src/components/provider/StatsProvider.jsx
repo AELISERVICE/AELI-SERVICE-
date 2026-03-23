@@ -110,7 +110,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
                 <div className="w-32 h-32 rounded-full border-4 border-pink-200 flex items-center justify-center relative mb-4">
                   <div className="w-full h-full rounded-full overflow-hidden no-scrollbar">
                     <img
-                      src={provider?.profilePhoto || `https://ui-avatars.com/api/?name=${provider?.businessName}&background=random`}
+                      src={provider?.profilePhoto || `./no-user.jpg`}
                       alt="Stats"
                       className="w-full h-full object-cover opacity-80"
                     />

@@ -93,7 +93,7 @@ export function ProfileSection({ setIsRole }) {
                     <div className="relative">
                         {!isEditing &&
                             <img
-                                src={user?.profilePhoto || `https://ui-avatars.com/api/?name=${user?.firstName}+${user?.lastName}&background=random&color=fff&size=128`}
+                                src={user?.profilePhoto || `./no-user.jpg`}
                                 alt="profile"
                                 className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-xl mb-2"
                             />

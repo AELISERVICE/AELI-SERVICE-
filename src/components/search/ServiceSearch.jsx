@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { ArrowRight, Search } from 'lucide-react';
+import { ChevronRight, Search } from 'lucide-react';
 import { ProductCard } from '../../ui/productCard';
 import { Pagination } from '../global/Pagination';
 import { NotFound } from '../global/Notfound';
@@ -49,20 +49,15 @@ export function ServiceSearch({ providers, pagination, onPageChange }) {
                         onContact={() => openContact(item)}
                         onFavorite={() => handleFavoriteClick(item.id)}
                         actions={[
-                            <Button
-                                key="btn-consult"
-                                variant="gradient"
-                                size="md"
-                                onClick={() => navigate('/consult-provider', {
-                                    state: { mode: "consultationCustomers", data: item }
-                                })}
-                                className="rounded-full px-6 flex items-center justify-center"
+                            <button
+                                onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
+                                className="w-full bg-[#E8524D] transition-colors text-white px-4 py-3 flex justify-between items-center group/btn"
                             >
-                                <span className={openSidebar ? "lg:inline" : "md:hidden inline"}>
-                                    Consulter
+                                <span className="font-semibold text-[14px]">
+                                    Consulter catalogue
                                 </span>
-                                <ArrowRight size={16} className="ml-2" />
-                            </Button>
+                                <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                            </button>
                         ]}
                     />
                 ))}

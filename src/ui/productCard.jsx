@@ -1,11 +1,18 @@
 import React from 'react';
-import { Heart, MapPin, Star, Coins } from 'lucide-react';
-import { Button } from './Button';
+import { motion } from 'framer-motion';
+import {
+  Heart,
+  MapPin,
+  Star,
+  Coins,
+  MoreHorizontal,
+  ChevronRight,
+  MessageCircle,
+  Send,
+  Bookmark
+} from 'lucide-react';
 import { useCheckFavorites } from '../hooks/useFavorites';
 
-/**
- * UI component responsible for rendering product card.
- */
 export function ProductCard({
   id,
   title,
@@ -14,77 +21,128 @@ export function ProductCard({
   role,
   image,
   likes,
+  isAdmin,
   location,
   rating,
   price,
-  isAdmin = false,
-  showMenu = false,
   isStructure = false,
-  onContact,
   onFavorite,
   actions,
   isShowFavorie = true
 }) {
-  const displayTitle = title || name
-  const displaySub = description || role
+  const displayTitle = title || name;
+  const displaySub = description || role;
 
   const { data: checkData } = useCheckFavorites(id);
   const isFavorite = checkData?.data?.isFavorite;
 
+
   return (
-    <div className="group relative transition-all duration-300 bg-white rounded-[2rem] p-3 shadow-sm hover:shadow-xl">
-      <div className="relative aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4">
-        <img
-          src={image || `https://ui-avatars.com/api/?name=${name}&background=random`}
-          alt={displayTitle}
-          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70" />
-        <div className="absolute bottom-0 left-0 w-full p-5 text-white">
-          <h3 className="text-xl font-bold mb-1">{displayTitle}</h3>
-          <p className="text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90">
-            {displaySub}
-          </p>
-          {!isStructure &&
-            <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">
-              <Coins color="gold" size={20} />
-              {price} Fcfa
-            </p>
-          }
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col w-full h-fit  group">
+
+      {/* ─── Header Style Instagram ─── */}
+      <div className="flex justify-between px-3 py-2.5 bg-white ">
+        <div className="flex gap-2.5">
           {isStructure &&
-            <>
-              <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">
-                <MapPin className="text-white shrink-0" size={16} />
-                {location}
-              </p>
-              <p className="flex text-sm text-gray-200 line-clamp-2 leading-relaxed opacity-90 items-center gap-2">
-                <Star className=" fill-yellow-400 text-yellow-400 shrink-0" size={16} />
-                {rating}
-              </p>
-            </>
-          }
-          <div className={`flex items-center ${isShowFavorie ? "justify-between" : "justify-end"} mt-4  pt-3`}>
-            {isShowFavorie &&
-              <div className="flex items-center justify-center gap-2 bg-white/15 border border-white/25 rounded-full px-1 text-center py-1.5">
-                <Heart
-                  className={`cursor-pointer transition-all duration-300 ml-[7px] ${isFavorite
-                    ? "fill-rose-500 text-rose-500 scale-110 drop-shadow-[0_0_8px_rgba(244,63,94,0.9)]"
-                    : "fill-white text-white hover:scale-110 hover:text-rose-200"
-                    }`}
-                  size={16}
-                  onClick={(e) => {
-                    e.stopPropagation(); // Empêche de cliquer sur la carte
-                    onFavorite();
-                  }}
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-yellow-400 to-fuchsia-600 p-[1.5px]">
+              <div className="w-full h-full rounded-full border-2 border-white overflow-hidden bg-gray-200">
+                <img
+                  src={image || `./defaultstructure.jpg`}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
                 />
-                <span className="text-sm font-semibold text-white">{likes}</span>
               </div>
+            </div>
+          }
+          <div className="flex flex-col">
+            <span className={`${isStructure ? "text-[15px] font-semibold " : "text-[17px] font-bold"} text-gray-900 leading-tight `}>
+              {displayTitle}
+
+            </span>
+            {!isStructure &&
+              <span className="text-[13px] font-black text-black  whitespace-nowrap">
+                Prix -  {price} <span className="text-[10px] font-bold">FCFA</span>
+              </span>
             }
-            {actions && actions[0]}
-            {actions && actions[1]}
+            {!isStructure &&
+              <div className=" border-t border-gray-50 ">
+                <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2">
+                  {displaySub}
+                </p>
+              </div>}
+            <span className="text-[11px] text-gray-500 leading-tight truncate block max-w-[150px]">
+              {isStructure && location}
+            </span>
           </div>
         </div>
+        <div className="relative flex items-start">
+          {isAdmin && (
+            <>
+              {actions[0]} {/* Le bouton trigger */}
+              {actions[1]} {/* Le menu contextuel */}
+            </>
+          )}
+        </div>
+
       </div>
+
+
+      {/* ─── Visuel Central (Style Oraimo) ─── */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden flex flex-col ">
+
+        <img
+          src={image || `./defaultstructure.jpg`}
+          alt={displayTitle}
+          className="w-full h-full object-cover drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        />
+        {/* </motion.div> */}
+
+        {/* Badge Flottant (Prix ou Note) */}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30 z-0"></div>
+      </div>
+
+
+      {/* ─── Bouton CTA (Acheter / Voir) ─── */}
+      {(isStructure || !isAdmin) && actions[0]}
+
+      {/* ─── Section Engagement Instagram ─── */}
+      {isStructure &&
+        <div className="px-3 py-3">
+          <div className="flex justify-between items-center mb-2">
+
+            {isShowFavorie && (
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={(e) => { e.stopPropagation(); onFavorite(); }}
+                  className="flex items-center gap-1 hover:scale-110 transition-transform"
+                >
+                  <Heart className={`w-6 h-6 ${isFavorite ? "fill-rose-500 text-rose-500" : "text-gray-900"}`} />
+                </button>
+
+                <div className={`flex opacity-100`}>
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      className={`${i < rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`}
+                    />
+                  ))}
+                </div>
+
+              </div>
+            )}
+          </div>
+          <div className="space-y-1">
+            <p className="text-[13px] text-gray-900 leading-snug line-clamp-3">
+              <span className="font-bold mr-1.5">{displayTitle}</span>
+              <span className="text-gray-700">{displaySub}</span>
+            </p>
+          </div>
+
+        </div>
+      }
     </div>
-  )
+  );
 }

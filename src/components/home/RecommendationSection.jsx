@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, BarChart3 } from 'lucide-react'
+import { ChevronRight, BarChart3 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { RecommendationCard } from '../../ui/RecommendationCard';
 import { useGetProviderList } from '../../hooks/useProvider';
@@ -67,7 +67,7 @@ export function RecommendationSection() {
                         key={item.id}
                         title={item.businessName}
 
-                        image={item.profilePhoto ? item.profilePhoto : `https://ui-avatars.com/api/?name=${item.businessName}&background=random`}
+                        image={item.profilePhoto ? item.profilePhoto : `./defaultstructure.jpg`}
                         description={item.description}
                         location={item.location.split(',')[0]} // Ville simplifiée
                         rating={parseFloat(item.averageRating)}
@@ -75,13 +75,13 @@ export function RecommendationSection() {
                         actions={[
                             <Button
                                 key="btn-consult"
-                                variant={index === activeIndex ? 'gradient' : 'ghost'}
+                                variant={index === activeIndex ? 'softRed' : 'ghost'}
                                 size={index === activeIndex ? 'lg' : 'sm'}
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
                                 className={index === activeIndex ? 'px-8' : 'text-gray-300'}
                             >
                                 {index === activeIndex ? 'Consulter catalogue' : 'Voir plus'}
-                                <ArrowRight size={16} className="ml-2" />
+                                <ChevronRight size={16} className="ml-2" />
                             </Button>
                         ]}
                     />

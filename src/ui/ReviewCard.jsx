@@ -10,7 +10,7 @@ export function ReviewCard({ name, role, company, imageUrl, testimonial, rating 
             { }
             <div className="bg-[#F3F4F6] p-6 pb-8">
                 <div className="flex items-center gap-4">
-                    <img src={imageUrl || `https://ui-avatars.com/api/?name=${name}&background=random`} alt={name} className="w-20 h-20 rounded-2xl object-cover shadow-sm" />
+                    <img src={imageUrl || `./no-user.jpg`} alt={name} className="w-20 h-20 rounded-2xl object-cover shadow-sm" />
                     <div className="flex flex-col">
                         <h3 className="text-lg font-bold text-gray-900 leading-tight">{name}</h3>
                         <p className="text-sm text-gray-500 font-medium">{role}</p>
