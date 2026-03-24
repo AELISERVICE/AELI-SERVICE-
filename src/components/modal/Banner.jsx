@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { X, ExternalLink } from 'lucide-react';
 import { useGetBanners } from '../../hooks/useBanner';
 
 export function Banner() {
+    const location = useLocation()
     const { data: apiResponse, isLoading: isLoadingBanner } = useGetBanners();
     const [isVisible, setIsVisible] = useState(true); // Gère la présence de la bannière
 
     const banners = apiResponse?.data?.banners || [];
+
+    const isSearchPage = location.pathname === '/search'
 
     // Si on clique sur la croix ou s'il n'y a pas de données, on ne renvoie rien
     if (!isVisible || isLoadingBanner || banners.length === 0) return null;
@@ -14,7 +18,7 @@ export function Banner() {
     const currentBanner = banners[0]; // On prend la première bannière par défaut
 
     return (
-        <div className="md:fixed md:top-0 md:left-0 md:right-0 md:top-6 md:left-auto md:right-6 md:z-[1002] animate-in fade-in slide-in-from-right duration-700">
+        <div className={`md:fixed md:top-0 md:left-0 md:right-0 md:top-6 md:left-auto md:right-6 md:z-[1002] animate-in fade-in slide-in-from-right duration-700 ${isSearchPage ? "mt-18 md:mt-auto" : ""}`}>
             {/* Conteneur principal horizontal (Format 650x120 comme sur l'image) */}
             <div className="relative bg-white shadow-sm md:shadow-2xl border border-gray-200 overflow-hidden w-[100%] md:w-[650px] h-[140px] md:h-[120px] rounded-lg flex">
 

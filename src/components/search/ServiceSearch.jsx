@@ -49,12 +49,13 @@ export function ServiceSearch({ providers, pagination, onPageChange }) {
                         onContact={() => openContact(item)}
                         onFavorite={() => handleFavoriteClick(item.id)}
                         actions={[
+
                             <button
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                className="w-full bg-[#E8524D] transition-colors text-white px-4 py-3 flex justify-between items-center group/btn"
+                                className="flex bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg shadow-[#FCE0D6]"
                             >
                                 <span className="font-semibold text-[14px]">
-                                    Consulter catalogue
+                                    Consulter
                                 </span>
                                 <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                             </button>
