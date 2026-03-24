@@ -10,7 +10,10 @@
 const { Subscription, Provider, User, Payment } = require("../models");
 const { asyncHandler, AppError } = require("../middlewares/errorHandler");
 const { i18nResponse } = require("../utils/helpers");
-const { initializeCinetPayPayment, initializeNotchPayPayment } = require("../utils/paymentGateway");
+const {
+  initializeCinetPayPayment,
+  initializeNotchPayPayment,
+} = require("../utils/paymentGateway");
 const { NOTCH_PAY_CONFIG } = require("../config/notchpay");
 
 /**
@@ -86,13 +89,21 @@ const subscribe = asyncHandler(async (req, res) => {
   // Get provider and user
   const provider = await Provider.findOne({
     where: { userId: req.user.id },
-    include: [{ model: User, as: "user" }]
+    include: [{ model: User, as: "user" }],
   });
   if (!provider) {
     throw new AppError(req.t("subscription.providerRequired"), 400);
   }
 
   const planConfig = Subscription.PLANS[plan];
+
+  // PROTECTION: Check if subscription already active
+  const currentSub = await Subscription.findOne({
+    where: { providerId: provider.id },
+  });
+  if (currentSub && currentSub.isActive()) {
+    throw new AppError(req.t("subscription.alreadyActive"), 400);
+  }
 
   // Create payment
   const transactionId = `AELI${Date.now()}${Math.random()
@@ -127,7 +138,10 @@ const subscribe = asyncHandler(async (req, res) => {
         callback: NOTCH_PAY_CONFIG.callbackUrl,
       });
 
-      if (notchpayResponse.status === "Accepted" || notchpayResponse.authorization_url) {
+      if (
+        notchpayResponse.status === "Accepted" ||
+        notchpayResponse.authorization_url
+      ) {
         payment.paymentUrl = notchpayResponse.authorization_url;
         await payment.save();
 
@@ -139,7 +153,7 @@ const subscribe = asyncHandler(async (req, res) => {
           currency: "XAF",
           plan,
           duration: `${planConfig.days} jours`,
-          gateway: "NotchPay"
+          gateway: "NotchPay",
         });
       } else {
         payment.status = "REFUSED";
@@ -151,7 +165,7 @@ const subscribe = asyncHandler(async (req, res) => {
       const cinetpayResponse = await initializeCinetPayPayment({
         transactionId: payment.transactionId,
         amount: payment.amount,
-        description: payment.description
+        description: payment.description,
       });
 
       if (cinetpayResponse.code === "201") {
@@ -167,7 +181,7 @@ const subscribe = asyncHandler(async (req, res) => {
           currency: "XAF",
           plan,
           duration: `${planConfig.days} jours`,
-          gateway: "CinetPay"
+          gateway: "CinetPay",
         });
       } else {
         payment.status = "REFUSED";
@@ -199,7 +213,7 @@ const activateSubscription = async (payment) => {
     // Update provider visibility
     await Provider.update(
       { isVisible: true },
-      { where: { id: payment.providerId } }
+      { where: { id: payment.providerId } },
     );
   }
 };
@@ -236,7 +250,7 @@ const sendExpirationReminders = async () => {
   for (const sub of expiringSoon) {
     if (sub.provider?.user?.email) {
       const daysLeft = Math.ceil(
-        (sub.endDate - new Date()) / (1000 * 60 * 60 * 24)
+        (sub.endDate - new Date()) / (1000 * 60 * 60 * 24),
       );
 
       await sendEmailSafely(
@@ -250,7 +264,7 @@ const sendExpirationReminders = async () => {
             plan: sub.plan,
           }),
         },
-        "Subscription expiration reminder"
+        "Subscription expiration reminder",
       );
 
       await Subscription.markReminderSent(sub.id);
