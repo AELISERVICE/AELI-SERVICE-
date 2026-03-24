@@ -59,15 +59,16 @@ export function Base() {
             <main className="relative h-screen overflow-y-auto pb-20 md:pb-0">
                 <div className="flex flex-col relative mx-auto ">
                     <div className="p-4 md:p-8 lg:p-10">
-                        {activeModal2 === MODALS.BANNER && (
-                            <Banner closeBanner={closeModal2} />
-                        )}
+
                         <Header
                             onOpenMenu={() => setIsSidebarOpen(true)}
                             openSidebar={openSidebar}
                             setFilters={setFilters}
                             filters={filters}
                         />
+                        {activeModal2 === MODALS.BANNER && (
+                            <Banner closeBanner={closeModal2} />
+                        )}
                         <div className="mt-6 ">
                             <Outlet context={{
                                 filters,

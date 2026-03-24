@@ -23,14 +23,12 @@ export function FavoriteCard({
                     alt={name}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/20 to-transparent" />
+                <div className="absolute -bottom-20 -right-20 w-64 h-40 bg-purple-600 rounded-full blur-[100px] opacity-30 z-0"></div>
                 {actions && (
                     actions[0]
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600 rounded-full blur-[100px] opacity-30 z-0"></div>
             </div>
-
-            { }
             <div className="flex flex-col flex-1 p-5">
                 <div className="flex justify-between items-start mb-2">
                     <h3 className="text-lg font-bold text-gray-900">{name}</h3>

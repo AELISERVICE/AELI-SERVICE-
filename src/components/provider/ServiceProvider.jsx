@@ -32,6 +32,7 @@ export function ServiceProvider({ mode, dataConsult }) {
     const providerDetail = providerResponse?.data?.provider;
 
     const { data: servicesData, isLoading: isLoadingServices, isError: isErrorServices, refetch: refetchService } = useGetServicesByProvider(provider?.id);
+    console.log("data:", servicesData)
 
     const apiCategories = useMemo(() => {
         if (mode === "consultationCustomers") {
@@ -166,7 +167,7 @@ export function ServiceProvider({ mode, dataConsult }) {
                                 {providerDetail?.description || "Franchir la porte de notre institut, c'est s'offrir une parenthèse enchantée..."}
                             </p>
                             <p className="flex gap-2 items-center text-xs text-gray-500 mt-1 mt-4 mb-4">
-                                <MapPin className="text-gray-500" size={16} />
+                                <MapPin className="text-gray-500 shrink-0" size={16} />
                                 {providerDetail?.location || dataConsult?.location}
                             </p>
                             <div className="flex flex-wrap gap-2 mb-4">
@@ -257,13 +258,15 @@ export function ServiceProvider({ mode, dataConsult }) {
                             description={service.description}
                             price={service.price}
                             image={service.photo}
+                            createdAt={service?.duration}
                             isShowFavorie={false}
                             isAdmin={mode !== "consultationCustomers"}
                             actions={mode === "consultationCustomers"
                                 ? [
+
                                     <button
                                         onClick={() => openContactWithData(providerDetail, service)}
-                                        className="w-full bg-[#E8524D] transition-colors text-white px-4 py-3 flex justify-between items-center group/btn"
+                                        className="flex bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg shadow-[#FCE0D6]"
                                     >
                                         <span className="font-semibold text-[14px]">
                                             Contacter

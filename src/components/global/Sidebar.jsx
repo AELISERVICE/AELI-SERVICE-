@@ -159,11 +159,11 @@ export function Sidebar({ isOpenSidebar, showStats, onOpenMessage, onOpenFavorit
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 md:hidden" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[1002] md:hidden" onClick={onClose} />
       )}
 
       <aside className={`
-        fixed md:sticky left-0 top-0 h-screen z-50
+        fixed md:sticky left-0 top-0 h-screen z-[1002]
         flex flex-col py-8 bg-white border-r border-gray-100
         transition-all duration-300 ease-in-out 
         

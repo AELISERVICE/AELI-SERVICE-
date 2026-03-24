@@ -73,16 +73,25 @@ export function RecommendationSection() {
                         rating={parseFloat(item.averageRating)}
                         isActive={index === activeIndex}
                         actions={[
-                            <Button
-                                key="btn-consult"
-                                variant={index === activeIndex ? 'softRed' : 'ghost'}
-                                size={index === activeIndex ? 'lg' : 'sm'}
+                            // <Button
+                            //     key="btn-consult"
+                            //     variant={index === activeIndex ? 'softRed' : 'ghost'}
+                            //     size={index === activeIndex ? 'lg' : 'sm'}
+                            //     onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
+                            //     className={index === activeIndex ? 'px-8' : 'text-gray-300'}
+                            // >
+                            //     {index === activeIndex ? 'Consulter catalogue' : 'Voir plus'}
+                            //     <ChevronRight size={16} className="ml-2" />
+                            // </Button>
+                            <button
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                className={index === activeIndex ? 'px-8' : 'text-gray-300'}
+                                className="flex bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg "
                             >
-                                {index === activeIndex ? 'Consulter catalogue' : 'Voir plus'}
-                                <ChevronRight size={16} className="ml-2" />
-                            </Button>
+                                <span className="font-semibold text-[14px]">
+                                    Consulter
+                                </span>
+                                <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                            </button>
                         ]}
                     />
                 ))}

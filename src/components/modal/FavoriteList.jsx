@@ -81,7 +81,6 @@ export function FavoriteList({ closeFavorite }) {
                                 return (
                                     <div key={fav.id} data-index={index} className="flex-shrink-0">
                                         <FavoriteCard
-
                                             name={provider.businessName}
                                             image={provider.profilePhoto || `./defaultstructure.jpg`}
                                             rating={provider.averageRating}
@@ -99,7 +98,7 @@ export function FavoriteList({ closeFavorite }) {
                                                     onClick={() => handleRemoveFavorite(provider.id)}
                                                     disabled={isPendinDeleteFavorite}
                                                     className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
-                                                    aria-label="Remove from favorites"
+                                                    aria-label="Remove from favorites "
                                                 >
                                                     <Star className="w-4 h-4 text-yellow-500 fill-current hover:scale-110 transition-transform" />
                                                 </button>,

@@ -14,7 +14,7 @@ export function ModalCard({
     return (
         <div
             onClick={() => closeModal()}
-            className="fixed w-full bg-black/60 backdrop-blur-sm h-screen flex flex-col z-20 "
+            className="fixed w-full bg-black/60 backdrop-blur-sm h-screen flex flex-col z-[1002] "
         >
             <div
 
