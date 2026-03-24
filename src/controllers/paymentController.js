@@ -46,10 +46,10 @@ const initializePayment = asyncHandler(async (req, res) => {
     throw new AppError(req.t("common.badRequest"), 400);
   }
 
-  // Check if subscription already active
+  // Check if subscription already active (cannot buy if active/trial is not expired)
   if (type === "subscription" && providerId) {
     const activeSub = await Subscription.findOne({
-      where: { providerId, status: "active" },
+      where: { providerId },
     });
 
     if (activeSub && activeSub.isActive()) {
@@ -178,10 +178,10 @@ const initializeNotchPayPayment = asyncHandler(async (req, res, next) => {
     throw new AppError(req.t("common.badRequest"), 400);
   }
 
-  // Check if subscription already active
+  // Check if subscription already active (cannot buy if active/trial is not expired)
   if (type === "subscription" && providerId) {
     const activeSub = await Subscription.findOne({
-      where: { providerId, status: "active" },
+      where: { providerId },
     });
 
     if (activeSub && activeSub.isActive()) {
