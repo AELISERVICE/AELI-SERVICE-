@@ -9,6 +9,7 @@ const {
 } = require("../config/cinetpay");
 const { NOTCH_PAY_CONFIG, NOTCH_PAY_STATUS } = require("../config/notchpay");
 const { asyncHandler, AppError } = require("../middlewares/errorHandler");
+const { Subscription } = require("../models");
 const {
   i18nResponse,
   getPaginationParams,
@@ -43,6 +44,17 @@ const initializePayment = asyncHandler(async (req, res) => {
   const validTypes = ["contact_premium", "featured", "boost", "subscription"];
   if (!validTypes.includes(type)) {
     throw new AppError(req.t("common.badRequest"), 400);
+  }
+
+  // Check if subscription already active
+  if (type === "subscription" && providerId) {
+    const activeSub = await Subscription.findOne({
+      where: { providerId, status: "active" },
+    });
+
+    if (activeSub && activeSub.isActive()) {
+      throw new AppError(req.t("subscription.alreadyActive"), 400);
+    }
   }
 
   // Get user info for card payments
@@ -103,7 +115,7 @@ const initializePayment = asyncHandler(async (req, res) => {
       cinetpayData,
       {
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     const cinetpayResponse = response.data;
@@ -164,6 +176,17 @@ const initializeNotchPayPayment = asyncHandler(async (req, res, next) => {
   ];
   if (!validTypes.includes(type)) {
     throw new AppError(req.t("common.badRequest"), 400);
+  }
+
+  // Check if subscription already active
+  if (type === "subscription" && providerId) {
+    const activeSub = await Subscription.findOne({
+      where: { providerId, status: "active" },
+    });
+
+    if (activeSub && activeSub.isActive()) {
+      throw new AppError(req.t("subscription.alreadyActive"), 400);
+    }
   }
 
   // Get user info
@@ -287,7 +310,7 @@ const handleWebhook = asyncHandler(async (req, res) => {
       },
       {
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     const verifyData = verifyResponse.data;
@@ -326,35 +349,36 @@ const handleWebhook = asyncHandler(async (req, res) => {
  */
 const handleNotchPayWebhook = asyncHandler(async (req, res) => {
   const signature = req.headers["x-notch-signature"];
-  
+
   // Supporter JSON body OU query parameters
   let event;
   let rawBody;
-  
-  if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
+
+  if (req.method === "POST" && req.body && Object.keys(req.body).length > 0) {
     // Mode JSON body - NotchPay envoie les données dans req.body directement
     event = req.body;
     rawBody = req.rawBody || Buffer.from(JSON.stringify(req.body));
-    
+
     // NotchPay format: { event: "payment.complete", data: { merchant_reference, reference, status } }
     // Pas besoin de transformation, les données sont déjà au bon format
   } else {
     // Mode query parameters (callback NotchPay)
     event = {
-      event: 'payment.completed',
+      event: "payment.completed",
       data: {
         reference: req.query.reference,
         merchant_reference: req.query.trxref || req.query.notchpay_trxref,
-        status: req.query.status
-      }
+        status: req.query.status,
+      },
     };
     rawBody = Buffer.from(JSON.stringify(event));
   }
-  
-  const webhookSecret = NOTCH_PAY_CONFIG.webhookSecret || NOTCH_PAY_CONFIG.secretKey;
+
+  const webhookSecret =
+    NOTCH_PAY_CONFIG.webhookSecret || NOTCH_PAY_CONFIG.secretKey;
 
   logger.info(
-    `NotchPay Webhook received: ${event.event} for ref ${event.data?.reference}`
+    `NotchPay Webhook received: ${event.event} for ref ${event.data?.reference}`,
   );
   logger.debug(`NotchPay signature header: ${signature}`);
   logger.debug(`Webhook secret loaded: ${!!webhookSecret}`);
@@ -374,21 +398,26 @@ const handleNotchPayWebhook = asyncHandler(async (req, res) => {
       return res.status(401).send("Invalid signature");
     }
   } else if (signature && !webhookSecret) {
-    logger.warn("NotchPay signature received but webhook secret is not configured");
+    logger.warn(
+      "NotchPay signature received but webhook secret is not configured",
+    );
   }
 
   const { reference, merchant_reference, status } = event.data || {};
 
   // Utiliser merchant_reference (notre référence interne) si disponible, sinon reference
   const transactionId = merchant_reference || reference;
-  
+
   if (!transactionId) return res.status(400).send("Missing reference");
 
   const payment = await Payment.findByTransactionId(transactionId);
   if (!payment) return res.status(404).send("Payment not found");
 
   // Validation supplémentaire pour les paiements subscription
-  if (payment.type === "subscription" && (!payment.providerId || !payment.metadata?.plan)) {
+  if (
+    payment.type === "subscription" &&
+    (!payment.providerId || !payment.metadata?.plan)
+  ) {
     logger.warn(`Subscription payment missing required data: ${transactionId}`);
     return res.status(400).send("Subscription payment incomplete");
   }
@@ -426,7 +455,7 @@ const processPaymentSuccess = async (payment) => {
       if (payment.providerId) {
         await Provider.update(
           { isFeatured: true },
-          { where: { id: payment.providerId } }
+          { where: { id: payment.providerId } },
         );
         logger.info(`Provider ${payment.providerId} is now featured`);
       }
@@ -447,9 +476,13 @@ const processPaymentSuccess = async (payment) => {
       // Handle subscription activation
       if (payment.providerId && payment.metadata?.plan) {
         await activateSubscription(payment);
-        logger.info(`Subscription activated for provider ${payment.providerId}`);
+        logger.info(
+          `Subscription activated for provider ${payment.providerId}`,
+        );
       } else {
-        logger.warn(`Cannot activate subscription - missing data for payment ${payment.transactionId}`);
+        logger.warn(
+          `Cannot activate subscription - missing data for payment ${payment.transactionId}`,
+        );
       }
       break;
   }
@@ -471,7 +504,7 @@ const processPaymentSuccess = async (payment) => {
           description: payment.description,
         }),
       },
-      "Payment success"
+      "Payment success",
     );
   }
 };
@@ -492,7 +525,7 @@ const processPaymentFailure = async (payment, errorMessage) => {
           errorMessage: errorMessage,
         }),
       },
-      "Payment failed"
+      "Payment failed",
     );
   }
 };
@@ -521,7 +554,7 @@ const checkPaymentStatus = asyncHandler(async (req, res) => {
         },
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       if (response.data.code === "00") {
