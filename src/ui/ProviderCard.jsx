@@ -28,7 +28,7 @@ export function ProviderCard({
   const isFavorite = checkData?.data?.isFavorite;
 
   return (
-    <div className={`bg-[#f3f3f3] p-2 md:p-2.5 rounded-[24px] w-full shadow-sm group ${className}`}>
+    <div className={`bg-[#f3f3f3]  md:p-2.5 rounded-[24px] w-full shadow-sm group ${className}`}>
       <div className="bg-white rounded-[20px] overflow-hidden flex flex-row md:flex-col border border-gray-100 relative">
         <div className="relative w-24 h-40 m-2 shrink-0 md:m-0 md:w-full md:h-60 md:aspect-[1.3/1] overflow-hidden rounded-[16px] md:rounded-none">
           <img
