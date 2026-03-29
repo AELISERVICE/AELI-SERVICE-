@@ -68,7 +68,7 @@ export function ServicesSection() {
     return (
         <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between gap-4">
-                <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
+                <h2 className="text-2xl  md:text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
                     <ShoppingBag className="text-[#E8524D]" size={32} />
                     Services
                 </h2>

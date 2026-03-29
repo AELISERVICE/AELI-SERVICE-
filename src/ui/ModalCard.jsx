@@ -23,7 +23,7 @@ export function ModalCard({
             >
                 {title && (
                     <header className="py-6 md:py-10 flex-shrink-0">
-                        <h1 className="text-3xl font-bold text-[#0F172A]">{title}</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#0F172A]">{title}</h1>
                         <Button
                             variant="close"
                             size="none"

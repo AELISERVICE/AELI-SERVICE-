@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
-import { Star, Loader2, AlertCircle } from 'lucide-react';
+import { ProviderCard } from '../../ui/ProviderCard';
+import { Star, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { ModalCard } from '../../ui/ModalCard';
 import { FavoriteCard } from '../../ui/FavoriteCard';
 import { CountItems } from '../global/CountItems';
@@ -80,42 +81,37 @@ export function FavoriteList({ closeFavorite }) {
 
                                 return (
                                     <div key={fav.id} data-index={index} className="flex-shrink-0">
-                                        <FavoriteCard
+                                        <ProviderCard
+                                            key={provider.id}
+                                            id={provider.id}
                                             name={provider.businessName}
-                                            image={provider.profilePhoto || `./defaultstructure.jpg`}
-                                            rating={provider.averageRating}
                                             description={provider.description}
                                             location={provider.location}
-                                            dateAdded={new Date(fav.createdAt).toLocaleDateString('fr-FR', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric'
-                                            })}
-                                            activities={provider.activities}
+                                            rating={provider.averageRating}
+                                            image={provider.profilePhoto}
+                                            createdAt={provider.createdAt}
+                                            onFavorite={() => handleFavoriteClick(provider.id)}
+                                            className="w-full md:w-[350px]"
+                                            favorite={true}
                                             actions={[
+                                                <button
+                                                    onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
+                                                    className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg "
+                                                >
+                                                    <span className="font-semibold text-[14px]">
+                                                        Consulter
+                                                    </span>
+                                                    <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                                                </button>,
                                                 <button
                                                     key="heart-btn"
                                                     onClick={() => handleRemoveFavorite(provider.id)}
                                                     disabled={isPendinDeleteFavorite}
-                                                    className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                                    className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm hover:scale-110 transition-transform z-20"
                                                     aria-label="Remove from favorites "
                                                 >
                                                     <Star className="w-4 h-4 text-yellow-500 fill-current hover:scale-110 transition-transform" />
-                                                </button>,
-                                                <Button
-                                                    key="consult-btn"
-                                                    variant="softRed"
-                                                    size="sm"
-                                                    onClick={() => {
-                                                        navigate('/consult-provider', {
-                                                            state: { mode: "consultationCustomers", data: provider }
-                                                        });
-                                                        closeFavorite();
-                                                    }}
-                                                    className="rounded-xl px-5"
-                                                >
-                                                    Consulter
-                                                </Button>
+                                                </button>
                                             ]}
                                         />
                                     </div>

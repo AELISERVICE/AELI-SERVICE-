@@ -78,7 +78,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
   return (
     <div className={`
       
-      xl:static xl:w-[350px] xl:translate-x-0 xl:flex z-3
+      xl:static xl:w-[350px] xl:translate-x-0 xl:flex z-[100]
       
       fixed right-0 top-0 h-full w-[85%] sm:w-[400px]
       bg-white xl:bg-transparent transition-transform duration-300 ease-in-out 
@@ -164,7 +164,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
             <div>
               <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
                 <Users className="text-[#E8524D]" size={20} />
-                Dernière personnes contactées
+                Derniers contacts
               </h3>
               <div className="flex flex-col gap-4">
                 {isLoadingReceivedContacts ? (

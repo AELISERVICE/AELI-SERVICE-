@@ -16,8 +16,10 @@ export function ProviderCard({
   location,
   createdAt,
   rating,
-  onFavorite,
-  actions
+  onFavorite = false,
+  actions,
+  favorite,
+  className
 }) {
   const displayTitle = title || name;
   const displaySub = description || role;
@@ -26,7 +28,7 @@ export function ProviderCard({
   const isFavorite = checkData?.data?.isFavorite;
 
   return (
-    <div className="bg-[#f3f3f3] p-2 md:p-2.5 rounded-[24px] w-full shadow-sm group">
+    <div className={`bg-[#f3f3f3] p-2 md:p-2.5 rounded-[24px] w-full shadow-sm group ${className}`}>
       <div className="bg-white rounded-[20px] overflow-hidden flex flex-row md:flex-col border border-gray-100 relative">
         <div className="relative w-24 h-40 m-2 shrink-0 md:m-0 md:w-full md:h-60 md:aspect-[1.3/1] overflow-hidden rounded-[16px] md:rounded-none">
           <img
@@ -34,17 +36,21 @@ export function ProviderCard({
             alt={displayTitle}
             className="w-full h-full  object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
-
-          <button
-            onClick={(e) => { e.stopPropagation(); onFavorite(); }}
-            className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm hover:scale-110 transition-transform z-20"
-          >
-            <Star
-              size={16}
-              className={`${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`}
-            />
-          </button>
+          <div className="block md:block absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
+          <div className="absolute -bottom-20 -right-20 w-64 h-30 bg-purple-600 rounded-full blur-[100px] opacity-20 z-0"></div>
+          {favorite ? (
+            actions[1]
+          ) : (
+            <button
+              onClick={(e) => { e.stopPropagation(); onFavorite(); }}
+              className="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 backdrop-blur-sm p-1.5 rounded-lg shadow-sm hover:scale-110 transition-transform z-20"
+            >
+              <Star
+                size={16}
+                className={`${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`}
+              />
+            </button>
+          )}
         </div>
         <div className="flex-1 p-3 md:p-4 flex flex-col justify-between md:gap-3 min-w-0">
           <div className="flex justify-between items-start">
@@ -98,6 +104,6 @@ export function ProviderCard({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

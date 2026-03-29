@@ -53,7 +53,7 @@ export function RecommendationSection() {
 
     return (
         <div>
-            <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2 mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2 mb-8">
                 <BarChart3 className="text-[#E8524D]" size={32} />
                 Recommandations
             </h2>

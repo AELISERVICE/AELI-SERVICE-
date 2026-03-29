@@ -38,7 +38,7 @@ export function SearchScreen() {
         <div className="w-full">
             <div className="md:px-2 mt-20 md:mt-16">
                 <div className="mb-8 flex flex-row justify-between items-center">
-                    <h2 className="text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight flex items-center gap-2">
                         <Search className="text-[#E8524D]" size={32} />
                         Recherche
                     </h2>
