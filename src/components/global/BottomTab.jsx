@@ -23,7 +23,7 @@ export function BottomTab({ onOpenMessage, onOpenFavorite, activeModal, MODALS, 
     ].filter(Boolean);
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden z-[1002]">
             <div className="bg-white/95 backdrop-blur border-t border-slate-100 shadow-[0_-8px_24px_-16px_rgba(15,23,42,0.2)]">
                 <div className={`grid ${user?.role === 'provider' ? 'grid-cols-5' : 'grid-cols-4'} gap-1 px-2 py-2`}>
                     {navLinks.map((link) => (

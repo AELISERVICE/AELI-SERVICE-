@@ -85,7 +85,7 @@ export function RecommendationSection() {
                             // </Button>
                             <button
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                className="flex bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg "
+                                className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg "
                             >
                                 <span className="font-semibold text-[14px]">
                                     Consulter

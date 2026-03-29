@@ -17,7 +17,7 @@ export function Button({
   const variants = {
     primary: 'bg-[#FCE0D6] text-[#E8524D] hover:bg-[#E8524D] hover:text-white shadow-sm',
     secondary: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50',
-    gradient: 'bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white hover:shadow-lg border-none',
+    gradient: 'bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white hover:shadow-lg border-none',
     softRed: 'bg-[#E8524D] text-white hover:bg-[#FCE0D6] hover:text-[#E8524D]',
     consultCatalog: 'w-full bg-[#E8524D] text-white px-4 py-3 flex justify-between items-center group/btn',
     whatsapp: 'bg-[#22C55E] text-white hover:bg-[#16A34A]',

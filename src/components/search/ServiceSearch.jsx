@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { ChevronRight, Search } from 'lucide-react';
-import { ProductCard } from '../../ui/productCard';
+import { ProviderCard } from '../../ui/ProviderCard';
 import { Pagination } from '../global/Pagination';
 import { NotFound } from '../global/Notfound';
 import { Button } from '../../ui/Button';
@@ -37,7 +37,7 @@ export function ServiceSearch({ providers, pagination, onPageChange }) {
         <>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ">
                 {providers.map((item) => (
-                    <ProductCard
+                    <ProviderCard
                         key={item.id}
                         id={item.id}
                         name={item.businessName}
@@ -45,14 +45,14 @@ export function ServiceSearch({ providers, pagination, onPageChange }) {
                         location={item.location}
                         rating={item.averageRating || 0}
                         image={item.profilePhoto}
-                        isStructure={true}
+                        createdAt={item.createdAt}
                         onContact={() => openContact(item)}
                         onFavorite={() => handleFavoriteClick(item.id)}
                         actions={[
 
                             <button
                                 onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                className="flex bg-gradient-to-r from-[#8B5CF6] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg shadow-[#FCE0D6]"
+                                className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg"
                             >
                                 <span className="font-semibold text-[14px]">
                                     Consulter
