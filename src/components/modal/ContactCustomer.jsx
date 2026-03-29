@@ -81,7 +81,7 @@ export function ContactCustomer({ closeContact, dataContact }) {
   return (
     <div
       onClick={() => closeContact()}
-      className="fixed inset-0 z-[100] h-screen overflow-y-auto bg-black/60 backdrop-blur-sm p-4 md:p-8 flex justify-center items-start md:items-center font-sans"
+      className="fixed inset-0 z-[1003] h-screen overflow-y-auto bg-black/60 backdrop-blur-sm p-4 md:p-8 flex justify-center items-start md:items-center font-sans"
     >
       <div
         onClick={(e) => e.stopPropagation()}

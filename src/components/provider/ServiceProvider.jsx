@@ -129,9 +129,6 @@ export function ServiceProvider({ mode, dataConsult }) {
     const isComponentLoading = mode === "consultationCustomers" ? isLoadingProvider : isLoadingServices;
     const isComponentError = mode === "consultationCustomers" ? isErrorProvider : isErrorServices;
 
-    if (isComponentLoading) {
-        return <Loading className="h-64" size="small" title="Chargement des services..." />;
-    }
 
     if (isComponentError) {
         return (
@@ -216,100 +213,111 @@ export function ServiceProvider({ mode, dataConsult }) {
                     </div>
                 </div>
             )}
-            <ReviewList idProvider={providerDetail?.id || provider?.id} />
-
-            <div className="flex overflow-x-auto no-scrollbar items-center gap-4 mb-10">
-                {apiCategories.map((cat) => (
-                    <React.Fragment key={cat.id}>
-                        <div className="relative">
-                            <CategoryTag
-                                cat={{ ...cat, active: cat.id === activeCatId }}
-                                isConsult={mode === "consultationCustomers" || true}
-                                onSelect={() => setActiveCatId(cat.id)}
-                                onPressMenu={() => setOpenMenuId(openMenuId === cat.id ? null : cat.id)}
-                                ref={openMenuId === cat.id ? triggerRef : null}
-                            />
-                            {mode !== "consultationCustomers" && (
-                                <ActionMenu
-                                    isOpen={openMenuId === cat.id}
-                                    onClose={() => setOpenMenuId(null)}
-                                    triggerRef={triggerRef}
-                                    onEdit={() => navigate(`/edit-category/${cat.id}`)}
-                                    onDelete={() => console.log("Supprimer", cat.id)}
-                                />
-                            )}
-                        </div>
-                    </React.Fragment>
-                ))}
-            </div>
-
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                    <ShoppingBag className="text-[#E8524D]" size={20} />
-                    {currentCategory?.name || "Sélectionnez une catégorie"}
-                </h2>
-                {mode !== "consultationCustomers" && (
-                    <Button variant="gradient" size="md" onClick={() => navigate("/add-service")}>
-                        Ajouter un service
-                    </Button>
-                )}
-            </div>
-
-            <div className={`grid grid-cols-1 ${mode === "consultationCustomers" && currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3" : "flex"} gap-6 mb-20 md:mb-4`}>
-                {currentServices.length > 0 ? (
-                    paginatedServices.map((service) => (
-                        <ProductCard
-                            key={service.id}
-                            title={service.name}
-                            description={service.description}
-                            price={service.price}
-                            image={service.photo}
-                            createdAt={service?.duration}
-                            isAdmin={mode !== "consultationCustomers"}
-                            actions={mode === "consultationCustomers"
-                                ? [
-
-                                    <button
-                                        onClick={() => openContactWithData(providerDetail, service)}
-                                        className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg"
-                                    >
-                                        <span className="font-semibold text-[14px]">
-                                            Contacter
-                                        </span>
-                                        <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                    </button>
-                                ]
-                                : [
-                                    <Button
-                                        key="trigger"
-                                        variant="none"
-                                        size="none"
-                                        ref={openMenuId === service.id ? triggerRef : null}
-                                        onClick={() => setOpenMenuId(openMenuId === service.id ? null : service.id)}
-                                        className="text-black "
-                                    >
-                                        <MoreVerticalIcon size={20} />
-                                    </Button>,
-                                    <ActionMenu
-                                        isOpen={openMenuId === service.id}
-                                        onClose={() => setOpenMenuId(null)}
-                                        triggerRef={triggerRef}
-                                        onEdit={() => navigate(`/add-service`, { state: { data: service } })}
-                                        onDelete={() => handleDeleteClick(service)}
+            {isLoadingProvider ? (
+                <Loading className="h-64 mb-50" size="small" title="Chargement des services..." />
+            ) : (
+                <ReviewList idProvider={providerDetail?.id || provider?.id} />
+            )}
+            {isLoadingServices ? (
+                <Loading className="h-64 mt-30" size="small" title="Chargement des services..." />
+            ) : (
+                <>
+                    <div className="flex overflow-x-auto no-scrollbar items-center gap-4 mb-10">
+                        {apiCategories.map((cat) => (
+                            <React.Fragment key={cat.id}>
+                                <div className="relative">
+                                    <CategoryTag
+                                        cat={{ ...cat, active: cat.id === activeCatId }}
+                                        isConsult={mode === "consultationCustomers" || true}
+                                        onSelect={() => setActiveCatId(cat.id)}
+                                        onPressMenu={() => setOpenMenuId(openMenuId === cat.id ? null : cat.id)}
+                                        ref={openMenuId === cat.id ? triggerRef : null}
                                     />
-                                ]
-                            }
-                        />
-                    ))
-                ) : (
-                    <NotFound
-                        Icon={ShoppingBag}
-                        title="Aucun service trouvé"
-                        message="Aucun service disponible dans cette catégorie."
-                        className="bg-gray-100 h-[300px] flex-1 mb-4"
-                    />
-                )}
-            </div>
+                                    {mode !== "consultationCustomers" && (
+                                        <ActionMenu
+                                            isOpen={openMenuId === cat.id}
+                                            onClose={() => setOpenMenuId(null)}
+                                            triggerRef={triggerRef}
+                                            onEdit={() => navigate(`/edit-category/${cat.id}`)}
+                                            onDelete={() => console.log("Supprimer", cat.id)}
+                                        />
+                                    )}
+                                </div>
+                            </React.Fragment>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <ShoppingBag className="text-[#E8524D]" size={20} />
+                            {currentCategory?.name || "Sélectionnez une catégorie"}
+                        </h2>
+                        {mode !== "consultationCustomers" && (
+                            <Button variant="gradient" size="md" onClick={() => navigate("/add-service")}>
+                                Ajouter un service
+                            </Button>
+                        )}
+                    </div>
+
+
+                    <div className={`grid grid-cols-1 ${mode === "consultationCustomers" && currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : currentServices.length > 0 ? "sm:grid-cols-2 lg:grid-cols-3" : "flex"} gap-6 mb-20 md:mb-4`}>
+                        {currentServices.length > 0 ? (
+                            paginatedServices.map((service) => (
+                                <ProductCard
+                                    key={service.id}
+                                    title={service.name}
+                                    description={service.description}
+                                    price={service.price}
+                                    image={service.photo}
+                                    createdAt={service?.duration}
+                                    isAdmin={mode !== "consultationCustomers"}
+                                    actions={mode === "consultationCustomers"
+                                        ? [
+
+                                            <button
+                                                onClick={() => openContactWithData(providerDetail, service)}
+                                                className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg"
+                                            >
+                                                <span className="font-semibold text-[14px]">
+                                                    Contacter
+                                                </span>
+                                                <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                                            </button>
+                                        ]
+                                        : [
+                                            <Button
+                                                key="trigger"
+                                                variant="none"
+                                                size="none"
+                                                ref={openMenuId === service.id ? triggerRef : null}
+                                                onClick={() => setOpenMenuId(openMenuId === service.id ? null : service.id)}
+                                                className="text-black "
+                                            >
+                                                <MoreVerticalIcon size={20} />
+                                            </Button>,
+                                            <ActionMenu
+                                                isOpen={openMenuId === service.id}
+                                                onClose={() => setOpenMenuId(null)}
+                                                triggerRef={triggerRef}
+                                                onEdit={() => navigate(`/add-service`, { state: { data: service } })}
+                                                onDelete={() => handleDeleteClick(service)}
+                                            />
+                                        ]
+                                    }
+                                />
+                            ))
+                        ) : (
+                            <NotFound
+                                Icon={ShoppingBag}
+                                title="Aucun service trouvé"
+                                message="Aucun service disponible dans cette catégorie."
+                                className="bg-gray-100 h-[300px] flex-1 mb-4"
+                            />
+                        )}
+                    </div>
+                </>
+            )}
+
             {currentServices.length > 0 &&
                 <Pagination
                     currentPage={currentPage}
