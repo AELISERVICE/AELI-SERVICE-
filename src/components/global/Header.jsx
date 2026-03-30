@@ -59,6 +59,9 @@ export function Header({ onMenuClick, filters, setFilters }) {
     if (pathname.startsWith("/banners")) {
       return { title: "Bannière", subtitle: "Gérez vos bannières" };
     }
+    if (pathname.startsWith("/documentation")) {
+      return { title: "Documentation", subtitle: "Guide d'utilisation" };
+    }
     return {
       title: "Administration",
       subtitle: "Bienvenue sur votre espace de gestion",

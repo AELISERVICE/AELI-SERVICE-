@@ -148,29 +148,18 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
         </Button>
       </div>
       {banners.length > 0 ? (
-        <div className="mt-4 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-4 grid gap-4 grid-cols-1 xl:grid-cols-2">
           {banners.map((banner) => (
             <div
               key={banner.id}
-              className="flex justify-center md:justify-start"
+              className="relative bg-white shadow-md border border-gray-200 overflow-hidden w-full h-[120px] md:h-[130px] rounded-lg flex group transition-all hover:shadow-lg"
             >
-              <div className="w-full md:w-[400px] h-[400px] bg-[#1B1B1B] text-white overflow-hidden shadow-2xl flex flex-col group font-sans rounded-2xl border border-white/5">
-                <div className="p-6 h-[80px] flex justify-between items-start z-30">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src="/logo.png"
-                      alt="logo"
-                      className="w-10 h-10 flex-shrink-0"
-                    />
-                    <div className="flex flex-col">
-                      <span className="font-bold text-xl pacifico-regular">
-                        AELI Services
-                      </span>
-                      {/* <span className="text-xs text-white/60">
-                        {getTypeLabel(banner.type)} · {formatDate(banner.startDate)}
-                      </span> */}
-                    </div>
-                  </div>
+              <div className="absolute top-0 left-0 w-[4px] h-full bg-blue-900 z-10" />
+              <div className="flex-1 flex flex-col justify-center px-4 md:px-8 bg-white overflow-hidden">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-blue-600 font-bold uppercase tracking-widest">
+                    Annonce • {banner.isActive ? "Actif" : "Inactif"}
+                  </span>
                   <div className="relative">
                     <Button
                       ref={openMenuId === banner.id ? triggerRef : null}
@@ -197,70 +186,43 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
                     />
                   </div>
                 </div>
-
-                <div className="px-8 flex-1 flex flex-col justify-center z-20 overflow-hidden">
-                  <h2 className="text-2xl font-bold leading-tight mb-2 line-clamp-2">
-                    {banner.title}
-                  </h2>
-                  <p className="text-gray-400 text-sm line-clamp-3">
-                    {banner.description || "Aucune description disponible."}
-                  </p>
-                </div>
-
-                <div className="relative h-[45%] w-full mt-auto">
-                  <div
-                    className="absolute inset-0 z-10"
-                    style={{
-                      maskImage:
-                        "radial-gradient(circle at 70% 50%, black 20%, transparent 90%)",
-                      WebkitMaskImage:
-                        "radial-gradient(circle at 70% 50%, black 20%, transparent 100%)",
-                    }}
-                  >
-                    {banner.imageUrl ? (
-                      <img
-                        key={banner.imageUrl}
-                        src={banner.imageUrl}
-                        alt={banner.title}
-                        className="w-full h-full object-cover object-[80%_center] opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-white/5">
-                        <ImageIcon size={32} className="text-white/50" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1B1B1B] via-transparent to-transparent z-20"></div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#1B1B1B] via-transparent to-transparent z-20"></div>
-
-                  <div className="absolute bottom-6 left-3 right-3 z-30 flex items-center justify-end gap-3">
-
-                    {
-                      banner.linkUrl &&
-                      <div className="flex flex-1">
-                        <Button
-                          type="button"
-                          variant="softRed"
-                          onClick={() =>
-                            banner.linkUrl &&
-                            window.open(banner.linkUrl, "_blank")
-                          }
-                          className="px-0 py-2 shadow-xl hover:scale-105 transition-transform"
-                        >
-                          En savoir plus
-                        </Button>
-                      </div>
-                    }
-                    <div className="flex items-center gap-2 text-xs text-white/60">
-                      <Badge
-                        status={banner.isActive ? "Actif" : "Inactif"}
-                        variant={banner.isActive ? "green" : "gray"}
-                      />
-                    </div>
-                  </div>
-                </div>
+                <h2 className="text-gray-900 font-black text-sm md:text-lg leading-tight uppercase italic truncate">
+                  {banner.title}
+                </h2>
+                <p className="text-gray-500 text-[11px] md:text-xs line-clamp-2 mt-1 max-w-[95%] font-medium">
+                  {banner.description || "Aucune description disponible."}
+                </p>
+                <span className="text-[9px] text-gray-400 mt-2">
+                  Créé le {new Date(banner.createdAt).toLocaleDateString('fr-FR')}
+                </span>
               </div>
+              <div className="relative w-[35%] md:w-[30%] h-full overflow-hidden">
+                {banner.imageUrl ? (
+                  <img
+                    src={banner.imageUrl}
+                    alt={banner.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                    <ImageIcon size={24} className="text-gray-300" />
+                  </div>
+                )}
+                {banner.linkUrl && (
+                  <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 z-20">
+                    <button
+                      onClick={() => banner.linkUrl && window.open(banner.linkUrl, '_blank')}
+                      disabled={!banner.linkUrl}
+                      className={`w-12 h-12 md:w-14 md:h-14 bg-white border-4 border-gray-50 rounded-full shadow-xl flex items-center justify-center group/btn hover:scale-110 transition-transform active:scale-95 ${!banner.linkUrl && 'opacity-50 cursor-not-allowed'}`}
+                    >
+                      <span className="text-blue-700 font-black text-[9px] md:text-[10px] uppercase tracking-tighter">
+                        Click
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="absolute top-0 right-0 w-[4px] h-full bg-[#E85D26]" />
             </div>
           ))}
         </div>

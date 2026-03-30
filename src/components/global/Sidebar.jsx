@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Button } from "../../ui/Button";
 import {
   LayoutDashboard,
@@ -20,6 +20,7 @@ import {
  * UI component responsible for rendering the sidebar section.
  */
 export function Sidebar({ isOpen, onClose }) {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
@@ -134,7 +135,9 @@ export function Sidebar({ isOpen, onClose }) {
               >
                 Système d'aide actif 24/7
               </p>
-              <Button variant="primary">
+              <Button
+                onClick={() => {onClose(); navigate("documentation")}}
+                variant="primary">
                 <span className="relative z-10 ">
                   Doc{!isCollapsed && "umentation"}{" "}
                 </span>

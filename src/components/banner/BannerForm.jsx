@@ -214,6 +214,7 @@ export const BannerForm = ({ banner, onClose, onSuccess }) => {
                 name="bannerImage"
                 onChange={handleFileChange}
                 accept="image/jpeg,image/jpg,image/png,image/webp"
+                previewImage={imagePreview}
                 disabled={isLoading}
               />
             </div>

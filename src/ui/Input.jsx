@@ -17,10 +17,12 @@ export function Input({
   onChange,
   placeholder,
   name,
+  previewImage,
   ...props
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [filePreview, setFilePreview] = useState(null);
+  const [filePreview, setFilePreview] = useState(previewImage || null);
+  const objectUrlRef = useRef(null);
   const containerRef = useRef(null);
 
   const baseInputStyles = `
@@ -55,10 +57,17 @@ export function Input({
   const handleFileChange = (e) => {
     const file = e?.target?.files?.[0];
 
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
     if (file) {
-      setFilePreview(URL.createObjectURL(file));
+      const previewUrl = URL.createObjectURL(file);
+      objectUrlRef.current = previewUrl;
+      setFilePreview(previewUrl);
     } else {
-      setFilePreview(null);
+      setFilePreview(previewImage || null);
     }
 
     if (typeof onChange === "function") {
@@ -67,12 +76,19 @@ export function Input({
   };
 
   useEffect(() => {
+    if (!objectUrlRef.current) {
+      setFilePreview(previewImage || null);
+    }
+  }, [previewImage]);
+
+  useEffect(() => {
     return () => {
-      if (filePreview) {
-        URL.revokeObjectURL(filePreview);
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
       }
     };
-  }, [filePreview]);
+  }, []);
 
   return (
     <div
