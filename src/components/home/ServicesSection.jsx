@@ -113,19 +113,23 @@ export function ServicesSection() {
                                 location={item.location}
                                 rating={item.averageRating}
                                 image={item.profilePhoto}
-                                createdAt={item.createdAt}
+                                isActive={item.isActive}
+                                activities={item.activities}
+                                createdAt={new Date(item.createdAt).toLocaleDateString('fr-FR')}
                                 onContact={openContact}
                                 onFavorite={() => handleFavoriteClick(item.id)}
                                 actions={[
-                                    <button
+                                    <Button
+                                        variant="consultAction"
+                                        size="none"
                                         onClick={() => navigate('/consult-provider', { state: { mode: "consultationCustomers", data: item } })}
-                                        className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg "
+                                        className="font-bold"
                                     >
                                         <span className="font-semibold text-[14px]">
                                             Consulter
                                         </span>
                                         <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                    </button>
+                                    </Button>
                                 ]}
                             />
                         ))}

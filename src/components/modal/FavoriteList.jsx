@@ -89,25 +89,28 @@ export function FavoriteList({ closeFavorite }) {
                                             location={provider.location}
                                             rating={provider.averageRating}
                                             image={provider.profilePhoto}
-                                            createdAt={provider.createdAt}
+                                            activities={provider.activities}
+                                            isActive={provider.isActive}
+                                            createdAt={new Date(provider.createdAt).toLocaleDateString('fr-FR')}
                                             onFavorite={() => handleFavoriteClick(provider.id)}
                                             className="w-full md:w-[350px]"
                                             favorite={true}
                                             actions={[
-                                                <button
+                                                <Button
+                                                    variant="consultAction"
+                                                    size="none"
                                                     onClick={() => {
                                                         closeFavorite();
                                                         navigate('/consult-provider', {
                                                             state: { mode: "consultationCustomers", data: provider }
                                                         });
                                                     }}
-                                                    className="flex bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white px-6 py-2.5 rounded-[12px] font-bold text-[14px] transition-all active:scale-95 shadow-lg "
                                                 >
                                                     <span className="font-semibold text-[14px]">
                                                         Consulter
                                                     </span>
                                                     <ChevronRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                                </button>,
+                                                </Button>,
                                                 <button
                                                     key="heart-btn"
                                                     onClick={() => handleRemoveFavorite(provider.id)}

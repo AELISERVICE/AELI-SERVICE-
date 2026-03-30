@@ -1,10 +1,9 @@
 import React from 'react';
 import {
-  Star,
-  Calendar,
-  Clock,
+  Star, Calendar, Clock
 } from 'lucide-react';
 import { useCheckFavorites } from '../hooks/useFavorites';
+
 
 export function ProviderCard({
   id,
@@ -14,10 +13,12 @@ export function ProviderCard({
   role,
   image,
   location,
+  activities,
   createdAt,
   rating,
   onFavorite = false,
   actions,
+  isActive = false,
   favorite,
   className
 }) {
@@ -68,11 +69,25 @@ export function ProviderCard({
             </div>
           </div>
           <div className="flex flex-row flex-wrap md:flex-col gap-x-3 gap-y-1 md:gap-2 mt-1 md:mt-1">
-            <div className="flex items-center gap-1.5 text-gray-400">
-              <Calendar size={14} className="shrink-0" />
-              <span className="text-[10px] md:text-[12px] font-medium text-gray-500 whitespace-nowrap">
-                Available now
-              </span>
+            <div className="mt-1 w-full">
+              <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+                {activities && activities.length > 0 ? (
+                  <>
+                    <div className="flex gap-2 overflow-hidden text-ellipsis">
+                      {activities.map((activity, index) => (
+                        <span
+                          key={index}
+                          className="inline-block text-gray-500 text-[10px] md:text-[12px] px-2 py-0.5 rounded-md border border-gray-200 bg-gray-50 flex-shrink-0"
+                        >
+                          {activity}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-gray-500 text-[10px]">Aucune activité</span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-1.5 text-gray-400 min-w-0 w-full">
               <svg height="14" width="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -89,14 +104,14 @@ export function ProviderCard({
             <div className="flex items-center gap-1.5 text-gray-400">
               <Clock size={14} className="shrink-0" />
               <span className="text-[10px] md:text-[12px] font-medium text-gray-500 whitespace-nowrap">
-                {createdAt}
+                Crée le {createdAt}
               </span>
             </div>
           </div>
           <div className="flex justify-between items-center md:items-end mt-2 md:mt-3 pt-2 md:pt-3 border-t border-gray-50">
             <div className="flex flex-col">
-              <span className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase leading-none">Start from</span>
-              <span className="text-[11px] font-bold text-gray-900 italic">disponible</span>
+              <span className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase leading-none">Status</span>
+              <span className="text-[11px] font-bold text-gray-900 italic">{isActive ? "disponible" : "indisponible"}</span>
             </div>
             <div className="shrink-0 scale-90 md:scale-100 origin-right">
               {actions[0]}
