@@ -221,39 +221,41 @@ export function ProviderInfoForm() {
                     <SectionHeader icon={Briefcase} title="Informations sur la Structure" colorClass="text-purple-600" />
                     <div className="relative grid grid-cols-1 gap-6 sm:grid-cols-2 w-full">
                         {/* Champs CNI : Toujours visibles, mais bloqués en mode édition */}
-                        <div className="flex flex-col gap-6">
-                            <Input
-                                name="cniNumber"
-                                label="Numéro CNI"
-                                value={formData.cniNumber}
-                                onChange={handleChange}
-                                required
-                                isreadOnly={isEditMode}
-                                readOnly={isEditMode}
-                            />
-                            <div className="flex flex-col md:flex-row gap-6">
+                        {!isEditMode &&
+                            <div className="flex flex-col gap-6">
                                 <Input
-                                    name="imgcnirecto"
-                                    label="Photo CNI Recto"
-                                    type="file"
+                                    name="cniNumber"
+                                    label="Numéro CNI"
+                                    value={formData.cniNumber}
                                     onChange={handleChange}
-                                    required={!isEditMode}
-                                    previewImage={typeof formData.imgcnirecto === 'string' ? formData.imgcnirecto : undefined}
-                                    className="h-[150px]"
-                                    disabled={isEditMode}
+                                    required
+                                    isreadOnly={isEditMode}
+                                    readOnly={isEditMode}
                                 />
-                                <Input
-                                    name="imgcniverso"
-                                    label="Photo CNI Verso"
-                                    type="file"
-                                    onChange={handleChange}
-                                    required={!isEditMode}
-                                    previewImage={typeof formData.imgcniverso === 'string' ? formData.imgcniverso : undefined}
-                                    className="h-[150px]"
-                                    disabled={isEditMode}
-                                />
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    <Input
+                                        name="imgcnirecto"
+                                        label="Photo CNI Recto"
+                                        type="file"
+                                        onChange={handleChange}
+                                        required={!isEditMode}
+                                        previewImage={typeof formData.imgcnirecto === 'string' ? formData.imgcnirecto : undefined}
+                                        className="h-[150px]"
+                                        disabled={isEditMode}
+                                    />
+                                    <Input
+                                        name="imgcniverso"
+                                        label="Photo CNI Verso"
+                                        type="file"
+                                        onChange={handleChange}
+                                        required={!isEditMode}
+                                        previewImage={typeof formData.imgcniverso === 'string' ? formData.imgcniverso : undefined}
+                                        className="h-[150px]"
+                                        disabled={isEditMode}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        }
 
                         {isEditMode && (
                             <Input
@@ -268,12 +270,12 @@ export function ProviderInfoForm() {
                         )}
                         <Input name="businessName" label="Entreprise" value={formData.businessName} onChange={handleChange} required />
                         <Input name="businessContact" label="Contact Pro" type="number" value={formData.businessContact} onChange={handleChange} required />
-                        <div className={`space-y-3 ${!isEditMode ? "md:-mt-50" : ""}`}>
+                        <div className={`space-y-3 ${!isEditMode ? "md:-mt-50" : "md:md:-mt-50"}`}>
                             <Input name="whatsapp" label="Contact whatsapp" type="text" value={formData.whatsapp} onChange={handleChange} required />
                         </div>
                         <Input name="address" label="Address (optionel)" value={formData.address} onChange={handleChange} className="flex-1" />
 
-                        <div className={`flex flex-col gap-2 ${!isEditMode ? "md:-mt-50" : ""}`}>
+                        <div className={`flex flex-col gap-2 ${!isEditMode ? "md:-mt-50" : "md:-mt-50"}`}>
                             <label className="text-sm font-medium text-gray-700">Localisation *</label>
                             <div className="flex flex-col gap-4">
                                 <Input name="location" value={formData.location} isreadOnly readOnly className="flex-1" />
@@ -307,7 +309,7 @@ export function ProviderInfoForm() {
 
                     </div>
                 </section>
-                <div className={` ${!isEditMode ? "-mt-7 md:-mt-0 md:absolute md:bottom-120 md:right-0 md:ml-8 md:w-[48.5%]" : "w-full -mt-4"}`}>
+                <div className={` ${!isEditMode ? "-mt-7 md:-mt-0 md:absolute md:bottom-120 md:right-0 md:ml-8 md:w-[48.5%]" : "w-full md:w-[48%] -mt-4 md:absolute md:top-115 md:-right-0"}`}>
                     <Input
                         name="description"
                         label="Description "
@@ -315,7 +317,7 @@ export function ProviderInfoForm() {
                         value={formData.description}
                         onChange={handleChange}
                         required
-                        className={`${!isEditMode ? "md:h-45" : ""}`}
+                        className={`${!isEditMode ? "md:h-45" : "md:w-full md:h-[181px]"}`}
                     />
                 </div>
                 {!isEditMode && <TermsSection agreed={agreed} onToggle={setAgreed} />}
