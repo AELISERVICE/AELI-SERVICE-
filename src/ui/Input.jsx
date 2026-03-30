@@ -15,7 +15,7 @@ export function Input({
   isreadOnly,
   value,
   onChange,
-  placeholder, // Assure-toi que cette prop est bien reçue
+  placeholder,
   name,
   titleButtonSelectAutre = false,
   onAutres,
