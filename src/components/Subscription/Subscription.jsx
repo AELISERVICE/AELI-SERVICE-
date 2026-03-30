@@ -57,27 +57,46 @@ export function Subscription() {
         {
             id: 'monthly',
             name: 'Mensuel',
-            price: plansFromApi?.monthly?.price || 0,
-            currency: plansFromApi?.monthly?.currency,
-            description: plansFromApi?.monthly?.description || 'Abonnement mensuel',
-            features: ['Accès complet 30 jours', 'Support standard', '1 profil prestataire'],
+            price: plansFromApi?.monthly?.price || 5000,
+            currency: plansFromApi?.monthly?.currency || 'FCFA',
+            description: plansFromApi?.monthly?.description || 'L’essentiel pour booster votre activité',
+            features: [
+                'Contacts illimités',
+                'Accès direct (WhatsApp, téléphone, email)',
+                'Ajout illimité de services',
+                '1 mise en avant (post ou newsletter)',
+                'Mise en avant plateforme (7 jours)'
+            ],
         },
         {
             id: 'quarterly',
             name: 'Trimestriel',
-            price: plansFromApi?.quarterly?.price || 0,
-            currency: plansFromApi?.quarterly?.currency || 'XAF',
-            description: plansFromApi?.quarterly?.description || 'Abonnement trimestriel',
-            isRecommended: true,
-            features: ['Économisez 20%', 'Support prioritaire', 'Badge certifié', 'Statistiques'],
+            price: plansFromApi?.quarterly?.price || 15000,
+            currency: plansFromApi?.quarterly?.currency || 'FCFA',
+            description: plansFromApi?.quarterly?.description || 'Plus de visibilité et un accompagnement pro',
+            features: [
+                'Tous les avantages du mensuel',
+                '2 mises en avant (newsletter + post)',
+                'Mise en avant plateforme (3 semaines)',
+                '1 visuel professionnel offert',
+                '1 mini-audit de profil AELI'
+            ],
         },
         {
             id: 'yearly',
             name: 'Annuel',
-            price: plansFromApi?.yearly?.price || 0,
-            currency: plansFromApi?.yearly?.currency || 'XAF',
-            description: plansFromApi?.yearly?.description || 'Meilleur prix annuel',
-            features: ['Support 24/7', 'Mise en avant VIP', 'Zéro commissions sur vos ventes'],
+            price: plansFromApi?.yearly?.price || 25000,
+            currency: plansFromApi?.yearly?.currency || 'FCFA',
+            description: plansFromApi?.yearly?.description || 'Le pack ultime pour dominer le marché',
+            isRecommended: true,
+            features: [
+                'Priorité dans les résultats de recherche',
+                '6 mises en avant sur l’année',
+                'Mise en avant cumulée (8 semaines)',
+                '2 visuels professionnels offerts',
+                'Audit stratégique approfondi',
+                'Accès prioritaire opportunités AELI'
+            ],
         }
     ];
 

@@ -309,7 +309,7 @@ export function ProviderInfoForm() {
 
                     </div>
                 </section>
-                <div className={` ${!isEditMode ? "-mt-7 md:-mt-0 md:absolute md:bottom-120 md:right-0 md:ml-8 md:w-[48.5%]" : "w-full md:w-[48%] -mt-4 md:absolute md:top-115 md:-right-0"}`}>
+                <div className={` ${!isEditMode ? "-mt-7 md:-mt-0 md:absolute md:bottom-233 md:right-0 md:ml-8 md:w-[48.5%]" : "w-full md:w-[48%] -mt-4 md:absolute md:top-115 md:-right-0"}`}>
                     <Input
                         name="description"
                         label="Description "
