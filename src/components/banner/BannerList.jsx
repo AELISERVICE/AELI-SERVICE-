@@ -144,7 +144,7 @@ export const BannerList = ({ onAddBanner, onEditBanner }) => {
           className="flex items-center gap-2"
         >
           <Plus size={18} />
-          Ajouter une bannière
+          Ajouter
         </Button>
       </div>
       {banners.length > 0 ? (
