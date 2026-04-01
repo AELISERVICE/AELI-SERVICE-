@@ -116,7 +116,7 @@ export function FeedbackCard({ closeFeedback, providerData }) {
   return (
     <div
       onClick={closeFeedback}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[100] p-4"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-[1003] p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
