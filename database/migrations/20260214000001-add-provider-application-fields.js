@@ -3,85 +3,99 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
+        const addColumnIfMissing = async (tableName, columnName, definition) => {
+            const tableDescription = await queryInterface.describeTable(tableName);
+            if (!tableDescription[columnName]) {
+                await queryInterface.addColumn(tableName, columnName, definition);
+            }
+        };
+
         // Add fields to provider_applications
-        await queryInterface.addColumn('provider_applications', 'first_name', {
+        await addColumnIfMissing('provider_applications', 'first_name', {
             type: Sequelize.STRING(100),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'last_name', {
+        await addColumnIfMissing('provider_applications', 'last_name', {
             type: Sequelize.STRING(100),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'gender', {
+        await addColumnIfMissing('provider_applications', 'gender', {
             type: Sequelize.ENUM('male', 'female', 'other', 'prefer_not_to_say'),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'country', {
+        await addColumnIfMissing('provider_applications', 'country', {
             type: Sequelize.STRING(100),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'email', {
+        await addColumnIfMissing('provider_applications', 'email', {
             type: Sequelize.STRING(255),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'phone', {
+        await addColumnIfMissing('provider_applications', 'phone', {
             type: Sequelize.STRING(20),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'business_contact', {
+        await addColumnIfMissing('provider_applications', 'business_contact', {
             type: Sequelize.STRING(20),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'activities', {
+        await addColumnIfMissing('provider_applications', 'activities', {
             type: Sequelize.JSONB,
             defaultValue: []
         });
-        await queryInterface.addColumn('provider_applications', 'latitude', {
+        await addColumnIfMissing('provider_applications', 'latitude', {
             type: Sequelize.DECIMAL(10, 8),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'longitude', {
+        await addColumnIfMissing('provider_applications', 'longitude', {
             type: Sequelize.DECIMAL(11, 8),
             allowNull: true
         });
-        await queryInterface.addColumn('provider_applications', 'cni_number', {
+        await addColumnIfMissing('provider_applications', 'cni_number', {
             type: Sequelize.STRING(100),
             allowNull: true
         });
 
         // Add fields to providers
-        await queryInterface.addColumn('providers', 'activities', {
+        await addColumnIfMissing('providers', 'activities', {
             type: Sequelize.JSONB,
             defaultValue: []
         });
-        await queryInterface.addColumn('providers', 'latitude', {
+        await addColumnIfMissing('providers', 'latitude', {
             type: Sequelize.DECIMAL(10, 8),
             allowNull: true
         });
-        await queryInterface.addColumn('providers', 'longitude', {
+        await addColumnIfMissing('providers', 'longitude', {
             type: Sequelize.DECIMAL(11, 8),
             allowNull: true
         });
     },
 
     async down(queryInterface, Sequelize) {
+        const removeColumnIfExists = async (tableName, columnName) => {
+            const tableDescription = await queryInterface.describeTable(tableName);
+            if (tableDescription[columnName]) {
+                await queryInterface.removeColumn(tableName, columnName);
+            }
+        };
+
         // Remove from providers
-        await queryInterface.removeColumn('providers', 'activities');
-        await queryInterface.removeColumn('providers', 'latitude');
-        await queryInterface.removeColumn('providers', 'longitude');
+        await removeColumnIfExists('providers', 'activities');
+        await removeColumnIfExists('providers', 'latitude');
+        await removeColumnIfExists('providers', 'longitude');
 
         // Remove from provider_applications
-        await queryInterface.removeColumn('provider_applications', 'first_name');
-        await queryInterface.removeColumn('provider_applications', 'last_name');
-        await queryInterface.removeColumn('provider_applications', 'gender');
-        await queryInterface.removeColumn('provider_applications', 'country');
-        await queryInterface.removeColumn('provider_applications', 'email');
-        await queryInterface.removeColumn('provider_applications', 'phone');
-        await queryInterface.removeColumn('provider_applications', 'business_contact');
-        await queryInterface.removeColumn('provider_applications', 'activities');
-        await queryInterface.removeColumn('provider_applications', 'latitude');
-        await queryInterface.removeColumn('provider_applications', 'longitude');
-        await queryInterface.removeColumn('provider_applications', 'cni_number');
+        await removeColumnIfExists('provider_applications', 'first_name');
+        await removeColumnIfExists('provider_applications', 'last_name');
+        await removeColumnIfExists('provider_applications', 'gender');
+        await removeColumnIfExists('provider_applications', 'country');
+        await removeColumnIfExists('provider_applications', 'email');
+        await removeColumnIfExists('provider_applications', 'phone');
+        await removeColumnIfExists('provider_applications', 'business_contact');
+        await removeColumnIfExists('provider_applications', 'activities');
+        await removeColumnIfExists('provider_applications', 'latitude');
+        await removeColumnIfExists('provider_applications', 'longitude');
+        await removeColumnIfExists('provider_applications', 'cni_number');
 
         // Note: Enum 'gender' won't be removed automatically in some DBs, 
         // but column removal is the primary goal here.

@@ -256,12 +256,12 @@ describe("Subscription Integration Tests", () => {
     });
 
     test("should have correct quarterly pricing", () => {
-      expect(Subscription.PLANS.quarterly.price).toBe(12000);
+      expect(Subscription.PLANS.quarterly.price).toBe(15000);
       expect(Subscription.PLANS.quarterly.days).toBe(90);
     });
 
     test("should have correct yearly pricing", () => {
-      expect(Subscription.PLANS.yearly.price).toBe(15000);
+      expect(Subscription.PLANS.yearly.price).toBe(25000);
       expect(Subscription.PLANS.yearly.days).toBe(365);
     });
   });

@@ -80,8 +80,8 @@ const Subscription = sequelize.define(
 Subscription.PLANS = {
   trial: { price: 0, days: 30 }, // FREE 30 days
   monthly: { price: 5000, days: 30 }, // 5000 FCFA/month
-  quarterly: { price: 12000, days: 90 }, // 4000 FCFA/month
-  yearly: { price: 15000, days: 365 }, // ~1250 FCFA/month
+  quarterly: { price: 15000, days: 90 }, // 15000 FCFA/3 months
+  yearly: { price: 25000, days: 365 }, // 25000 FCFA/year
 };
 
 /**

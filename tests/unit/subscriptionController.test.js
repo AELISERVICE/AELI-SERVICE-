@@ -24,8 +24,8 @@ jest.mock("../../src/models", () => ({
     findOne: jest.fn(),
     PLANS: {
       monthly: { price: 5000, days: 30 },
-      quarterly: { price: 12000, days: 90 },
-      yearly: { price: 10000, days: 365 },
+      quarterly: { price: 15000, days: 90 },
+      yearly: { price: 25000, days: 365 },
     },
   },
   Provider: {

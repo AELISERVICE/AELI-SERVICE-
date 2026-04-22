@@ -31,16 +31,16 @@ const getPlans = asyncHandler(async (req, res) => {
         description: "Abonnement mensuel",
       },
       quarterly: {
-        price: 12000,
+        price: 15000,
         currency: "XAF",
         duration: "90 jours",
-        description: "Abonnement trimestriel (économisez 20%)",
+        description: "Abonnement trimestriel",
       },
       yearly: {
-        price: 10000,
+        price: 25000,
         currency: "XAF",
         duration: "365 jours",
-        description: "Abonnement annuel (meilleur prix)",
+        description: "Abonnement annuel",
       },
     },
     trialInfo: {

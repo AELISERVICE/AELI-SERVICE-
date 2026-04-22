@@ -471,8 +471,8 @@ const subscriptionExpiringEmail = ({ firstName, businessName, daysLeft, endDate,
 
   const pricing = {
     monthly: '5 000 FCFA',
-    quarterly: '12 000 FCFA',
-    yearly: '10 000 FCFA'
+    quarterly: '15 000 FCFA',
+    yearly: '25 000 FCFA'
   };
 
   return {

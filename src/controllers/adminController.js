@@ -217,10 +217,27 @@ const getStats = asyncHandler(async (req, res) => {
   // Process payment stats
   const paymentStatsMap = paymentStats.reduce(
     (acc, row) => {
-      acc[row.status] = {
-        count: parseInt(row.count),
-        amount: parseInt(row.totalAmount || 0),
-      };
+      const normalizedStatus = String(row.status || "").toUpperCase();
+      const count = parseInt(row.count || 0, 10);
+      const amount = parseInt(row.totalAmount || 0, 10);
+
+      if (normalizedStatus === "ACCEPTED") {
+        acc.accepted.count += count;
+        acc.accepted.amount += amount;
+      } else if (
+        normalizedStatus === "PENDING" ||
+        normalizedStatus === "WAITING_CUSTOMER"
+      ) {
+        acc.pending.count += count;
+        acc.pending.amount += amount;
+      } else if (normalizedStatus === "REFUSED") {
+        acc.refused.count += count;
+        acc.refused.amount += amount;
+      } else if (normalizedStatus === "CANCELLED" || normalizedStatus === "EXPIRED") {
+        acc.cancelled.count += count;
+        acc.cancelled.amount += amount;
+      }
+
       return acc;
     },
     {
