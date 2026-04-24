@@ -9,19 +9,19 @@ export function Footer() {
         <div className="mt-12 mb-8 flex flex-col items-center space-y-4">
             <div className="flex items-center space-x-6">
                 <a
-                    href="#"
+                    href="https://www.linkedin.com/company/aeli-services"
                     className="text-slate-400 hover:text-purple-600 transition-colors"
                 >
                     <Linkedin className="w-5 h-5" />
                 </a>
                 <a
-                    href="#"
+                    href="https://www.instagram.com/aeli_services"
                     className="text-slate-400 hover:text-purple-600 transition-colors"
                 >
                     <Instagram className="w-5 h-5" />
                 </a>
                 <a
-                    href="#"
+                    href="https://www.facebook.com/share/17yFQXXyPp/?mibextid=wwXIfr"
                     className="text-slate-400 hover:text-purple-600 transition-colors"
                 >
                     <Facebook className="w-5 h-5" />
