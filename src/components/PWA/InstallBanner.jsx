@@ -9,12 +9,34 @@ export function InstallBanner() {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isShown, setIsShown] = useState(false);
     const [showIosInstruction, setShowIosInstruction] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
 
     // Détection si c'est un appareil iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+    // Détection du mode Standalone (PWA)
     useEffect(() => {
-        // Pour Android/Chrome
+        const detectStandalone = () => {
+            const mediaStandalone = window.matchMedia?.("(display-mode: standalone)").matches;
+            const navigatorStandalone = window.navigator.standalone;
+            const standalone = Boolean(mediaStandalone || navigatorStandalone);
+
+            setIsStandalone(standalone);
+        };
+
+        detectStandalone();
+
+        const mediaQuery = window.matchMedia?.("(display-mode: standalone)");
+        mediaQuery?.addEventListener("change", detectStandalone);
+        window.addEventListener("appinstalled", detectStandalone);
+
+        return () => {
+            mediaQuery?.removeEventListener("change", detectStandalone);
+            window.removeEventListener("appinstalled", detectStandalone);
+        };
+    }, []);
+
+    useEffect(() => {
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
@@ -32,17 +54,16 @@ export function InstallBanner() {
 
     const handleInstallAction = async () => {
         if (isIOS) {
-            // Sur iPhone, on bascule l'affichage des instructions
             setShowIosInstruction(!showIosInstruction);
         } else if (deferredPrompt) {
-            // Sur Android, on lance l'install native
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') setIsShown(false);
         }
     };
 
-    if (!isShown || !isLoginPage) return null;
+    // On n'affiche rien si : la bannière est masquée, pas sur la page login, ou déjà en mode Standalone
+    if (!isShown || !isLoginPage || isStandalone) return null;
 
     return (
         <div className="fixed md:w-[450px] top-4 left-4 md:left-auto right-4 z-[9999] flex flex-col gap-2">
