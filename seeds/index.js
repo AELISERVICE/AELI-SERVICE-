@@ -22,13 +22,11 @@ const seed = async () => {
         }
         console.log(`   ✅ ${catCount} categories created (${categories.length - catCount} already existed)\n`);
 
-        // 2. No default users/providers seeded anymore.
-        console.log('👥 Skipping default admin/client/provider seeds (disabled by requirement).\n');
-
         console.log('═══════════════════════════════════════');
         console.log('🎉 Database seeding completed!');
         console.log('═══════════════════════════════════════');
-        console.log('\nCategories seeded successfully.\n');
+        console.log('\nCategories seeded successfully.');
+        console.log('ℹ️  Admin account is provisioned via migration using AELI_ADMIN_EMAIL / AELI_ADMIN_PASSWORD.\n');
 
     } catch (error) {
         console.error('❌ Seeding error:', error.message);
