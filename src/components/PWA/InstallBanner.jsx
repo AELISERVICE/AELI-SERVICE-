@@ -9,19 +9,45 @@ export function InstallBanner() {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isShown, setIsShown] = useState(false);
     const [showIosInstruction, setShowIosInstruction] = useState(false);
+    // État pour détecter si l'app est déjà en mode PWA
+    const [isStandalone, setIsStandalone] = useState(false);
 
     // Détection si c'est un appareil iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+    // 1. Logique de détection PWA
     useEffect(() => {
-        // Pour Android/Chrome
+        const detectStandalone = () => {
+            const mediaStandalone = window.matchMedia?.("(display-mode: standalone)").matches;
+            const navigatorStandalone = window.navigator.standalone;
+            const standalone = Boolean(mediaStandalone || navigatorStandalone);
+
+            setIsStandalone(standalone);
+            if (standalone) {
+                setIsShown(false);
+            }
+        };
+
+        detectStandalone();
+
+        const mediaQuery = window.matchMedia?.("(display-mode: standalone)");
+        mediaQuery?.addEventListener("change", detectStandalone);
+        window.addEventListener("appinstalled", detectStandalone);
+
+        return () => {
+            mediaQuery?.removeEventListener("change", detectStandalone);
+            window.removeEventListener("appinstalled", detectStandalone);
+        };
+    }, []);
+
+    // 2. Logique d'affichage de la bannière
+    useEffect(() => {
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
             setDeferredPrompt(e);
             setIsShown(true);
         };
 
-        // Pour iOS, on l'affiche d'office si on est sur la page de login
         if (isIOS) {
             setIsShown(true);
         }
@@ -32,17 +58,16 @@ export function InstallBanner() {
 
     const handleInstallAction = async () => {
         if (isIOS) {
-            // Sur iPhone, on bascule l'affichage des instructions
             setShowIosInstruction(!showIosInstruction);
         } else if (deferredPrompt) {
-            // Sur Android, on lance l'install native
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') setIsShown(false);
         }
     };
 
-    if (!isShown || !isLoginPage) return null;
+    // La condition ci-dessous masque tout si on est déjà en standalone
+    if (!isShown || !isLoginPage || isStandalone) return null;
 
     return (
         <div className="fixed md:w-[450px] top-4 left-4 md:left-auto right-4 z-[9999] flex flex-col gap-2">
