@@ -158,6 +158,8 @@ Included Docker services:
 
 ## 🚀 Deployment
 
+For a complete Docker production deployment guide (environment setup, migrations, admin bootstrap, troubleshooting), see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
 ### Required Environment Variables
 
 ```bash

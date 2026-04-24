@@ -63,13 +63,13 @@ const sequelize = new Sequelize(
         },
         // Dialect-specific options
         dialectOptions: isProduction ? {
-            ssl: {
-                require: true,
-                rejectUnauthorized: false
-            },
-            // Statement timeout (30s)
+            ...(process.env.DB_SSL === 'false' ? {} : {
+                ssl: {
+                    require: true,
+                    rejectUnauthorized: false
+                }
+            }),
             statement_timeout: 30000,
-            // Idle transaction timeout (60s)
             idle_in_transaction_session_timeout: 60000
         } : {}
     }
