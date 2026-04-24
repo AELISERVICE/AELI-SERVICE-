@@ -158,7 +158,7 @@ Included Docker services:
 
 ## 🚀 Deployment
 
-For a complete Docker production deployment guide (environment setup, migrations, admin bootstrap, troubleshooting), see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+Pour un guide complet de déploiement Docker en production (variables d'environnement, migrations, bootstrap admin, dépannage), voir **[DEPLOYMENT.md](DEPLOYMENT.md)**.
 
 ### Required Environment Variables
 
