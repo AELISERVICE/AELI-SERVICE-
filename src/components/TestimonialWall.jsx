@@ -22,7 +22,7 @@ const testimonials = [
     },
     {
       name: "Abdoul P.",
-      role: 'Artisane bijoutière',
+      role: 'Artisan bijoutière',
       avatar:
         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face',
       quote:
@@ -76,7 +76,7 @@ const testimonials = [
     },
     {
       name: 'Franck K.',
-      role: 'Cliente & Partenaire',
+      role: 'Client & Partenaire',
       avatar:
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWqzHwKja1JO0OWW4_TZYoWjw7oCpx0zGhsA&s',
       quote:
