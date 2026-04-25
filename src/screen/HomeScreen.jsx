@@ -16,7 +16,6 @@ export function HomeScreen() {
         <div className="w-full min-h-screen bg-white font-poppins relative">
             <main>
                 <HeroSection />
-                {/* <FeatureCards /> */}
                 <Pricing />
                 <MoreThanLogin />
                 <SocialSidebar />
