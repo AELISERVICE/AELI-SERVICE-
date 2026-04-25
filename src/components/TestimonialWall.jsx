@@ -111,7 +111,7 @@ export function TestimonialWall() {
 
   return (
     <section className="py-24 relative overflow-hidden z-100">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto md:px-6">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">

@@ -29,7 +29,7 @@ const GraphyLogo = () => (
 )
 export function Footer() {
     return (
-        <div className="relative w-full flex flex-col items-center pt-0 overflow-hidden z-0 bg-white pb-30 md:pb-40 md:h-auto lg:pb-0 lg:min-h-screen">
+        <div className="relative w-full flex flex-col items-center pt-0 overflow-hidden z-0 bg-white pb-30 md:pb-40 md:h-auto lg:pb-0 lg:min-h-[750px]">
             {/* CTA Section */}
             <section className="w-[calc(100%-2rem)] max-w-7xl mx-auto rounded-[2.5rem] bg-black relative overflow-hidden py-24 md:py-32 px-6 text-center flex flex-col items-center justify-center shadow-2xl">
                 {/* Radial Gradient Overlay - Direction diagonale */}

@@ -10,7 +10,7 @@ export function HeroSection() {
     const handleCloseVideo = () => setIsVideoOpen(false)
 
     return (
-        <section className="relative min-h-screen w-full bg-white overflow-hidden">
+        <section className="relative min-h-screen lg:min-h-[700px] w-full bg-white overflow-hidden">
 
             {/* Calque de fond flouté uniquement */}
             <div className="absolute inset-0 blur-[120px] -z-0 pointer-events-none" />
