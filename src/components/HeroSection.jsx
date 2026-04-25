@@ -10,7 +10,7 @@ export function HeroSection() {
     const handleCloseVideo = () => setIsVideoOpen(false)
 
     return (
-        <section className="relative w-full bg-white overflow-hidden">
+        <section className="relative min-h-screen w-full bg-white overflow-hidden">
 
             {/* Calque de fond flouté uniquement */}
             <div className="absolute inset-0 blur-[120px] -z-0 pointer-events-none" />
@@ -39,7 +39,7 @@ export function HeroSection() {
                         </p>
                         <div className="flex items-center gap-4 mt-4">
 
-                            <a href="https://aeliservicesfrontuser.vercel.app/">
+                            <a  href="https://app.aeliservices.com/register">
                                 <Button
                                     className="w-[200px] h-12 items-center justify-center"
                                 >
@@ -50,7 +50,7 @@ export function HeroSection() {
                     </div>
 
                     {/* Right Image + Purple Background */}
-                    <div className="w-full lg:w-1/2 relative lg:-right-20 flex justify-center h-[250px] md:h-[400px] lg:h-auto lg:justify-end">
+                    <div className="w-full mt-[18%] lg:mt-0 lg:w-1/2 relative lg:-right-20 flex justify-center h-[250px] md:h-[400px] lg:h-auto lg:justify-end">
                         <div className="absolute inset-0 lg:-top-20 lg:-bottom-20 h-[250px] md:h-[400px] lg:h-auto ">
                             <div
                                 className="w-full h-full md:w-[500px] lg:w-full md:ml-[17%] lg:ml-auto bg-[radial-gradient(100%_100%_at_0%_0%,_rgba(0,0,0,1)_80%,_rgba(232,_82,_77,_1))] opacity-90"

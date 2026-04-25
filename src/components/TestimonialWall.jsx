@@ -8,7 +8,7 @@ const testimonials = [
       name: 'Marie T.',
       role: 'Créatrice de mode éthique',
       avatar:
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ10hdlQsVFuUcCZxsf4Pq6iGxa4VAGdq2YQ&s',
       quote:
         'Avant AELI Services, mon travail manquait de visibilité. Cette plateforme a littéralement propulsé ma marque auprès d’un public que je n’aurais jamais pu atteindre seule. Un outil indispensable pour nous.',
     },
@@ -16,12 +16,12 @@ const testimonials = [
       name: 'Sophie L.',
       role: 'Consultante en stratégie',
       avatar:
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKiGXcI5XAawMYHEhQh1vBbWiNhjs7_08qpQ&s',
       quote:
         "La mise en relation avec d'autres entrepreneures via AELI Services est d'une simplicité déconcertante. C'est plus qu'une plateforme, c'est un véritable écosystème de soutien et de croissance.",
     },
     {
-      name: "Amélie P.",
+      name: "Abdoul P.",
       role: 'Artisane bijoutière',
       avatar:
         'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop&crop=face',
@@ -35,15 +35,15 @@ const testimonials = [
       name: 'Claire D.',
       role: 'Cliente fidèle',
       avatar:
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTw3gbHJ7nvUE5YRyg3tPEcaaKfHUSYG0H1AA&s',
       quote:
         'Je ne cherche plus mes prestataires ailleurs. AELI Services me permet de découvrir des talents incroyables dirigés par des femmes passionnées. Qualité et confiance garanties à chaque fois.',
     },
     {
-      name: 'Fatou S.',
-      role: 'Co-fondatrice Tech',
+      name: 'Jean S.',
+      role: 'Co-fondateur Tech',
       avatar:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC2r1eyzC8hxVSudTWCLltMLu9gYDUqIKWIA&s',
       quote:
         'AELI Services a comblé le fossé entre mon expertise technique et le grand public. En deux mois, ma base client a doublé grâce à la visibilité offerte par la plateforme.',
     },
@@ -51,7 +51,7 @@ const testimonials = [
       name: 'Lucie B.',
       role: 'Décoratrice d’intérieur',
       avatar:
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvEcb_cWAkTplyEewFjpqTrmTimGMzKz9oNQ&s',
       quote:
         'La plateforme est pensée pour mettre en valeur notre savoir-faire. Chaque détail de mon profil a été conçu pour convertir les visiteurs en clients réels.',
     },
@@ -59,26 +59,26 @@ const testimonials = [
   // Column 3
   [
     {
-      name: 'Vanessa G.',
-      role: 'Traiteur événementiel',
-      avatar:
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face',
-      quote:
-        'Grâce à AELI Services, j’ai enfin pu présenter mes services de manière élégante et professionnelle. C\'est exactement ce qu\'il manquait à l\'entrepreneuriat féminin ici.',
-    },
-    {
-      name: 'Elena R.',
+      name: 'Junior R.',
       role: 'Coach professionnelle',
       avatar:
-        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCaHCZGw0dmTVDuVElhGk6sjuhrTiEyusg3Q&s',
       quote:
         'Le système de recommandation d\'AELI est incroyable. Mes prospects arrivent déjà qualifiés, ce qui me fait gagner un temps précieux.',
     },
     {
-      name: 'Isabelle K.',
+      name: 'Vanessa G.',
+      role: 'Traiteur événementiel',
+      avatar:
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDGz9IaGH2gCJ4Xl5PeF7IG162SQVEmqjsgQ&s',
+      quote:
+        'Grâce à AELI Services, j’ai enfin pu présenter mes services de manière élégante et professionnelle. C\'est exactement ce qu\'il manquait à l\'entrepreneuriat féminin ici.',
+    },
+    {
+      name: 'Franck K.',
       role: 'Cliente & Partenaire',
       avatar:
-        'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=80&h=80&fit=crop&crop=face',
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWqzHwKja1JO0OWW4_TZYoWjw7oCpx0zGhsA&s',
       quote:
         'Utiliser AELI Services, c\'est soutenir l\'économie locale. C\'est clair, moderne, et très efficace pour trouver des services de qualité.',
     },
@@ -114,14 +114,11 @@ export function TestimonialWall() {
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="text-[#8B5CF6] text-sm font-medium mb-4">
-            Testimonials
-          </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-            Loved by teams everywhere
+            Ils font confiance à AELI Services
           </h2>
           <p className="text-gray-500 text-lg">
-            See what our customers have to say about their experience.
+            Découvrez comment notre plateforme accompagne la réussite des entrepreneures et facilite des collaborations durables.
           </p>
         </div>
 

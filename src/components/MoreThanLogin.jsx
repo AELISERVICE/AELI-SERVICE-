@@ -21,7 +21,7 @@ export function MoreThanLogin() {
   }, [images.length]);
 
   return (
-    <section className="py-32 relative overflow-hidden bg-white">
+    <section className="pb-32 relative overflow-hidden bg-white">
       <div className="max-w-7xl mx-auto px-6">
         {/* En-tête */}
         <div className="text-center max-w-3xl mx-auto mb-20">
@@ -42,8 +42,8 @@ export function MoreThanLogin() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#8B5CF6]/5 blur-[100px] rounded-full pointer-events-none"></div>
           <div className="absolute top-1/3 left-1/3 w-[300px] h-[300px] bg-[#FCE0D6]/15 blur-[80px] rounded-full pointer-events-none"></div>
 
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] border border-gray-100 rounded-[100%] transform -rotate-12"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] border border-gray-100 rounded-[100%] transform -rotate-12"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] border border-gray-300 rounded-[100%] transform -rotate-12"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] border border-gray-300 rounded-[100%] transform -rotate-12"></div>
 
           {/* Éléments flottants */}
           <div className="absolute left-[10%] top-[40%] w-12 h-12 bg-white border border-gray-200 rounded-2xl flex items-center justify-center shadow-lg z-10">
@@ -75,6 +75,7 @@ export function MoreThanLogin() {
             {/* Le téléphone lui-même avec overflow-hidden */}
             <div className="w-full h-full bg-gray-800 rounded-[40px] p-2 shadow-2xl shadow-[#8B5CF6]/10 border border-gray-800 overflow-hidden">
               <div className="relative w-full h-full rounded-[32px] overflow-hidden">
+               <img src="./objectif.png" alt="" className="absolute top-2 left-[47%] w-3 z-10"/>
                 {images.map((img, index) => (
                   <div
                     key={index}

@@ -85,7 +85,7 @@ export function Pricing() {
     ]
 
     return (
-        <section className="py-24 relative overflow-hidden">
+        <section className="pb-24 pt-20 relative overflow-hidden">
             {/* ... gardez vos div d'arrière-plan inchangées ... */}
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -95,7 +95,7 @@ export function Pricing() {
 
                 <div className="flex flex-col lg:flex-row gap-0 border-y border-gray-100 relative">
                     {/* Colonne de gauche (Labels des fonctionnalités) */}
-                    <div className="hidden lg:block w-64 shrink-0 py-8 pr-8 border-r border-gray-100">
+                    <div className="hidden lg:block mt-51 w-64 shrink-0 py-8 pr-8 border-r border-gray-100">
                         {featureCategories.map((category, idx) => (
                             <div key={idx} className="mb-8">
                                 <h4 className="text-gray-900 font-bold text-sm mb-4 uppercase tracking-wider">
@@ -126,14 +126,18 @@ export function Pricing() {
                                             <span className="text-gray-400 text-sm">XAF</span>
                                         </div>
                                     </div>
-                                    <button className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${plan.highlighted ? 'bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white' : 'bg-gray-900 text-white'}`}>
-                                        Choisir ce plan
-                                    </button>
+                                    <a
+                                        href="https://app.aeliservices.com">
+                                        <button
+                                            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${plan.highlighted ? 'bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white' : 'bg-gray-900 text-white'}`}>
+                                            Choisir ce plan
+                                        </button>
+                                    </a>
                                 </div>
 
                                 {/* Mapping des fonctionnalités */}
                                 {featureCategories.map((category, catIdx) => (
-                                    <div key={catIdx} className="mb-8">
+                                    <div key={catIdx} className="mb-8 lg:mb-17">
                                         <h4 className="text-gray-900 font-bold text-sm mb-4 lg:hidden uppercase">{category.name}</h4>
                                         <ul className="space-y-4">
                                             {category.keys.map((key, i) => (

@@ -1,12 +1,5 @@
 import React, { useEffect, useRef } from "react";
 
-interface WavyMarqueeProps {
-  text: string | string[];
-  id: string;
-  pathDefinition: string;
-  speed?: number;
-  className?: string;
-}
 
 export function WavyMarquee({
   text,
@@ -14,8 +7,8 @@ export function WavyMarquee({
   pathDefinition,
   speed = 5,
   className = "",
-}: WavyMarqueeProps) {
-  const textPathRef = useRef<SVGTextPathElement>(null);
+}) {
+  const textPathRef = useRef(null);
 
   const displayContent = Array.isArray(text) ? text.join("  •  ") : text;
   const repeatedText = `${displayContent}  •  `.repeat(30);
@@ -65,7 +58,6 @@ export function WavyMarquee({
           <path id={id} d={pathDefinition} />
         </defs>
 
-        {/* Bande noire : Épaisse sur mobile (50), fine sur PC (20) */}
         <use
           href={`#${id}`}
           stroke="#000000"
