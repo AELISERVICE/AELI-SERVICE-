@@ -20,8 +20,6 @@ export function HomeScreen() {
                 <MoreThanLogin />
                 <SocialSidebar />
                 <div className="relative z-10">
-
-
                     <TestimonialWall />
                     <Banner />
                     <Footer />
