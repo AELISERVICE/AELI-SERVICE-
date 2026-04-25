@@ -3,7 +3,7 @@ import React from 'react'
 export function FeatureCard({ icon: Icon, title, description, className = '' }) {
     return (
         <div
-            className={`bg-white rounded-2xl shadow-lg shadow-gray-200/60 p-5 md:p-6 flex items-start gap-4 border border-gray-100 ${className}`}
+            className={`bg-white rounded-2xl shadow-sm shadow-gray-200/60 p-5 md:p-6 flex items-start gap-4 border border-gray-100 ${className}`}
         >
             <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
                 <Icon className="w-6 h-6 md:w-7 md:h-7 text-purple-600" />

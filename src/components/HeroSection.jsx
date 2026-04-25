@@ -11,10 +11,16 @@ export function HeroSection() {
 
     return (
         <section className="relative w-full bg-white overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            {/* Calque de fond flouté uniquement */}
+            <div className="absolute inset-0 blur-[120px] -z-0 pointer-events-none" />
+
+            {/* Conteneur du contenu (au-dessus du flou) */}
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col lg:flex-row items-center min-h-[500px] md:min-h-[600px] lg:min-h-[650px]">
+
                     {/* Left Content */}
-                    <div className="w-full lg:w-1/2 pt-10 md:pt-16 lg:pt-0 pb-8 lg:pb-0 z-10 relative">
+                    <div className="w-full lg:w-1/2 pt-10 md:pt-16 lg:pt-0 pb-8 lg:pb-0">
                         <div className="flex items-center gap-3 mb-10">
                             <img src='./logo.png' alt='logo' className="w-20 h-20 flex-shrink-0" />
                             <span className="font-bold text-xl pacifico-regular">AELI Services</span>
@@ -32,20 +38,22 @@ export function HeroSection() {
                             Fini le bouche-à-oreille incertain. Parcourez notre annuaire de prestataires qualifiés, comparez les profils et contactez directement l'expert pour vos travaux et services.
                         </p>
                         <div className="flex items-center gap-4 mt-4">
-                            <Button variant="icon" aria-label="Play" onClick={handleOpenVideo}>
-                                <Play className="w-7 h-7  text-white  text-center" />
-                            </Button>
+
                             <a href="https://aeliservicesfrontuser.vercel.app/">
-                                <Button>Commencer</Button>
+                                <Button
+                                    className="w-[200px] h-12 items-center justify-center"
+                                >
+                                    Commencer
+                                </Button>
                             </a>
                         </div>
                     </div>
 
                     {/* Right Image + Purple Background */}
-                    <div className="w-full lg:w-1/2 relative lg:-right-20 flex justify-center  h-[250px] md:h-[400px] lg:h-auto lg:justify-end">
+                    <div className="w-full lg:w-1/2 relative lg:-right-20 flex justify-center h-[250px] md:h-[400px] lg:h-auto lg:justify-end">
                         <div className="absolute inset-0 lg:-top-20 lg:-bottom-20 h-[250px] md:h-[400px] lg:h-auto ">
                             <div
-                                className="w-full h-full md:w-[500px] lg:w-full md:ml-[17%] lg:ml-auto bg-gradient-to-br from-purple-500 via-[#E8524D] to-[#E8524D] opacity-90"
+                                className="w-full h-full md:w-[500px] lg:w-full md:ml-[17%] lg:ml-auto bg-[radial-gradient(100%_100%_at_0%_0%,_rgba(0,0,0,1)_80%,_rgba(232,_82,_77,_1))] opacity-90"
                                 style={{ borderRadius: '80% 20% 63% 37% / 26% 88% 12% 74%' }}
                             />
                         </div>
@@ -60,6 +68,7 @@ export function HeroSection() {
                     </div>
                 </div>
             </div>
+
             <VideoPresentation
                 isOpen={isVideoOpen}
                 onClose={handleCloseVideo}
