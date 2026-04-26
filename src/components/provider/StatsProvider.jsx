@@ -67,7 +67,7 @@ export function StatsProvider({ showStats, setHideStats, setShowStats }) {
             contact.senderName ||
             contact.senderEmail ||
             'Utilisateur',
-          img: contact.sender?.profilePhoto || `https://ui-avatars.com/api/?name=${contact.sender?.firstName} ${contact.sender?.lastName}&background=random`,
+          img: contact.sender?.profilePhoto || `./no-user.jpg`,
         });
       }
     });
