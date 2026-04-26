@@ -88,7 +88,7 @@ export function ProfileSection({ setIsRole }) {
 
     return (
         <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-[#FCE0D6] p-6 text-white shadow-lg">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] p-6 text-white shadow-lg">
                 <div className="relative flex flex-col sm:flex-row items-center sm:items-start gap-6">
                     <div className="relative">
                         {!isEditing &&
