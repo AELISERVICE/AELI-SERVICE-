@@ -120,11 +120,11 @@ export function RegisterForm() {
               required
             />
             <Input
-              label="Mot de passe"
-              type="password"
-              placeholder="*******"
-              name="password"
-              value={formData.password}
+              label="Telephne"
+              type="number"
+              placeholder="692 033 745"
+              name="phone"
+              value={formData.phone}
               onChange={handleChange}
               required
             />
@@ -150,11 +150,11 @@ export function RegisterForm() {
               required
             />
             <Input
-              label="Telephne"
-              type="number"
-              placeholder="692 033 745"
-              name="phone"
-              value={formData.phone}
+              label="Mot de passe"
+              type="password"
+              placeholder="*******"
+              name="password"
+              value={formData.password}
               onChange={handleChange}
               required
             />
