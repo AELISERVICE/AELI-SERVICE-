@@ -6,15 +6,12 @@ import { SectionHeader } from '../../ui/SectionHeader';
 import { Input } from '../../ui/Input';
 import { Button } from '../../ui/Button';
 import { FormCard } from '../../ui/FormCard';
+import { availableActivities } from './AvailableActivities';
 import { TermsSection } from "./TermsSection";
 import { MapPicker } from '../global/MapPicker';
 import { useInfoUserConnected } from '../../hooks/useUser';
 import { useApplyProvider, useUpdateProviderProfile } from '../../hooks/useProvider';
 
-const availableActivities = [
-    "Ménage", "Plomberie", "Électricité", "Jardinage",
-    "Coiffure", "Esthétique", "Mécanique", "Cours d'appui"
-]
 
 export function ProviderInfoForm() {
     const navigate = useNavigate()
@@ -113,7 +110,7 @@ export function ProviderInfoForm() {
     }
 
     const removeActivity = (activityToRemove) => {
-        if (isEditMode) return; // Optionnel : empêcher de retirer des activités en mode édition si tu veux
+        if (isEditMode) return; // Optionnel : empêcher de retirer des activités en mode édition 
         setFormData(prev => ({ ...prev, activities: prev.activities.filter(act => act !== activityToRemove) }))
     }
 
