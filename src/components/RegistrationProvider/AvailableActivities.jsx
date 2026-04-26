@@ -1,6 +1,6 @@
 export const availableActivities = [
     // --- AGRICULTURE, AGRO-ALIMENTAIRE & ÉLEVAGE ---
-    "AGRO-ALIMENTAIRE ", "AGro-pastoral", "Agriculture (Maraîchage / Vivriers)",
+    "Agro-alimentaire", "AGro-pastoral", "Agriculture (Maraîchage / Vivriers)",
     "Élevage (Aviculture, Porciculture, Pisciculture)", "Transformation agro-alimentaire ",
     "Production de jus et boissons locales", "Apiculture", "Vente d'intrants agricoles",
     "Pépinière et horticulture", "Transformation d'huile de palme",
