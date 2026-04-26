@@ -142,13 +142,10 @@ export function ChatWindow({ chat, onBack }) {
                                     )}
                                 </span>
                             </div>
-
                             <div className="mt-4 flex flex-wrap gap-2 items-center">
                                 <span className={`flex px-3 py-1 rounded-full text-[10px] font-bold justify-center items-center ${msg.isUnlocked ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'}`}>
                                     {msg.isUnlocked ? 'Débloqué' : 'Payant'}
                                 </span>
-
-                                { }
                                 {msg.isUnlocked &&
                                     <button
                                         ref={el => triggerRefs.current[msg.id] = el}
@@ -168,8 +165,6 @@ export function ChatWindow({ chat, onBack }) {
                                         <ExternalLink size={12} />
                                     </button>
                                 )}
-
-                                { }
                                 <StatusMenu
                                     isOpen={openMenuId === msg.id}
                                     onClose={() => setOpenMenuId(null)}

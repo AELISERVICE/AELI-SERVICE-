@@ -63,7 +63,7 @@ export function StatusMenu({ isOpen, onClose, triggerRef, onUpdateStatus }) {
             <div
                 ref={menuRef}
                 style={{ position: 'absolute', top: `${coords.top}px`, left: `${coords.left}px` }}
-                className="bg-white rounded-xl shadow-2xl border border-gray-100 w-44 z-[999] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                className="bg-white rounded-xl shadow-2xl border border-gray-100 w-44 z-[1002] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             >
                 <div className="flex flex-col">
                     {STATUS_OPTIONS.map((status, index) => (
