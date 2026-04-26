@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { SocialSidebar } from '../components/SocialSidebar';
-import { HeroSection } from '../components/HeroSection';
+import { HeroSection } from '../components/Hero';
 import { FeatureCards } from '../components/FeatureCards';
 import { Pricing } from "../components/Pricing";
-import { MoreThanLogin } from '../components/MoreThanLogin';
+import { MoreThanLogin } from '../components/AppPresentation';
 import { TestimonialWall } from '../components/TestimonialWall';
 import { Banner } from '../components/Banner';
 import { Footer } from '../components/Footer';
