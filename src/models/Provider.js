@@ -217,6 +217,15 @@ const Provider = sequelize.define('Provider', {
     }
 });
 
+// Decrypt whatsapp on serialization (covers Sequelize includes where afterFind doesn't fire)
+Provider.prototype.toJSON = function () {
+    const values = { ...this.get() };
+    if (values.whatsapp) {
+        values.whatsapp = decrypt(values.whatsapp);
+    }
+    return values;
+};
+
 // Method to increment view count
 Provider.prototype.incrementViews = async function () {
     this.viewsCount += 1;

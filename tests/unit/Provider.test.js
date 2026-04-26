@@ -256,6 +256,61 @@ describe('Provider Model', () => {
     });
 
     describe('Instance Methods', () => {
+        describe('toJSON', () => {
+            const toJSON = function () {
+                const values = { ...this.get() };
+                if (values.whatsapp) {
+                    values.whatsapp = decrypt(values.whatsapp);
+                }
+                return values;
+            };
+
+            it('should decrypt whatsapp when serializing to JSON', () => {
+                const provider = {
+                    get: jest.fn().mockReturnValue({
+                        id: 'provider-123',
+                        businessName: 'Test Business',
+                        whatsapp: 'encrypted_+237600000000'
+                    })
+                };
+
+                const result = toJSON.call(provider);
+
+                expect(decrypt).toHaveBeenCalledWith('encrypted_+237600000000');
+                expect(result.whatsapp).toBe('+237600000000');
+                expect(result.businessName).toBe('Test Business');
+            });
+
+            it('should not call decrypt when whatsapp is null', () => {
+                const provider = {
+                    get: jest.fn().mockReturnValue({
+                        id: 'provider-123',
+                        businessName: 'Test Business',
+                        whatsapp: null
+                    })
+                };
+
+                const result = toJSON.call(provider);
+
+                expect(decrypt).not.toHaveBeenCalled();
+                expect(result.whatsapp).toBeNull();
+            });
+
+            it('should not mutate the underlying instance values', () => {
+                const stored = {
+                    id: 'provider-123',
+                    whatsapp: 'encrypted_+237600000000'
+                };
+                const provider = {
+                    get: jest.fn().mockReturnValue(stored)
+                };
+
+                toJSON.call(provider);
+
+                expect(stored.whatsapp).toBe('encrypted_+237600000000');
+            });
+        });
+
         describe('incrementViews', () => {
             it('should increment views count', async () => {
                 const provider = new Provider(mockProv);
