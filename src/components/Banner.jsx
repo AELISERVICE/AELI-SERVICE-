@@ -1,6 +1,7 @@
 import React from "react";
 import { WavyMarquee } from "../ui/WavyMarquee";
 
+
 export function Banner() {
   const threadsPath =
     "M 800,1200 C 800,1000 900,700 500,750 C 100,800 0,400 300,500 C 600,600 700,200 800,0";

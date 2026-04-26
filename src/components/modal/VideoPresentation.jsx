@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+
 
 export function VideoPresentation({ isOpen, onClose, videoSrc }) {
     if (!isOpen) {

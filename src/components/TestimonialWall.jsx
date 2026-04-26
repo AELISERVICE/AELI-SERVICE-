@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { TestimonialCard } from '../ui/testimonialcard';
+
 
 const testimonials = [
-  // Column 1
   [
     {
       name: 'Marie T.',
@@ -29,7 +30,6 @@ const testimonials = [
         "AELI Services m'a aidé à professionnaliser mon image. Les clients me contactent désormais avec une confiance totale, car ils savent que je suis sur une plateforme sérieuse.",
     },
   ],
-  // Column 2
   [
     {
       name: 'Claire D.',
@@ -85,34 +85,14 @@ const testimonials = [
   ],
 ];
 
-function TestimonialCard({ name, role, avatar, quote }) {
-  return (
-    <div className="relative bg-white border border-[#8B5CF6]/10 rounded-2xl p-6 h-full shadow-sm">
-      <div className="flex items-center gap-3 mb-4">
-        <img
-          src={avatar}
-          alt={name}
-          className="w-10 h-10 rounded-full object-cover border border-gray-100"
-        />
-        <div>
-          <p className="text-gray-900 font-semibold text-sm">{name}</p>
-          <p className="text-gray-400 text-xs">{role}</p>
-        </div>
-      </div>
-      <p className="text-gray-600 text-sm leading-relaxed">{quote}</p>
-    </div>
-  );
-}
 
 export function TestimonialWall() {
   const flatTestimonials = testimonials.flat();
-  // On double le tableau pour un effet de boucle infini fluide
   const duplicatedTestimonials = [...flatTestimonials, ...flatTestimonials];
 
   return (
     <section className="py-24 relative overflow-hidden z-100">
       <div className="max-w-7xl mx-auto md:px-6">
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
             Ils font confiance à AELI Services
@@ -121,14 +101,12 @@ export function TestimonialWall() {
             Découvrez comment notre plateforme accompagne la réussite des entrepreneures et facilite des collaborations durables.
           </p>
         </div>
-
-        {/* MOBILE: Auto-scrolling Carousel */}
         <div className="flex md:hidden w-full overflow-hidden">
           <motion.div
             className="flex gap-4"
             animate={{ x: ['0%', '-50%'] }}
             transition={{
-              duration: 40, // Ajustez cette valeur pour la vitesse
+              duration: 40,
               ease: 'linear',
               repeat: Infinity,
             }}
@@ -140,8 +118,6 @@ export function TestimonialWall() {
             ))}
           </motion.div>
         </div>
-
-        {/* DESKTOP: Masonry Grid */}
         <div
           className="hidden md:grid grid-cols-3 gap-5 items-start max-h-[700px] overflow-hidden"
           style={{

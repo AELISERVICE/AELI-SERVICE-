@@ -1,10 +1,9 @@
-import React, { useState } from 'react'
-import { Check } from 'lucide-react'
+import React from 'react';
+import { Check } from 'lucide-react';
+import { Button } from '../ui/Button';
+
 
 export function Pricing() {
-    const [isYearly, setIsYearly] = useState(true)
-
-    // Les clés ici doivent correspondre EXACTEMENT à celles dans les 'features' des plans
     const featureCategories = [
         {
             name: 'Services Essentiels',
@@ -35,7 +34,7 @@ export function Pricing() {
     const plans = [
         {
             name: 'Mensuel',
-            price: '5 000', // Prix en nombre/string simple pour affichage
+            price: '5 000',
             description: 'Abonnement mensuel',
             features: {
                 'Contacts illimités': true,
@@ -48,6 +47,7 @@ export function Pricing() {
                 'Priorité résultats de recherche': false,
                 'Accès prioritaire aux opportunités': false,
             },
+            recommanded: false,
         },
         {
             name: 'Trimestriel',
@@ -64,6 +64,7 @@ export function Pricing() {
                 'Priorité résultats de recherche': false,
                 'Accès prioritaire aux opportunités': false,
             },
+            recommanded: false,
         },
         {
             name: 'Annuel',
@@ -81,20 +82,17 @@ export function Pricing() {
                 'Priorité résultats de recherche': true,
                 'Accès prioritaire aux opportunités': true,
             },
+            recommanded: true,
         },
     ]
 
     return (
         <section className="pb-24 pt-20 relative overflow-hidden">
-            {/* ... gardez vos div d'arrière-plan inchangées ... */}
-
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-16">
                     <h2 className="text-4xl font-bold mb-6 text-gray-900">Plans AELI Services</h2>
                 </div>
-
                 <div className="flex flex-col lg:flex-row gap-0 border-y border-gray-100 relative">
-                    {/* Colonne de gauche (Labels des fonctionnalités) */}
                     <div className="hidden lg:block mt-51 w-64 shrink-0 py-8 pr-8 border-r border-gray-100">
                         {featureCategories.map((category, idx) => (
                             <div key={idx} className="mb-8">
@@ -111,8 +109,6 @@ export function Pricing() {
                             </div>
                         ))}
                     </div>
-
-                    {/* Colonnes des Plans */}
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-0">
                         {plans.map((plan, idx) => (
                             <div key={idx} className={`py-8 px-6 lg:px-8 relative ${plan.highlighted ? 'bg-[#8B5CF6]/[0.03] lg:border-x border-[#8B5CF6]/20' : 'lg:border-r border-gray-100'}`}>
@@ -128,14 +124,14 @@ export function Pricing() {
                                     </div>
                                     <a
                                         href="https://app.aeliservices.com">
-                                        <button
-                                            className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${plan.highlighted ? 'bg-gradient-to-r from-[#E8524D] to-[#FCE0D6] text-white' : 'bg-gray-900 text-white'}`}>
+                                        <Button
+                                            variant="plan"
+                                            recommanded={plan.recommanded}
+                                        >
                                             Choisir ce plan
-                                        </button>
+                                        </Button>
                                     </a>
                                 </div>
-
-                                {/* Mapping des fonctionnalités */}
                                 {featureCategories.map((category, catIdx) => (
                                     <div key={catIdx} className="mb-8 lg:mb-17">
                                         <h4 className="text-gray-900 font-bold text-sm mb-4 lg:hidden uppercase">{category.name}</h4>

@@ -11,15 +11,9 @@ export function HeroSection() {
 
     return (
         <section className="relative min-h-screen lg:min-h-[700px] w-full bg-white overflow-hidden">
-
-            {/* Calque de fond flouté uniquement */}
             <div className="absolute inset-0 blur-[120px] -z-0 pointer-events-none" />
-
-            {/* Conteneur du contenu (au-dessus du flou) */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col lg:flex-row items-center min-h-[500px] md:min-h-[600px] lg:min-h-[650px]">
-
-                    {/* Left Content */}
                     <div className="w-full lg:w-1/2 pt-10 md:pt-16 lg:pt-0 pb-8 lg:pb-0">
                         <div className="flex items-center gap-3 mb-10">
                             <img src='./logo.png' alt='logo' className="w-20 h-20 flex-shrink-0" />
@@ -29,7 +23,6 @@ export function HeroSection() {
                             En savoir plus sur{' '}
                             <span className="text-[#E8524D] font-semibold">AELI SERVICES</span>
                         </p>
-
                         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-extrabold text-gray-900 leading-tight tracking-tight mb-4">
                             Le bon prestataire, juste là où vous en avez besoin.
                         </h1>
@@ -39,7 +32,7 @@ export function HeroSection() {
                         </p>
                         <div className="flex items-center gap-4 mt-4">
 
-                            <a  href="https://app.aeliservices.com/register">
+                            <a href="https://app.aeliservices.com/register">
                                 <Button
                                     className="w-[200px] h-12 items-center justify-center"
                                 >
@@ -48,8 +41,6 @@ export function HeroSection() {
                             </a>
                         </div>
                     </div>
-
-                    {/* Right Image + Purple Background */}
                     <div className="w-full mt-[18%] lg:mt-0 lg:w-1/2 relative lg:-right-20 flex justify-center h-[250px] md:h-[400px] lg:h-auto lg:justify-end">
                         <div className="absolute inset-0 lg:-top-20 lg:-bottom-20 h-[250px] md:h-[400px] lg:h-auto ">
                             <div
@@ -68,7 +59,6 @@ export function HeroSection() {
                     </div>
                 </div>
             </div>
-
             <VideoPresentation
                 isOpen={isVideoOpen}
                 onClose={handleCloseVideo}

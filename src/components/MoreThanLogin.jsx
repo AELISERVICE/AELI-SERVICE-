@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+
 
 export function MoreThanLogin() {
-  // Liste de vos images (assurez-vous qu'elles sont bien dans votre dossier public)
   const images = [
     "./login.png",
     "./home.png",
@@ -12,7 +12,6 @@ export function MoreThanLogin() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-lecture du carrousel toutes les 3 secondes
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -61,18 +60,10 @@ export function MoreThanLogin() {
               <div className="w-3 h-3 rounded-full bg-[#FCE0D6]/80"></div>
             </div>
           </div>
-
-          {/* Wrapper du téléphone (Contient tout) */}
           <div className="relative z-20 w-[280px] h-[600px]">
-
-            {/* Boutons Volume (Gauche) */}
             <div className="absolute -left-1 top-24 w-1 h-12 bg-gray-700 rounded-l-lg"></div>
             <div className="absolute -left-1 top-40 w-1 h-16 bg-gray-700 rounded-l-lg"></div>
-
-            {/* Bouton Power (Droite) */}
             <div className="absolute -right-1 top-32 w-1 h-20 bg-gray-700 rounded-r-lg"></div>
-
-            {/* Le téléphone lui-même avec overflow-hidden */}
             <div className="w-full h-full bg-gray-800 rounded-[40px] p-2 shadow-2xl shadow-[#8B5CF6]/10 border border-gray-800 overflow-hidden">
               <div className="relative w-full h-full rounded-[32px] overflow-hidden">
                <img src="./objectif.png" alt="" className="absolute top-2 left-[47%] w-3 z-10"/>
