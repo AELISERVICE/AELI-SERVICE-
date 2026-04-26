@@ -7,7 +7,7 @@ export function FormCard({
     children,
     title,
     subtitle,
-    gradientFrom = "from-purple-600",
+    gradientFrom = "from-[#E8524D]",
     gradientTo = "to-[#FCE0D6]",
 }) {
     return (
