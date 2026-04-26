@@ -1,6 +1,6 @@
 {
-  "name": "AELI Services Admin",
-  "short_name": "AELI Services Admin",
+  "name": "AELI Admin",
+  "short_name": "AELI Admin",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
