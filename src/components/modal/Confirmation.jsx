@@ -17,7 +17,7 @@ export function Confirmation({ closeConfirm, onConfirm, isPending, title, descri
   return (
     <main
       onClick={closeConfirm}
-      className="fixed min-h-screen w-full flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-50">
+      className="fixed min-h-screen w-full flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm z-1002">
       <div
         onClick={(e) => e.stopPropagation()}
         className=" w-full max-w-[400px] bg-white rounded-2xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in-95 duration-300"
