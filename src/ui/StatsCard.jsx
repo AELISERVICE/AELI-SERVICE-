@@ -55,7 +55,6 @@ export function StatsCard({
           </h3>
         )}
         <p className="text-sm text-gray-500 font-medium mb-2">{title}</p>
-
         <div className="flex items-center text-xs text-gray-400">
           {rating ? (
             <div className="flex items-center text-yellow-400 mr-2">
