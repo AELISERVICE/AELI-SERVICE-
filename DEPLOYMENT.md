@@ -151,7 +151,8 @@ Si la base est hébergée en dehors du docker-compose :
 - [ ] `DB_SSL=true` si base managée
 - [ ] SMTP production configuré (pas Mailtrap sandbox)
 - [ ] Clés CinetPay / NotchPay **live** (pas test)
-- [ ] `FRONTEND_URL` contient les domaines réels du front
+- [ ] `FRONTEND_URL` contient les domaines réels du front (utilisé pour le CORS)
+- [ ] `FRONTEND_URL_USER` et `FRONTEND_URL_ADMIN` renseignés si tu as deux fronts distincts (sinon le lien de reset password tombera sur le mauvais domaine pour les admins)
 - [ ] Backups Postgres programmés
 - [ ] Reverse proxy TLS devant l'API (Nginx, Traefik, Caddy…)
 

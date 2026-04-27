@@ -175,14 +175,25 @@ describe('Helpers Utility Functions', () => {
     });
 
     describe('getFrontendUrl', () => {
-        const originalUrl = process.env.FRONTEND_URL;
+        const originals = {
+            FRONTEND_URL: process.env.FRONTEND_URL,
+            FRONTEND_URL_USER: process.env.FRONTEND_URL_USER,
+            FRONTEND_URL_ADMIN: process.env.FRONTEND_URL_ADMIN
+        };
 
         afterEach(() => {
-            if (originalUrl === undefined) {
-                delete process.env.FRONTEND_URL;
-            } else {
-                process.env.FRONTEND_URL = originalUrl;
+            for (const [key, value] of Object.entries(originals)) {
+                if (value === undefined) {
+                    delete process.env[key];
+                } else {
+                    process.env[key] = value;
+                }
             }
+        });
+
+        beforeEach(() => {
+            delete process.env.FRONTEND_URL_USER;
+            delete process.env.FRONTEND_URL_ADMIN;
         });
 
         it('should return the URL as-is when FRONTEND_URL is a single URL', () => {
@@ -203,6 +214,31 @@ describe('Helpers Utility Functions', () => {
         it('should return raw value when array JSON is malformed', () => {
             process.env.FRONTEND_URL = '[not-valid-json';
             expect(getFrontendUrl()).toBe('[not-valid-json');
+        });
+
+        it('should pick FRONTEND_URL_ADMIN when role is admin', () => {
+            process.env.FRONTEND_URL = 'https://app.aeli.cm';
+            process.env.FRONTEND_URL_ADMIN = 'https://admin.aeli.cm';
+            expect(getFrontendUrl('admin')).toBe('https://admin.aeli.cm');
+        });
+
+        it('should pick FRONTEND_URL_USER for non-admin role', () => {
+            process.env.FRONTEND_URL = 'https://default.aeli.cm';
+            process.env.FRONTEND_URL_USER = 'https://app.aeli.cm';
+            expect(getFrontendUrl('client')).toBe('https://app.aeli.cm');
+            expect(getFrontendUrl('provider')).toBe('https://app.aeli.cm');
+        });
+
+        it('should fall back to FRONTEND_URL when role-specific override is missing', () => {
+            process.env.FRONTEND_URL = 'https://app.aeli.cm';
+            expect(getFrontendUrl('admin')).toBe('https://app.aeli.cm');
+            expect(getFrontendUrl('client')).toBe('https://app.aeli.cm');
+        });
+
+        it('should use FRONTEND_URL when no role is provided', () => {
+            process.env.FRONTEND_URL = 'https://default.aeli.cm';
+            process.env.FRONTEND_URL_ADMIN = 'https://admin.aeli.cm';
+            expect(getFrontendUrl()).toBe('https://default.aeli.cm');
         });
     });
 });

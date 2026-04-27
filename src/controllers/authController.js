@@ -428,7 +428,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   await user.save({ fields: ["resetPasswordToken", "resetPasswordExpires"] });
 
   // Create reset URL
-  const resetUrl = `${getFrontendUrl()}/reset-password/${resetToken}`;
+  const resetUrl = `${getFrontendUrl(user.role)}/reset-password/${resetToken}`;
 
   await logSecurityEvent("password_reset_request", req, user.id, {}, true);
 

@@ -204,10 +204,22 @@ const parseBoolean = (value) => {
  */
 /**
  * Resolve the public frontend base URL from env.
- * FRONTEND_URL can be a JSON array (used for CORS multi-origin) or a single URL.
- * Returns the first entry of the array or the string itself.
+ *
+ * Priority:
+ *  1. role-specific override (FRONTEND_URL_ADMIN for "admin", FRONTEND_URL_USER otherwise)
+ *  2. FRONTEND_URL (string or JSON array — first entry wins)
+ *  3. http://localhost:5173 fallback
+ *
+ * @param {string} [role] - Optional user role to pick a dedicated front (e.g. "admin").
  */
-const getFrontendUrl = () => {
+const getFrontendUrl = (role) => {
+    if (role === 'admin' && process.env.FRONTEND_URL_ADMIN) {
+        return process.env.FRONTEND_URL_ADMIN;
+    }
+    if (role && role !== 'admin' && process.env.FRONTEND_URL_USER) {
+        return process.env.FRONTEND_URL_USER;
+    }
+
     const raw = process.env.FRONTEND_URL || 'http://localhost:5173';
     if (raw.startsWith('[')) {
         try {
