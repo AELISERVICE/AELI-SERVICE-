@@ -8,7 +8,8 @@ const {
     getPaginationData,
     buildSortOrder,
     parseBoolean,
-    extractPhotoUrls
+    extractPhotoUrls,
+    getFrontendUrl
 } = require('../../src/utils/helpers');
 
 // Mock response object
@@ -170,6 +171,38 @@ describe('Helpers Utility Functions', () => {
             expect(extractPhotoUrls(null)).toEqual([]);
             expect(extractPhotoUrls(undefined)).toEqual([]);
             expect(extractPhotoUrls([])).toEqual([]);
+        });
+    });
+
+    describe('getFrontendUrl', () => {
+        const originalUrl = process.env.FRONTEND_URL;
+
+        afterEach(() => {
+            if (originalUrl === undefined) {
+                delete process.env.FRONTEND_URL;
+            } else {
+                process.env.FRONTEND_URL = originalUrl;
+            }
+        });
+
+        it('should return the URL as-is when FRONTEND_URL is a single URL', () => {
+            process.env.FRONTEND_URL = 'https://aeli.cm';
+            expect(getFrontendUrl()).toBe('https://aeli.cm');
+        });
+
+        it('should return the first entry when FRONTEND_URL is a JSON array', () => {
+            process.env.FRONTEND_URL = '["https://aeli.cm", "https://admin.aeli.cm"]';
+            expect(getFrontendUrl()).toBe('https://aeli.cm');
+        });
+
+        it('should fall back to localhost when FRONTEND_URL is missing', () => {
+            delete process.env.FRONTEND_URL;
+            expect(getFrontendUrl()).toBe('http://localhost:5173');
+        });
+
+        it('should return raw value when array JSON is malformed', () => {
+            process.env.FRONTEND_URL = '[not-valid-json';
+            expect(getFrontendUrl()).toBe('[not-valid-json');
         });
     });
 });

@@ -2,18 +2,7 @@
  * Email templates for AELI Services
  */
 
-const getFrontendUrl = () => {
-  const url = process.env.FRONTEND_URL || 'http://localhost:5173';
-  if (url.startsWith('[')) {
-    try {
-      const urls = JSON.parse(url);
-      return Array.isArray(urls) ? urls[0] : url;
-    } catch (e) {
-      return url;
-    }
-  }
-  return url;
-};
+const { getFrontendUrl } = require('./helpers');
 
 const frontendUrl = getFrontendUrl();
 

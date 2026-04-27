@@ -3,6 +3,8 @@
  * Documentation: https://docs.notchpay.co
  */
 
+const { getFrontendUrl } = require('../utils/helpers');
+
 const NOTCH_PAY_CONFIG = {
     publicKey: process.env.NOTCH_PAY_PUBLIC_KEY,
     secretKey: process.env.NOTCH_PAY_SECRET_KEY,
@@ -15,7 +17,7 @@ const NOTCH_PAY_CONFIG = {
     currency: 'XAF', // Cameroon
 
     // Webhook/Callback
-    callbackUrl: process.env.NOTCH_PAY_CALLBACK_URL || `${process.env.FRONTEND_URL}/payment/callback`,
+    callbackUrl: process.env.NOTCH_PAY_CALLBACK_URL || `${getFrontendUrl()}/payment/callback`,
     webhookUrl: process.env.NOTCH_PAY_WEBHOOK_URL || `${process.env.API_BASE_URL}/api/payments/notchpay/webhook`
 };
 

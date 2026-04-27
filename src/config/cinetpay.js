@@ -3,6 +3,8 @@
  * Documentation: https://docs.cinetpay.com
  */
 
+const { getFrontendUrl } = require('../utils/helpers');
+
 const CINETPAY_CONFIG = {
     apiKey: process.env.CINETPAY_API_KEY,
     siteId: process.env.CINETPAY_SITE_ID,
@@ -20,7 +22,7 @@ const CINETPAY_CONFIG = {
 
     // URLs (will be set from environment)
     notifyUrl: process.env.CINETPAY_NOTIFY_URL || `${process.env.API_BASE_URL}/api/payments/webhook`,
-    returnUrl: process.env.CINETPAY_RETURN_URL || `${process.env.FRONTEND_URL}/payment/success`,
+    returnUrl: process.env.CINETPAY_RETURN_URL || `${getFrontendUrl()}/payment/success`,
 
     // Payment amounts must be multiples of 5
     minAmount: 100,

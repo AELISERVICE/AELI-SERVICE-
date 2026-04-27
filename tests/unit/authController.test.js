@@ -66,6 +66,7 @@ jest.mock("../../src/utils/helpers", () => ({
   i18nResponse: jest.fn(),
   successResponse: jest.fn(),
   sendEmailSafely: jest.fn(),
+  getFrontendUrl: jest.fn(() => "http://localhost:5173"),
 }));
 
 jest.mock("../../src/utils/otp", () => ({

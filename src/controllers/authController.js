@@ -14,6 +14,7 @@ const {
   i18nResponse,
   successResponse,
   sendEmailSafely,
+  getFrontendUrl,
 } = require("../utils/helpers");
 const {
   generateOTP,
@@ -427,7 +428,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   await user.save({ fields: ["resetPasswordToken", "resetPasswordExpires"] });
 
   // Create reset URL
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  const resetUrl = `${getFrontendUrl()}/reset-password/${resetToken}`;
 
   await logSecurityEvent("password_reset_request", req, user.id, {}, true);
 

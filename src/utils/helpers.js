@@ -202,6 +202,24 @@ const parseBoolean = (value) => {
  * @param {string} emailType - Type of email (for logging purposes)
  * @returns {Promise<Object|null>} Email info or null if failed
  */
+/**
+ * Resolve the public frontend base URL from env.
+ * FRONTEND_URL can be a JSON array (used for CORS multi-origin) or a single URL.
+ * Returns the first entry of the array or the string itself.
+ */
+const getFrontendUrl = () => {
+    const raw = process.env.FRONTEND_URL || 'http://localhost:5173';
+    if (raw.startsWith('[')) {
+        try {
+            const urls = JSON.parse(raw);
+            return Array.isArray(urls) && urls.length > 0 ? urls[0] : raw;
+        } catch (e) {
+            return raw;
+        }
+    }
+    return raw;
+};
+
 const sendEmailSafely = async (emailData, emailType = 'email') => {
     try {
         if (!sendEmailService || typeof sendEmailService !== 'function') {
@@ -235,6 +253,7 @@ module.exports = {
     successResponse,
     i18nResponse,
     parseBoolean,
-    sendEmailSafely
+    sendEmailSafely,
+    getFrontendUrl
 };
 

@@ -55,7 +55,8 @@ jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn(),
     getPaginationParams: jest.fn(),
     getPaginationData: jest.fn(),
-    sendEmailSafely: jest.fn()
+    sendEmailSafely: jest.fn(),
+    getFrontendUrl: jest.fn(() => 'http://localhost:5173')
 }));
 
 jest.mock('../../src/config/email', () => ({

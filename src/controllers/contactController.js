@@ -5,6 +5,7 @@ const {
   getPaginationParams,
   getPaginationData,
   sendEmailSafely,
+  getFrontendUrl,
 } = require("../utils/helpers");
 const {
   newContactEmail,
@@ -385,7 +386,7 @@ const initiateContactUnlock = asyncHandler(async (req, res) => {
     transactionId: payment.transactionId,
     amount: 500,
     description: `Débloquer message de ${contact.senderName}`,
-    returnUrl: `${process.env.FRONTEND_URL}/provider/contacts/unlock-success`,
+    returnUrl: `${getFrontendUrl()}/provider/contacts/unlock-success`,
     notifyUrl: `${process.env.API_URL}/api/contacts/${id}/unlock/callback`,
   });
 
