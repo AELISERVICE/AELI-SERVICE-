@@ -120,7 +120,7 @@ export function RegisterForm() {
               required
             />
             <Input
-              label="Telephne"
+              label="Téléphone"
               type="number"
               placeholder="692 033 745"
               name="phone"
