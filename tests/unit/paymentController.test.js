@@ -10,6 +10,7 @@ jest.mock('../../src/utils/helpers', () => ({
     i18nResponse: jest.fn().mockImplementation(() => { }),
     getPaginationParams: jest.fn(() => ({ limit: 10, offset: 0 })),
     getPaginationData: jest.fn().mockImplementation(() => ({})),
+    getFrontendUrl: jest.fn(() => 'http://localhost:5173'),
 }));
 
 // Mock paymentGateway
