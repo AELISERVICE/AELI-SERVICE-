@@ -162,7 +162,7 @@ export function ServiceInfoForm() {
                         <div className="flex flex-col md:flex-row gap-6">
                             <Input
                                 name="price"
-                                label="prix"
+                                label="Prix"
                                 type="number"
                                 min={0}
                                 placeholder="15000"
@@ -171,7 +171,7 @@ export function ServiceInfoForm() {
                             />
                             <Input
                                 name="duration"
-                                label="dure"
+                                label="Durée"
                                 type="number"
                                 min={0}
                                 placeholder="90"
@@ -182,7 +182,7 @@ export function ServiceInfoForm() {
 
                         <Input
                             name="description"
-                            label="Description service"
+                            label="Description du service"
                             type="textarea"
                             placeholder="Décrivez vos services..."
                             value={formData.description}
