@@ -64,21 +64,6 @@ const contactLimiter = rateLimit({
 });
 
 /**
- * Rate limiter for registration
- * 5 registrations per hour per IP
- */
-const registrationLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5, // 5 registrations
-    message: {
-        success: false,
-        message: 'Trop de tentatives d\'inscription. Veuillez réessayer plus tard.'
-    },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-/**
  * Rate limiter for OTP verification
  * 3 attempts per 10 minutes
  */
@@ -131,7 +116,6 @@ module.exports = {
     passwordResetLimiter,
     generalLimiter,
     contactLimiter,
-    registrationLimiter,
     otpLimiter,
     otpResendLimiter,
     strictLimiter

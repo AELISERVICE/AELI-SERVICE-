@@ -17,7 +17,6 @@ const { validate } = require('../middlewares/validation');
 const { checkAccountLock } = require('../middlewares/security');
 const {
     loginLimiter,
-    registrationLimiter,
     passwordResetLimiter,
     otpLimiter,
     otpResendLimiter
@@ -47,7 +46,7 @@ const refreshTokenValidation = [
 // ============ PUBLIC ROUTES ============
 
 // Registration & OTP
-router.post('/register', registrationLimiter, registerValidation, validate, register);
+router.post('/register', registerValidation, validate, register);
 router.post('/verify-otp', otpLimiter, otpValidation, validate, verifyOTPCode);
 router.post('/resend-otp', otpResendLimiter, resendOtpValidation, validate, resendOTP);
 
