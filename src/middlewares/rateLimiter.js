@@ -39,7 +39,7 @@ const passwordResetLimiter = rateLimit({
  */
 const generalLimiter = rateLimit({
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000, // 1 minute
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // 100 requests
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 600, // 600 requests (10 req/s)
     message: {
         success: false,
         message: 'Trop de requêtes. Veuillez ralentir.'
