@@ -31,6 +31,25 @@ const bannerRoutes = require('./routes/banners');
 // Initialize Express app
 const app = express();
 
+// ============ PROXY TRUST ============
+// Required when running behind a reverse proxy (Nginx, Cloudflare, Traefik, ...)
+// so that req.ip resolves to the real client IP instead of the proxy.
+// TRUST_PROXY accepts: a number (hops), 'true'/'false', or an IP/CIDR list.
+const trustProxyEnv = process.env.TRUST_PROXY;
+if (trustProxyEnv !== undefined) {
+    const numeric = Number(trustProxyEnv);
+    if (!Number.isNaN(numeric)) {
+        app.set('trust proxy', numeric);
+    } else if (trustProxyEnv === 'true' || trustProxyEnv === 'false') {
+        app.set('trust proxy', trustProxyEnv === 'true');
+    } else {
+        app.set('trust proxy', trustProxyEnv);
+    }
+} else {
+    // Sensible default for typical single-proxy setups
+    app.set('trust proxy', 1);
+}
+
 // ============ REQUEST LOGGING ============
 app.use(getRequestLogger());
 app.use(requestTiming);

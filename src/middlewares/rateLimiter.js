@@ -1,21 +1,54 @@
 const rateLimit = require('express-rate-limit');
+const { RedisStore } = require('rate-limit-redis');
+const Redis = require('ioredis');
+const logger = require('../utils/logger');
+
+/**
+ * Build a Redis-backed store when REDIS_URL/REDIS_HOST is set, so rate limit
+ * counters are shared across replicas and survive process restarts.
+ * Falls back to the in-process memory store otherwise (single replica only).
+ */
+let sharedRedisClient = null;
+const getStore = (prefix) => {
+    const useRedis = !!(process.env.REDIS_URL || process.env.REDIS_HOST);
+    if (!useRedis) return undefined;
+
+    if (!sharedRedisClient) {
+        const url = process.env.REDIS_URL
+            || `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`;
+        sharedRedisClient = new Redis(url, {
+            // Queue commands until the first connection succeeds, otherwise
+            // RedisStore's init script throws at module load time.
+            enableOfflineQueue: true,
+            maxRetriesPerRequest: 3,
+            lazyConnect: false
+        });
+        sharedRedisClient.on('error', (err) => {
+            logger.warn('Rate-limit Redis error:', err.message);
+        });
+    }
+
+    return new RedisStore({
+        prefix: `rl:${prefix}:`,
+        sendCommand: (...args) => sharedRedisClient.call(...args)
+    });
+};
 
 /**
  * Rate limiter for login attempts
  * 5 attempts per 15 minutes
  */
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 attempts
+    windowMs: 15 * 60 * 1000,
+    max: 5,
     message: {
         success: false,
         message: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.'
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-        return req.ip + '-' + (req.body.email || 'unknown');
-    }
+    keyGenerator: (req) => `${req.ip}-${req.body.email || 'unknown'}`,
+    store: getStore('login')
 });
 
 /**
@@ -23,29 +56,32 @@ const loginLimiter = rateLimit({
  * 3 attempts per hour
  */
 const passwordResetLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // 3 attempts
+    windowMs: 60 * 60 * 1000,
+    max: 3,
     message: {
         success: false,
         message: 'Trop de demandes de réinitialisation. Veuillez réessayer dans 1 heure.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    store: getStore('pwd-reset')
 });
 
 /**
  * General rate limiter for API requests
- * 100 requests per minute
+ * Defaults: 1000 requests per minute per IP (~16 req/s).
+ * Sized for ~1k concurrent users; tune via env if needed.
  */
 const generalLimiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000, // 1 minute
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 600, // 600 requests (10 req/s)
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 1000,
     message: {
         success: false,
         message: 'Trop de requêtes. Veuillez ralentir.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    store: getStore('general')
 });
 
 /**
@@ -53,14 +89,15 @@ const generalLimiter = rateLimit({
  * 10 contacts per hour per IP
  */
 const contactLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10, // 10 contacts
+    windowMs: 60 * 60 * 1000,
+    max: 10,
     message: {
         success: false,
         message: 'Vous avez envoyé trop de messages. Veuillez réessayer plus tard.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    store: getStore('contact')
 });
 
 /**
@@ -68,17 +105,16 @@ const contactLimiter = rateLimit({
  * 3 attempts per 10 minutes
  */
 const otpLimiter = rateLimit({
-    windowMs: 10 * 60 * 1000, // 10 minutes
-    max: 3, // 3 attempts
+    windowMs: 10 * 60 * 1000,
+    max: 3,
     message: {
         success: false,
         message: 'Trop de tentatives de vérification OTP. Veuillez réessayer dans 10 minutes.'
     },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-        return req.ip + '-otp-' + (req.body.email || 'unknown');
-    }
+    keyGenerator: (req) => `${req.ip}-otp-${req.body.email || 'unknown'}`,
+    store: getStore('otp')
 });
 
 /**
@@ -86,14 +122,15 @@ const otpLimiter = rateLimit({
  * 3 resends per hour
  */
 const otpResendLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // 3 resends
+    windowMs: 60 * 60 * 1000,
+    max: 3,
     message: {
         success: false,
         message: 'Trop de demandes de renvoi OTP. Veuillez réessayer dans 1 heure.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    store: getStore('otp-resend')
 });
 
 /**
@@ -101,14 +138,15 @@ const otpResendLimiter = rateLimit({
  * 10 requests per hour
  */
 const strictLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
+    windowMs: 60 * 60 * 1000,
     max: 10,
     message: {
         success: false,
         message: 'Trop de requêtes. Veuillez réessayer plus tard.'
     },
     standardHeaders: true,
-    legacyHeaders: false
+    legacyHeaders: false,
+    store: getStore('strict')
 });
 
 module.exports = {
